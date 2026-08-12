@@ -1,0 +1,9398 @@
+@import url(
+  'https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&display=swap'
+);
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --bg: #030914;
+  --painel: rgba(4,18,43,0.94);
+  --painel2: rgba(7,25,55,0.92);
+  --azul: #22bfff;
+  --azul2: #0077ff;
+  --ciano: #33e6ff;
+  --roxo: #a828ff;
+  --verde: #23e394;
+  --dourado: #ffbf24;
+  --texto: #edf7ff;
+  --texto2: #94b9db;
+}
+
+body {
+
+  margin: 0;
+
+  min-height: 100vh;
+
+  color: var(--texto);
+
+  font-family:
+    "Oxanium",
+    Arial,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(26,83,180,0.18),
+      transparent 35%
+    ),
+    linear-gradient(
+      180deg,
+      #07152d,
+      #02070f
+    );
+
+}
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+.topbar {
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 25px;
+
+  padding:
+    7px 38px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12,29,61,0.98),
+      rgba(4,14,35,0.97)
+    );
+
+  border-bottom:
+    1px solid
+    rgba(63,150,255,0.55);
+
+  box-shadow:
+    0 8px 30px
+    rgba(0,0,0,0.5);
+
+  backdrop-filter:
+    blur(12px);
+
+}
+
+.brand {
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  min-width: 250px;
+
+  cursor: pointer;
+
+}
+
+.brand-logo {
+
+  width: 47px;
+  height: 47px;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 0 8px
+      rgba(45,175,255,0.45)
+    );
+
+}
+
+.brand-name {
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  font-style: italic;
+
+  letter-spacing: 1px;
+
+  color: white;
+
+  text-shadow:
+    0 0 12px
+    rgba(54,178,255,0.45);
+
+  white-space: nowrap;
+
+}
+
+.nav-menu {
+
+  flex: 1;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 8px;
+
+}
+
+.nav-button {
+
+  border:
+    1px solid transparent;
+
+  background:
+    transparent;
+
+  color:
+    #c8daf1;
+
+  min-height:
+    42px;
+
+  padding:
+    8px 15px;
+
+  border-radius:
+    8px;
+
+  cursor: pointer;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap: 8px;
+
+  font-family:
+    "Oxanium",
+    sans-serif;
+
+  font-size:
+    12px;
+
+  transition:
+    0.22s ease;
+
+}
+
+.nav-button img {
+
+  width: 20px;
+  height: 20px;
+
+  object-fit: contain;
+
+}
+
+.nav-button:hover {
+
+  color: white;
+
+  background:
+    rgba(32,107,200,0.15);
+
+  border-color:
+    rgba(58,159,255,0.35);
+
+}
+
+.nav-button.ativo {
+
+  color: white;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,116,240,0.62),
+      rgba(17,63,148,0.72)
+    );
+
+  border-color:
+    #168cff;
+
+  box-shadow:
+    0 0 8px
+    rgba(0,147,255,0.95),
+    inset 0 0 17px
+    rgba(55,182,255,0.2);
+
+}
+
+
+/* =====================================================
+   PÁGINAS
+===================================================== */
+
+.pagina {
+  display: none;
+}
+
+.pagina.ativa {
+  display: block;
+}
+
+
+/* =====================================================
+   HOME
+===================================================== */
+
+.home-wrap {
+
+  max-width: 1450px;
+
+  margin: auto;
+
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero {
+
+  min-height: 650px;
+
+  position: relative;
+
+  overflow: visible;
+
+  display: flex;
+
+  align-items: center;
+
+  isolation: isolate;
+
+  border-bottom:
+    1px solid
+    rgba(50,150,255,0.45);
+
+  background:
+    #061329;
+
+}
+
+
+/* FUNDO ESPACIAL */
+
+.hero::before {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: -3;
+
+  background-image:
+    var(--hero-background);
+
+  background-position:
+    center center;
+
+  background-repeat:
+    no-repeat;
+
+  background-size:
+    cover;
+
+}
+
+
+/* CAMADA PARA LEGIBILIDADE */
+
+.hero::after {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: -2;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(1,8,25,0.35) 0%,
+      rgba(1,8,25,0.10) 48%,
+      rgba(1,8,25,0.05) 72%,
+      rgba(1,8,25,0.20) 100%
+    );
+
+}
+
+
+.hero-inner {
+
+  width: 100%;
+
+  min-height: 650px;
+
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    48% 52%;
+
+}
+
+
+/* =====================================================
+   HERO ESQUERDA
+===================================================== */
+
+.hero-copy {
+
+  align-self: center;
+
+  padding:
+    58px 20px 70px 70px;
+
+  position: relative;
+
+  z-index: 5;
+
+}
+
+
+.hero-welcome {
+
+  color:
+    #8ce7ff;
+
+  font-size:
+    15px;
+
+  letter-spacing:
+    8px;
+
+  font-weight:
+    700;
+
+  margin-bottom:
+    8px;
+
+  padding-left:
+    8px;
+
+  text-shadow:
+    0 0 12px
+    rgba(0,190,255,0.7);
+
+}
+
+
+/* NOVO LETTERING EM PNG */
+
+.hero-lettering {
+
+  display: block;
+
+  width:
+    min(
+      610px,
+      98%
+    );
+
+  max-height:
+    265px;
+
+  object-fit:
+    contain;
+
+  object-position:
+    left center;
+
+  margin:
+    0 0 8px;
+
+  filter:
+    drop-shadow(
+      0 10px 18px
+      rgba(0,0,0,0.65)
+    )
+    drop-shadow(
+      0 0 12px
+      rgba(0,196,255,0.25)
+    );
+
+}
+
+
+.hero-motto {
+
+  margin-top:
+    12px;
+
+  color:
+    #72e4ff;
+
+  letter-spacing:
+    8px;
+
+  font-weight:
+    700;
+
+  font-size:
+    14px;
+
+  text-shadow:
+    0 0 9px
+    rgba(0,194,255,0.55);
+
+}
+
+
+.hero-divider {
+
+  width:
+    min(
+      590px,
+      95%
+    );
+
+  height:
+    1px;
+
+  margin:
+    13px 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #27e7ff,
+      #1765ff,
+      transparent
+    );
+
+  box-shadow:
+    0 0 10px
+    rgba(0,161,255,0.85);
+
+}
+
+
+.hero-lead {
+
+  max-width: 620px;
+
+  font-size: 15px;
+
+  line-height: 1.55;
+
+  color:
+    #e0efff;
+
+  text-shadow:
+    0 2px 4px
+    rgba(0,0,0,0.9);
+
+}
+
+
+.hero-lead strong {
+
+  color: white;
+
+  font-size: 16px;
+
+}
+
+
+/* =====================================================
+   BOTÕES HERO
+===================================================== */
+
+.hero-actions {
+
+  margin-top: 24px;
+
+  display: flex;
+
+  gap: 18px;
+
+  flex-wrap: wrap;
+
+}
+
+
+.action-button {
+
+  position: relative;
+
+  min-width: 220px;
+
+  height: 54px;
+
+  padding:
+    0 22px;
+
+  border:
+    1px solid
+    #21b8ff;
+
+  border-radius:
+    5px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13,103,206,0.82),
+      rgba(5,31,89,0.92)
+    );
+
+  color: white;
+
+  display:
+    inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 11px;
+
+  font-family:
+    "Oxanium",
+    sans-serif;
+
+  font-size:
+    13px;
+
+  font-weight:
+    700;
+
+  cursor: pointer;
+
+  clip-path:
+    polygon(
+      6% 0,
+      94% 0,
+      100% 22%,
+      100% 78%,
+      94% 100%,
+      6% 100%,
+      0 78%,
+      0 22%
+    );
+
+  box-shadow:
+    inset 0 0 18px
+    rgba(0,161,255,0.25),
+    0 0 10px
+    rgba(0,151,255,0.8);
+
+  transition:
+    0.22s ease;
+
+}
+
+
+.action-button img {
+
+  width: 23px;
+  height: 23px;
+
+  object-fit: contain;
+
+}
+
+
+.action-button:hover {
+
+  transform:
+    translateY(-3px);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13,144,255,0.92),
+      rgba(7,46,127,0.95)
+    );
+
+  box-shadow:
+    inset 0 0 25px
+    rgba(0,193,255,0.32),
+    0 0 22px
+    rgba(0,178,255,0.9);
+
+}
+
+
+/* =====================================================
+   ARTE PRINCIPAL
+===================================================== */
+
+.hero-art {
+
+  position: relative;
+
+  min-height: 650px;
+
+  overflow: visible;
+
+  z-index: 4;
+
+}
+
+
+.hero-art img {
+
+  position: absolute;
+
+  display: block;
+
+  width:
+    min(
+      760px,
+      101%
+    );
+
+  max-width:
+    none;
+
+  max-height:
+    620px;
+
+  right:
+    3%;
+
+  top:
+    50%;
+
+  transform:
+    translateY(-50%);
+
+  object-fit:
+    contain;
+
+  object-position:
+    center;
+
+  filter:
+    drop-shadow(
+      0 18px 18px
+      rgba(0,0,0,0.75)
+    )
+    drop-shadow(
+      0 0 12px
+      rgba(24,93,255,0.22)
+    );
+
+}
+
+
+/* =====================================================
+   HOME CONTENT
+===================================================== */
+
+.home-content {
+
+  padding:
+    0 22px 18px;
+
+  margin-top:
+    -12px;
+
+  position: relative;
+
+  z-index: 5;
+
+}
+
+
+.hg-panel {
+
+  position: relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7,29,67,0.96),
+      rgba(2,15,39,0.98)
+    );
+
+  border:
+    1px solid
+    #1a83e8;
+
+  border-radius:
+    14px;
+
+  box-shadow:
+    inset 0 0 35px
+    rgba(15,84,180,0.13),
+    0 0 17px
+    rgba(0,68,153,0.32);
+
+  overflow:
+    hidden;
+
+}
+
+
+.hg-panel::before {
+
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 0;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #38d2ff,
+      transparent
+    );
+
+}
+
+
+.panel-heading {
+
+  min-height: 58px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding:
+    13px 25px 8px;
+
+}
+
+
+.heading-icon {
+
+  width: 36px;
+
+  font-size: 27px;
+
+  color:
+    #5cdcff;
+
+}
+
+
+.panel-heading h2 {
+
+  margin: 0;
+
+  color:
+    #6fddff;
+
+  font-size:
+    21px;
+
+  font-style:
+    italic;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+.heading-line {
+
+  height: 1px;
+
+  width: 220px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #36d9ff,
+      transparent
+    );
+
+}
+
+
+/* =====================================================
+   HISTÓRIA
+===================================================== */
+
+.history-panel {
+
+  padding-bottom: 18px;
+
+  overflow: visible;
+
+}
+
+
+.history-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      1fr
+    );
+
+  gap: 17px;
+
+  padding:
+    8px 27px 5px;
+
+  overflow: visible;
+
+}
+
+
+.history-card {
+
+  position: relative;
+
+  min-height: 320px;
+
+  padding:
+    48px 16px 15px;
+
+  margin-top:
+    15px;
+
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(19,84,170,0.23),
+      transparent 55%
+    ),
+    rgba(1,17,43,0.88);
+
+  border:
+    1px solid
+    rgba(30,139,255,0.8);
+
+  overflow:
+    visible;
+
+}
+
+
+/* CANTOS FUTURISTAS SEM CORTAR O ANO */
+
+.history-card::before {
+
+  content: "";
+
+  position: absolute;
+
+  inset:
+    -1px;
+
+  pointer-events:
+    none;
+
+  border:
+    1px solid
+    rgba(30,139,255,0.8);
+
+  clip-path:
+    polygon(
+      6% 0,
+      94% 0,
+      100% 6%,
+      100% 94%,
+      94% 100%,
+      6% 100%,
+      0 94%,
+      0 6%
+    );
+
+}
+
+
+.history-year {
+
+  position: absolute;
+
+  top:
+    -17px;
+
+  left:
+    50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index:
+    20;
+
+  min-width:
+    105px;
+
+  padding:
+    7px 15px;
+
+  border-radius:
+    20px;
+
+  text-align:
+    center;
+
+  font-size:
+    13px;
+
+  font-weight:
+    700;
+
+  color:
+    #d6ecff;
+
+  background:
+    #071e43;
+
+  border:
+    1px solid
+    #188eff;
+
+  box-shadow:
+    0 0 14px
+    rgba(0,128,255,0.65);
+
+}
+
+
+.history-card.year-2012
+.history-year {
+
+  border-color:
+    #e7a600;
+
+  color:
+    #ffd65b;
+
+  box-shadow:
+    0 0 13px
+    rgba(255,170,0,0.5);
+
+}
+
+
+.history-card.year-2022
+.history-year {
+
+  border-color:
+    #bd2cff;
+
+  color:
+    #f2b8ff;
+
+  box-shadow:
+    0 0 13px
+    rgba(185,43,255,0.55);
+
+}
+
+
+.history-card.year-now
+.history-year {
+
+  min-width:
+    135px;
+
+  border-color:
+    #00d66e;
+
+  color:
+    #91ffc8;
+
+  box-shadow:
+    0 0 13px
+    rgba(0,214,110,0.55);
+
+}
+
+
+.history-logo {
+
+  height: 105px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(32,110,240,0.18),
+      transparent 67%
+    );
+
+}
+
+
+.history-logo img {
+
+  max-width: 80%;
+
+  max-height: 80px;
+
+  object-fit: contain;
+
+}
+
+
+.history-card h3 {
+
+  margin:
+    3px 0 10px;
+
+  text-align: center;
+
+  font-size: 14px;
+
+}
+
+
+.history-card p {
+
+  min-height: 75px;
+
+  margin: 0;
+
+  text-align: center;
+
+  color:
+    #b6d3ef;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+}
+
+
+.history-badge {
+
+  width:
+    fit-content;
+
+  max-width:
+    95%;
+
+  margin:
+    11px auto 0;
+
+  padding:
+    6px 13px;
+
+  border-radius:
+    18px;
+
+  border:
+    1px solid
+    #2567bc;
+
+  background:
+    rgba(4,26,66,0.8);
+
+  color:
+    #c6ddf4;
+
+  font-size:
+    10px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    7px;
+
+}
+
+
+.history-badge img {
+
+  width: 18px;
+  height: 18px;
+
+  object-fit: contain;
+
+}
+
+
+.history-badge.gold {
+
+  border-color:
+    #9f7809;
+
+  color:
+    #ffd34b;
+
+  background:
+    rgba(77,52,3,0.65);
+
+}
+
+
+.history-badges-double {
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  margin-top: 9px;
+
+}
+
+
+/* =====================================================
+   BOTTOM HOME
+===================================================== */
+
+.home-bottom {
+
+  margin-top: 14px;
+
+  display: grid;
+
+  grid-template-columns:
+    31% 31% 38%;
+
+  gap: 14px;
+
+}
+
+
+/* =====================================================
+   SERVERS
+===================================================== */
+
+.servers-panel {
+
+  padding-bottom: 15px;
+
+}
+
+
+.server-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      1fr
+    );
+
+  gap: 12px;
+
+  padding:
+    2px 17px 6px;
+
+}
+
+
+.server-card {
+
+  padding:
+    15px 10px 10px;
+
+  text-align: center;
+
+  border:
+    1px solid
+    rgba(31,122,225,0.75);
+
+  border-radius: 8px;
+
+  background:
+    rgba(2,17,44,0.78);
+
+}
+
+
+.server-flag {
+
+  height: 49px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+}
+
+
+.server-flag img {
+
+  max-width: 65px;
+
+  max-height: 44px;
+
+  object-fit: contain;
+
+}
+
+
+.server-name {
+
+  margin-top: 8px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+
+.server-region {
+
+  color:
+    #63cfff;
+
+  font-size: 10px;
+
+  margin-top: 3px;
+
+}
+
+
+.server-status {
+
+  margin:
+    12px auto 0;
+
+  width: 92%;
+
+  padding:
+    5px 10px;
+
+  border:
+    1px solid
+    rgba(0,191,110,0.5);
+
+  border-radius:
+    18px;
+
+  color:
+    #40ffaf;
+
+  font-size: 10px;
+
+  font-weight: bold;
+
+  background:
+    rgba(0,98,61,0.26);
+
+}
+
+
+/* =====================================================
+   FRASE
+===================================================== */
+
+.quote-panel {
+
+  min-height: 258px;
+
+  padding: 25px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+}
+
+
+.quote-symbol {
+
+  color:
+    #18bfff;
+
+  font-size: 56px;
+
+  line-height: 0.6;
+
+  font-family:
+    Georgia,
+    serif;
+
+}
+
+
+.quote-text {
+
+  margin:
+    9px 10px 0;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size: 24px;
+
+  line-height: 1.45;
+
+  font-style: italic;
+
+  text-align: center;
+
+  color: white;
+
+  text-shadow:
+    0 0 12px
+    rgba(32,139,255,0.22);
+
+}
+
+
+.quote-text span {
+
+  color:
+    #3edaff;
+
+}
+
+
+.quote-sign {
+
+  margin-top: 17px;
+
+  text-align: right;
+
+  color:
+    #41cfff;
+
+  font-size: 10px;
+
+  font-weight: bold;
+
+}
+
+
+/* =====================================================
+   STAFF
+===================================================== */
+
+.staff-panel {
+
+  min-height: 258px;
+
+  padding-bottom: 12px;
+
+}
+
+
+.staff-panel
+.panel-heading {
+
+  min-height: 44px;
+
+  padding-top: 8px;
+
+}
+
+
+.staff-layout {
+
+  padding:
+    0 15px 10px;
+
+}
+
+
+.staff-master {
+
+  margin-left: auto;
+
+  margin-bottom: 9px;
+
+  width: 69%;
+
+  min-height: 57px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    6px 14px;
+
+  border:
+    1px solid
+    #ffb500;
+
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(77,49,0,0.9),
+      rgba(40,26,0,0.7)
+    );
+
+  box-shadow:
+    0 0 14px
+    rgba(255,178,0,0.55);
+
+}
+
+
+.staff-master
+.staff-avatar {
+
+  width: 43px;
+  height: 43px;
+
+  border-color:
+    #ffcf45;
+
+}
+
+
+.master-label {
+
+  color:
+    #ffd04c;
+
+  font-size: 9px;
+
+  font-weight: bold;
+
+}
+
+
+.master-name {
+
+  margin-top: 2px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+}
+
+
+.staff-subs-title {
+
+  margin:
+    2px 0 6px;
+
+  text-align: center;
+
+  color:
+    #69d8ff;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+}
+
+
+.staff-subs {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      1fr
+    );
+
+  gap:
+    8px 10px;
+
+  padding:
+    7px 4px 2px;
+
+  border-top:
+    1px solid
+    #188ee8;
+
+  border-bottom:
+    1px solid
+    #188ee8;
+
+}
+
+
+.staff-sub {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  min-width: 0;
+
+}
+
+
+.staff-avatar {
+
+  width: 37px;
+  height: 37px;
+
+  flex:
+    0 0 37px;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle,
+      #14315c,
+      #010714
+    );
+
+  border:
+    1px solid
+    #23c9ff;
+
+  box-shadow:
+    0 0 8px
+    rgba(21,181,255,0.5);
+
+}
+
+
+.staff-avatar img {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+}
+
+
+.staff-sub-name {
+
+  font-size: 10px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.home-footer {
+
+  margin-top: 13px;
+
+  min-height: 74px;
+
+  padding:
+    8px 27px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr 1fr;
+
+  align-items: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12,29,58,0.97),
+      rgba(4,13,31,0.98)
+    );
+
+  border-top:
+    1px solid
+    rgba(46,134,230,0.55);
+
+}
+
+
+.footer-social {
+
+  display: flex;
+
+  gap: 22px;
+
+  align-items: center;
+
+}
+
+
+.footer-social-link {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: white;
+
+  text-decoration: none;
+
+}
+
+
+.footer-social-link img {
+
+  width: 29px;
+  height: 29px;
+
+  object-fit: contain;
+
+}
+
+
+.footer-social-title {
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+}
+
+
+.footer-social-sub {
+
+  margin-top: 2px;
+
+  color:
+    #82a7ca;
+
+  font-size: 7px;
+
+}
+
+
+.footer-center {
+
+  text-align: center;
+
+}
+
+
+.footer-center-title {
+
+  font-size: 13px;
+
+  letter-spacing: 8px;
+
+  color:
+    #b9e8ff;
+
+  font-weight: 600;
+
+}
+
+
+.footer-center-motto {
+
+  margin-top: 4px;
+
+  color:
+    #69c7ef;
+
+  font-size: 7px;
+
+  letter-spacing: 5px;
+
+}
+
+
+.footer-line-wrap {
+
+  margin:
+    4px auto 0;
+
+  width: 250px;
+
+  height: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+}
+
+
+.footer-line {
+
+  flex: 1;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #38cfff
+    );
+
+}
+
+
+.footer-line.right {
+
+  background:
+    linear-gradient(
+      90deg,
+      #38cfff,
+      transparent
+    );
+
+}
+
+
+.footer-diamond {
+
+  width: 5px;
+  height: 5px;
+
+  transform:
+    rotate(45deg);
+
+  background:
+    #5fe9ff;
+
+  box-shadow:
+    0 0 8px
+    #2fd1ff;
+
+}
+
+
+.footer-right {
+
+  text-align: right;
+
+  color:
+    #96adc8;
+
+  font-size: 8px;
+
+}
+
+
+.footer-heart {
+
+  color:
+    #ff326d;
+
+  font-size: 13px;
+
+  margin:
+    0 5px;
+
+}
+
+
+/* =====================================================
+   PÁGINAS INTERNAS
+===================================================== */
+
+.internal-wrap {
+
+  max-width: 1280px;
+
+  margin: auto;
+
+  padding:
+    40px 25px 70px;
+
+}
+
+
+.page-title {
+
+  margin:
+    0 0 5px;
+
+  color:
+    #71dfff;
+
+  font-size: 25px;
+
+  font-style: italic;
+
+}
+
+
+.page-subtitle {
+
+  color:
+    #8eabc8;
+
+  margin:
+    0 0 24px;
+
+  font-size: 13px;
+
+}
+
+
+/* =====================================================
+   DIGIDEX
+===================================================== */
+
+.filtros {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 220px 220px;
+
+  gap: 10px;
+
+  margin-bottom: 22px;
+
+}
+
+
+.search,
+.filtro-select,
+.team-search,
+.skill select {
+
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid
+    #23548a;
+
+  background:
+    #07162c;
+
+  color: white;
+
+  font-family:
+    "Oxanium",
+    sans-serif;
+
+  outline: none;
+
+}
+
+
+.search:focus,
+.filtro-select:focus,
+.team-search:focus {
+
+  border-color:
+    #27cfff;
+
+  box-shadow:
+    0 0 9px
+    rgba(0,159,255,0.35);
+
+}
+
+
+/* =====================================================
+   DIGIDEX — FILTROS / SELECTS HARMONIZADOS
+   Evita o menu preto nativo e mantém o visual do site.
+===================================================== */
+
+#databasePagina .filtro-select {
+  appearance: auto;
+  -webkit-appearance: menulist;
+  color-scheme: dark;
+  background-color: #081b35;
+  color: #edf7ff;
+  border-color: #2b6cae;
+  box-shadow:
+    inset 0 0 14px rgba(34,191,255,0.05),
+    0 4px 14px rgba(0,0,0,0.16);
+}
+
+#databasePagina .filtro-select:hover {
+  border-color: #3199d7;
+  background-color: #0b2140;
+}
+
+#databasePagina .filtro-select:focus {
+  background-color: #0b2140;
+  border-color: #33d8ff;
+  box-shadow:
+    0 0 0 2px rgba(51,216,255,0.10),
+    0 0 12px rgba(0,159,255,0.28);
+}
+
+#databasePagina .filtro-select option {
+  background-color: #0a1d36;
+  color: #eaf6ff;
+}
+
+#databasePagina .filtro-select option:checked {
+  background-color: #123d67;
+  color: #ffffff;
+}
+
+
+.grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(260px,1fr)
+    );
+
+  gap: 17px;
+
+}
+
+
+.card {
+
+  background:
+    linear-gradient(
+      160deg,
+      #0b2146,
+      #061126
+    );
+
+  border:
+    1px solid
+    #174f92;
+
+  border-radius: 12px;
+
+  padding: 14px;
+
+  transition: 0.2s;
+
+  overflow: hidden;
+
+}
+
+
+.card:hover {
+
+  transform:
+    translateY(-4px);
+
+  border-color:
+    #27bdff;
+
+  box-shadow:
+    0 0 20px
+    rgba(0,126,255,0.26);
+
+}
+
+
+.card-image {
+
+  height: 185px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 12px;
+
+  border-radius: 9px;
+
+  background:
+    radial-gradient(
+      circle,
+      #173c73,
+      #041126 70%
+    );
+
+  overflow: hidden;
+
+}
+
+
+.card-image img {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  padding: 8px;
+
+}
+
+
+.card-name {
+
+  text-align: center;
+
+  margin:
+    0 0 11px;
+
+  font-size: 18px;
+
+}
+
+
+.stats {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      1fr
+    );
+
+  gap: 6px;
+
+}
+
+
+.stat,
+.mini-stat {
+
+  background:
+    #030b19;
+
+  padding: 8px;
+
+  border:
+    1px solid
+    rgba(40,101,166,0.45);
+
+  border-radius: 6px;
+
+}
+
+
+.label {
+
+  color:
+    #7699ba;
+
+  font-size: 9px;
+
+}
+
+
+.value {
+
+  margin-top: 3px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+}
+
+
+.type {
+
+  grid-column:
+    1 / -1;
+
+  padding: 8px;
+
+  border-radius: 6px;
+
+  text-align: center;
+
+  font-size: 12px;
+
+  font-weight: bold;
+
+  border:
+    1px solid;
+
+}
+
+
+.type-vaccine {
+
+  background:
+    #103827;
+
+  border-color:
+    #27a96c;
+
+  color:
+    #6affad;
+
+}
+
+
+.type-virus {
+
+  background:
+    #441521;
+
+  border-color:
+    #ba2d4b;
+
+  color:
+    #ff708b;
+
+}
+
+
+.type-data {
+
+  background:
+    #102d55;
+
+  border-color:
+    #337bd5;
+
+  color:
+    #73b3ff;
+
+}
+
+
+.type-free {
+
+  background:
+    #443711;
+
+  border-color:
+    #c1a42f;
+
+  color:
+    #ffe67d;
+
+}
+
+
+.type-uk {
+
+  background:
+    #3a193e;
+
+  border-color:
+    #ac4cb6;
+
+  color:
+    #ec8df6;
+
+}
+
+
+/* =====================================================
+   TEAM BUILDER
+===================================================== */
+
+.builder-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(330px,1fr)
+    );
+
+  gap: 17px;
+
+}
+
+
+.slot {
+
+  position: relative;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      160deg,
+      #0a2043,
+      #051126
+    );
+
+  border:
+    1px solid
+    #175398;
+
+}
+
+
+.slot-title {
+
+  margin-bottom: 9px;
+
+  color:
+    #84ddff;
+
+  font-weight: 700;
+
+}
+
+
+.team-search-status {
+
+  min-height: 17px;
+
+  margin-top: 5px;
+
+  color:
+    #81a7c8;
+
+  font-size: 10px;
+
+}
+
+
+.team-suggestions {
+
+  position: absolute;
+
+  left: 16px;
+  right: 16px;
+  top: 78px;
+
+  z-index: 50;
+
+  display: none;
+
+  max-height: 230px;
+
+  overflow-y: auto;
+
+  background:
+    #061630;
+
+  border:
+    1px solid
+    #2676bb;
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 12px 30px
+    rgba(0,0,0,0.55);
+
+}
+
+
+.team-suggestion {
+
+  padding:
+    10px 12px;
+
+  border-bottom:
+    1px solid
+    rgba(43,103,164,0.35);
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+}
+
+
+.team-suggestion:hover {
+
+  background:
+    #12355e;
+
+}
+
+
+.selected-info {
+
+  margin-top: 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      1fr
+    );
+
+  gap: 6px;
+
+}
+
+
+.team-image-box {
+
+  grid-column:
+    1 / -1;
+
+  height: 210px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 9px;
+
+  background:
+    radial-gradient(
+      circle,
+      #173b6c,
+      #030a18
+    );
+
+  border:
+    1px solid
+    #164a88;
+
+}
+
+
+.team-image-box img {
+
+  width: 100%;
+  height: 100%;
+
+  padding: 10px;
+
+  object-fit: contain;
+
+}
+
+
+.field,
+.strong,
+.weak,
+.skill {
+
+  padding: 9px;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+
+}
+
+
+.field {
+
+  grid-column:
+    1 / -1;
+
+  text-align: center;
+
+  background:
+    #102846;
+
+  border:
+    1px solid
+    #295b91;
+
+}
+
+
+.strong {
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(87,17,35,0.96),
+      rgba(47,8,22,0.98)
+    );
+
+  border:
+    1px solid
+    #b63b58;
+
+  box-shadow:
+    inset 0 0 14px
+    rgba(255,70,105,0.09);
+
+}
+
+
+.weak {
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(13,55,110,0.96),
+      rgba(5,27,67,0.98)
+    );
+
+  border:
+    1px solid
+    #2d82d4;
+
+  box-shadow:
+    inset 0 0 14px
+    rgba(34,191,255,0.10);
+
+}
+
+
+.skill {
+
+  grid-column:
+    1 / -1;
+
+  background:
+    #0e2544;
+
+  border:
+    1px solid
+    #285688;
+
+}
+
+
+.skill-title {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color:
+    #a8c8e7;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+}
+
+
+.skill-efeito {
+
+  margin-top: 6px;
+
+  display: flex;
+
+  gap: 5px;
+
+  flex-wrap: wrap;
+
+}
+
+
+.efeito-buff,
+.efeito-remove {
+
+  padding:
+    4px 7px;
+
+  border-radius: 5px;
+
+  font-size: 9px;
+
+  font-weight: bold;
+
+}
+
+
+.efeito-buff {
+
+  background:
+    #123b2b;
+
+  border:
+    1px solid
+    #246b4b;
+
+  color:
+    #83e9ad;
+
+}
+
+
+.efeito-remove {
+
+  background:
+    #3d1721;
+
+  border:
+    1px solid
+    #703040;
+
+  color:
+    #ff9eae;
+
+}
+
+
+/* =====================================================
+   ELEMENTOS — ARTE + CONTEÚDO CENTRALIZADO NO QUADRO
+===================================================== */
+
+#elementosPagina .internal-wrap {
+  max-width: 1280px;
+  padding: 26px 18px 60px;
+}
+
+.elementos-scene {
+  position: relative;
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+
+.elementos-scene-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 18px 26px rgba(0,0,0,.38));
+}
+
+.elementos-box {
+  position: absolute;
+  z-index: 3;
+
+  /* área útil do quadro branco da arte */
+  left: 50%;
+  top: 27.2%;
+  /* TESTE: coluna inteira 50px para a esquerda e 50px para baixo */
+  transform: translate(-50px, 50px) translateX(-50%);
+
+  width: 37%;
+  max-width: 400px;
+  min-width: 300px;
+
+  margin: 0;
+  padding: 8px 12px 10px;
+  text-align: center;
+
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255,255,255,.035);
+  box-shadow: none;
+}
+
+.elementos-box h2 {
+  display: none;
+}
+
+.elementos-subtitulo {
+  margin: 0 0 7px;
+  color: #244b78;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255,255,255,.7);
+}
+
+.elemento-seletor {
+  width: 86%;
+  max-width: 330px;
+  margin: 0 auto 8px;
+}
+
+.elemento-seletor label {
+  display: none;
+}
+
+#elementoSelect {
+  min-height: 40px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  background-color: rgba(5,24,55,.96);
+  border-color: #1e72c6;
+  box-shadow: 0 4px 12px rgba(0,0,0,.16);
+}
+
+.elemento-resultado {
+  width: 92%;
+  max-width: 350px;
+  min-height: 74px;
+  margin: 0 auto;
+  padding: 9px;
+
+  border: 1px solid rgba(26,76,132,.78);
+  border-radius: 8px;
+  background: rgba(3,12,27,.94);
+  box-shadow: 0 5px 14px rgba(0,0,0,.16);
+}
+
+.elemento-resultado-nome {
+  margin-bottom: 7px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.elemento-resultado-linha {
+  margin-top: 5px;
+  padding: 7px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.elemento-buff {
+  background: #123b2b;
+  border: 1px solid #246b4b;
+  color: #86eab1;
+}
+
+.elemento-remove {
+  background: #3d1721;
+  border: 1px solid #743042;
+  color: #ffa3b1;
+}
+
+/* Em telas menores a arte continua inteira e o conteúdo não invade os personagens. */
+@media (max-width: 760px) {
+  #elementosPagina .internal-wrap {
+    padding: 18px 8px 45px;
+  }
+
+  .elementos-box {
+    top: 26.7%;
+    width: 40%;
+    min-width: 0;
+    padding: 3px 4px;
+  }
+
+  .elementos-subtitulo {
+    display: none;
+  }
+
+  .elemento-seletor {
+    width: 96%;
+    margin-bottom: 4px;
+  }
+
+  #elementoSelect {
+    min-height: 30px;
+    padding: 5px 26px 5px 30px;
+    font-size: 8px;
+    background-size: 17px 17px;
+    background-position: 8px center;
+  }
+
+  .elemento-resultado {
+    width: 98%;
+    min-height: 45px;
+    padding: 4px;
+    font-size: 7px;
+  }
+
+  .elemento-resultado-nome {
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+
+  .elemento-resultado-linha {
+    margin-top: 2px;
+    padding: 3px;
+    font-size: 6px;
+  }
+}
+
+
+/* =====================================================
+   SOCIAL / CALCULADORA
+===================================================== */
+
+/*
+ * SOCIAL V11 — composição com Mikomode
+ * A arte continua inteira, sem distorção e sem virar background.
+ */
+
+#socialPagina {
+  position: relative;
+  min-height: calc(100vh - 108px);
+  overflow: hidden;
+}
+
+#socialPagina::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 76% 42%,
+      rgba(105, 47, 186, .14),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 29% 35%,
+      rgba(0, 153, 255, .10),
+      transparent 32%
+    );
+}
+
+.social-stage {
+  position: relative;
+  z-index: 1;
+  max-width: 1540px;
+  min-height: 720px;
+  margin: 0 auto;
+  padding: 52px 38px 60px;
+  display: grid;
+  grid-template-columns: minmax(430px, .92fr) minmax(430px, 1.08fr);
+  align-items: center;
+  gap: 30px;
+}
+
+.social-content {
+  position: relative;
+  z-index: 4;
+  max-width: 670px;
+}
+
+.social-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+  color: #71dfff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.social-kicker::before {
+  content: "";
+  width: 35px;
+  height: 1px;
+  background: #31d4ff;
+  box-shadow: 0 0 9px rgba(49, 212, 255, .75);
+}
+
+.social-title-main {
+  margin: 0;
+  color: #f4fbff;
+  font-size: clamp(34px, 3vw, 54px);
+  line-height: 1.02;
+  font-style: italic;
+  letter-spacing: 1px;
+  text-shadow: 0 0 18px rgba(34, 191, 255, .22);
+}
+
+.social-title-main span {
+  color: #59dcff;
+}
+
+.social-intro {
+  max-width: 590px;
+  margin: 14px 0 26px;
+  color: #9dbbd7;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.social-page-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.social-page-card {
+  position: relative;
+  min-height: 104px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 17px;
+  color: white;
+  text-decoration: none;
+  border: 1px solid rgba(38, 126, 216, .72);
+  border-radius: 11px;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(10, 39, 82, .92),
+      rgba(5, 18, 41, .82) 70%,
+      rgba(8, 23, 52, .58)
+    );
+  box-shadow:
+    inset 0 0 22px rgba(38, 124, 224, .07),
+    0 10px 26px rgba(0, 0, 0, .18);
+  overflow: hidden;
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease,
+    background .22s ease;
+}
+
+.social-page-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: #30ceff;
+  opacity: .72;
+  box-shadow: 0 0 10px rgba(48, 206, 255, .85);
+}
+
+.social-page-card img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 9px rgba(0, 149, 255, .25));
+}
+
+.social-card-copy {
+  min-width: 0;
+}
+
+.social-page-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  letter-spacing: .3px;
+}
+
+.social-page-card p {
+  margin: 0;
+  color: #93b5d5;
+  font-size: 11px;
+}
+
+.social-card-action {
+  padding: 8px 11px;
+  border: 1px solid rgba(67, 186, 255, .4);
+  border-radius: 7px;
+  color: #aeeaff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  white-space: nowrap;
+  background: rgba(9, 55, 105, .48);
+}
+
+.social-page-card:hover {
+  transform: translateX(6px);
+  border-color: #32d8ff;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(12, 55, 113, .97),
+      rgba(5, 22, 49, .9) 70%,
+      rgba(11, 31, 67, .65)
+    );
+  box-shadow:
+    inset 0 0 24px rgba(0, 172, 255, .10),
+    0 0 22px rgba(0, 153, 255, .26);
+}
+
+.social-art-wrap {
+  position: relative;
+  align-self: stretch;
+  min-height: 620px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.social-art-glow {
+  position: absolute;
+  width: 72%;
+  aspect-ratio: 1;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(116, 61, 193, .22),
+      rgba(17, 97, 190, .09) 42%,
+      transparent 70%
+    );
+  filter: blur(5px);
+}
+
+.social-mikomode {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: auto;
+  height: min(69vh, 690px);
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: .96;
+  filter:
+    drop-shadow(0 24px 24px rgba(0, 0, 0, .66))
+    drop-shadow(0 0 8px rgba(195, 92, 255, .88))
+    drop-shadow(0 0 20px rgba(161, 55, 255, .68))
+    drop-shadow(0 0 42px rgba(118, 33, 230, .42))
+    drop-shadow(0 0 72px rgba(91, 19, 205, .22));
+  animation:
+    socialMikoEnter .55s ease both,
+    socialMikoAura 2.8s ease-in-out .55s infinite alternate;
+}
+
+@keyframes socialMikoEnter {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: .96;
+    transform: translateX(0);
+  }
+}
+
+@keyframes socialMikoAura {
+  from {
+    filter:
+      drop-shadow(0 24px 24px rgba(0, 0, 0, .66))
+      drop-shadow(0 0 7px rgba(195, 92, 255, .72))
+      drop-shadow(0 0 17px rgba(161, 55, 255, .52))
+      drop-shadow(0 0 34px rgba(118, 33, 230, .30))
+      drop-shadow(0 0 58px rgba(91, 19, 205, .15));
+  }
+
+  to {
+    filter:
+      drop-shadow(0 24px 24px rgba(0, 0, 0, .66))
+      drop-shadow(0 0 11px rgba(215, 125, 255, .96))
+      drop-shadow(0 0 27px rgba(173, 67, 255, .78))
+      drop-shadow(0 0 50px rgba(130, 42, 239, .52))
+      drop-shadow(0 0 82px rgba(98, 25, 215, .28));
+  }
+}
+
+
+.em-breve {
+
+  max-width: 600px;
+
+  margin:
+    50px auto;
+
+  padding: 40px;
+
+  text-align: center;
+
+  border:
+    1px solid
+    #1c75c8;
+
+  border-radius: 12px;
+
+  background:
+    #071a36;
+
+  color:
+    #9cc9ec;
+
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+#loading {
+
+  text-align: center;
+
+  padding: 30px;
+
+  color:
+    #80b5d9;
+
+}
+
+
+.erro {
+
+  padding: 14px;
+
+  border:
+    1px solid
+    #8c3047;
+
+  border-radius: 7px;
+
+  background:
+    #421623;
+
+  color:
+    #ffb1bf;
+
+}
+
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media
+(max-width: 1050px) {
+
+  .topbar {
+
+    padding:
+      7px 15px;
+
+  }
+
+  .brand {
+
+    min-width: auto;
+
+  }
+
+  .brand-name {
+
+    display: none;
+
+  }
+
+  .nav-button {
+
+    padding:
+      8px 9px;
+
+  }
+
+  .nav-button span {
+
+    display: none;
+
+  }
+
+
+  .hero {
+
+    min-height: 900px;
+
+    overflow: hidden;
+
+  }
+
+  .hero-inner {
+
+    grid-template-columns:
+      1fr;
+
+    min-height: 900px;
+
+  }
+
+  .hero-copy {
+
+    padding:
+      50px 40px 10px;
+
+  }
+
+  .hero-lettering {
+
+    width:
+      min(
+        600px,
+        94%
+      );
+
+  }
+
+  .hero-art {
+
+    min-height: 430px;
+
+  }
+
+  .hero-art img {
+
+    width:
+      min(
+        690px,
+        90%
+      );
+
+    max-height: 420px;
+
+    right: 5%;
+
+    top: 48%;
+
+  }
+
+
+  .history-grid {
+
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+
+  }
+
+
+  .home-bottom {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .staff-master {
+
+    width: 55%;
+
+  }
+
+
+  .home-footer {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 15px;
+
+    text-align: center;
+
+  }
+
+
+  .footer-social {
+
+    justify-content: center;
+
+  }
+
+
+  .footer-right {
+
+    text-align: center;
+
+  }
+
+}
+
+
+/* SOCIAL — ajuste responsivo */
+@media (max-width: 1050px) {
+  .social-stage {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: 44px 34px 25px;
+  }
+
+  .social-content {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .social-art-wrap {
+    min-height: 430px;
+  }
+
+  .social-mikomode {
+    height: min(52vh, 500px);
+  }
+}
+
+
+@media
+(max-width: 700px) {
+
+  .topbar {
+
+    gap: 8px;
+
+    overflow-x: auto;
+
+  }
+
+
+  .brand-logo {
+
+    width: 39px;
+    height: 39px;
+
+  }
+
+
+  .nav-menu {
+
+    justify-content:
+      flex-start;
+
+    min-width:
+      max-content;
+
+  }
+
+
+  .hero {
+
+    min-height: 820px;
+
+  }
+
+
+  .hero-inner {
+
+    min-height: 820px;
+
+  }
+
+
+  .hero-copy {
+
+    padding:
+      42px 22px 10px;
+
+  }
+
+
+  .hero-welcome {
+
+    font-size: 10px;
+
+    letter-spacing: 5px;
+
+  }
+
+
+  .hero-lettering {
+
+    width: 100%;
+
+    max-height: 220px;
+
+  }
+
+
+  .hero-motto {
+
+    font-size: 9px;
+
+    letter-spacing: 4px;
+
+  }
+
+
+  .hero-art {
+
+    min-height: 350px;
+
+  }
+
+
+  .hero-art img {
+
+    width: 100%;
+
+    max-height: 350px;
+
+    right: 0;
+
+  }
+
+
+  .history-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .filtros {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .builder-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .staff-master {
+
+    width: 100%;
+
+  }
+
+
+  .staff-subs {
+
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+
+  }
+
+
+  .social-page-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .footer-social {
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+  }
+
+
+  .social-stage {
+    padding: 32px 18px 18px;
+    gap: 12px;
+  }
+
+  .social-title-main {
+    font-size: 32px;
+  }
+
+  .social-intro {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .social-page-card {
+    grid-template-columns: 48px 1fr;
+    min-height: 88px;
+    padding: 13px 14px;
+    gap: 12px;
+  }
+
+  .social-page-card img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .social-card-action {
+    display: none;
+  }
+
+  .social-art-wrap {
+    min-height: 330px;
+  }
+
+  .social-mikomode {
+    height: min(43vh, 380px);
+  }
+
+}
+
+
+
+/* =====================================================
+   AJUSTES FINAIS — LOGO / ULTRAWIDE / STAFF
+   ===================================================== */
+
+/* Logo realmente maior sem aumentar o texto HOLY GUARDIANS */
+.brand-logo {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 120px;
+  position: relative;
+  z-index: 3;
+  transition: transform .28s ease, filter .28s ease;
+  filter:
+    drop-shadow(0 0 8px rgba(45,175,255,.55))
+    drop-shadow(0 0 12px rgba(255,190,45,.22));
+}
+
+.brand-name {
+  /* mantém o tamanho original da escrita */
+  font-size: 22px;
+}
+
+.topbar {
+  min-height: 108px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.brand {
+  min-height: 108px;
+  gap: 12px;
+}
+
+/* Hover inspirado no GAME START */
+.brand:hover .brand-logo {
+  transform: scale(1.12) rotate(-2deg);
+  filter:
+    drop-shadow(0 0 10px rgba(51,230,255,.95))
+    drop-shadow(0 0 20px rgba(0,119,255,.80))
+    drop-shadow(0 0 25px rgba(255,191,36,.70));
+  animation: hgLogoPulse 1.15s ease-in-out infinite alternate;
+}
+
+@keyframes hgLogoPulse {
+  from { transform: scale(1.10) rotate(-2deg); }
+  to   { transform: scale(1.17) rotate(2deg); }
+}
+
+/* Staff perfeitamente centralizada e simétrica */
+.staff-master {
+  margin-left: auto;
+  margin-right: auto;
+  width: 72%;
+  justify-content: center;
+}
+
+.staff-subs-title {
+  width: 100%;
+  text-align: center;
+}
+
+.staff-subs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 18px;
+  row-gap: 10px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.staff-sub {
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+/* Corrige o desalinhamento do bloco inferior: 31% + 31% + 38% + gaps
+   ultrapassava 100% da largura e empurrava o Staff para a direita. */
+.home-bottom {
+  grid-template-columns:
+    minmax(0, 31fr)
+    minmax(0, 31fr)
+    minmax(0, 38fr);
+  width: 100%;
+  align-items: stretch;
+}
+
+.home-bottom > .hg-panel {
+  min-width: 0;
+  width: 100%;
+}
+
+.staff-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+.staff-layout {
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.staff-master {
+  margin-left: auto;
+  margin-right: auto;
+  width: 72%;
+}
+
+/* Aproveita melhor monitores largos sem esticar exageradamente */
+@media (min-width: 1700px) {
+  .home-wrap {
+    max-width: 1680px;
+  }
+
+  .internal-wrap {
+    max-width: 1540px;
+  }
+}
+
+@media (min-width: 2200px) {
+  .home-wrap {
+    max-width: 1840px;
+  }
+
+  .internal-wrap {
+    max-width: 1680px;
+  }
+}
+
+/* Mantém responsividade em telas menores */
+@media (max-width: 1050px) {
+  .topbar {
+    min-height: 70px;
+  }
+
+  .brand-logo {
+    width: 78px;
+    height: 78px;
+    flex-basis: 78px;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar {
+    min-height: 58px;
+  }
+
+  .brand-logo {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+  }
+
+  .staff-master {
+    width: 100%;
+  }
+
+  .staff-subs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+
+/* =====================================================
+   AJUSTE V3 — ULTRAWIDE + LOGO VISUAL MAIOR
+   Mantém STAFF já corrigida e mantém o texto da marca em 22px
+   ===================================================== */
+
+/* Em telas largas, a HOME passa a acompanhar a viewport em vez de
+   ficar presa a uma faixa central estreita. */
+.home-wrap {
+  width: min(94vw, 2600px);
+  max-width: none;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Header também ganha respiro proporcional em ultrawide. */
+.topbar {
+  padding-left: clamp(28px, 2.2vw, 64px);
+  padding-right: clamp(28px, 2.2vw, 64px);
+  min-height: 118px;
+}
+
+.brand {
+  min-height: 118px;
+  min-width: 320px;
+  gap: 10px;
+  overflow: visible;
+}
+
+/* Aumenta a ARTE da logo, não a escrita ao lado.
+   O scale compensa a área transparente interna do PNG. */
+.brand-logo {
+  width: 138px;
+  height: 138px;
+  flex: 0 0 138px;
+  transform: scale(1.28);
+  transform-origin: center;
+}
+
+.brand-name {
+  font-size: 22px !important;
+}
+
+.brand:hover .brand-logo {
+  animation: hgLogoPulseV3 1.15s ease-in-out infinite alternate;
+}
+
+@keyframes hgLogoPulseV3 {
+  from { transform: scale(1.34) rotate(-2deg); }
+  to   { transform: scale(1.42) rotate(2deg); }
+}
+
+/* Em ultrawide grande, ocupa ainda mais da tela sem colar nas bordas. */
+@media (min-width: 1900px) {
+  .home-wrap { width: min(94vw, 2800px); }
+  .brand-logo {
+    width: 150px;
+    height: 150px;
+    flex-basis: 150px;
+    transform: scale(1.30);
+  }
+  .topbar, .brand { min-height: 124px; }
+}
+
+/* Full HD / notebooks continuam proporcionais. */
+@media (max-width: 1400px) {
+  .home-wrap { width: min(96vw, 1450px); }
+  .brand-logo {
+    width: 100px;
+    height: 100px;
+    flex-basis: 100px;
+    transform: scale(1.18);
+  }
+  .topbar, .brand { min-height: 92px; }
+}
+
+@media (max-width: 700px) {
+  .home-wrap { width: 100%; }
+  .brand { min-width: 0; }
+  .brand-logo {
+    width: 58px;
+    height: 58px;
+    flex-basis: 58px;
+    transform: none;
+  }
+  .topbar, .brand { min-height: 62px; }
+}
+
+
+/* =====================================================
+   AJUSTE V4 — NAVBAR LEGÍVEL + HERO/FUNDO RESPONSIVO
+   Não altera a logo nem o bloco STAFF já corrigidos.
+   ===================================================== */
+
+/* O fundo do HERO agora é um fundo de verdade: ocupa toda a viewport,
+   enquanto o conteúdo interno continua centralizado e responsivo. */
+.hero {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.hero-inner {
+  width: min(94vw, 2800px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* MENU PRINCIPAL — cresce independentemente da Home e da logo. */
+.nav-menu {
+  gap: clamp(10px, 0.75vw, 20px);
+}
+
+.nav-button {
+  min-height: 52px;
+  padding: 10px clamp(15px, 0.9vw, 24px);
+  gap: 10px;
+  font-size: clamp(14px, 0.78vw, 17px);
+  border-radius: 9px;
+  white-space: nowrap;
+}
+
+.nav-button img {
+  width: clamp(23px, 1.25vw, 29px);
+  height: clamp(23px, 1.25vw, 29px);
+}
+
+/* Em telas realmente grandes, deixa o menu confortável para leitura
+   sem aumentar a escrita HOLY GUARDIANS da marca. */
+@media (min-width: 1900px) {
+  .nav-button {
+    min-height: 56px;
+    font-size: 16px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .nav-button img {
+    width: 27px;
+    height: 27px;
+  }
+}
+
+/* Notebook / desktop menor: mantém os nomes visíveis e evita apertar. */
+@media (min-width: 1051px) and (max-width: 1500px) {
+  .nav-menu {
+    gap: 6px;
+  }
+
+  .nav-button {
+    min-height: 46px;
+    padding: 8px 11px;
+    font-size: 12px;
+    gap: 7px;
+  }
+
+  .nav-button img {
+    width: 21px;
+    height: 21px;
+  }
+}
+
+/* TABLET / MOBILE: não transforma a arte principal em uma segunda linha.
+   Ela passa a flutuar dentro do próprio HERO, mantendo o fundo contínuo. */
+@media (max-width: 1050px) {
+  .hero {
+    min-height: 760px;
+    overflow: hidden;
+  }
+
+  .hero-inner {
+    width: 100%;
+    min-height: 760px;
+    display: block;
+    position: relative;
+  }
+
+  .hero-copy {
+    width: 100%;
+    padding: 42px 34px 250px;
+    position: relative;
+    z-index: 5;
+  }
+
+  .hero-art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 0;
+    height: 310px;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .hero-art img {
+    width: min(640px, 76vw);
+    max-height: 305px;
+    right: 4%;
+    top: auto;
+    bottom: -4px;
+    transform: none;
+    object-position: right bottom;
+  }
+
+  /* No tablet/celular os rótulos já somem pelo CSS original;
+     deixa os ícones maiores e fáceis de tocar. */
+  .nav-button {
+    min-width: 46px;
+    min-height: 46px;
+    padding: 8px 10px;
+  }
+
+  .nav-button img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 8px;
+  }
+
+  .nav-menu {
+    gap: 5px;
+  }
+
+  .nav-button {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 7px;
+  }
+
+  .nav-button img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hero {
+    min-height: 680px;
+  }
+
+  .hero-inner {
+    min-height: 680px;
+  }
+
+  .hero-copy {
+    padding: 34px 22px 235px;
+  }
+
+  .hero-art {
+    height: 270px;
+  }
+
+  .hero-art img {
+    width: min(430px, 86vw);
+    max-height: 270px;
+    right: -2%;
+    bottom: -2px;
+  }
+
+  .hero::before {
+    background-position: center center;
+    background-size: cover;
+  }
+}
+
+@media (max-width: 430px) {
+  .hero {
+    min-height: 650px;
+  }
+
+  .hero-inner {
+    min-height: 650px;
+  }
+
+  .hero-copy {
+    padding: 30px 18px 220px;
+  }
+
+  .hero-lead {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .hero-lead strong {
+    font-size: 14px;
+  }
+
+  .hero-actions {
+    gap: 10px;
+  }
+
+  .action-button {
+    min-width: 0;
+    width: calc(50% - 5px);
+    height: 48px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .hero-art {
+    height: 245px;
+  }
+
+  .hero-art img {
+    width: min(390px, 92vw);
+    max-height: 245px;
+    right: -5%;
+  }
+}
+
+
+
+/* =====================================================
+   AJUSTE V5 — ESCALA REAL PARA ULTRAWIDE + HERO CORRETO
+   ===================================================== */
+
+/* Evita largura fantasma / conteúdo faltando nas laterais. */
+html, body { overflow-x: hidden; }
+.home-wrap { width: min(94vw, 2400px); max-width: 2400px; }
+
+/* O hero volta a pertencer ao container da HOME. O fundo continua sendo
+   o background do próprio hero, sem criar uma viewport paralela de 100vw. */
+.hero {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  min-height: clamp(650px, 37vw, 850px);
+  overflow: hidden;
+}
+.hero-inner {
+  width: 100%;
+  min-height: inherit;
+  max-width: none;
+}
+.hero-copy { padding-left: clamp(58px, 4vw, 105px); }
+.hero-art { min-height: inherit; }
+.hero-art img {
+  width: min(900px, 105%);
+  max-height: 790px;
+  right: 1.5%;
+}
+
+/* NAVBAR — grande de verdade em desktop/ultrawide. */
+@media (min-width: 1501px) {
+  .topbar { min-height: 124px; }
+  .brand { min-height: 124px; }
+  .nav-menu { gap: clamp(14px, 1vw, 30px); }
+  .nav-button {
+    min-height: 64px;
+    padding: 12px clamp(22px, 1.25vw, 34px);
+    gap: 13px;
+    font-size: clamp(17px, .92vw, 22px);
+    border-radius: 11px;
+  }
+  .nav-button img { width: 31px; height: 31px; }
+}
+@media (min-width: 2200px) {
+  .nav-button { min-height: 70px; font-size: 21px; padding: 14px 34px; }
+  .nav-button img { width: 35px; height: 35px; }
+}
+
+/* HOME — aumenta o conteúdo interno, não a largura externa. */
+@media (min-width: 1501px) {
+  .home-content { padding: 0 24px 28px; margin-top: -8px; }
+  .hg-panel { border-radius: 13px; }
+  .panel-heading { min-height: 58px; padding: 13px 24px; }
+  .panel-heading h2 { font-size: 22px; }
+  .panel-heading .panel-icon { font-size: 22px; }
+
+  .history-grid { gap: 22px; padding: 14px 28px 14px; }
+  .history-card { min-height: 390px; padding: 60px 22px 22px; margin-top: 20px; }
+  .history-year { top: -19px; min-width: 120px; padding: 8px 18px; font-size: 15px; }
+  .history-card.year-now .history-year { min-width: 155px; }
+  .history-logo { height: 135px; }
+  .history-logo img { max-height: 105px; max-width: 84%; }
+  .history-card h3 { font-size: 17px; margin: 6px 0 12px; }
+  .history-card p { min-height: 88px; font-size: 14px; line-height: 1.55; }
+  .history-badge { padding: 8px 16px; font-size: 12px; gap: 8px; }
+  .history-badge img { width: 21px; height: 21px; }
+
+  .home-bottom { gap: 18px; margin-top: 18px; }
+  .servers-panel, .quote-panel, .staff-panel { min-height: 330px; }
+  .server-grid { gap: 16px; padding: 8px 20px 14px; }
+  .server-card { padding: 22px 14px 14px; }
+  .server-flag { height: 65px; }
+  .server-flag img { max-width: 82px; max-height: 58px; }
+  .server-name { font-size: 16px; }
+  .server-region { font-size: 12px; }
+  .server-status { font-size: 12px; padding: 7px 12px; }
+  .quote-text { font-size: 29px; }
+  .quote-sign { font-size: 12px; }
+
+  .staff-panel .panel-heading { min-height: 58px; }
+  .staff-layout { padding: 4px 20px 16px; }
+  .staff-master { min-height: 76px; width: 72%; gap: 13px; padding: 9px 18px; }
+  .staff-master .staff-avatar { width: 56px; height: 56px; flex: 0 0 56px; }
+  .master-label { font-size: 11px; }
+  .master-name { font-size: 15px; }
+  .staff-subs-title { font-size: 11px; margin: 5px 0 8px; }
+  .staff-subs { gap: 12px 18px; padding: 10px 8px 5px; }
+  .staff-avatar { width: 48px; height: 48px; flex: 0 0 48px; }
+  .staff-sub { gap: 10px; }
+  .staff-sub-name { font-size: 13px; }
+
+  .home-footer { min-height: 105px; padding: 13px 32px; }
+  .footer-social { gap: 30px; }
+  .footer-social-link { gap: 10px; }
+  .footer-social-link img { width: 38px; height: 38px; }
+  .footer-social-title { font-size: 13px; }
+  .footer-social-sub { font-size: 10px; }
+  .footer-center-title { font-size: 16px; }
+  .footer-center-motto { font-size: 9px; }
+  .footer-right { font-size: 10px; }
+}
+
+/* Ultra-wide muito grande: mais uma etapa de escala, sem esticar os cards. */
+@media (min-width: 2400px) {
+  .home-wrap { width: min(92vw, 2500px); max-width: 2500px; }
+  .history-card { min-height: 420px; }
+  .history-logo { height: 150px; }
+  .history-logo img { max-height: 118px; }
+  .history-card h3 { font-size: 18px; }
+  .history-card p { font-size: 15px; }
+  .servers-panel, .quote-panel, .staff-panel { min-height: 350px; }
+}
+
+/* MOBILE — hero inteiro visível, sem a arte cair para fora/baixo. */
+@media (max-width: 1050px) {
+  .home-wrap { width: 100%; max-width: none; }
+  .hero { width: 100%; margin: 0; min-height: 720px; overflow: hidden; }
+  .hero-inner { width: 100%; min-height: 720px; }
+  .hero-copy { padding: 38px 28px 255px; }
+  .hero-art { height: 290px; min-height: 0; }
+  .hero-art img { width: min(560px, 82vw); max-height: 285px; right: 2%; bottom: 0; }
+}
+@media (max-width: 700px) {
+  .hero { min-height: 690px; }
+  .hero-inner { min-height: 690px; }
+  .hero-copy { padding: 34px 22px 245px; }
+  .hero-art { height: 275px; }
+  .hero-art img { width: min(440px, 88vw); max-height: 272px; right: -1%; }
+}
+
+
+/* =====================================================
+   AJUSTE V7 — FUNDO NÍTIDO + TRANSIÇÃO SUAVE + SOCIAL MAIOR
+   ===================================================== */
+
+/* A HOME recebe o novo cenário somente na faixa superior.
+   Em desktop/ultrawide usamos 100% auto para preservar proporção e nitidez. */
+#homePagina {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(
+      180deg,
+      #020b1d 0%,
+      #020b1d 52%,
+      #020817 100%
+    );
+}
+
+#homePagina::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(720px, 43vw, 980px);
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(2,8,23,0.02) 0%,
+      rgba(2,8,23,0.02) 68%,
+      rgba(2,11,29,0.45) 84%,
+      #020b1d 100%
+    ),
+    var(--home-background);
+  background-size:
+    100% 100%,
+    100% auto;
+  background-position:
+    center top,
+    center top;
+  background-repeat:
+    no-repeat,
+    no-repeat;
+}
+
+/* O hero vira somente o palco do conteúdo; não duplica mais a imagem. */
+.hero {
+  background: transparent !important;
+}
+
+.hero::before {
+  display: none !important;
+}
+
+/* Mantém somente a camada de leitura sobre texto/arte. */
+.hero::after {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(1,8,25,0.30) 0%,
+      rgba(1,8,25,0.07) 46%,
+      rgba(1,8,25,0.02) 73%,
+      rgba(1,8,25,0.10) 100%
+    );
+}
+
+/* Garante que todo o conteúdo fique acima do cenário. */
+#homePagina .home-wrap,
+#homePagina .hero,
+#homePagina .home-content,
+#homePagina .home-footer {
+  position: relative;
+  z-index: 2;
+}
+
+/* Redes sociais: finalmente legíveis no ultrawide. */
+@media (min-width: 1501px) {
+  .home-footer {
+    min-height: 128px;
+    padding: 18px 36px;
+  }
+
+  .footer-social {
+    gap: 38px;
+  }
+
+  .footer-social-link {
+    gap: 13px;
+  }
+
+  .footer-social-link img {
+    width: 52px;
+    height: 52px;
+  }
+
+  .footer-social-title {
+    font-size: 16px;
+  }
+
+  .footer-social-sub {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .footer-center-title {
+    font-size: 18px;
+  }
+
+  .footer-center-motto {
+    font-size: 10px;
+  }
+
+  .footer-right {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 2400px) {
+  .footer-social-link img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .footer-social-title {
+    font-size: 17px;
+  }
+
+  .footer-social-sub {
+    font-size: 13px;
+  }
+}
+
+/* Mobile: o cenário usa cover porque a tela é vertical.
+   Sem background-attachment fixed para evitar bugs no Safari/iPhone. */
+@media (max-width: 1050px) {
+  #homePagina::before {
+    height: 760px;
+    background-size:
+      100% 100%,
+      cover;
+    background-position:
+      center top,
+      center top;
+  }
+}
+
+@media (max-width: 700px) {
+  #homePagina::before {
+    height: 720px;
+    background-position:
+      center top,
+      42% top;
+  }
+
+  .footer-social-link img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .footer-social-title {
+    font-size: 11px;
+  }
+
+  .footer-social-sub {
+    font-size: 8px;
+  }
+}
+
+
+
+/* =====================================================
+   AJUSTE V8 — HERO MAIOR NO DESKTOP/ULTRAWIDE
+   ===================================================== */
+
+/* Aumenta somente o conteúdo interno do HERO em telas grandes.
+   Mobile continua usando os limites responsivos já existentes. */
+@media (min-width: 1501px) {
+  .hero-copy {
+    padding-left: clamp(72px, 4.6vw, 122px);
+    padding-right: 24px;
+  }
+
+  .hero-welcome {
+    font-size: clamp(17px, 0.92vw, 21px);
+    letter-spacing: clamp(8px, 0.55vw, 12px);
+    margin-bottom: 10px;
+  }
+
+  .hero-lettering {
+    width: min(760px, 100%);
+    max-height: 340px;
+    margin-bottom: 12px;
+  }
+
+  .hero-motto {
+    margin-top: 14px;
+    font-size: clamp(15px, 0.82vw, 18px);
+    letter-spacing: clamp(7px, 0.48vw, 10px);
+  }
+
+  .hero-divider {
+    width: min(700px, 96%);
+    margin: 16px 0;
+  }
+
+  .hero-lead {
+    max-width: 720px;
+    font-size: clamp(16px, 0.88vw, 19px);
+    line-height: 1.58;
+  }
+
+  .hero-lead strong {
+    font-size: clamp(18px, 0.96vw, 21px);
+  }
+
+  .hero-actions {
+    margin-top: 28px;
+    gap: 22px;
+  }
+
+  .action-button {
+    min-width: 255px;
+    height: 64px;
+    padding: 0 26px;
+    gap: 13px;
+    font-size: clamp(14px, 0.78vw, 17px);
+  }
+
+  .action-button img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hero-art img {
+    width: min(1020px, 112%);
+    max-height: 780px;
+    right: 0.5%;
+  }
+}
+
+@media (min-width: 2400px) {
+  .hero-lettering {
+    width: min(820px, 100%);
+    max-height: 365px;
+  }
+
+  .hero-lead {
+    max-width: 780px;
+  }
+
+  .action-button {
+    min-width: 285px;
+    height: 68px;
+  }
+
+  .action-button img {
+    width: 31px;
+    height: 31px;
+  }
+
+  .hero-art img {
+    width: min(1120px, 115%);
+    max-height: 820px;
+  }
+}
+
+
+/* =====================================================
+   AJUSTE V9 — STAFF MAIOR + RODAPÉ LIMPO + LADMO COM ÍCONE
+   ===================================================== */
+
+/* Sem a frase central: Servers + Staff ocupam a linha inteira. */
+.home-bottom {
+  grid-template-columns:
+    minmax(320px, 0.34fr)
+    minmax(0, 0.66fr) !important;
+  align-items: stretch;
+}
+
+/* Staff ganha presença visual e fica mais próxima do mockup. */
+.staff-panel {
+  min-height: 330px;
+}
+
+.staff-layout {
+  padding: 6px 24px 18px;
+}
+
+.staff-master {
+  width: min(52%, 620px) !important;
+  min-height: 82px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px 22px;
+}
+
+.staff-master .staff-avatar {
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+}
+
+.master-label {
+  font-size: 12px;
+}
+
+.master-name {
+  font-size: 17px;
+}
+
+.staff-subs-title {
+  margin: 8px 0 10px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.staff-subs {
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 14px;
+  padding: 12px 8px 6px;
+}
+
+.staff-sub {
+  min-height: 118px;
+  flex-direction: column;
+  justify-content: center !important;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 6px;
+  border: 1px solid rgba(35, 201, 255, 0.22);
+  border-radius: 9px;
+  background: rgba(3, 18, 45, 0.48);
+}
+
+.staff-sub .staff-avatar {
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+}
+
+.staff-sub-name {
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rodapé: somente identidade da guild + "Desde 2012". */
+.home-footer {
+  grid-template-columns: 1fr auto !important;
+  min-height: 92px !important;
+  padding: 14px 34px !important;
+  gap: 25px;
+}
+
+.footer-center {
+  text-align: left;
+}
+
+.footer-center-title {
+  font-size: 18px !important;
+  letter-spacing: 9px;
+}
+
+.footer-center-motto {
+  font-size: 10px !important;
+  letter-spacing: 5px;
+}
+
+.footer-line-wrap {
+  width: 270px;
+  margin-left: 0;
+}
+
+.footer-right {
+  align-self: center;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+/* Ultra-wide: Staff ainda maior sem mexer no restante da V8. */
+@media (min-width: 2200px) {
+  .staff-panel {
+    min-height: 370px;
+  }
+
+  .staff-master {
+    width: min(48%, 720px) !important;
+    min-height: 92px;
+  }
+
+  .staff-master .staff-avatar {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
+  }
+
+  .master-label {
+    font-size: 13px;
+  }
+
+  .master-name {
+    font-size: 19px;
+  }
+
+  .staff-sub {
+    min-height: 142px;
+  }
+
+  .staff-sub .staff-avatar {
+    width: 82px;
+    height: 82px;
+    flex: 0 0 82px;
+  }
+
+  .staff-sub-name {
+    font-size: 15px;
+  }
+
+  .home-footer {
+    min-height: 104px !important;
+    padding: 16px 40px !important;
+  }
+
+  .footer-center-title {
+    font-size: 20px !important;
+  }
+
+  .footer-right {
+    font-size: 13px !important;
+  }
+}
+
+/* Tablet: volta para 3x2 para não apertar os nomes. */
+
+
+/* =====================================================
+   CALCULADORA — AUTOCOMPLETE COMPACTO
+===================================================== */
+
+#calculadoraPagina .calc-field {
+  position: relative;
+}
+
+#calculadoraPagina .calc-autocomplete {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid rgba(66, 205, 255, .45);
+  border-radius: 12px;
+  background: rgba(3, 12, 25, .98);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, .45),
+    0 0 20px rgba(31, 160, 255, .08);
+}
+
+#calculadoraPagina .calc-autocomplete[hidden] {
+  display: none;
+}
+
+#calculadoraPagina .calc-autocomplete-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #dff6ff;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+#calculadoraPagina .calc-autocomplete-item:hover,
+#calculadoraPagina .calc-autocomplete-item:focus {
+  outline: none;
+  background: rgba(32, 146, 255, .16);
+  color: #67ddff;
+}
+
+
+/* =====================================================
+   CALCULADORA — LEGIBILIDADE
+===================================================== */
+
+#calculadoraPagina .calc-subtitle,
+#calculadoraPagina .calc-help {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#calculadoraPagina .calc-field label {
+  font-size: 12px;
+}
+
+#calculadoraPagina input,
+#calculadoraPagina select {
+  font-size: 15px;
+}
+
+#calculadoraPagina .calc-selected-name {
+  font-size: 21px;
+}
+
+#calculadoraPagina .calc-selected-meta {
+  font-size: 12px;
+}
+
+#calculadoraPagina .calc-skill-title {
+  font-size: 18px;
+}
+
+#calculadoraPagina .calc-skill-lv,
+#calculadoraPagina .calc-status,
+#calculadoraPagina .calc-number-label {
+  font-size: 11px;
+}
+
+#calculadoraPagina .calc-number {
+  font-size: 20px;
+}
+
+#calculadoraPagina .calc-breakdown {
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+#calculadoraPagina .calc-element-tag {
+  font-size: 10px;
+}
+
+@media (max-width: 1250px) {
+  .home-bottom {
+    grid-template-columns: 1fr !important;
+  }
+
+  .staff-master {
+    width: min(70%, 560px) !important;
+  }
+
+  .staff-subs {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile: 2 colunas e rodapé empilhado. */
+@media (max-width: 700px) {
+  .staff-master {
+    width: 100% !important;
+  }
+
+  .staff-subs {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .staff-sub {
+    min-height: 112px;
+  }
+
+  .home-footer {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+  }
+
+  .footer-center,
+  .footer-right {
+    text-align: center;
+  }
+
+  .footer-line-wrap {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+
+
+
+/* =====================================================
+   AJUSTE V10 — STAFF + NOSSAS REDES + FOOTER CENTRAL
+   ===================================================== */
+
+/* O bloco "Servers Ativos" é redundante com o card ATUALMENTE
+   da história. Mantemos no HTML para não quebrar nenhum JS,
+   mas escondemos visualmente na Home. */
+.home-bottom .servers-panel {
+  display: none !important;
+}
+
+/* Linha inferior no estilo do mockup:
+   Staff grande à esquerda e Nossas Redes à direita. */
+.home-bottom {
+  grid-template-columns:
+    minmax(0, 2.05fr)
+    minmax(330px, 0.95fr) !important;
+  gap: 18px !important;
+  align-items: stretch;
+}
+
+.staff-panel,
+.home-social-panel {
+  min-width: 0;
+  min-height: 360px;
+}
+
+/* =========================
+   NOSSAS REDES
+   ========================= */
+
+.home-social-panel {
+  padding-bottom: 18px;
+}
+
+.home-social-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 4px 18px 16px;
+}
+
+.home-social-card {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(4,18,43,0.96),
+      rgba(7,25,55,0.92)
+    );
+  border: 1px solid #1c70c8;
+  transition: 0.22s ease;
+  overflow: hidden;
+}
+
+.home-social-card:hover {
+  transform: translateY(-2px);
+  border-color: #35d7ff;
+  box-shadow:
+    0 0 18px rgba(0,153,255,0.30),
+    inset 0 0 18px rgba(0,153,255,0.08);
+}
+
+.home-social-card.youtube {
+  border-color: rgba(255,55,70,0.72);
+}
+
+.home-social-card.youtube:hover {
+  box-shadow:
+    0 0 18px rgba(255,40,55,0.28),
+    inset 0 0 18px rgba(255,40,55,0.06);
+}
+
+.home-social-card.twitch {
+  border-color: rgba(171,80,255,0.72);
+}
+
+.home-social-card.twitch:hover {
+  box-shadow:
+    0 0 18px rgba(160,70,255,0.30),
+    inset 0 0 18px rgba(160,70,255,0.06);
+}
+
+.home-social-card.discord {
+  border-color: rgba(87,120,255,0.72);
+}
+
+.home-social-card.discord:hover {
+  box-shadow:
+    0 0 18px rgba(75,110,255,0.30),
+    inset 0 0 18px rgba(75,110,255,0.06);
+}
+
+.home-social-icon {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.home-social-copy {
+  min-width: 0;
+}
+
+.home-social-title {
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.home-social-sub {
+  margin-top: 5px;
+  color: #a8c7e5;
+  font-size: 11px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-social-action {
+  min-width: 118px;
+  padding: 9px 12px;
+  border: 1px solid rgba(50,170,255,0.55);
+  border-radius: 7px;
+  background: rgba(12,64,135,0.42);
+  color: #eef9ff;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.home-social-card.youtube .home-social-action {
+  border-color: rgba(255,65,75,0.60);
+  background: rgba(120,10,22,0.42);
+}
+
+.home-social-card.twitch .home-social-action {
+  border-color: rgba(180,85,255,0.60);
+  background: rgba(77,25,125,0.42);
+}
+
+.home-social-card.discord .home-social-action {
+  border-color: rgba(90,130,255,0.60);
+  background: rgba(34,54,145,0.42);
+}
+
+/* =========================
+   FOOTER — identidade no centro real
+   ========================= */
+
+.home-footer {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center;
+  min-height: 104px !important;
+  padding: 15px 34px !important;
+  gap: 20px;
+}
+
+.footer-center {
+  grid-column: 2;
+  justify-self: center;
+  text-align: center !important;
+}
+
+.footer-center-title {
+  text-align: center;
+}
+
+.footer-center-motto {
+  text-align: center;
+}
+
+.footer-line-wrap {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.footer-right {
+  grid-column: 3;
+  justify-self: end;
+  text-align: right !important;
+}
+
+/* Ultra-wide: redes e staff ganham presença sem alterar Hero/História. */
+@media (min-width: 2200px) {
+  .home-bottom {
+    grid-template-columns:
+      minmax(0, 2.12fr)
+      minmax(430px, 0.88fr) !important;
+    gap: 22px !important;
+  }
+
+  .staff-panel,
+  .home-social-panel {
+    min-height: 405px;
+  }
+
+  .home-social-list {
+    gap: 15px;
+    padding: 8px 22px 20px;
+  }
+
+  .home-social-card {
+    min-height: 98px;
+    grid-template-columns: 70px minmax(0, 1fr) auto;
+    gap: 17px;
+    padding: 15px 17px;
+  }
+
+  .home-social-icon {
+    width: 66px;
+    height: 66px;
+  }
+
+  .home-social-title {
+    font-size: 19px;
+  }
+
+  .home-social-sub {
+    font-size: 13px;
+  }
+
+  .home-social-action {
+    min-width: 145px;
+    padding: 11px 14px;
+    font-size: 12px;
+  }
+}
+
+/* Tablet: Staff e Redes empilham, mantendo tudo legível. */
+@media (max-width: 1250px) {
+  .home-bottom {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-social-panel {
+    min-height: auto;
+  }
+}
+
+/* Mobile: cartões de rede simplificados e footer totalmente central. */
+@media (max-width: 700px) {
+  .home-social-list {
+    padding: 4px 12px 14px;
+  }
+
+  .home-social-card {
+    min-height: 76px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 11px;
+    padding: 10px 12px;
+  }
+
+  .home-social-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .home-social-title {
+    font-size: 14px;
+  }
+
+  .home-social-sub {
+    font-size: 10px;
+  }
+
+  .home-social-action {
+    display: none;
+  }
+
+  .home-footer {
+    grid-template-columns: 1fr !important;
+    justify-items: center;
+    gap: 8px;
+  }
+
+  .footer-center,
+  .footer-right {
+    grid-column: 1;
+    justify-self: center;
+    text-align: center !important;
+  }
+
+  .footer-right {
+    white-space: normal;
+  }
+}
+
+
+
+/* =====================================================
+   V12 — MOLDURA TECNOLÓGICA DOS RETRATOS DA DIGIDEX
+   ===================================================== */
+
+.card-image {
+  position: relative;
+  isolation: isolate;
+  border:
+    1px solid
+    rgba(56, 220, 255, 0.72);
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(24, 112, 206, 0.42),
+      rgba(3, 16, 39, 0.96) 72%
+    );
+
+  box-shadow:
+    inset 0 0 22px rgba(35, 169, 255, 0.11),
+    0 0 10px rgba(0, 145, 255, 0.16);
+
+  overflow: hidden;
+
+  clip-path:
+    polygon(
+      10px 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      10px 100%,
+      0 calc(100% - 10px),
+      0 10px
+    );
+
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease,
+    transform .22s ease;
+}
+
+.card-image::before,
+.card-image::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.card-image::before {
+  background:
+    linear-gradient(#53ecff, #53ecff) left top / 28px 2px no-repeat,
+    linear-gradient(#53ecff, #53ecff) left top / 2px 28px no-repeat,
+
+    linear-gradient(#53ecff, #53ecff) right top / 28px 2px no-repeat,
+    linear-gradient(#53ecff, #53ecff) right top / 2px 28px no-repeat,
+
+    linear-gradient(#53ecff, #53ecff) left bottom / 28px 2px no-repeat,
+    linear-gradient(#53ecff, #53ecff) left bottom / 2px 28px no-repeat,
+
+    linear-gradient(#53ecff, #53ecff) right bottom / 28px 2px no-repeat,
+    linear-gradient(#53ecff, #53ecff) right bottom / 2px 28px no-repeat;
+
+  filter:
+    drop-shadow(0 0 4px rgba(51, 230, 255, .75));
+}
+
+.card-image::after {
+  inset: 13px;
+
+  border-top:
+    1px solid
+    rgba(85, 224, 255, 0.18);
+
+  border-bottom:
+    1px solid
+    rgba(0, 123, 255, 0.12);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(67, 231, 255, 0.03),
+      transparent 32%,
+      transparent 68%,
+      rgba(0, 108, 255, 0.03)
+    );
+}
+
+.card-image img {
+  position: relative;
+  z-index: 1;
+
+  transition:
+    transform .24s ease,
+    filter .24s ease;
+}
+
+.card:hover .card-image {
+  border-color:
+    rgba(83, 236, 255, 0.98);
+
+  box-shadow:
+    inset 0 0 28px rgba(35, 169, 255, 0.16),
+    0 0 16px rgba(0, 196, 255, 0.34);
+
+  transform:
+    translateY(-1px);
+}
+
+.card:hover .card-image img {
+  transform:
+    scale(1.035);
+
+  filter:
+    drop-shadow(
+      0 0 10px
+      rgba(38, 185, 255, 0.20)
+    );
+}
+
+
+/* =====================================================
+   V12.1 — MOLDURA COMPACTA ACOMPANHANDO O RETRATO
+   Corrige a V12 sem alterar dados, filtros ou estrutura.
+   ===================================================== */
+
+/* O espaço do retrato continua igual para manter todos
+   os cards alinhados, mas deixa de ser a própria moldura. */
+.card-image {
+  position: relative;
+  isolation: isolate;
+
+  border: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(28, 115, 211, 0.30),
+      rgba(3, 16, 39, 0.94) 68%,
+      rgba(2, 10, 25, 0.98) 100%
+    );
+
+  box-shadow:
+    inset 0 0 20px rgba(35, 169, 255, 0.08);
+
+  clip-path: none;
+  overflow: hidden;
+
+  transition:
+    box-shadow .22s ease,
+    transform .22s ease;
+}
+
+/* Moldura agora fica CENTRALIZADA e compacta,
+   envolvendo visualmente o retrato do Digimon. */
+.card-image::before {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: min(168px, calc(100% - 24px));
+  height: min(168px, calc(100% - 18px));
+
+  transform:
+    translate(-50%, -50%);
+
+  z-index: 3;
+  pointer-events: none;
+
+  border:
+    1px solid
+    rgba(57, 219, 255, 0.48);
+
+  background:
+    linear-gradient(#59efff, #59efff) left top / 27px 2px no-repeat,
+    linear-gradient(#59efff, #59efff) left top / 2px 27px no-repeat,
+
+    linear-gradient(#59efff, #59efff) right top / 27px 2px no-repeat,
+    linear-gradient(#59efff, #59efff) right top / 2px 27px no-repeat,
+
+    linear-gradient(#59efff, #59efff) left bottom / 27px 2px no-repeat,
+    linear-gradient(#59efff, #59efff) left bottom / 2px 27px no-repeat,
+
+    linear-gradient(#59efff, #59efff) right bottom / 27px 2px no-repeat,
+    linear-gradient(#59efff, #59efff) right bottom / 2px 27px no-repeat;
+
+  clip-path:
+    polygon(
+      9px 0,
+      calc(100% - 9px) 0,
+      100% 9px,
+      100% calc(100% - 9px),
+      calc(100% - 9px) 100%,
+      9px 100%,
+      0 calc(100% - 9px),
+      0 9px
+    );
+
+  box-shadow:
+    inset 0 0 18px rgba(41, 191, 255, 0.08),
+    0 0 8px rgba(0, 196, 255, 0.22);
+
+  filter:
+    drop-shadow(
+      0 0 4px
+      rgba(51, 230, 255, 0.45)
+    );
+
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease,
+    filter .22s ease;
+}
+
+/* Pequeno brilho de scanner atrás do retrato. */
+.card-image::after {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: min(150px, calc(100% - 42px));
+  height: min(150px, calc(100% - 36px));
+
+  transform:
+    translate(-50%, -50%);
+
+  z-index: 0;
+  pointer-events: none;
+
+  border: 0;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(52, 210, 255, 0.13),
+      rgba(0, 111, 255, 0.05) 52%,
+      transparent 74%
+    );
+
+  box-shadow:
+    none;
+}
+
+/* O Digimon ocupa a mesma janela visual da moldura,
+   em vez de preencher a largura inteira do card. */
+.card-image img {
+  position: relative;
+  z-index: 2;
+
+  width: min(154px, calc(100% - 34px));
+  height: min(154px, calc(100% - 28px));
+
+  max-width: 154px;
+  max-height: 154px;
+
+  padding: 0;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 4px 8px
+      rgba(0, 0, 0, 0.42)
+    );
+
+  transition:
+    transform .24s ease,
+    filter .24s ease;
+}
+
+/* Hover: acende somente a janela central. */
+.card:hover .card-image {
+  transform: none;
+
+  box-shadow:
+    inset 0 0 24px rgba(35, 169, 255, 0.11);
+}
+
+.card:hover .card-image::before {
+  border-color:
+    rgba(89, 239, 255, 0.95);
+
+  box-shadow:
+    inset 0 0 22px rgba(41, 191, 255, 0.13),
+    0 0 14px rgba(0, 208, 255, 0.33);
+
+  filter:
+    drop-shadow(
+      0 0 6px
+      rgba(51, 230, 255, 0.72)
+    );
+}
+
+.card:hover .card-image img {
+  transform:
+    scale(1.035);
+
+  filter:
+    drop-shadow(
+      0 4px 8px
+      rgba(0, 0, 0, 0.42)
+    )
+    drop-shadow(
+      0 0 9px
+      rgba(38, 185, 255, 0.22)
+    );
+}
+
+
+/* =====================================================
+   V13 — AGUMON HAKASE NA LATERAL DA DIGIDEX
+   Decorativo: não altera grid, filtros ou cards.
+   A imagem esperada no Drive é: agumon_hakase.png
+   ===================================================== */
+
+#databasePagina .internal-wrap {
+  position: relative;
+}
+
+.digidex-hakase-wrap {
+  position: absolute;
+
+  left: -295px;
+  top: 118px;
+
+  width: 270px;
+  height: 520px;
+
+  z-index: 8;
+
+  pointer-events: none;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Halo tecnológico discreto atrás do Hakase. */
+.digidex-hakase-wrap::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 155px;
+
+  width: 300px;
+  height: 300px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(44, 205, 255, 0.12) 0%,
+      rgba(0, 109, 255, 0.06) 42%,
+      transparent 70%
+    );
+
+  border:
+    1px solid
+    rgba(42, 177, 255, 0.10);
+
+  box-shadow:
+    0 0 42px
+    rgba(0, 126, 255, 0.10);
+
+  opacity: 0;
+
+  transition:
+    opacity .25s ease;
+}
+
+.digidex-hakase {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+
+  opacity: 0;
+
+  transform:
+    translateX(-14px);
+
+  filter:
+    drop-shadow(
+      0 16px 18px
+      rgba(0, 0, 0, 0.62)
+    )
+    drop-shadow(
+      0 0 10px
+      rgba(35, 183, 255, 0.18)
+    );
+
+  transition:
+    opacity .35s ease,
+    transform .35s ease,
+    filter .25s ease;
+}
+
+/* Só aparece depois que a imagem do Drive carregou. */
+.digidex-hakase-wrap.loaded::before {
+  opacity: 1;
+}
+
+.digidex-hakase-wrap.loaded .digidex-hakase {
+  opacity: 1;
+
+  transform:
+    translateX(0);
+}
+
+/* Telas muito largas: dá um pouco mais de presença ao mascote. */
+@media (min-width: 1800px) {
+  .digidex-hakase-wrap {
+    left: -320px;
+    top: 105px;
+    width: 292px;
+  }
+}
+
+/* Em telas onde a lateral some, escondemos o mascote para ele
+   nunca invadir filtros/cards. */
+@media (max-width: 1500px) {
+  .digidex-hakase-wrap {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   V13.1 — HAKASE RESPONSIVO / MAIS INTEGRADO À DIGIDEX
+   ===================================================== */
+
+/* Mantém a área da Digidex como referência */
+#databasePagina .internal-wrap {
+  position: relative;
+}
+
+/* Hakase maior, mais próximo e entrando visualmente na interface */
+.digidex-hakase-wrap {
+  left: -210px;
+  top: 88px;
+
+  width: 315px;
+  height: 540px;
+
+  z-index: 8;
+}
+
+/* Remove o círculo/halo que deixava o Hakase "solto" */
+.digidex-hakase-wrap::before {
+  display: none;
+}
+
+.digidex-hakase {
+  filter:
+    drop-shadow(
+      0 16px 18px
+      rgba(0, 0, 0, 0.62)
+    )
+    drop-shadow(
+      0 0 9px
+      rgba(35, 183, 255, 0.22)
+    );
+}
+
+/* Monitores grandes / ultrawide */
+@media (min-width: 1800px) {
+  .digidex-hakase-wrap {
+    left: -245px;
+    top: 82px;
+    width: 335px;
+  }
+}
+
+/* Monitores comuns, incluindo 1366/1440px:
+   o Hakase entra para dentro da área útil em vez de desaparecer */
+@media (max-width: 1500px) {
+  .digidex-hakase-wrap {
+    display: flex;
+
+    left: -22px;
+    top: 92px;
+
+    width: 205px;
+    height: 390px;
+
+    z-index: 7;
+  }
+
+  .digidex-hakase {
+    opacity: .96;
+  }
+}
+
+/* Monitores menores / notebook:
+   continua visível, porém mais compacto */
+@media (max-width: 1180px) {
+  .digidex-hakase-wrap {
+    display: flex;
+
+    left: 2px;
+    top: 104px;
+
+    width: 165px;
+    height: 320px;
+
+    z-index: 6;
+  }
+
+  .digidex-hakase {
+    opacity: .90;
+  }
+}
+
+/* Só escondemos em telas realmente pequenas para não atrapalhar uso */
+@media (max-width: 760px) {
+  .digidex-hakase-wrap {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   V13.2 — HAKASE ANCORADO NA BORDA REAL DA DIGIDEX
+   ===================================================== */
+
+/* A área interna da Digidex vira a referência fixa do mascote. */
+#databasePagina .internal-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+/* O Hakase agora se prende à BORDA ESQUERDA REAL da Digidex.
+   Não depende mais de lefts diferentes por resolução. */
+.digidex-hakase-wrap {
+  position: absolute;
+
+  left: 0;
+  top: 205px;
+
+  width: 205px;
+  height: 390px;
+
+  transform:
+    translateX(-76%);
+
+  z-index: 2;
+
+  pointer-events: none;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Sem halo/círculo. */
+.digidex-hakase-wrap::before {
+  display: none;
+}
+
+/* O personagem fica atrás da interface, criando o efeito
+   de estar espiando pela lateral. */
+.digidex-hakase {
+  position: relative;
+
+  z-index: 1;
+
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 14px 16px
+      rgba(0, 0, 0, 0.58)
+    )
+    drop-shadow(
+      0 0 7px
+      rgba(35, 183, 255, 0.16)
+    );
+}
+
+/* Conteúdo da Digidex fica acima do Hakase.
+   Assim uma pequena parte dele entra "por trás" da interface. */
+#databasePagina .page-title,
+#databasePagina .page-subtitle,
+#databasePagina .filtros,
+#databasePagina .grid,
+#databasePagina #loading {
+  position: relative;
+  z-index: 4;
+}
+
+/* Desktop grande: só muda tamanho, não o ponto de ancoragem. */
+@media (min-width: 1800px) {
+  .digidex-hakase-wrap {
+    top: 198px;
+    width: 230px;
+    height: 420px;
+
+    transform:
+      translateX(-74%);
+  }
+}
+
+/* Monitores comuns / notebooks:
+   continua preso na mesma borda da Digidex. */
+@media (max-width: 1500px) {
+  .digidex-hakase-wrap {
+    display: flex;
+
+    top: 205px;
+    width: 185px;
+    height: 350px;
+
+    transform:
+      translateX(-72%);
+  }
+}
+
+/* Telas menores: reduz um pouco e entra menos para fora. */
+@media (max-width: 1180px) {
+  .digidex-hakase-wrap {
+    display: flex;
+
+    top: 205px;
+    width: 155px;
+    height: 300px;
+
+    transform:
+      translateX(-64%);
+  }
+}
+
+/* Só escondemos em mobile estreito. */
+@media (max-width: 760px) {
+  .digidex-hakase-wrap {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   V14 — HAKASE STICKY + CABEÇALHO TERMINAL DA DIGIDEX
+   ===================================================== */
+
+/* -----------------------------------------------------
+   HAKASE STICKY
+   O ponto sticky ocupa 0x0, então NÃO empurra título,
+   filtros nem cards. O personagem fica absoluto dentro dele.
+   ----------------------------------------------------- */
+
+#databasePagina .internal-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+.digidex-hakase-wrap {
+  position: sticky;
+
+  top: 175px;
+  left: auto;
+
+  width: 0;
+  height: 0;
+
+  margin: 0;
+
+  z-index: 3;
+
+  display: block;
+
+  transform: none;
+
+  pointer-events: none;
+
+  overflow: visible;
+}
+
+.digidex-hakase-wrap::before {
+  display: none;
+}
+
+.digidex-hakase {
+  position: absolute;
+
+  left: 0;
+  top: 34px;
+
+  width: 205px;
+  height: auto;
+
+  transform:
+    translateX(-76%);
+
+  z-index: 1;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 14px 16px
+      rgba(0,0,0,.58)
+    )
+    drop-shadow(
+      0 0 7px
+      rgba(35,183,255,.16)
+    );
+}
+
+/* A interface continua à frente do Hakase para vender
+   o efeito de ele estar espiando por trás da Digidex. */
+#databasePagina .digidex-header-tech,
+#databasePagina .filtros,
+#databasePagina .grid,
+#databasePagina #loading {
+  position: relative;
+  z-index: 4;
+}
+
+/* -----------------------------------------------------
+   CABEÇALHO / TERMINAL
+   ----------------------------------------------------- */
+
+.digidex-header-tech {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  min-height: 92px;
+
+  margin-bottom: 13px;
+
+  padding:
+    13px 18px 14px 20px;
+
+  border-left:
+    2px solid
+    rgba(50,210,255,.82);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(7,34,73,.52),
+      rgba(4,20,47,.18) 60%,
+      transparent
+    );
+
+  clip-path:
+    polygon(
+      0 0,
+      calc(100% - 18px) 0,
+      100% 18px,
+      100% 100%,
+      0 100%
+    );
+}
+
+.digidex-header-tech::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 18px;
+  bottom: 0;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(70,225,255,.85),
+      rgba(0,119,255,.45) 58%,
+      transparent
+    );
+
+  box-shadow:
+    0 0 8px
+    rgba(31,184,255,.30);
+}
+
+.digidex-header-tech::after {
+  content: "";
+
+  position: absolute;
+
+  right: 0;
+  top: 0;
+
+  width: 52px;
+  height: 18px;
+
+  border-top:
+    1px solid
+    rgba(71,211,255,.62);
+
+  border-right:
+    1px solid
+    rgba(71,211,255,.62);
+}
+
+.digidex-header-copy {
+  min-width: 0;
+}
+
+.digidex-header-kicker {
+  margin-bottom: 3px;
+
+  color:
+    #56d8ff;
+
+  font-size:
+    9px;
+
+  font-weight:
+    700;
+
+  letter-spacing:
+    1.6px;
+
+  opacity:
+    .82;
+}
+
+.digidex-header-tech .page-title {
+  margin:
+    0 0 3px;
+
+  font-size:
+    27px;
+
+  text-shadow:
+    0 0 12px
+    rgba(43,198,255,.28);
+}
+
+.digidex-header-tech .page-subtitle {
+  margin:
+    0;
+
+  font-size:
+    11px;
+}
+
+.digidex-system-status {
+  flex:
+    0 0 auto;
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid
+    rgba(53,226,137,.36);
+
+  border-radius:
+    5px;
+
+  background:
+    rgba(4,44,34,.35);
+
+  color:
+    #64f4a4;
+
+  font-size:
+    9px;
+
+  font-weight:
+    700;
+
+  letter-spacing:
+    1px;
+
+  box-shadow:
+    inset 0 0 13px
+    rgba(35,227,148,.05);
+}
+
+.digidex-status-dot {
+  width:
+    7px;
+
+  height:
+    7px;
+
+  flex:
+    0 0 7px;
+
+  border-radius:
+    50%;
+
+  background:
+    #43ef8d;
+
+  box-shadow:
+    0 0 7px
+    rgba(67,239,141,.88);
+}
+
+/* Desktop grande */
+@media (min-width: 1800px) {
+
+  .digidex-hakase-wrap {
+    top: 185px;
+  }
+
+  .digidex-hakase {
+    width: 225px;
+
+    transform:
+      translateX(-75%);
+  }
+
+}
+
+/* Monitor comum / notebook */
+@media (max-width: 1500px) {
+
+  .digidex-hakase-wrap {
+    display: block;
+    top: 165px;
+  }
+
+  .digidex-hakase {
+    width: 180px;
+
+    transform:
+      translateX(-70%);
+  }
+
+}
+
+/* Espaço lateral menor */
+@media (max-width: 1180px) {
+
+  .digidex-hakase-wrap {
+    display: block;
+    top: 155px;
+  }
+
+  .digidex-hakase {
+    width: 145px;
+
+    transform:
+      translateX(-56%);
+  }
+
+  .digidex-header-tech {
+    padding-left: 16px;
+  }
+
+}
+
+/* Mobile: preserva usabilidade e simplifica cabeçalho */
+@media (max-width: 760px) {
+
+  .digidex-hakase-wrap {
+    display: none;
+  }
+
+  .digidex-header-tech {
+    display: block;
+
+    min-height: 0;
+
+    padding:
+      12px 14px;
+
+    clip-path: none;
+  }
+
+  .digidex-system-status {
+    margin-top: 10px;
+  }
+
+}
+
+
+
+/* =====================================================
+   V16 — ÍCONES DE FIELD
+===================================================== */
+
+.field-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  min-height: 50px;
+}
+
+/* Cada FIELD ocupa exatamente a mesma caixa visual. */
+.field-icon-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  overflow: visible;
+}
+
+/*
+ * A imagem começa em 34x34, mas o JS mede os pixels realmente
+ * visíveis do PNG (ignorando margem transparente) e aplica uma
+ * escala automática para todos terem o mesmo tamanho aparente.
+ */
+.field-icon-img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  display: block;
+  transform-origin: center center;
+  transform: scale(var(--field-auto-scale, 1));
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.45));
+}
+
+.field-icon-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid #295b91;
+  border-radius: 6px;
+  background: #102846;
+  color: #a9d9ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+@media (max-width: 760px) {
+  .field-icon-item {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .field-icon-img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* =====================================================
+   V15 — CORREÇÃO REAL DO HAKASE ACOMPANHANDO O SCROLL
+   =====================================================
+   Motivo do bug: overflow-x:hidden em html/body cria um
+   ancestral de rolagem que pode impedir position:sticky.
+   Usamos overflow-x:clip, que corta o excesso lateral sem
+   transformar a página em um scroll container para o sticky.
+   ===================================================== */
+
+html,
+body {
+  overflow-x: clip;
+}
+
+#databasePagina,
+#databasePagina .internal-wrap {
+  overflow: visible;
+}
+
+/* Mantemos um ponto físico mínimo no fluxo para o sticky.
+   0x0 pode deixar o comportamento inconsistente entre browsers. */
+#databasePagina .digidex-hakase-wrap {
+  position: sticky;
+  top: 175px;
+  left: auto;
+
+  width: 1px;
+  height: 1px;
+
+  margin: 0;
+
+  z-index: 3;
+  display: block;
+
+  transform: none;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#databasePagina .digidex-hakase {
+  position: absolute;
+  left: 0;
+  top: 34px;
+
+  width: 205px;
+  height: auto;
+
+  transform: translateX(-76%);
+  z-index: 1;
+  object-fit: contain;
+}
+
+@media (min-width: 1800px) {
+  #databasePagina .digidex-hakase-wrap {
+    top: 185px;
+  }
+
+  #databasePagina .digidex-hakase {
+    width: 225px;
+    transform: translateX(-75%);
+  }
+}
+
+@media (max-width: 1500px) {
+  #databasePagina .digidex-hakase-wrap {
+    display: block;
+    top: 165px;
+  }
+
+  #databasePagina .digidex-hakase {
+    width: 180px;
+    transform: translateX(-70%);
+  }
+}
+
+@media (max-width: 1180px) {
+  #databasePagina .digidex-hakase-wrap {
+    display: block;
+    top: 155px;
+  }
+
+  #databasePagina .digidex-hakase {
+    width: 145px;
+    transform: translateX(-56%);
+  }
+}
+
+@media (max-width: 760px) {
+  #databasePagina .digidex-hakase-wrap {
+    display: none;
+  }
+}
+
+
+
+/* =====================================================
+   ELEMENTOS EM ÍCONE — STRONG / WEAK
+   ===================================================== */
+
+.element-stat {
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.element-stat .value {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.element-icon-wrap {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.element-icon-img {
+  width: 34px;
+  height: 34px;
+  display: block;
+  object-fit: contain;
+}
+
+.element-icon-fallback {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.strong .label {
+  color: #ff8da4;
+}
+
+.weak .label {
+  color: #79c9ff;
+}
+
+.strong .element-icon-img {
+  filter:
+    drop-shadow(0 2px 3px rgba(0,0,0,.5))
+    drop-shadow(0 0 5px rgba(255,75,110,.18));
+}
+
+.weak .element-icon-img {
+  filter:
+    drop-shadow(0 2px 3px rgba(0,0,0,.5))
+    drop-shadow(0 0 5px rgba(34,191,255,.18));
+}
+
+@media (max-width: 700px) {
+  .element-icon-wrap {
+    width: 33px;
+    height: 33px;
+  }
+
+  .element-icon-img {
+    width: 31px;
+    height: 31px;
+  }
+}
+
+
+
+/* =====================================================
+   SKILL SELECT — ÍCONE PNG DO ELEMENTO SELECIONADO
+   ===================================================== */
+
+.skill select.skill-select-icon {
+  background-color: #07162c;
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  background-size: 27px 27px;
+  padding-left: 48px;
+}
+
+.skill select.skill-select-icon.sem-icone {
+  padding-left: 14px;
+  background-image: none !important;
+}
+
+
+
+.skill-efeito .element-icon-wrap {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.skill-efeito .element-icon-img {
+  width: 18px;
+  height: 18px;
+}
+
+.efeito-buff,
+.efeito-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+/* =====================================================
+   SETAS BUFF / REMOVE + ÍCONES NA ABA ELEMENTOS
+   ===================================================== */
+
+.seta-buff {
+  color: #48f29d;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 7px rgba(72,242,157,.55);
+}
+
+.seta-remove {
+  color: #ff5876;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 7px rgba(255,88,118,.50);
+}
+
+.elemento-resultado-nome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.elemento-resultado-nome .element-icon-wrap {
+  width: 42px;
+  height: 42px;
+}
+
+.elemento-resultado-nome .element-icon-img {
+  width: 40px;
+  height: 40px;
+}
+
+.elemento-resultado-linha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.elemento-resultado-linha .element-icon-wrap {
+  width: 28px;
+  height: 28px;
+}
+
+.elemento-resultado-linha .element-icon-img {
+  width: 26px;
+  height: 26px;
+}
+
+#elementoSelect.elemento-select-icon {
+  background-color: #07162c;
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  background-size: 27px 27px;
+  padding-left: 48px;
+}
+
+#elementoSelect.elemento-select-icon.sem-icone {
+  padding-left: 14px;
+  background-image: none !important;
+}
+
+
+/* =====================================================
+   TEAM BUILDER — HORIZONTAL / 3x2 / PRINT FRIENDLY
+   Mantém a lógica original; altera somente o layout.
+===================================================== */
+
+/* Dá ao Builder espaço suficiente para 3 cards horizontais */
+#builderPagina .internal-wrap {
+  max-width: 1840px;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+/* 6 Digimons = 3 em cima + 3 embaixo */
+#builderPagina .builder-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Mesmo acabamento visual da DigiDex */
+#builderPagina .slot {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #174f92;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      160deg,
+      #0b2146,
+      #061126
+    );
+  box-shadow:
+    inset 0 0 20px rgba(20,90,180,.06);
+  transition:
+    transform .20s ease,
+    border-color .20s ease,
+    box-shadow .20s ease;
+  overflow: visible;
+}
+
+#builderPagina .slot:hover {
+  transform: translateY(-3px);
+  border-color: #27bdff;
+  box-shadow:
+    0 0 20px rgba(0,126,255,.26),
+    inset 0 0 20px rgba(20,90,180,.08);
+}
+
+#builderPagina .slot-title {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+#builderPagina .team-search {
+  padding: 9px 11px;
+  font-size: 11px;
+}
+
+#builderPagina .team-search-status {
+  min-height: 13px;
+  margin-top: 3px;
+  font-size: 8px;
+}
+
+#builderPagina .team-suggestions {
+  left: 12px;
+  right: 12px;
+  top: 67px;
+}
+
+/* -----------------------------------------------------
+   Conteúdo do Digimon em formato horizontal
+----------------------------------------------------- */
+
+#builderPagina .selected-info {
+  margin-top: 7px;
+  display: grid;
+
+  /*
+    COLUNA 1 = imagem
+    COLUNAS 2–6 = informações
+  */
+  grid-template-columns:
+    104px
+    repeat(5, minmax(0, 1fr));
+
+  gap: 5px;
+  align-items: stretch;
+}
+
+/* FOTO — fica à esquerda em vez de ocupar a largura toda */
+#builderPagina .team-image-box {
+  grid-column: 1;
+  grid-row: 1 / span 4;
+
+  width: 104px;
+  height: 104px;
+
+  border-radius: 8px;
+}
+
+#builderPagina .team-image-box img {
+  padding: 5px;
+}
+
+/* TYPE */
+#builderPagina .selected-info > .type {
+  grid-column: 2 / span 2;
+  grid-row: 1;
+
+  padding: 5px 6px;
+  font-size: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* FIELD */
+#builderPagina .selected-info > .field {
+  grid-column: 4 / span 3;
+  grid-row: 1;
+
+  padding: 4px 6px;
+  min-height: 31px;
+}
+
+/* STRONG / WEAK lado a lado */
+#builderPagina .selected-info > .strong {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+}
+
+#builderPagina .selected-info > .weak {
+  grid-column: 4 / span 3;
+  grid-row: 2;
+}
+
+#builderPagina .selected-info > .strong,
+#builderPagina .selected-info > .weak {
+  min-height: 38px;
+  padding: 4px 5px;
+}
+
+/* Ícones Strong/Weak compactos */
+#builderPagina .selected-info > .strong .element-icon-wrap,
+#builderPagina .selected-info > .weak .element-icon-wrap {
+  width: 27px;
+  height: 27px;
+}
+
+#builderPagina .selected-info > .strong .element-icon-img,
+#builderPagina .selected-info > .weak .element-icon-img {
+  width: 25px;
+  height: 25px;
+}
+
+/* Os 8 mini-status ocupam duas linhas compactas */
+#builderPagina .selected-info > .mini-stat {
+  padding: 5px 3px;
+  min-width: 0;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CC / DOT / HP / STR */
+#builderPagina .selected-info > .mini-stat:nth-child(6)  { grid-column: 2; grid-row: 3; }
+#builderPagina .selected-info > .mini-stat:nth-child(7)  { grid-column: 3; grid-row: 3; }
+#builderPagina .selected-info > .mini-stat:nth-child(8)  { grid-column: 4; grid-row: 3; }
+#builderPagina .selected-info > .mini-stat:nth-child(9)  { grid-column: 5 / span 2; grid-row: 3; }
+
+/* INT / DEF / SPD / DEF BREAK */
+#builderPagina .selected-info > .mini-stat:nth-child(10) { grid-column: 2; grid-row: 4; }
+#builderPagina .selected-info > .mini-stat:nth-child(11) { grid-column: 3; grid-row: 4; }
+#builderPagina .selected-info > .mini-stat:nth-child(12) { grid-column: 4; grid-row: 4; }
+#builderPagina .selected-info > .mini-stat:nth-child(13) { grid-column: 5 / span 2; grid-row: 4; }
+
+/* SKILL 1 / 2 / 3 ficam lado a lado */
+#builderPagina .selected-info > .skill:nth-child(14) {
+  grid-column: 1 / span 2;
+  grid-row: 5;
+}
+
+#builderPagina .selected-info > .skill:nth-child(15) {
+  grid-column: 3 / span 2;
+  grid-row: 5;
+}
+
+#builderPagina .selected-info > .skill:nth-child(16) {
+  grid-column: 5 / span 2;
+  grid-row: 5;
+}
+
+#builderPagina .selected-info > .skill {
+  min-width: 0;
+  padding: 6px;
+}
+
+#builderPagina .skill-title {
+  margin-bottom: 3px;
+  font-size: 8px;
+  text-align: center;
+}
+
+#builderPagina .skill select {
+  min-width: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 9px;
+}
+
+#builderPagina .skill select.skill-select-icon {
+  background-size: 22px 22px;
+  background-position: 8px center;
+  padding-left: 35px;
+}
+
+#builderPagina .skill-efeito {
+  margin-top: 4px;
+  gap: 3px;
+  justify-content: center;
+}
+
+#builderPagina .efeito-buff,
+#builderPagina .efeito-remove {
+  padding: 3px 4px;
+  font-size: 7px;
+  gap: 2px;
+}
+
+#builderPagina .skill-efeito .element-icon-wrap {
+  width: 15px;
+  height: 15px;
+}
+
+#builderPagina .skill-efeito .element-icon-img {
+  width: 14px;
+  height: 14px;
+}
+
+#builderPagina .seta-buff,
+#builderPagina .seta-remove {
+  font-size: 12px;
+}
+
+/* FIELD menor e proporcional ao novo card */
+#builderPagina .field .field-icon-img {
+  width: 31px;
+  height: 31px;
+}
+
+#builderPagina .field .field-icon-wrap {
+  min-height: 31px;
+}
+
+/* -----------------------------------------------------
+   RESPONSIVO
+----------------------------------------------------- */
+
+/* Notebook / tela média: 2 por linha */
+@media (max-width: 1450px) {
+  #builderPagina .builder-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Tablet / celular: 1 por linha */
+@media (max-width: 900px) {
+  #builderPagina .builder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #builderPagina .selected-info {
+    grid-template-columns:
+      104px
+      repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  #builderPagina .selected-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #builderPagina .team-image-box {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    width: 100%;
+    height: 155px;
+  }
+
+  #builderPagina .selected-info > .type,
+  #builderPagina .selected-info > .field,
+  #builderPagina .selected-info > .strong,
+  #builderPagina .selected-info > .weak,
+  #builderPagina .selected-info > .mini-stat,
+  #builderPagina .selected-info > .skill {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  #builderPagina .selected-info > .type,
+  #builderPagina .selected-info > .field,
+  #builderPagina .selected-info > .skill {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+/* =====================================================
+   TEAM BUILDER — CORREÇÕES AUTOCOMPLETE + STRONG
+   ===================================================== */
+
+/*
+ * 1) Quando o autocomplete está aberto em um slot vazio,
+ *    o próprio slot reserva espaço para a lista.
+ *    Assim ela não invade o slot da linha de baixo.
+ */
+#builderPagina .slot:has(.team-suggestions:not(:empty)) {
+  z-index: 30;
+}
+
+#builderPagina .slot:has(.team-suggestions:not(:empty)):not(:has(.selected-info)) {
+  padding-bottom: 270px;
+}
+
+/* O slot que está com o campo ativo fica acima dos vizinhos. */
+#builderPagina .slot:focus-within {
+  z-index: 40;
+}
+
+/*
+ * 2) STRONG deixa de competir visualmente com TYPE Virus.
+ *    Passa para dourado/laranja, mantendo WEAK azul.
+ */
+#builderPagina .strong,
+.digidex-card .strong,
+.card .strong {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(91,52,8,0.96),
+      rgba(48,27,5,0.98)
+    );
+
+  border-color: #d88a24;
+
+  box-shadow:
+    inset 0 0 14px rgba(255,169,54,.10);
+}
+
+#builderPagina .strong .label,
+.digidex-card .strong .label,
+.card .strong .label {
+  color: #ffb84d;
+}
+
+#builderPagina .strong .element-icon-img,
+.digidex-card .strong .element-icon-img,
+.card .strong .element-icon-img {
+  filter:
+    drop-shadow(0 2px 3px rgba(0,0,0,.5))
+    drop-shadow(0 0 5px rgba(255,174,58,.20));
+}
+
+/* Em telas pequenas a lista continua confortável sem criar um buraco enorme. */
+@media (max-width: 900px) {
+  #builderPagina .slot:has(.team-suggestions:not(:empty)):not(:has(.selected-info)) {
+    padding-bottom: 230px;
+  }
+}
+
+
+/* =====================================================
+   TEAM BUILDER — BORDINHA NOS ÍCONES
+   Mesmo estilo visual usado na DigiDex
+   ===================================================== */
+
+#builderPagina .field .field-icon-wrap,
+#builderPagina .strong .element-icon-wrap,
+#builderPagina .weak .element-icon-wrap,
+#builderPagina .skill .element-icon-wrap {
+  border: 1px solid rgba(52,167,255,.58);
+  border-radius: 8px;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(34,191,255,.10),
+      rgba(3,11,25,.78) 72%
+    );
+
+  box-shadow:
+    inset 0 0 10px rgba(35,145,255,.08),
+    0 0 7px rgba(0,137,255,.16);
+}
+
+/* Strong acompanha o dourado */
+#builderPagina .strong .element-icon-wrap {
+  border-color: rgba(216,138,36,.70);
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255,174,58,.12),
+      rgba(35,19,4,.78) 72%
+    );
+
+  box-shadow:
+    inset 0 0 10px rgba(255,174,58,.08),
+    0 0 7px rgba(255,155,38,.15);
+}
+
+/* Weak mantém o azul */
+#builderPagina .weak .element-icon-wrap {
+  border-color: rgba(45,130,212,.72);
+}
+
+/* FIELD um pouco mais espaçoso */
+#builderPagina .field .field-icon-wrap {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 3px;
+}
+
+/* Strong/Weak compactos */
+#builderPagina .strong .element-icon-wrap,
+#builderPagina .weak .element-icon-wrap {
+  padding: 2px;
+}
+
+/* Skills menores para não aumentar altura do card */
+#builderPagina .skill .element-icon-wrap {
+  border-radius: 6px;
+  padding: 1px;
+}
+
+
+/* =====================================================
+   TEAM BUILDER — MOLDURA HUD NOS CANTOS DA IMAGEM
+   Mesmo estilo visual da moldura da DigiDex
+   ===================================================== */
+
+#builderPagina .team-image-box {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Quatro cantos ciano ao redor da imagem */
+#builderPagina .team-image-box::before,
+#builderPagina .team-image-box::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* canto superior esquerdo + inferior direito */
+#builderPagina .team-image-box::before {
+  background:
+    linear-gradient(#5eeaff, #5eeaff) left top / 22px 2px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) left top / 2px 22px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) right bottom / 22px 2px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) right bottom / 2px 22px no-repeat;
+
+  filter:
+    drop-shadow(0 0 4px rgba(74,225,255,.85))
+    drop-shadow(0 0 8px rgba(0,150,255,.35));
+}
+
+/* canto superior direito + inferior esquerdo */
+#builderPagina .team-image-box::after {
+  background:
+    linear-gradient(#5eeaff, #5eeaff) right top / 22px 2px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) right top / 2px 22px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) left bottom / 22px 2px no-repeat,
+    linear-gradient(#5eeaff, #5eeaff) left bottom / 2px 22px no-repeat;
+
+  filter:
+    drop-shadow(0 0 4px rgba(74,225,255,.85))
+    drop-shadow(0 0 8px rgba(0,150,255,.35));
+}
+
+/* Deixa a arte por baixo da moldura */
+#builderPagina .team-image-box img {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* =====================================================
+   ABA ELEMENTOS — HAKASE + INTERFACE DENTRO DO QUADRO
+   ===================================================== */
+
+#elementosPagina .internal-wrap {
+  max-width: 1500px;
+}
+
+#elementosPagina .elementos-scene {
+  position: relative;
+  width: min(100%, 1280px);
+  margin: 20px auto 0;
+  aspect-ratio: 1536 / 1024;
+}
+
+#elementosPagina .elementos-hakase-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Área útil do quadro branco da arte
+   V16: interface mais compacta para não invadir o Terriermon */
+#elementosPagina .elementos-board-ui {
+  position: absolute;
+
+  /* Mantém a UI dentro da parte superior do quadro,
+     liberando visualmente o Terriermon na parte inferior direita. */
+  left: 33.0%;
+  top: 16.7%;
+  width: 49.5%;
+  height: 29.5%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 11px 18px;
+
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.93),
+      rgba(241,248,255,.92)
+    );
+
+  box-shadow:
+    inset 0 0 0 1px rgba(69,148,235,.18),
+    0 8px 24px rgba(0,47,105,.08);
+
+  overflow: hidden;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+  box-shadow: none;
+
+  color: #102c58;
+  font-weight: 700;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box h2 {
+  display: none;
+}
+
+#elementosPagina .elementos-board-ui .elementos-subtitulo {
+  display: none;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  max-width: 335px;
+  margin: 0 auto 8px;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  color: #345d91;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .45px;
+  margin-bottom: 5px;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect {
+  color: #102c58;
+  background-color: rgba(245,250,255,.98);
+  border-color: #7db8ee;
+  box-shadow: 0 0 10px rgba(54,145,230,.10);
+
+  min-height: 39px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  margin-top: 0;
+  padding: 8px 10px;
+
+  border-color: #9cc9ee;
+  background: rgba(249,252,255,.88);
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  margin-bottom: 6px;
+  color: #12396e;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  width: 31px;
+  height: 31px;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 29px;
+  height: 29px;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha {
+  min-height: 34px;
+  margin-top: 4px;
+  padding: 5px 9px;
+
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha strong {
+  font-weight: 800;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(224,250,236,.95),
+      rgba(242,255,248,.96)
+    );
+
+  border-color: #72d5a4;
+  color: #12683f;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255,231,236,.95),
+      rgba(255,245,247,.97)
+    );
+
+  border-color: #e995a8;
+  color: #8b233b;
+}
+
+#elementosPagina .elementos-board-ui .seta-buff {
+  color: #19a960;
+}
+
+#elementosPagina .elementos-board-ui .seta-remove {
+  color: #d83e5c;
+}
+
+/* Mantém o layout antigo escondido; usamos o mesmo conteúdo dentro do quadro */
+#elementosPagina > .internal-wrap > .elementos-box {
+  display: none;
+}
+
+@media (max-width: 1050px) {
+  #elementosPagina .elementos-scene {
+    width: 100%;
+  }
+
+  #elementosPagina .elementos-board-ui {
+    left: 32.0%;
+    top: 16.8%;
+    width: 50.5%;
+    height: 31.0%;
+    padding: 9px 12px;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor {
+    max-width: 315px;
+    margin-bottom: 6px;
+  }
+
+  #elementosPagina .elementos-board-ui #elementoSelect {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: 11px;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado {
+    padding: 7px 8px;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha {
+    min-height: 31px;
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  #elementosPagina .elementos-scene {
+    aspect-ratio: auto;
+    min-height: 760px;
+  }
+
+  #elementosPagina .elementos-hakase-img {
+    position: relative;
+    height: auto;
+  }
+
+  #elementosPagina .elementos-board-ui {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: calc(100% - 24px);
+    height: auto;
+
+    margin: -12% auto 0;
+    padding: 15px;
+
+    border: 1px solid #1684e9;
+    border-radius: 13px;
+
+    background:
+      linear-gradient(
+        160deg,
+        #eef7ff,
+        #dceeff
+      );
+  }
+}
+
+
+/* =====================================================
+   AJUSTE FINAL — ELEMENTOS HAKASE
+   Conteúdo deslocado para a área limpa à direita do quadro.
+   Apenas o seletor permanece como box; o resultado vira texto.
+===================================================== */
+
+#elementosPagina .elementos-box {
+  left: 65.5%;
+  top: 29.5%;
+  transform: translateX(-50%);
+  width: 27%;
+  max-width: 300px;
+  min-width: 230px;
+  padding: 6px 8px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+#elementosPagina .elementos-subtitulo {
+  margin: 0 0 8px;
+  color: #174f87;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+}
+
+#elementosPagina .elemento-seletor {
+  width: 100%;
+  max-width: 290px;
+  margin: 0 auto 12px;
+}
+
+/* ÚNICA BOX VISUAL DA ÁREA DE ELEMENTOS */
+#elementosPagina #elementoSelect,
+#elementosPagina #elementoSelect.elemento-select-icon {
+  min-height: 42px;
+  width: 100%;
+  color: #0b3967;
+  font-weight: 700;
+
+  background-color: rgba(225, 239, 255, .96);
+  border: 2px solid #1263aa;
+  border-radius: 8px;
+
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.78) inset,
+    0 3px 8px rgba(34, 80, 132, .18);
+
+  background-repeat: no-repeat;
+  background-position: 11px center;
+  background-size: 26px 26px;
+
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+#elementosPagina #elementoSelect.elemento-select-icon {
+  padding-left: 46px;
+}
+
+#elementosPagina #elementoSelect.elemento-select-icon.sem-icone {
+  padding-left: 13px;
+  background-image: none !important;
+}
+
+#elementosPagina #elementoSelect:hover,
+#elementosPagina #elementoSelect:focus {
+  border-color: #074f94;
+  background-color: #f4f9ff;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.92) inset,
+    0 0 12px rgba(20, 101, 174, .28);
+}
+
+/* O RESULTADO DEIXA DE SER UMA BOX */
+#elementosPagina .elemento-resultado {
+  width: 100%;
+  max-width: 290px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0;
+
+  color: #173d67;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  font-size: 12px;
+  line-height: 1.35;
+  text-shadow: 0 1px 0 rgba(255,255,255,.85);
+}
+
+#elementosPagina .elemento-resultado-nome {
+  margin: 0 0 8px;
+  color: #0d4f8d;
+  font-size: 15px;
+  font-weight: 800;
+  gap: 6px;
+}
+
+#elementosPagina .elemento-resultado-nome .element-icon-wrap {
+  width: 28px;
+  height: 28px;
+}
+
+#elementosPagina .elemento-resultado-nome .element-icon-img {
+  width: 27px;
+  height: 27px;
+}
+
+/* BUFF / REMOVE COMO ESCRITA, SEM RETÂNGULOS */
+#elementosPagina .elemento-resultado-linha,
+#elementosPagina .elemento-buff,
+#elementosPagina .elemento-remove {
+  margin: 4px 0 0;
+  padding: 2px 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  font-size: 11px;
+  font-weight: 700;
+  gap: 5px;
+}
+
+#elementosPagina .elemento-buff {
+  color: #276b4c;
+}
+
+#elementosPagina .elemento-remove {
+  color: #94465a;
+}
+
+#elementosPagina .seta-buff {
+  color: #2f8b61;
+  font-size: 14px;
+  text-shadow: none;
+}
+
+#elementosPagina .seta-remove {
+  color: #b14b65;
+  font-size: 14px;
+  text-shadow: none;
+}
+
+#elementosPagina .elemento-resultado-linha .element-icon-wrap {
+  width: 22px;
+  height: 22px;
+}
+
+#elementosPagina .elemento-resultado-linha .element-icon-img {
+  width: 21px;
+  height: 21px;
+}
+
+/* Ajuste para telas menores sem jogar o conteúdo sobre os personagens */
+@media (max-width: 760px) {
+  #elementosPagina .elementos-box {
+    left: 65.5%;
+    top: 29%;
+    width: 28%;
+    min-width: 0;
+    padding: 2px 3px;
+  }
+
+  #elementosPagina .elementos-subtitulo {
+    display: none;
+  }
+
+  #elementosPagina .elemento-seletor {
+    margin-bottom: 4px;
+  }
+
+  #elementosPagina #elementoSelect,
+  #elementosPagina #elementoSelect.elemento-select-icon {
+    min-height: 29px;
+    border-width: 1px;
+    border-radius: 5px;
+    background-size: 16px 16px;
+    background-position: 6px center;
+    padding: 4px 18px 4px 6px;
+    font-size: 7px;
+  }
+
+  #elementosPagina #elementoSelect.elemento-select-icon {
+    padding-left: 25px;
+  }
+
+  #elementosPagina .elemento-resultado {
+    font-size: 7px;
+  }
+
+  #elementosPagina .elemento-resultado-nome {
+    margin-bottom: 2px;
+    font-size: 8px;
+    gap: 2px;
+  }
+
+  #elementosPagina .elemento-resultado-nome .element-icon-wrap,
+  #elementosPagina .elemento-resultado-nome .element-icon-img {
+    width: 15px;
+    height: 15px;
+  }
+
+  #elementosPagina .elemento-resultado-linha,
+  #elementosPagina .elemento-buff,
+  #elementosPagina .elemento-remove {
+    margin-top: 1px;
+    padding: 0;
+    font-size: 6px;
+    gap: 2px;
+  }
+
+  #elementosPagina .elemento-resultado-linha .element-icon-wrap,
+  #elementosPagina .elemento-resultado-linha .element-icon-img {
+    width: 12px;
+    height: 12px;
+  }
+
+  #elementosPagina .seta-buff,
+  #elementosPagina .seta-remove {
+    font-size: 8px;
+  }
+}
+
+/* =====================================================
+   ELEMENTOS — V17 SEM BOXES / TEXTO DIRETO NO QUADRO
+   ===================================================== */
+
+#elementosPagina .elementos-board-ui {
+  left: 33.3% !important;
+  top: 17.4% !important;
+  width: 48.8% !important;
+  height: 26.8% !important;
+
+  padding: 4px 10px !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  overflow: visible !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: #12396e !important;
+  font-weight: 800 !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  max-width: 300px !important;
+  margin: 0 auto 8px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  color: #1f4f88 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  margin-bottom: 2px !important;
+  letter-spacing: .55px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.85) !important;
+}
+
+/* SELECT com aparência de texto puro */
+#elementosPagina .elementos-board-ui #elementoSelect {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  width: 100% !important;
+  min-height: 32px !important;
+
+  padding: 4px 28px 4px 38px !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 0 !important;
+
+  background-color: transparent !important;
+  box-shadow: none !important;
+
+  color: #12396e !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-align: left !important;
+
+  cursor: pointer !important;
+
+  background-position: 8px center !important;
+  background-size: 22px 22px !important;
+  background-repeat: no-repeat !important;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect:hover,
+#elementosPagina .elementos-board-ui #elementoSelect:focus {
+  background-color: rgba(255,255,255,.16) !important;
+}
+
+/* Resultado sem container */
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #12396e !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  margin: 1px 0 5px !important;
+
+  color: #12396e !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+
+  text-shadow: 0 1px 0 rgba(255,255,255,.90) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+/* Linhas BUFF / REMOVE viram apenas texto */
+#elementosPagina .elementos-board-ui .elemento-resultado-linha {
+  min-height: 27px !important;
+  margin: 0 !important;
+  padding: 2px 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff {
+  color: #07844f !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove {
+  color: #b51f43 !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha strong {
+  font-weight: 900 !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-wrap {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+#elementosPagina .elementos-board-ui .seta-buff,
+#elementosPagina .elementos-board-ui .seta-remove {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+
+/* Notebook / telas médias */
+@media (max-width: 1050px) {
+  #elementosPagina .elementos-board-ui {
+    left: 32.3% !important;
+    top: 17.2% !important;
+    width: 50.4% !important;
+    height: 28.8% !important;
+    padding: 3px 8px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor {
+    max-width: 285px !important;
+    margin-bottom: 5px !important;
+  }
+
+  #elementosPagina .elementos-board-ui #elementoSelect {
+    font-size: 12px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome {
+    font-size: 15px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha {
+    font-size: 10px !important;
+    min-height: 24px !important;
+  }
+}
+
+/* =====================================================
+   ELEMENTOS — V18 ALINHADO À DIREITA + CONTORNO NO TEXTO
+   ===================================================== */
+
+/* Move o conjunto um pouco para a direita e mantém tudo centralizado */
+#elementosPagina .elementos-board-ui {
+  left: 37.0% !important;
+  top: 17.4% !important;
+  width: 45.0% !important;
+  height: 26.8% !important;
+  padding: 4px 10px !important;
+  align-items: center !important;
+}
+
+/* Todos os blocos usam o mesmo eixo central */
+#elementosPagina .elementos-board-ui .elementos-box {
+  width: 100% !important;
+  text-align: center !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  width: 280px !important;
+  max-width: 80% !important;
+  margin: 0 auto 8px !important;
+  text-align: center !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  text-align: center !important;
+}
+
+/* Select centralizado visualmente */
+#elementosPagina .elementos-board-ui #elementoSelect {
+  width: 100% !important;
+  padding-left: 42px !important;
+  padding-right: 22px !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  font-weight: 900 !important;
+}
+
+/* Resultado inteiro no mesmo eixo do seletor */
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  width: 310px !important;
+  max-width: 88% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome,
+#elementosPagina .elementos-board-ui .elemento-resultado-linha {
+  width: 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Contorno sutil somente nas escritas para ganhar leitura
+   sem trazer as boxes de volta */
+#elementosPagina .elementos-board-ui .elemento-seletor label,
+#elementosPagina .elementos-board-ui #elementoSelect,
+#elementosPagina .elementos-board-ui .elemento-resultado-nome,
+#elementosPagina .elementos-board-ui .elemento-resultado-linha,
+#elementosPagina .elementos-board-ui .elemento-resultado-linha strong {
+  -webkit-text-stroke: .22px rgba(4, 20, 45, .72) !important;
+  paint-order: stroke fill !important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.92),
+    0 0 1px rgba(2,18,42,.75) !important;
+}
+
+/* Mantém as cores sem deixar o contorno pesar */
+#elementosPagina .elementos-board-ui .elemento-buff {
+  color: #07844f !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove {
+  color: #b51f43 !important;
+}
+
+/* Telas médias */
+@media (max-width: 1050px) {
+  #elementosPagina .elementos-board-ui {
+    left: 35.5% !important;
+    width: 47.0% !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor {
+    width: 260px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado {
+    width: 290px !important;
+  }
+}
+
+/* =====================================================
+   ELEMENTOS — V19 SELECT MAIS INTUITIVO
+   ===================================================== */
+
+/* Mantém exatamente a posição atual.
+   Só destaca o campo clicável do elemento. */
+#elementosPagina .elementos-board-ui #elementoSelect {
+  border: 1px solid rgba(40, 126, 210, .75) !important;
+  border-radius: 8px !important;
+
+  background-color: rgba(229, 242, 255, .68) !important;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.55),
+    0 0 8px rgba(32, 126, 220, .12) !important;
+
+  transition:
+    border-color .18s ease,
+    background-color .18s ease,
+    box-shadow .18s ease !important;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect:hover {
+  border-color: rgba(20, 118, 230, .95) !important;
+  background-color: rgba(218, 237, 255, .84) !important;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.70),
+    0 0 10px rgba(25, 122, 230, .20) !important;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect:focus {
+  border-color: #157de8 !important;
+  background-color: rgba(222, 240, 255, .92) !important;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.78),
+    0 0 0 2px rgba(21,125,232,.13),
+    0 0 12px rgba(21,125,232,.22) !important;
+}
+
+/* =====================================================
+   ELEMENTOS — V20 AJUSTE FINAL
+   Letras maiores + conjunto um tiquinho à direita
+   ===================================================== */
+
+#elementosPagina .elementos-board-ui {
+  left: 38.2% !important;
+  width: 44.2% !important;
+}
+
+/* Título ELEMENTO */
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+
+/* Texto dentro do seletor */
+#elementosPagina .elementos-board-ui #elementoSelect {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  min-height: 38px !important;
+}
+
+/* Nome do elemento selecionado */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+}
+
+/* BUFF / REMOVE e elementos relacionados */
+#elementosPagina .elementos-board-ui .elemento-resultado-linha {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  min-height: 30px !important;
+}
+
+#elementosPagina .elementos-board-ui .seta-buff,
+#elementosPagina .elementos-board-ui .seta-remove {
+  font-size: 15px !important;
+}
+
+/* Ícones acompanham discretamente o aumento das letras */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  width: 31px !important;
+  height: 31px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 29px !important;
+  height: 29px !important;
+}
+
+@media (max-width: 1050px) {
+  #elementosPagina .elementos-board-ui {
+    left: 36.5% !important;
+    width: 46.2% !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor label {
+    font-size: 12px !important;
+  }
+
+  #elementosPagina .elementos-board-ui #elementoSelect {
+    font-size: 14px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome {
+    font-size: 18px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha {
+    font-size: 12px !important;
+  }
+}
+
+/* =====================================================
+   ELEMENTOS — V21
+   MAIS À DIREITA + EIXO CENTRAL ÚNICO + FONTES MAIORES
+   ===================================================== */
+
+/* Move o BLOCO INTEIRO para a direita sem alterar a arte */
+#elementosPagina .elementos-board-ui {
+  left: 40.0% !important;
+  top: 17.0% !important;
+  width: 42.0% !important;
+  height: 28.5% !important;
+
+  padding: 3px 8px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Cria um único eixo central para seletor + resultado */
+#elementosPagina .elementos-board-ui .elementos-box {
+  width: 360px !important;
+  max-width: 94% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+/* LABEL */
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto 9px !important;
+  text-align: center !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 0 5px !important;
+
+  text-align: center !important;
+
+  font-size: 15px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+}
+
+/* SELECT: agora ocupa exatamente o mesmo eixo/largura */
+#elementosPagina .elementos-board-ui #elementoSelect {
+  width: 100% !important;
+  min-height: 43px !important;
+
+  padding: 7px 34px 7px 42px !important;
+
+  font-size: 17px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+
+  text-align: center !important;
+  text-align-last: center !important;
+
+  background-position: 10px center !important;
+  background-size: 25px 25px !important;
+}
+
+/* RESULTADO: exatamente a mesma largura do select */
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+/* NOME */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  width: 100% !important;
+  margin: 2px auto 7px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+
+  font-size: 23px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  text-align: center !important;
+}
+
+/* BUFF / REMOVE */
+#elementosPagina .elementos-board-ui .elemento-resultado-linha {
+  width: 100% !important;
+  min-height: 34px !important;
+  margin: 0 auto !important;
+  padding: 2px 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+
+  font-size: 15px !important;
+  line-height: 1.05 !important;
+  font-weight: 900 !important;
+  text-align: center !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha strong {
+  font-weight: 900 !important;
+}
+
+#elementosPagina .elementos-board-ui .seta-buff,
+#elementosPagina .elementos-board-ui .seta-remove {
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+/* Ícones maiores para acompanhar a tipografia */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-wrap {
+  width: 27px !important;
+  height: 27px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-img {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+/* Mantém o contorno discreto e legível */
+#elementosPagina .elementos-board-ui .elemento-seletor label,
+#elementosPagina .elementos-board-ui #elementoSelect,
+#elementosPagina .elementos-board-ui .elemento-resultado-nome,
+#elementosPagina .elementos-board-ui .elemento-resultado-linha,
+#elementosPagina .elementos-board-ui .elemento-resultado-linha strong {
+  -webkit-text-stroke: .28px rgba(4,20,45,.72) !important;
+}
+
+/* Responsivo sem perder o alinhamento */
+@media (max-width: 1050px) {
+  #elementosPagina .elementos-board-ui {
+    left: 38.0% !important;
+    width: 44.5% !important;
+    height: 30.0% !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elementos-box {
+    width: 330px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor label {
+    font-size: 14px !important;
+  }
+
+  #elementosPagina .elementos-board-ui #elementoSelect {
+    min-height: 40px !important;
+    font-size: 16px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome {
+    font-size: 21px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha {
+    font-size: 14px !important;
+  }
+}
+
+@media (min-width: 1051px) {
+  #elementosPagina .elementos-board-ui {
+    left: 47.5% !important;
+    top: 22.0% !important;
+    width: 35.5% !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui {
+    left: 45% !important;
+    top: 21.5% !important;
+    width: 38% !important;
+    height: auto !important;
+  }
+}
+
+@media (min-width: 1051px) {
+  #elementosPagina .elementos-board-ui {
+    left: 47.5% !important;
+    top: 25.8% !important;
+    width: 35.5% !important;
+    height: auto !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-seletor {
+    margin-bottom: 10px !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui {
+    left: 45% !important;
+    top: 24.8% !important;
+    width: 38% !important;
+    height: auto !important;
+  }
+}
+
+/* DESKTOP: desce TODO o conteúdo real da aba Elementos */
+#elementosPagina .elementos-board-ui {
+  top: 20.5% !important;
+}
+
+/* cria respiro real depois do SELECT */
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  margin-top: 18px !important;
+  gap: 14px !important;
+}
+
+/* mais espaço entre nome / BUFF / REMOVE */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  margin-bottom: 4px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff,
+#elementosPagina .elementos-board-ui .elemento-remove {
+  margin-top: 0 !important;
+}
+
+/* NOTEBOOK / telas médias: o override anterior também tinha top próprio */
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui {
+    top: 20.0% !important;
+  }
+
+  #elementosPagina .elementos-board-ui .elemento-resultado {
+    margin-top: 14px !important;
+    gap: 11px !important;
+  }
+}
+
+#elementosPagina .elementos-board-ui {
+  transform: translate(-30px, 30px) !important;
+}
+
+/* =====================================================
+   ELEMENTOS — TESTE REAL: BLOCO VISÍVEL INTEIRO
+   Move SELECIONAR ELEMENTO + SELECT + RESULTADO
+   50px para a esquerda e 50px para baixo.
+   ===================================================== */
+#elementosPagina .elementos-board-ui {
+  transform: translate(-60px, 60px) !important;
+}
+
+/* =====================================================
+   COMPARAÇÃO
+===================================================== */
+
+.comparacao-wrap {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+.comparacao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.comparacao-kicker {
+  color: #74ddff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+}
+
+.comparacao-hero-icon {
+  width: 220px;
+  max-height: 110px;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 10px rgba(0,183,255,.35))
+    drop-shadow(0 8px 14px rgba(0,0,0,.45));
+}
+
+.comparacao-selectores {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 72px minmax(0,1fr);
+  align-items: start;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.comparacao-selector {
+  position: relative;
+}
+
+.comparacao-selector label {
+  display: block;
+  margin: 0 0 8px 4px;
+  color: #78ddff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.comparacao-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid rgba(47,161,255,.72);
+  border-radius: 9px;
+  outline: none;
+  color: #edf7ff;
+  background:
+    linear-gradient(180deg,rgba(8,31,69,.98),rgba(3,16,39,.98));
+  box-shadow:
+    inset 0 0 18px rgba(0,125,255,.08),
+    0 0 12px rgba(0,100,255,.12);
+  font-family: "Oxanium",sans-serif;
+  font-size: 14px;
+}
+
+.comparacao-input:focus {
+  border-color: #32ccff;
+  box-shadow:
+    inset 0 0 22px rgba(0,150,255,.12),
+    0 0 15px rgba(0,174,255,.34);
+}
+
+.comparacao-vs {
+  margin-top: 30px;
+  text-align: center;
+  color: #42d7ff;
+  font-size: 21px;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(0,190,255,.8);
+}
+
+.comparacao-sugestoes {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 260px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: rgba(2,13,33,.99);
+  border: 1px solid rgba(38,151,255,.62);
+  box-shadow: 0 18px 35px rgba(0,0,0,.55);
+}
+
+.comparacao-sugestoes:empty {
+  display: none;
+}
+
+.comparacao-sugestao {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 11px;
+  border: 0;
+  border-bottom: 1px solid rgba(49,125,205,.20);
+  background: transparent;
+  color: #e7f5ff;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Oxanium",sans-serif;
+}
+
+.comparacao-sugestao:hover {
+  background: rgba(19,112,219,.22);
+}
+
+.comparacao-sugestao img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.comparacao-resultado {
+  min-height: 260px;
+}
+
+.comparacao-empty {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #789ab8;
+  border: 1px dashed rgba(56,143,225,.35);
+  border-radius: 12px;
+  background: rgba(3,16,38,.45);
+}
+
+.comparacao-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.comparacao-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(37,143,245,.58);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 50% 14%,rgba(19,95,192,.20),transparent 38%),
+    linear-gradient(180deg,rgba(5,26,61,.97),rgba(2,13,32,.98));
+  box-shadow:
+    inset 0 0 30px rgba(0,100,220,.09),
+    0 10px 28px rgba(0,0,0,.30);
+}
+
+.comparacao-card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 235px;
+}
+
+.comparacao-card-head img {
+  width: 165px;
+  height: 165px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 12px rgba(0,0,0,.55));
+}
+
+.comparacao-card-head h3 {
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  color: #fff;
+}
+
+.comparacao-card-type {
+  min-width: 120px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.comparacao-meio {
+  padding: 15px 13px;
+  border: 1px solid rgba(43,145,242,.35);
+  border-radius: 13px;
+  background: rgba(2,14,35,.80);
+}
+
+.comparacao-meio-title {
+  margin: 2px 0 13px;
+  text-align: center;
+  color: #65d9ff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.comparacao-linha {
+  display: grid;
+  grid-template-columns: 1fr 105px 1fr;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid rgba(57,118,178,.16);
+}
+
+.comparacao-linha:last-child {
+  border-bottom: 0;
+}
+
+.comparacao-valor {
+  padding: 6px;
+  text-align: center;
+  color: #dcefff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.comparacao-label {
+  color: #79b7e5;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .7px;
+}
+
+.comparacao-valor.vencedor {
+  color: #6effc4;
+  text-shadow: 0 0 8px rgba(53,255,184,.40);
+}
+
+.comparacao-valor.empate {
+  color: #ffe27a;
+}
+
+
+.comparacao-stats {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 8px;
+}
+
+.comparacao-stat {
+  min-height: 58px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 8px;
+  background: rgba(5,22,48,.78);
+  border: 1px solid rgba(39,126,215,.28);
+}
+
+.comparacao-stat-label {
+  color: #7bbcec;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.comparacao-stat-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #dcefff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.comparacao-stat-value.maior {
+  color: #61ffc0;
+  text-shadow: 0 0 8px rgba(54,255,184,.35);
+}
+
+.comparacao-stat-value.menor {
+  color: #ff667d;
+  text-shadow: 0 0 8px rgba(255,76,104,.30);
+}
+
+.comparacao-stat-value.empate {
+  color: #ffe27a;
+}
+
+.comparacao-stat-seta {
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.comparacao-extra {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.comparacao-extra-box {
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(5,22,48,.75);
+  border: 1px solid rgba(39,126,215,.26);
+}
+
+.comparacao-extra-box .label {
+  margin-bottom: 6px;
+  color: #77b9e8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.comparacao-extra-box .value {
+  color: #eef8ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1050px) {
+  .topbar {
+    padding-left: 18px;
+    padding-right: 18px;
+    gap: 12px;
+  }
+
+  .brand {
+    min-width: 210px;
+  }
+
+  .nav-menu {
+    gap: 4px;
+  }
+
+  .nav-button {
+    padding-left: 9px;
+    padding-right: 9px;
+    font-size: 10px;
+  }
+
+  .comparacao-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .comparacao-header {
+    align-items: flex-start;
+  }
+
+  .comparacao-hero-icon {
+    width: 145px;
+  }
+
+  .comparacao-selectores {
+    grid-template-columns: 1fr;
+  }
+
+  .comparacao-vs {
+    margin: -5px 0;
+  }
+
+  .comparacao-linha {
+    grid-template-columns: 1fr 88px 1fr;
+  }
+}
+
+/* =====================================================
+   COMPARAÇÃO — POLIMENTO VISUAL
+   1) ícone maior na navbar
+   2) box inteira indica maior/menor
+   3) moldura tecnológica no retrato, igual à Digidex
+===================================================== */
+
+/* A BOX inteira acompanha o resultado da comparação. */
+.comparacao-stat {
+  transition:
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease;
+}
+
+.comparacao-stat.maior {
+  border-color: rgba(35,227,148,.68);
+  background:
+    linear-gradient(90deg,rgba(13,73,55,.56),rgba(5,29,48,.82));
+  box-shadow:
+    inset 0 0 16px rgba(35,227,148,.08),
+    0 0 8px rgba(35,227,148,.10);
+}
+
+.comparacao-stat.menor {
+  border-color: rgba(255,82,112,.68);
+  background:
+    linear-gradient(90deg,rgba(82,22,39,.56),rgba(5,29,48,.82));
+  box-shadow:
+    inset 0 0 16px rgba(255,82,112,.08),
+    0 0 8px rgba(255,82,112,.10);
+}
+
+.comparacao-stat.empate {
+  border-color: rgba(39,126,215,.28);
+  background: rgba(5,22,48,.78);
+  box-shadow: none;
+}
+
+/* Moldura compacta acompanhando o retrato — mesma linguagem da Digidex. */
+.comparacao-retrato {
+  position: relative;
+  isolation: isolate;
+  width: 176px;
+  height: 176px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 176px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(28,115,211,.24),
+      rgba(3,16,39,.48) 68%,
+      rgba(2,10,25,.62) 100%
+    );
+  box-shadow: inset 0 0 20px rgba(35,169,255,.07);
+}
+
+.comparacao-retrato::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid rgba(57,219,255,.48);
+  background:
+    linear-gradient(#59efff,#59efff) left top / 27px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left top / 2px 27px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 27px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 2px 27px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 27px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 2px 27px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 27px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 2px 27px no-repeat;
+  clip-path: polygon(
+    9px 0,
+    calc(100% - 9px) 0,
+    100% 9px,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    9px 100%,
+    0 calc(100% - 9px),
+    0 9px
+  );
+  box-shadow:
+    inset 0 0 18px rgba(41,191,255,.08),
+    0 0 8px rgba(0,196,255,.22);
+  filter: drop-shadow(0 0 4px rgba(51,230,255,.45));
+}
+
+.comparacao-retrato::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle,
+      rgba(52,210,255,.13),
+      rgba(0,111,255,.05) 52%,
+      transparent 74%
+    );
+}
+
+/* Sobrescreve o antigo .comparacao-card-head img. */
+.comparacao-card-head .comparacao-retrato img {
+  position: relative;
+  z-index: 2;
+  width: 158px;
+  height: 158px;
+  max-width: 158px;
+  max-height: 158px;
+  padding: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 9px rgba(0,0,0,.48));
+}
+
+/* =====================================================
+   CALCULADORA DE DANO ELEMENTAL — SKILLS LV10
+   ===================================================== */
+#calculadoraPagina {
+  --calc-cyan: #35d7ff;
+  --calc-blue: #1678ff;
+  --calc-green: #48f59d;
+  --calc-panel: rgba(8, 20, 39, .86);
+  --calc-panel-2: rgba(13, 31, 57, .9);
+}
+
+.calc-layout {
+  width: min(1540px, calc(100% - 28px));
+  margin: 22px auto 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 1180px) minmax(260px, 320px);
+  gap: 18px;
+  align-items: start;
+  justify-content: center;
+}
+
+.calc-shell {
+  width: 100%;
+  margin: 0;
+  padding: 22px;
+  border: 1px solid rgba(54, 210, 255, .28);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(15, 37, 68, .92), rgba(6, 16, 31, .94));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.025),
+    0 20px 55px rgba(0,0,0,.32),
+    0 0 28px rgba(22,120,255,.08);
+}
+
+
+.calc-guide {
+  position: sticky;
+  top: 118px;
+  padding: 20px;
+  border: 1px solid rgba(54, 210, 255, .28);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(15, 37, 68, .92), rgba(6, 16, 31, .94));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.025),
+    0 18px 45px rgba(0,0,0,.28),
+    0 0 24px rgba(22,120,255,.07);
+}
+
+.calc-guide-title {
+  margin-bottom: 14px;
+  color: #59dfff;
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: 1px;
+}
+
+.calc-guide-text,
+.calc-guide-note {
+  color: rgba(220, 239, 255, .78);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.calc-guide-text + .calc-guide-text,
+.calc-guide-text + .calc-guide-note {
+  margin-top: 12px;
+}
+
+.calc-guide strong {
+  color: #eefaff;
+}
+
+.calc-guide-note {
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 207, 255, .14);
+  color: #9fc4d6;
+}
+
+.calc-top {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.35fr) minmax(190px, .75fr) minmax(180px, .65fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.calc-field {
+  position: relative;
+}
+
+.calc-field label {
+  display: block;
+  margin: 0 0 7px 2px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #9edcff;
+  text-transform: uppercase;
+}
+
+.calc-input,
+.calc-select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  color: #f4fbff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  border: 1px solid rgba(78, 206, 255, .34);
+  border-radius: 13px;
+  outline: none;
+  background: rgba(3, 14, 29, .78);
+  box-shadow: inset 0 0 14px rgba(0, 84, 150, .08);
+}
+
+.calc-input:focus,
+.calc-select:focus {
+  border-color: rgba(58, 217, 255, .9);
+  box-shadow:
+    0 0 0 3px rgba(53, 215, 255, .11),
+    inset 0 0 15px rgba(53, 215, 255, .05);
+}
+
+.calc-percent-wrap {
+  position: relative;
+}
+
+.calc-percent-wrap .calc-input {
+  padding-right: 42px;
+}
+
+.calc-percent-sign {
+  position: absolute;
+  right: 15px;
+  bottom: 14px;
+  color: var(--calc-green);
+  font-size: 16px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.calc-help {
+  margin: 14px 2px 0;
+  color: rgba(220, 239, 255, .72);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.calc-selected {
+  margin-top: 20px;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 18px;
+  border: 1px solid rgba(76, 207, 255, .18);
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(9, 28, 50, .95), rgba(9, 22, 41, .72));
+}
+
+.calc-selected-image {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid rgba(61, 210, 255, .26);
+  background: radial-gradient(circle, rgba(50, 191, 255, .11), transparent 70%);
+}
+
+.calc-selected-image img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.4));
+}
+
+.calc-selected-image span {
+  font-size: 30px;
+}
+
+.calc-selected-copy {
+  min-width: 0;
+}
+
+.calc-selected-name {
+  color: #fff;
+  font-size: 21px;
+  font-weight: 950;
+  letter-spacing: .4px;
+}
+
+.calc-selected-meta {
+  margin-top: 5px;
+  color: #8fcce8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calc-results {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.calc-skill-card {
+  min-width: 0;
+  position: relative;
+  padding: 17px;
+  border: 1px solid rgba(92, 205, 255, .18);
+  border-radius: 17px;
+  background:
+    linear-gradient(180deg, rgba(13, 34, 61, .94), rgba(6, 20, 37, .95));
+  overflow: hidden;
+}
+
+.calc-skill-card.aplica {
+  border-color: rgba(72, 245, 157, .44);
+  box-shadow:
+    inset 0 0 22px rgba(72, 245, 157, .035),
+    0 0 18px rgba(72, 245, 157, .05);
+}
+
+.calc-skill-card.nao-aplica {
+  opacity: .84;
+}
+
+.calc-skill-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.calc-skill-title {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.calc-skill-lv {
+  margin-top: 3px;
+  color: #79ccec;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.calc-status {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .7px;
+}
+
+.calc-status.sim {
+  color: #aaffcc;
+  border: 1px solid rgba(72,245,157,.35);
+  background: rgba(35,148,91,.14);
+}
+
+.calc-status.nao {
+  color: #aebed0;
+  border: 1px solid rgba(174,190,208,.22);
+  background: rgba(125,145,165,.08);
+}
+
+.calc-formula-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 13px;
+  background: rgba(0, 9, 19, .42);
+}
+
+.calc-number-label {
+  color: #7298ad;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.calc-number {
+  margin-top: 3px;
+  color: #eefaff;
+  font-size: 20px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.calc-number.bonus {
+  color: var(--calc-green);
+}
+
+.calc-number.final {
+  color: #59dfff;
+}
+
+.calc-arrow {
+  color: #4bbce7;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.calc-breakdown {
+  margin-top: 11px;
+  color: #9fc4d6;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.calc-breakdown strong {
+  color: #eaf9ff;
+}
+
+.calc-elements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.calc-element-tag {
+  padding: 4px 7px;
+  border-radius: 7px;
+  border: 1px solid rgba(92, 205, 255, .18);
+  background: rgba(17, 57, 86, .36);
+  color: #b9e9ff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .45px;
+}
+
+.calc-element-tag.ativo {
+  color: #aaffcc;
+  border-color: rgba(72,245,157,.4);
+  background: rgba(34,151,91,.14);
+}
+
+.calc-empty {
+  grid-column: 1 / -1;
+  padding: 45px 20px;
+  text-align: center;
+  color: #8fb2c8;
+  border: 1px dashed rgba(84, 189, 237, .22);
+  border-radius: 16px;
+  background: rgba(5, 19, 34, .46);
+}
+
+@media (max-width: 1250px) {
+  .calc-layout {
+    grid-template-columns: 1fr;
+    max-width: 1180px;
+  }
+
+  .calc-guide {
+    position: static;
+  }
+}
+
+@media (max-width: 950px) {
+  .calc-top {
+    grid-template-columns: 1fr 1fr;
+  }
+  .calc-field:first-child {
+    grid-column: 1 / -1;
+  }
+  .calc-results {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .calc-layout {
+    width: calc(100% - 14px);
+  }
+
+  .calc-shell {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .calc-guide {
+    padding: 16px;
+  }
+  .calc-top {
+    grid-template-columns: 1fr;
+  }
+  .calc-field:first-child {
+    grid-column: auto;
+  }
+  .calc-formula-row {
+    grid-template-columns: 1fr;
+  }
+  .calc-arrow {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+}
+
+@media (min-width: 1051px) {
+  #socialPagina .social-stage {
+    max-width: 1320px;
+    grid-template-columns: minmax(430px, 600px) minmax(430px, 600px);
+    justify-content: center;
+    gap: 42px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  #socialPagina .social-content {
+    width: 100%;
+    max-width: 600px;
+    justify-self: end;
+  }
+
+  #socialPagina .social-art-wrap {
+    width: 100%;
+    max-width: 600px;
+    justify-self: start;
+  }
+}
+
+#elementosPagina .elementos-board-ui {
+  left: 44.5% !important;
+  top: 18.5% !important;
+  width: 37.5% !important;
+  height: 31.5% !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box {
+  position: static !important;
+  transform: none !important;
+  width: 440px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-subtitulo {
+  display: block !important;
+  margin: 0 0 10px !important;
+  color: #ffffff !important;
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  letter-spacing: .15px !important;
+  text-align: center !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: 0 2px 5px #000, 0 0 8px rgba(0,0,0,.8) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  width: 100% !important;
+  max-width: 440px !important;
+  margin: 0 auto 14px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor label {
+  display: none !important;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect,
+#elementosPagina .elementos-board-ui #elementoSelect.elemento-select-icon {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  width: 100% !important;
+  min-height: 54px !important;
+  padding: 10px 42px 10px 54px !important;
+  border: 2px solid #57b8ff !important;
+  border-radius: 9px !important;
+  outline: 0 !important;
+  color: #0b2a4d !important;
+  background-color: #edf6ff !important;
+  background-position: 13px center !important;
+  background-size: 30px 30px !important;
+  background-repeat: no-repeat !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.9) !important;
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+  text-align-last: left !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  width: 100% !important;
+  max-width: 440px !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: center !important;
+  color: #fff !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  width: 100% !important;
+  margin: 2px auto 11px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  color: #8fd4ff !important;
+  font-size: 27px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: 0 2px 5px #000, 0 0 9px rgba(0,0,0,.75) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  width: 35px !important;
+  height: 35px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 33px !important;
+  height: 33px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha,
+#elementosPagina .elementos-board-ui .elemento-buff,
+#elementosPagina .elementos-board-ui .elemento-remove {
+  width: 100% !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 5px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 19px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: 0 2px 5px #000, 0 0 8px rgba(0,0,0,.8) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff,
+#elementosPagina .elementos-board-ui .elemento-buff strong { color: #57ee97 !important; }
+#elementosPagina .elementos-board-ui .elemento-remove,
+#elementosPagina .elementos-board-ui .elemento-remove strong { color: #ff7d8f !important; }
+#elementosPagina .elementos-board-ui .seta-buff { color: #57ee97 !important; font-size: 22px !important; }
+#elementosPagina .elementos-board-ui .seta-remove { color: #ff7d8f !important; font-size: 22px !important; }
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-wrap {
+  width: 28px !important; height: 28px !important; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-img { width: 27px !important; height: 27px !important; }
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui { left: 43.5% !important; width: 39% !important; top: 18.2% !important; }
+  #elementosPagina .elementos-board-ui .elementos-subtitulo { font-size: 15px !important; }
+  #elementosPagina .elementos-board-ui #elementoSelect { min-height: 46px !important; font-size: 17px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome { font-size: 23px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha { font-size: 16px !important; min-height: 31px !important; }
+}
+
+@media (max-width: 760px) {
+  #elementosPagina .elementos-board-ui {
+    position: relative !important; left: auto !important; top: auto !important; width: calc(100% - 24px) !important; height: auto !important;
+    margin: -8% auto 0 !important; padding: 16px !important; background: rgba(4,18,43,.96) !important; border: 1px solid #1684e9 !important; border-radius: 13px !important;
+  }
+  #elementosPagina .elementos-board-ui .elementos-box { width: 100% !important; }
+  #elementosPagina .elementos-board-ui .elementos-subtitulo { font-size: 14px !important; }
+  #elementosPagina .elementos-board-ui #elementoSelect { min-height: 46px !important; font-size: 17px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome { font-size: 22px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha { font-size: 15px !important; }
+}
+
+/* Mantém a posição e a arte intactas; apenas cria fundos discretos para a leitura. */
+#elementosPagina .elementos-board-ui .elementos-subtitulo {
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 0 auto 12px !important;
+  padding: 6px 12px !important;
+  border: 1px solid rgba(80, 169, 255, .42) !important;
+  border-radius: 7px !important;
+  background: rgba(2, 14, 32, .76) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.22) !important;
+  color: #f4fbff !important;
+  font-size: 17px !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  width: fit-content !important;
+  min-width: 205px !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 8px 16px !important;
+  border: 1px solid rgba(75, 169, 255, .48) !important;
+  border-radius: 8px !important;
+  background: rgba(2, 16, 38, .82) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.24) !important;
+  color: #8fd4ff !important;
+  font-size: 24px !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha,
+#elementosPagina .elementos-board-ui .elemento-buff,
+#elementosPagina .elementos-board-ui .elemento-remove {
+  width: fit-content !important;
+  min-width: 250px !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 11px rgba(0,0,0,.22) !important;
+  font-size: 17px !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff {
+  color: #73f3ad !important;
+  background: rgba(5, 43, 31, .84) !important;
+  border: 1px solid rgba(72, 210, 143, .55) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove {
+  color: #ff9aaa !important;
+  background: rgba(58, 12, 25, .84) !important;
+  border: 1px solid rgba(235, 86, 113, .55) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff strong {
+  color: #73f3ad !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove strong {
+  color: #ff9aaa !important;
+}
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui .elementos-subtitulo {
+    font-size: 14px !important;
+    padding: 5px 9px !important;
+  }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome {
+    min-width: 180px !important;
+    font-size: 21px !important;
+    padding: 7px 12px !important;
+  }
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha,
+  #elementosPagina .elementos-board-ui .elemento-buff,
+  #elementosPagina .elementos-board-ui .elemento-remove {
+    min-width: 220px !important;
+    font-size: 15px !important;
+    padding: 7px 11px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  #elementosPagina .elementos-board-ui .elementos-subtitulo {
+    width: 100% !important;
+    font-size: 13px !important;
+  }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome,
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha,
+  #elementosPagina .elementos-board-ui .elemento-buff,
+  #elementosPagina .elementos-board-ui .elemento-remove {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+#elementosPagina .elementos-board-ui {
+  position: absolute !important;
+  left: 47.5% !important;
+  top: 17.0% !important;
+  width: 35.5% !important;
+  height: 34% !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box {
+  position: static !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-box h2 {
+  display: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elementos-subtitulo {
+  display: block !important;
+  width: auto !important;
+  margin: 0 auto 10px !important;
+  padding: 6px 14px !important;
+  border: 1px solid rgba(75,169,255,.45) !important;
+  border-radius: 8px !important;
+  background: rgba(2,16,38,.84) !important;
+  color: #f4fbff !important;
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  letter-spacing: .5px !important;
+  text-align: center !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-seletor {
+  width: 100% !important;
+  max-width: 390px !important;
+  margin: 0 auto 12px !important;
+  padding: 0 !important;
+}
+
+#elementosPagina .elementos-board-ui #elementoSelect,
+#elementosPagina .elementos-board-ui #elementoSelect.elemento-select-icon {
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  width: 100% !important;
+  min-height: 50px !important;
+  padding: 8px 42px 8px 48px !important;
+  border: 2px solid #57b8ff !important;
+  border-radius: 9px !important;
+  color: #0b2a4d !important;
+  background-color: #edf6ff !important;
+  font-size: 19px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  text-shadow: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.30), inset 0 0 0 1px rgba(255,255,255,.9) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado {
+  width: 100% !important;
+  max-width: 390px !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 9px !important;
+  color: #fff !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome {
+  width: auto !important;
+  min-width: 180px !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  border: 1px solid rgba(75,169,255,.52) !important;
+  border-radius: 8px !important;
+  background: rgba(2,16,38,.88) !important;
+  color: #8fd4ff !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-resultado-linha,
+#elementosPagina .elementos-board-ui .elemento-buff,
+#elementosPagina .elementos-board-ui .elemento-remove {
+  width: 100% !important;
+  max-width: 330px !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  margin: 0 auto !important;
+  padding: 9px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  border-radius: 9px !important;
+  font-size: 19px !important;
+  line-height: 1.05 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+  box-shadow: 0 4px 11px rgba(0,0,0,.22) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff {
+  color: #73f3ad !important;
+  background: rgba(5,43,31,.86) !important;
+  border: 1px solid rgba(72,210,143,.58) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-remove {
+  color: #ff9aaa !important;
+  background: rgba(58,12,25,.86) !important;
+  border: 1px solid rgba(235,86,113,.58) !important;
+}
+
+#elementosPagina .elementos-board-ui .elemento-buff strong { color: #73f3ad !important; }
+#elementosPagina .elementos-board-ui .elemento-remove strong { color: #ff9aaa !important; }
+
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-img {
+  width: 31px !important;
+  height: 31px !important;
+}
+#elementosPagina .elementos-board-ui .elemento-resultado-linha .element-icon-img {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  #elementosPagina .elementos-board-ui {
+    left: 45% !important;
+    top: 16.5% !important;
+    width: 38% !important;
+  }
+  #elementosPagina .elementos-board-ui .elementos-subtitulo { font-size: 16px !important; }
+  #elementosPagina .elementos-board-ui #elementoSelect { min-height: 44px !important; font-size: 16px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome { font-size: 21px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha { min-height: 40px !important; font-size: 15px !important; }
+}
+
+@media (max-width: 760px) {
+  #elementosPagina .elementos-board-ui {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 24px) !important;
+    height: auto !important;
+    margin: -7% auto 0 !important;
+    padding: 14px !important;
+    background: rgba(4,18,43,.96) !important;
+    border: 1px solid #1684e9 !important;
+    border-radius: 13px !important;
+  }
+  #elementosPagina .elementos-board-ui .elementos-box { max-width: 100% !important; }
+  #elementosPagina .elementos-board-ui .elementos-subtitulo { font-size: 15px !important; }
+  #elementosPagina .elementos-board-ui #elementoSelect { min-height: 45px !important; font-size: 16px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-nome { font-size: 21px !important; }
+  #elementosPagina .elementos-board-ui .elemento-resultado-linha { font-size: 15px !important; }
+}
