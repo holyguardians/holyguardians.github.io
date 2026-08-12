@@ -4558,5 +4558,256 @@ function montarCenaElementosHakase() {
   wrap.appendChild(
     scene
   );
+/* =====================================================
+   TEAM BUILDER — LAYOUT COMPACTO FINAL
+   COLE NO FINAL ABSOLUTO DO styles.css
+===================================================== */
 
+@media (min-width: 621px) {
+
+  #builderPagina .selected-info {
+    display: grid !important;
+    grid-template-columns:
+      154px
+      repeat(6, minmax(0, 1fr)) !important;
+
+    gap: 7px !important;
+    align-items: stretch !important;
+  }
+
+
+  /* FOTO */
+  #builderPagina .team-image-box {
+    grid-column: 1 !important;
+    grid-row: 1 / span 3 !important;
+
+    width: 154px !important;
+    height: 154px !important;
+
+    min-width: 154px !important;
+    min-height: 154px !important;
+
+    padding: 0 !important;
+  }
+
+
+  /* TYPE */
+  #builderPagina .selected-info > .type {
+    grid-column: 2 / span 2 !important;
+    grid-row: 1 !important;
+
+    min-height: 42px !important;
+    padding: 6px 8px !important;
+
+    font-size: 12px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+
+  /* FIELD */
+  #builderPagina .selected-info > .field {
+    grid-column: 4 / span 2 !important;
+    grid-row: 1 !important;
+
+    min-height: 42px !important;
+    padding: 4px 7px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+
+  /* STRONG */
+  #builderPagina .selected-info > .strong {
+    grid-column: 6 !important;
+    grid-row: 1 !important;
+  }
+
+
+  /* WEAK */
+  #builderPagina .selected-info > .weak {
+    grid-column: 7 !important;
+    grid-row: 1 !important;
+  }
+
+
+  /* STRONG / WEAK compactos */
+  #builderPagina .selected-info > .strong,
+  #builderPagina .selected-info > .weak {
+    min-height: 42px !important;
+
+    padding: 4px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+
+  #builderPagina .selected-info > .strong .label,
+  #builderPagina .selected-info > .weak .label,
+  #builderPagina .selected-info > .field .label {
+    font-size: 8px !important;
+    line-height: 1 !important;
+    margin-bottom: 2px !important;
+  }
+
+
+  /* ÍCONES STRONG / WEAK */
+  #builderPagina .selected-info > .strong .element-icon-wrap,
+  #builderPagina .selected-info > .weak .element-icon-wrap {
+    width: 29px !important;
+    height: 29px !important;
+
+    min-width: 29px !important;
+    min-height: 29px !important;
+  }
+
+
+  #builderPagina .selected-info > .strong .element-icon-img,
+  #builderPagina .selected-info > .weak .element-icon-img {
+    width: 27px !important;
+    height: 27px !important;
+  }
+
+
+  /* FIELD */
+  #builderPagina .field .field-icons {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 7px !important;
+  }
+
+
+  #builderPagina .field .field-icon-img {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+
+  /* =====================================================
+     STATUS — MAIORES
+  ===================================================== */
+
+  #builderPagina .selected-info > .mini-stat {
+    min-height: 46px !important;
+
+    padding: 8px 7px !important;
+
+    font-size: 12px !important;
+    font-weight: 700 !important;
+
+    line-height: 1.15 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+
+    border-radius: 7px !important;
+  }
+
+
+  /* CC */
+  #builderPagina .selected-info > .mini-stat:nth-child(6) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+
+  /* DOT */
+  #builderPagina .selected-info > .mini-stat:nth-child(7) {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+  }
+
+
+  /* HP */
+  #builderPagina .selected-info > .mini-stat:nth-child(8) {
+    grid-column: 4 / span 2 !important;
+    grid-row: 2 !important;
+
+    font-size: 13px !important;
+  }
+
+
+  /* STR */
+  #builderPagina .selected-info > .mini-stat:nth-child(9) {
+    grid-column: 6 / span 2 !important;
+    grid-row: 2 !important;
+
+    font-size: 13px !important;
+  }
+
+
+  /* INT */
+  #builderPagina .selected-info > .mini-stat:nth-child(10) {
+    grid-column: 2 / span 2 !important;
+    grid-row: 3 !important;
+
+    font-size: 13px !important;
+  }
+
+
+  /* DEF */
+  #builderPagina .selected-info > .mini-stat:nth-child(11) {
+    grid-column: 4 !important;
+    grid-row: 3 !important;
+
+    font-size: 13px !important;
+  }
+
+
+  /* SPD */
+  #builderPagina .selected-info > .mini-stat:nth-child(12) {
+    grid-column: 5 !important;
+    grid-row: 3 !important;
+
+    font-size: 13px !important;
+  }
+
+
+  /* DEF BREAK */
+  #builderPagina .selected-info > .mini-stat:nth-child(13) {
+    grid-column: 6 / span 2 !important;
+    grid-row: 3 !important;
+  }
+
+
+  /* =====================================================
+     SKILLS — MANTÉM AS 3 LADO A LADO
+  ===================================================== */
+
+  #builderPagina .selected-info > .skill:nth-child(14) {
+    grid-column: 1 / span 2 !important;
+    grid-row: 4 !important;
+  }
+
+
+  #builderPagina .selected-info > .skill:nth-child(15) {
+    grid-column: 3 / span 2 !important;
+    grid-row: 4 !important;
+  }
+
+
+  #builderPagina .selected-info > .skill:nth-child(16) {
+    grid-column: 5 / span 3 !important;
+    grid-row: 4 !important;
+  }
+
+
+  #builderPagina .selected-info > .skill {
+    min-width: 0 !important;
+  }
+
+}
 }
