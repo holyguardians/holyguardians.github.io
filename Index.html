@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOLY GUARDIANS</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="topbar">
+
+  <div
+    class="brand"
+    onclick="mostrarPagina('homePagina', document.getElementById('btnHome'))"
+  >
+    <img id="headerLogo" class="brand-logo" src="" alt="Holy Guardians">
+    <div class="brand-name">HOLY GUARDIANS</div>
+  </div>
+
+  <div class="nav-menu">
+
+    <button id="btnHome" class="nav-button ativo"
+      onclick="mostrarPagina('homePagina', this)">
+      <img id="navIconHome" alt="">
+      <span>Home</span>
+    </button>
+
+    <button id="btnDatabase" class="nav-button"
+      onclick="mostrarPagina('databasePagina', this)">
+      <img id="navIconDigidex" alt="">
+      <span>DIGIDEX</span>
+    </button>
+
+    <button id="btnComparacao" class="nav-button"
+      onclick="mostrarPagina('comparacaoPagina', this)">
+      <img id="navIconComparacao" alt="">
+      <span>COMPARAÇÃO</span>
+    </button>
+
+    <button id="btnBuilder" class="nav-button"
+      onclick="mostrarPagina('builderPagina', this)">
+      <img id="navIconBuilder" alt="">
+      <span>Team Builder</span>
+    </button>
+
+    <button id="btnElementos" class="nav-button"
+      onclick="mostrarPagina('elementosPagina', this)">
+      <img id="navIconElementos" alt="">
+      <span>Elementos</span>
+    </button>
+
+    <button id="btnCalculadora" class="nav-button"
+      onclick="mostrarPagina('calculadoraPagina', this)">
+      <img id="navIconCalculadora" alt="">
+      <span>Calculadora</span>
+    </button>
+
+    <button id="btnSocial" class="nav-button"
+      onclick="mostrarPagina('socialPagina', this)">
+      <img id="navIconSocial" alt="">
+      <span>Social</span>
+    </button>
+
+  </div>
+</nav>
+
+<!-- =====================================================
+     HOME
+===================================================== -->
+
+<section
+  id="homePagina"
+  class="pagina ativa"
+>
+
+  <div class="home-wrap">
+
+
+    <!-- HERO -->
+
+    <section
+      id="heroHome"
+      class="hero"
+    >
+
+      <div class="hero-inner">
+
+        <div class="hero-copy">
+
+          <div class="hero-welcome">
+            BEM-VINDO À
+          </div>
+
+
+          <img
+            id="heroLettering"
+            class="hero-lettering"
+            src=""
+            alt="HOLY GUARDIANS DSR"
+          >
+
+
+          <div class="hero-motto">
+            FORÇA • UNIÃO • EVOLUÇÃO
+          </div>
+
+
+          <div class="hero-divider">
+          </div>
+
+
+          <div class="hero-lead">
+
+            <strong>
+              Mais que uma guilda,
+              uma família.
+            </strong>
+
+            <br>
+
+            Desde 2012, construindo história
+            no mundo Digimon e se destacando
+            em diferentes gerações de servers.
+
+            <br>
+
+            Nosso objetivo sempre foi o mesmo:
+            evoluir juntos!
+
+          </div>
+
+
+          <div class="hero-actions">
+
+            <button
+              class="action-button"
+              onclick="
+                mostrarPagina(
+                  'databasePagina',
+                  document.getElementById('btnDatabase')
+                )
+              "
+            >
+
+              <img id="heroIconDigidex">
+
+              ACESSAR DIGIDEX
+
+              <span>→</span>
+
+            </button>
+
+
+            <button
+              class="action-button"
+              onclick="
+                mostrarPagina(
+                  'builderPagina',
+                  document.getElementById('btnBuilder')
+                )
+              "
+            >
+
+              <img id="heroIconBuilder">
+
+              MONTAR TIME
+
+              <span>→</span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="hero-art">
+
+          <img
+            id="heroArt"
+            src=""
+            alt=""
+          >
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div class="home-content">
+
+
+      <!-- HISTÓRIA -->
+
+      <section class="hg-panel history-panel">
+
+        <div class="panel-heading">
+
+          <div class="heading-icon">
+            ⚙
+          </div>
+
+          <h2>
+            Nossa História
+          </h2>
+
+          <div class="heading-line">
+          </div>
+
+        </div>
+
+
+        <div class="history-grid">
+
+
+          <article class="history-card year-2012">
+
+            <div class="history-year">
+              2012
+            </div>
+
+            <div class="history-logo">
+
+              <img
+                id="historyDmoLucemon"
+                src=""
+                alt="DMO"
+              >
+
+            </div>
+
+            <h3>
+              SERVER LUCEMON
+            </h3>
+
+            <p>
+
+              Fundação da Holy Guardians no DMO,
+              se destacando no server Lucemon
+              e chegando ao TOP 3 do ranking global.
+
+            </p>
+
+            <div class="history-badge gold">
+              🏆 TOP 3 Global
+            </div>
+
+          </article>
+
+
+          <article class="history-card">
+
+            <div class="history-year">
+              2017
+            </div>
+
+            <div class="history-logo">
+
+              <img
+                id="historyDmoNa"
+                src=""
+                alt="DMO NA"
+              >
+
+            </div>
+
+            <h3>
+              SERVER OMEGAMON (NA)
+            </h3>
+
+            <p>
+
+              Expansão para o server Omegamon
+              na versão NA do Digimon Masters Online.
+
+            </p>
+
+            <div class="history-badge">
+
+              <img
+                id="historyIconNa"
+                src=""
+              >
+
+              NA Version
+
+            </div>
+
+          </article>
+
+
+          <article class="history-card year-2022">
+
+            <div class="history-year">
+              2022
+            </div>
+
+            <div class="history-logo">
+
+              <img
+                id="historyLadmo"
+                src=""
+                alt="LADMO"
+              >
+
+            </div>
+
+            <h3>
+              LADMO
+            </h3>
+
+            <p>
+
+              Criação da guild no server Omegamon
+              e posteriormente no server Alphamon.
+
+            </p>
+
+            <div class="history-badges-double">
+
+              <div class="history-badge">
+
+                <img
+                  id="historyIconOmegamon"
+                  src=""
+                >
+
+                Omegamon
+
+              </div>
+
+              <div class="history-badge">
+
+                <img
+                  id="historyIconAlphamon"
+                  src=""
+                >
+
+                Alphamon
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <article class="history-card year-now">
+
+            <div class="history-year">
+              ATUALMENTE
+            </div>
+
+            <div class="history-logo">
+
+              <img
+                id="historyDsr"
+                src=""
+                alt="DSR"
+              >
+
+            </div>
+
+            <h3>
+              DSR
+            </h3>
+
+            <p>
+
+              Matriz ativa no server Omegamon (NA)
+              do DMO e no server 1 (KOROMON)
+              do Digimon Super Rumble.
+
+            </p>
+
+            <div class="history-badges-double">
+
+              <div class="history-badge">
+
+                <img
+                  id="historyFlagUsa"
+                  src=""
+                >
+
+                Omegamon (NA)
+
+              </div>
+
+
+              <div class="history-badge">
+
+                <img
+                  id="historyFlagKorea"
+                  src=""
+                >
+
+                Server 1 (KOROMON)
+
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- PARTE INFERIOR -->
+
+      <div class="home-bottom">
+
+
+        <!-- SERVERS -->
+
+        <section class="hg-panel servers-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              📍
+            </div>
+
+            <h2>
+              Servers Ativos
+            </h2>
+
+          </div>
+
+
+          <div class="server-grid">
+
+
+            <div class="server-card">
+
+              <div class="server-flag">
+
+                <img
+                  id="serverUsa"
+                  src=""
+                >
+
+              </div>
+
+              <div class="server-name">
+                Omegamon
+              </div>
+
+              <div class="server-region">
+                (NA)
+              </div>
+
+              <div class="server-status">
+                ATIVA •
+              </div>
+
+            </div>
+
+
+            <div class="server-card">
+
+              <div class="server-flag">
+
+                <img
+                  id="serverKorea"
+                  src=""
+                >
+
+              </div>
+
+              <div class="server-name">
+                Server 1
+              </div>
+
+              <div class="server-region">
+                (KOROMON)
+              </div>
+
+              <div class="server-status">
+                ATIVA •
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- STAFF -->
+
+        <section class="hg-panel staff-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              👑
+            </div>
+
+            <h2>
+              Staff DSR
+            </h2>
+
+          </div>
+
+
+          <div class="staff-layout">
+
+            <div
+              id="staffMaster"
+              class="staff-master"
+            >
+            </div>
+
+            <div class="staff-subs-title">
+              SUBS
+            </div>
+
+            <div
+              id="staffSubs"
+              class="staff-subs"
+            >
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- NOSSAS REDES -->
+
+        <section class="hg-panel home-social-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              🌐
+            </div>
+
+            <h2>
+              Nossas Redes
+            </h2>
+
+          </div>
+
+
+          <div class="home-social-list">
+
+            <a
+              class="home-social-card youtube"
+              href="https://www.youtube.com/@HolyGuardiansDMO"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerYoutube"
+                class="home-social-icon"
+                src=""
+                alt="YouTube"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  YouTube
+                </div>
+
+                <div class="home-social-sub">
+                  @HolyGuardiansDMO
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR CANAL →
+              </div>
+
+            </a>
+
+
+            <a
+              class="home-social-card twitch"
+              href="https://www.twitch.tv/grim_sleepz"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerTwitch"
+                class="home-social-icon"
+                src=""
+                alt="Twitch"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  Twitch
+                </div>
+
+                <div class="home-social-sub">
+                  twitch.tv/grim_sleepz
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR CANAL →
+              </div>
+
+            </a>
+
+
+            <a
+              class="home-social-card discord"
+              href="https://discord.gg/czAvSwPTku"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerDiscord"
+                class="home-social-icon"
+                src=""
+                alt="Discord"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  Discord
+                </div>
+
+                <div class="home-social-sub">
+                  discord.gg/czAvSwPTku
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR SERVIDOR →
+              </div>
+
+            </a>
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+
+      <!-- FOOTER -->
+
+      <footer class="home-footer">
+
+        <div class="footer-center">
+
+          <div class="footer-center-title">
+            HOLY • GUARDIANS
+          </div>
+
+          <div class="footer-center-motto">
+            FORÇA • UNIÃO • EVOLUÇÃO
+          </div>
+
+          <div class="footer-line-wrap">
+
+            <div class="footer-line">
+            </div>
+
+            <div class="footer-diamond">
+            </div>
+
+            <div class="footer-line right">
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="footer-right">
+
+          Desde 2012
+
+          <span class="footer-heart">
+            ♥
+          </span>
+
+          Feito para a família HG
+
+        </div>
+
+      </footer>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     DIGIDEX
+===================================================== -->
+
+<section id="databasePagina" class="pagina">
+  <div class="internal-wrap">
+
+    <div id="digidexHakaseWrap" class="digidex-hakase-wrap" aria-hidden="true">
+      <img id="digidexHakase" class="digidex-hakase" alt="">
+    </div>
+
+    <div class="digidex-header-tech">
+      <div class="digidex-header-copy">
+        <div class="digidex-header-kicker">
+          DIGIMON DATABASE // HOLY GUARDIANS SYSTEM
+        </div>
+        <h2 class="page-title">DIGIDEX</h2>
+        <p class="page-subtitle">
+          Consulte os Digimons da database da Holy Guardians.
+        </p>
+      </div>
+
+      <div class="digidex-system-status">
+        <span class="digidex-status-dot"></span>
+        DATABASE ONLINE
+      </div>
+    </div>
+
+    <div class="filtros">
+      <input
+        id="pesquisa"
+        class="search"
+        type="text"
+        placeholder="Pesquisar Digimon..."
+        oninput="filtrar()"
+      >
+
+      <select id="filtroTipo" class="filtro-select" onchange="filtrar()">
+        <option value="">TODOS OS TIPOS</option>
+        <option value="VACCINE">VACCINE</option>
+        <option value="VIRUS">VIRUS</option>
+        <option value="DATA">DATA</option>
+        <option value="FREE">FREE</option>
+        <option value="UK">UK</option>
+      </select>
+
+      <select id="ordenacao" class="filtro-select" onchange="filtrar()">
+        <option value="">ORDEM ALFABÉTICA</option>
+        <option value="STR">MAIOR STR</option>
+        <option value="INT">MAIOR INT</option>
+        <option value="DEF">MAIOR DEF</option>
+        <option value="HP">MAIOR HP</option>
+        <option value="SPD">MAIOR SPEED</option>
+        <option value="STR_ASC">MENOR STR</option>
+        <option value="INT_ASC">MENOR INT</option>
+        <option value="DEF_ASC">MENOR DEF</option>
+        <option value="HP_ASC">MENOR HP</option>
+        <option value="SPD_ASC">MENOR SPEED</option>
+      </select>
+    </div>
+
+    <div id="lista" class="grid"></div>
+  </div>
+</section>
+
+<!-- =====================================================
+     COMPARAÇÃO
+===================================================== -->
+
+<section id="comparacaoPagina" class="pagina">
+  <div class="internal-wrap comparacao-wrap">
+
+    <div class="comparacao-header">
+      <div>
+        <div class="comparacao-kicker">
+          DIGIMON ANALYSIS // HOLY GUARDIANS SYSTEM
+        </div>
+        <h2 class="page-title">COMPARAÇÃO</h2>
+        <p class="page-subtitle">
+          Selecione dois Digimons e compare seus dados lado a lado.
+        </p>
+      </div>
+
+      <img id="comparacaoHeroIcon" class="comparacao-hero-icon" alt="Comparação">
+    </div>
+
+    <div class="comparacao-selectores">
+      <div class="comparacao-selector">
+        <label for="comparacaoDigimonA">DIGIMON 1</label>
+        <input
+          id="comparacaoDigimonA"
+          class="comparacao-input"
+          type="text"
+          placeholder="Digite o nome do Digimon..."
+          autocomplete="off"
+          oninput="atualizarSugestoesComparacao('A')"
+          onfocus="atualizarSugestoesComparacao('A')"
+        >
+        <div id="comparacaoSugestoesA" class="comparacao-sugestoes"></div>
+      </div>
+
+      <div class="comparacao-vs">VS</div>
+
+      <div class="comparacao-selector">
+        <label for="comparacaoDigimonB">DIGIMON 2</label>
+        <input
+          id="comparacaoDigimonB"
+          class="comparacao-input"
+          type="text"
+          placeholder="Digite o nome do Digimon..."
+          autocomplete="off"
+          oninput="atualizarSugestoesComparacao('B')"
+          onfocus="atualizarSugestoesComparacao('B')"
+        >
+        <div id="comparacaoSugestoesB" class="comparacao-sugestoes"></div>
+      </div>
+    </div>
+
+    <div id="comparacaoResultado" class="comparacao-resultado">
+      <div class="comparacao-empty">
+        Escolha dois Digimons para iniciar a comparação.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     TEAM BUILDER
+===================================================== -->
+
+<section id="builderPagina" class="pagina">
+  <div class="internal-wrap">
+    <h2 class="page-title">TEAM BUILDER</h2>
+    <p class="page-subtitle">Monte seu time para o Guild Boss.</p>
+    <div id="slots" class="builder-grid"></div>
+  </div>
+</section>
+
+<!-- =====================================================
+     ELEMENTOS
+===================================================== -->
+
+<section id="elementosPagina" class="pagina">
+  <div class="internal-wrap">
+    <div class="elementos-scene">
+
+      <img
+        id="elementosSceneArt"
+        class="elementos-scene-art"
+        alt="Elementos"
+      >
+
+      <div class="elementos-board-ui">
+        <div class="elementos-box">
+
+          <h2>ELEMENTOS</h2>
+
+          <p class="elementos-subtitulo">
+            SELECIONAR ELEMENTO
+          </p>
+
+          <div class="elemento-seletor">
+            <select
+              id="elementoSelect"
+              class="filtro-select"
+              onchange="mostrarElementoSelecionado()"
+            >
+              <option value="">
+                — Escolha um elemento —
+              </option>
+            </select>
+          </div>
+
+          <div id="elementoResultado" class="elemento-resultado">
+            Lembrando que o Buff é o elemento favorecido.
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     CALCULADORA
+===================================================== -->
+
+<section id="calculadoraPagina" class="pagina">
+  <div class="internal-wrap">
+
+    <h2 class="page-title">CALCULADORA</h2>
+
+    <p class="page-subtitle">
+      Calcule o dano total das Skills Lv.10 com o seu bônus elemental.
+    </p>
+
+    <div class="calc-layout">
+      <div class="calc-shell">
+
+        <div class="calc-top">
+
+          <div class="calc-field">
+            <label for="calcDigimon">Digimon</label>
+            <input
+              id="calcDigimon"
+              class="calc-input"
+              type="text"
+              placeholder="Digite ou selecione um Digimon..."
+              autocomplete="off"
+              oninput="atualizarCalculadora()"
+              onchange="atualizarCalculadora()"
+            >
+            <div
+              id="calcDigimonSugestoes"
+              class="calc-autocomplete"
+              hidden
+            ></div>
+          </div>
+
+          <div class="calc-field">
+            <label for="calcElemento">Elemento aplicado</label>
+            <select
+              id="calcElemento"
+              class="calc-select"
+              onchange="atualizarCalculadora()"
+            >
+              <option value="DARKNESS">DARKNESS</option>
+              <option value="PHYSICAL">PHYSICAL</option>
+              <option value="FIRE">FIRE</option>
+              <option value="THUNDER">THUNDER</option>
+              <option value="WIND">WIND</option>
+              <option value="ICE">ICE</option>
+              <option value="WATER">WATER</option>
+              <option value="EARTH">EARTH</option>
+              <option value="WOOD">WOOD</option>
+              <option value="STEEL">STEEL</option>
+              <option value="LIGHT">LIGHT</option>
+            </select>
+          </div>
+
+          <div class="calc-field calc-percent-wrap">
+            <label for="calcElementoValor">Elemento Total do Tamer</label>
+            <input
+              id="calcElementoValor"
+              class="calc-input"
+              type="number"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="Ex.: 30,08"
+              oninput="atualizarCalculadora()"
+            >
+            <span class="calc-percent-sign">%</span>
+          </div>
+
+        </div>
+
+        <div class="calc-help">
+          O bônus só entra nas Skills compatíveis com o elemento selecionado.
+          Em cada hit: bônus elemental = dano base do hit × Elemento Total do Tamer.
+          O total final soma esse bônus em todos os hits da Skill Lv.10.
+          A Burst Skill usa a Skill 1, 2 ou 3 escolhida como base e triplica o dano base e o bônus elemental.
+        </div>
+
+        <div id="calcSelected" class="calc-selected" style="display:none;"></div>
+
+        <div id="calcResultados" class="calc-results">
+          <div class="calc-empty">
+            Selecione um Digimon e informe o Elemento Total do Tamer para calcular.
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="calc-guide" aria-label="Como usar a calculadora">
+        <div class="calc-guide-title">
+          COMO USAR A CALCULADORA
+        </div>
+
+        <div class="calc-guide-text">
+          Abra a guia do seu Digimon e consulte qual é o seu valor total do elemento em
+          <strong>AttrBoost</strong>.
+        </div>
+
+        <div class="calc-guide-text">
+          Insira esse valor no campo
+          <strong>“Elemento Total do Tamer”</strong>.
+        </div>
+
+        <div class="calc-guide-note">
+          Esse valor representa a soma dos bônus provenientes de
+          <strong>roupas, acessórios e deck</strong>.
+          Na <strong>Burst Skill</strong>, escolha qual Skill (1, 2 ou 3) ela replica;
+          a calculadora aplica automaticamente o multiplicador ×3.
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SOCIAL
+===================================================== -->
+
+<section id="socialPagina" class="pagina">
+  <div class="social-stage">
+
+    <div class="social-content">
+
+      <div class="social-kicker">
+        HOLY GUARDIANS NETWORK
+      </div>
+
+      <h2 class="social-title-main">
+        CONECTE-SE À <span>GUILD</span>
+      </h2>
+
+      <p class="social-intro">
+        Acompanhe conteúdos, lives e novidades da Holy Guardians
+        ou entre diretamente para a nossa comunidade.
+      </p>
+
+      <div class="social-page-grid">
+
+        <a
+          class="social-page-card"
+          href="https://www.youtube.com/@HolyGuardiansDMO"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img id="socialYoutube" alt="YouTube">
+          <div class="social-card-copy">
+            <h3>YouTube</h3>
+            <p>Holy Guardians DMO</p>
+          </div>
+          <span class="social-card-action">ACESSAR ↗</span>
+        </a>
+
+        <a
+          class="social-page-card"
+          href="https://www.twitch.tv/grim_sleepz"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img id="socialTwitch" alt="Twitch">
+          <div class="social-card-copy">
+            <h3>Twitch</h3>
+            <p>GrimSleep</p>
+          </div>
+          <span class="social-card-action">ASSISTIR ↗</span>
+        </a>
+
+        <a
+          class="social-page-card"
+          href="https://discord.gg/czAvSwPTku"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img id="socialDiscord" alt="Discord">
+          <div class="social-card-copy">
+            <h3>Discord</h3>
+            <p>Entre para a comunidade.</p>
+          </div>
+          <span class="social-card-action">ENTRAR ↗</span>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="social-art-wrap" aria-hidden="true">
+      <div class="social-art-glow"></div>
+      <img id="socialMikomode" class="social-mikomode" alt="">
+    </div>
+
+  </div>
+</section>
+
+<div id="loading">
+  Carregando Holy Guardians...
+</div>
+
+<script src="scripts.js"></script>
+</body>
+</html>
