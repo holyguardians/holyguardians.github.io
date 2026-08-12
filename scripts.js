@@ -3665,8 +3665,25 @@ function calcConfigurarAutocomplete() {
 }
 
 
+let calcBurstSkillSelecionada = 0;
+
+function calcSelecionarBurstSkill(valor) {
+  const indice = Number(valor);
+
+  calcBurstSkillSelecionada =
+    Number.isInteger(indice) &&
+    indice >= 0 &&
+    indice <= 2
+      ? indice
+      : 0;
+
+  atualizarCalculadora();
+}
+
+
 function atualizarCalculadora() {
   calcConfigurarAutocomplete();
+
   const input = document.getElementById("calcDigimon");
   const selectElemento = document.getElementById("calcElemento");
   const inputValor = document.getElementById("calcElementoValor");
@@ -3702,15 +3719,14 @@ function atualizarCalculadora() {
     );
 
   /*
-   * REGRA CONFIRMADA PELOS TESTES:
+   * REGRA NORMAL CONFIRMADA PELOS TESTES:
    *
    * bônus por hit =
-   * dano base daquele hit × (Element DMG / 100)
+   * dano base daquele hit × (Elemento Total do Tamer / 100)
    *
-   * Ex. Millenniumon:
-   * 23,75 × 0,3008 = 7,144
-   *
-   * Portanto NÃO existe multiplicador fixo 1.2 aqui.
+   * BURST:
+   * a Skill 1/2/3 escolhida mantém hits e elementos,
+   * mas triplica o coeficiente base por hit e o bônus elemental.
    */
   const fatorElemento =
     bonusElemento / 100;
@@ -3767,7 +3783,7 @@ function atualizarCalculadora() {
   `;
 
 
-  resultados.innerHTML =
+  const cardsSkills =
     digi.skills
       .map(
         function(
@@ -3856,10 +3872,6 @@ function atualizarCalculadora() {
             );
 
 
-          /*
-           * O valor verde do jogo é calculado
-           * sobre o coeficiente BASE DE CADA HIT.
-           */
           const bonusPorHit =
             aplica
               ? (
@@ -3874,18 +3886,9 @@ function atualizarCalculadora() {
             skill.hits;
 
 
-          /*
-           * Equivalente a:
-           * baseTotal + bonusDano
-           */
           const totalFinal =
             skill.baseTotal +
             bonusDano;
-
-
-          const totalPorHit =
-            skill.perHit +
-            bonusPorHit;
 
 
           const tags =
@@ -4045,6 +4048,353 @@ function atualizarCalculadora() {
         }
       )
       .join("");
+
+
+  const skillsDisponiveis =
+    digi.skills
+      .map(
+        function(skill, index) {
+          return {
+            skill: skill,
+            index: index
+          };
+        }
+      )
+      .filter(
+        function(item) {
+          return (
+            item.skill &&
+            item.skill.available &&
+            Number.isFinite(
+              item.skill.baseTotal
+            ) &&
+            Number.isFinite(
+              item.skill.perHit
+            ) &&
+            Number.isFinite(
+              item.skill.hits
+            )
+          );
+        }
+      );
+
+
+  if (
+    !skillsDisponiveis.some(
+      function(item) {
+        return item.index === calcBurstSkillSelecionada;
+      }
+    )
+  ) {
+    calcBurstSkillSelecionada =
+      skillsDisponiveis.length
+        ? skillsDisponiveis[0].index
+        : 0;
+  }
+
+
+  const opcoesBurst =
+    digi.skills
+      .map(
+        function(skill, index) {
+
+          const disponivel =
+            skill &&
+            skill.available &&
+            Number.isFinite(
+              skill.baseTotal
+            ) &&
+            Number.isFinite(
+              skill.perHit
+            ) &&
+            Number.isFinite(
+              skill.hits
+            );
+
+          return `
+            <option
+              value="${index}"
+              ${
+                index === calcBurstSkillSelecionada
+                  ? "selected"
+                  : ""
+              }
+              ${
+                disponivel
+                  ? ""
+                  : "disabled"
+              }
+            >
+              Skill ${index + 1}${disponivel ? "" : " — indisponível"}
+            </option>
+          `;
+
+        }
+      )
+      .join("");
+
+
+  const skillBurst =
+    digi.skills[
+      calcBurstSkillSelecionada
+    ];
+
+
+  let cardBurst = `
+    <article class="calc-skill-card calc-burst-card nao-aplica">
+      <div class="calc-skill-top">
+        <div>
+          <div class="calc-skill-title calc-burst-title">
+            BURST SKILL
+          </div>
+          <div class="calc-skill-lv">
+            MULTIPLICADOR ×3
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-burst-selector-row">
+        <label for="calcBurstSkillSelect">
+          Usar como base
+        </label>
+        <select
+          id="calcBurstSkillSelect"
+          class="calc-select calc-burst-select"
+          onchange="calcSelecionarBurstSkill(this.value)"
+        >
+          ${opcoesBurst}
+        </select>
+      </div>
+
+      <div class="calc-breakdown">
+        Nenhuma Skill com coeficiente utilizável está disponível para a Burst.
+      </div>
+    </article>
+  `;
+
+
+  if (
+    skillBurst &&
+    skillBurst.available &&
+    Number.isFinite(
+      skillBurst.baseTotal
+    ) &&
+    Number.isFinite(
+      skillBurst.perHit
+    ) &&
+    Number.isFinite(
+      skillBurst.hits
+    )
+  ) {
+
+    const aplicaBurst =
+      Array.isArray(
+        skillBurst.elements
+      )
+      &&
+      skillBurst.elements.includes(
+        elemento
+      );
+
+
+    const perHitBurst =
+      skillBurst.perHit * 3;
+
+    const baseTotalBurst =
+      skillBurst.baseTotal * 3;
+
+    const bonusNormalPorHit =
+      aplicaBurst
+        ? (
+            skillBurst.perHit *
+            fatorElemento
+          )
+        : 0;
+
+    const bonusBurstPorHit =
+      bonusNormalPorHit * 3;
+
+    const bonusBurstTotal =
+      bonusBurstPorHit *
+      skillBurst.hits;
+
+    const totalBurst =
+      baseTotalBurst +
+      bonusBurstTotal;
+
+    const numeroSkillBurst =
+      calcBurstSkillSelecionada + 1;
+
+    const tagsBurst =
+      (
+        skillBurst.elements ||
+        []
+      )
+        .map(
+          function(el) {
+            return `
+              <span
+                class="calc-element-tag ${
+                  el === elemento
+                    ? "ativo"
+                    : ""
+                }"
+              >
+                ${el}
+              </span>
+            `;
+          }
+        )
+        .join("");
+
+
+    cardBurst = `
+      <article
+        class="calc-skill-card calc-burst-card ${
+          aplicaBurst
+            ? "aplica"
+            : "nao-aplica"
+        }"
+      >
+
+        <div class="calc-skill-top">
+          <div>
+            <div class="calc-skill-title calc-burst-title">
+              BURST SKILL
+            </div>
+            <div class="calc-skill-lv">
+              SKILL ${numeroSkillBurst} • LEVEL 10 • MULTIPLICADOR ×3
+            </div>
+          </div>
+
+          <span
+            class="calc-status ${
+              aplicaBurst
+                ? "sim"
+                : "nao"
+            }"
+          >
+            ${
+              aplicaBurst
+                ? elemento + " APLICADO"
+                : "SEM BÔNUS"
+            }
+          </span>
+        </div>
+
+
+        <div class="calc-burst-selector-row">
+          <label for="calcBurstSkillSelect">
+            Burst baseada em
+          </label>
+          <select
+            id="calcBurstSkillSelect"
+            class="calc-select calc-burst-select"
+            onchange="calcSelecionarBurstSkill(this.value)"
+          >
+            ${opcoesBurst}
+          </select>
+        </div>
+
+
+        <div class="calc-formula-row calc-burst-formula">
+
+          <div>
+            <div class="calc-number-label">
+              Base Burst total
+            </div>
+            <div class="calc-number">
+              ${calcFormatar(baseTotalBurst)}%
+            </div>
+          </div>
+
+          <div class="calc-arrow">
+            →
+          </div>
+
+          <div>
+            <div class="calc-number-label">
+              Dano Burst total
+            </div>
+            <div class="calc-number final calc-burst-final">
+              ${calcFormatar(totalBurst)}%
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="calc-breakdown calc-burst-breakdown">
+          Skill ${numeroSkillBurst} original:
+          <strong>
+            ${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%
+          </strong>
+          = ${calcFormatar(skillBurst.baseTotal)}%
+
+          <br>
+
+          Burst ×3:
+          <strong>
+            ${skillBurst.hits} hits × ${calcFormatar(perHitBurst)}%
+          </strong>
+          = ${calcFormatar(baseTotalBurst)}%
+
+          <br>
+
+          ${
+            aplicaBurst
+              ? `
+                Bônus elemental normal por hit:
+                <strong>
+                  +${calcFormatar(bonusNormalPorHit)}%
+                </strong>
+
+                <br>
+
+                Bônus elemental Burst por hit:
+                <strong class="calc-number bonus" style="font-size:13px;">
+                  +${calcFormatar(bonusBurstPorHit)}%
+                </strong>
+                (${calcFormatar(bonusNormalPorHit)} × 3)
+
+                <br>
+
+                Bônus elemental Burst total:
+                <strong>
+                  +${calcFormatar(bonusBurstTotal)}%
+                </strong>
+
+                <br>
+
+                <strong>
+                  ${skillBurst.hits} hits ×
+                  (${calcFormatar(perHitBurst)}% + ${calcFormatar(bonusBurstPorHit)}%)
+                </strong>
+                =
+                <strong>
+                  ${calcFormatar(totalBurst)}%
+                </strong>
+              `
+              : `
+                O elemento ${elemento} não entra na Skill ${numeroSkillBurst};
+                portanto a Burst mantém apenas o dano base ×3.
+              `
+          }
+        </div>
+
+
+        <div class="calc-elements">
+          ${tagsBurst}
+        </div>
+
+      </article>
+    `;
+  }
+
+
+  resultados.innerHTML =
+    cardsSkills +
+    cardBurst;
 }
 
 /* =====================================================
