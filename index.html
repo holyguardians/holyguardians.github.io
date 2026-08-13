@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HOLY GUARDIANS</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260813-1735">
+  <link rel="stylesheet" href="styles.css?v=20260813-1815">
 </head>
 <body>
 
@@ -938,6 +938,48 @@
   <div class="internal-wrap">
     <div class="elementos-scene">
 
+      <div class="elementos-info-tab elementos-info-tab-buff">
+        <button
+          class="elementos-info-tab-handle"
+          type="button"
+          aria-expanded="false"
+          onclick="toggleElementosInfoTab(this)"
+        >
+          <span class="elementos-info-tab-dot"></span>
+          <span>BUFF</span>
+          <span class="elementos-info-tab-arrow">‹</span>
+        </button>
+
+        <div class="elementos-info-tab-panel">
+          <strong>BUFF</strong>
+          <p>
+            Elemento que ganha vantagem de dano ao atingir um alvo afetado por
+            Stun ou DoT causado pelo elemento selecionado.
+          </p>
+        </div>
+      </div>
+
+      <div class="elementos-info-tab elementos-info-tab-remove">
+        <button
+          class="elementos-info-tab-handle"
+          type="button"
+          aria-expanded="false"
+          onclick="toggleElementosInfoTab(this)"
+        >
+          <span class="elementos-info-tab-arrow">›</span>
+          <span>REMOVE</span>
+          <span class="elementos-info-tab-dot"></span>
+        </button>
+
+        <div class="elementos-info-tab-panel">
+          <strong>REMOVE</strong>
+          <p>
+            Elemento capaz de remover o Stun ou DoT causado pelo elemento
+            selecionado.
+          </p>
+        </div>
+      </div>
+
       <img
         id="elementosSceneArt"
         class="elementos-scene-art"
@@ -1175,6 +1217,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260813-1735"></script>
+<script src="scripts.js?v=20260813-1815"></script>
 </body>
 </html>

@@ -5284,3 +5284,70 @@ function montarCenaElementosHakase() {
   );
 
 }
+
+/* =====================================================
+   ELEMENTOS — ABAS LATERAIS DE AJUDA
+===================================================== */
+
+function toggleElementosInfoTab(botao) {
+
+  const tab =
+    botao.closest(".elementos-info-tab");
+
+  if (!tab) {
+    return;
+  }
+
+  const vaiAbrir =
+    !tab.classList.contains("aberta");
+
+  document
+    .querySelectorAll(".elementos-info-tab.aberta")
+    .forEach(function(outra) {
+
+      outra.classList.remove("aberta");
+
+      const outroBotao =
+        outra.querySelector(".elementos-info-tab-handle");
+
+      if (outroBotao) {
+        outroBotao.setAttribute("aria-expanded", "false");
+      }
+
+    });
+
+  if (vaiAbrir) {
+
+    tab.classList.add("aberta");
+    botao.setAttribute("aria-expanded", "true");
+
+  }
+
+}
+
+
+document.addEventListener(
+  "click",
+  function(event) {
+
+    if (event.target.closest(".elementos-info-tab")) {
+      return;
+    }
+
+    document
+      .querySelectorAll(".elementos-info-tab.aberta")
+      .forEach(function(tab) {
+
+        tab.classList.remove("aberta");
+
+        const botao =
+          tab.querySelector(".elementos-info-tab-handle");
+
+        if (botao) {
+          botao.setAttribute("aria-expanded", "false");
+        }
+
+      });
+
+  }
+);
