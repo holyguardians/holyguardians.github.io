@@ -9669,3 +9669,55 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* =====================================================
+   TEAM BUILDER — SKILLS 1/2/3 PADRONIZADAS
+   Três cards com exatamente a mesma largura e altura visual.
+   Mantém toda a lógica do Builder intacta.
+===================================================== */
+
+#builderPagina .selected-info > .skill:nth-child(16),
+#builderPagina .selected-info > .skill:nth-child(17),
+#builderPagina .selected-info > .skill:nth-child(18) {
+  grid-column: 1 / -1 !important;
+  grid-row: 5 !important;
+  width: calc((100% - 16px) / 3) !important;
+  min-width: 0 !important;
+  min-height: 138px;
+  height: 100%;
+}
+
+#builderPagina .selected-info > .skill:nth-child(16) {
+  justify-self: start;
+}
+
+#builderPagina .selected-info > .skill:nth-child(17) {
+  justify-self: center;
+}
+
+#builderPagina .selected-info > .skill:nth-child(18) {
+  justify-self: end;
+}
+
+/* Mantém o conteúdo interno organizado mesmo quando o título quebra linha. */
+#builderPagina .selected-info > .skill {
+  display: flex;
+  flex-direction: column;
+}
+
+#builderPagina .selected-info > .skill .skill-efeito {
+  justify-content: center;
+}
+
+/* No mobile volta ao comportamento empilhado já usado pelo site. */
+@media (max-width: 620px) {
+  #builderPagina .selected-info > .skill:nth-child(16),
+  #builderPagina .selected-info > .skill:nth-child(17),
+  #builderPagina .selected-info > .skill:nth-child(18) {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    min-height: 0;
+    justify-self: stretch;
+  }
+}
