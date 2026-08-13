@@ -3830,19 +3830,39 @@ function classeStatCardMultiplo(
   const minimo =
     Math.min.apply(null, validos);
 
+  /* Todos iguais = empate real, sem verde/vermelho. */
   if (maximo === minimo) {
     return "empate";
   }
 
+  /*
+   * Modo principal de 2:
+   * preserva exatamente a lógica tradicional.
+   */
+  if (quantidadeComparacao === 2) {
+    if (atual === maximo) {
+      return "maior";
+    }
+
+    if (atual === minimo) {
+      return "menor";
+    }
+
+    return "";
+  }
+
+  /*
+   * Modos 4 e 8:
+   * o maior valor é o vencedor (verde ▲).
+   * TODOS os demais ficam como perdedores (vermelho ▼).
+   *
+   * Em empate no topo, todos os maiores ficam verdes.
+   */
   if (atual === maximo) {
     return "maior";
   }
 
-  if (atual === minimo) {
-    return "menor";
-  }
-
-  return "";
+  return "menor";
 }
 
 
