@@ -8464,6 +8464,16 @@ body {
   border: 1px solid rgba(39,126,215,.26);
 }
 
+.comparacao-extra-dupla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.comparacao-extra-dupla .comparacao-extra-box {
+  min-width: 0;
+}
+
 .comparacao-extra-box .label {
   margin-bottom: 6px;
   color: #77b9e8;

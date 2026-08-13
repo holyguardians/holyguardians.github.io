@@ -3254,17 +3254,19 @@ function cardComparacao(
           </div>
         </div>
 
-        <div class="comparacao-extra-box">
-          <div class="label">STRONG</div>
-          <div class="value">
-            ${renderizarIconeElemento(d.strong)}
+        <div class="comparacao-extra-dupla">
+          <div class="comparacao-extra-box">
+            <div class="label">STRONG</div>
+            <div class="value">
+              ${renderizarIconeElemento(d.strong)}
+            </div>
           </div>
-        </div>
 
-        <div class="comparacao-extra-box">
-          <div class="label">WEAK</div>
-          <div class="value">
-            ${renderizarIconeElemento(d.weak)}
+          <div class="comparacao-extra-box">
+            <div class="label">WEAK</div>
+            <div class="value">
+              ${renderizarIconeElemento(d.weak)}
+            </div>
           </div>
         </div>
 
