@@ -1634,7 +1634,7 @@ function criarSlots() {
 
   for (
     let i = 1;
-    i <= 6;
+    i <= 8;
     i++
   ) {
 
