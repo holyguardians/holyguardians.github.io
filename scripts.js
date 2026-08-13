@@ -3502,10 +3502,110 @@ function aplicarAssetHakaseDigidex() {
    COMPARAÇÃO
 ===================================================== */
 
+const comparacaoLados = ["A","B","C","D","E","F","G","H"];
+
 const comparacaoSelecionados = {
   A: null,
-  B: null
+  B: null,
+  C: null,
+  D: null,
+  E: null,
+  F: null,
+  G: null,
+  H: null
 };
+
+let quantidadeComparacao = 2;
+
+
+function setQuantidadeComparacao(qtd) {
+  qtd = Number(qtd);
+
+  if (![2, 4, 8].includes(qtd)) {
+    qtd = 2;
+  }
+
+  quantidadeComparacao = qtd;
+
+  document
+    .querySelectorAll(".comparacao-qtd-btn")
+    .forEach(function(botao) {
+      botao.classList.toggle(
+        "ativo",
+        Number(botao.dataset.qtd) === qtd
+      );
+    });
+
+  const subtitle =
+    document.getElementById("comparacaoSubtitle");
+
+  if (subtitle) {
+    subtitle.textContent =
+      qtd === 2
+        ? "Selecione dois Digimons e compare seus dados lado a lado."
+        : "Selecione " + qtd + " Digimons e compare seus dados usando a mesma lógica da comparação principal.";
+  }
+
+  renderizarSelectoresComparacao();
+  renderizarComparacao();
+}
+
+
+function renderizarSelectoresComparacao() {
+  const container =
+    document.getElementById("comparacaoSelectores");
+
+  if (!container) {
+    return;
+  }
+
+  const ladosAtivos =
+    comparacaoLados.slice(0, quantidadeComparacao);
+
+  container.className =
+    "comparacao-selectores comparacao-selectores-" +
+    quantidadeComparacao;
+
+  container.innerHTML =
+    ladosAtivos
+      .map(function(lado, indice) {
+        const selecionado =
+          comparacaoSelecionados[lado];
+
+        const seletor = `
+          <div class="comparacao-selector">
+            <label for="comparacaoDigimon${lado}">
+              DIGIMON ${indice + 1}
+            </label>
+            <input
+              id="comparacaoDigimon${lado}"
+              class="comparacao-input"
+              type="text"
+              placeholder="Digite o nome do Digimon..."
+              autocomplete="off"
+              value="${selecionado ? escaparHtml(selecionado.digimon) : ""}"
+              oninput="atualizarSugestoesComparacao('${lado}')"
+              onfocus="atualizarSugestoesComparacao('${lado}')"
+            >
+            <div
+              id="comparacaoSugestoes${lado}"
+              class="comparacao-sugestoes"
+            ></div>
+          </div>
+        `;
+
+        if (
+          quantidadeComparacao === 2 &&
+          indice === 0
+        ) {
+          return seletor +
+            '<div class="comparacao-vs">VS</div>';
+        }
+
+        return seletor;
+      })
+      .join("");
+}
 
 
 function escaparHtml(valor) {
@@ -3703,45 +3803,57 @@ function valorSeguroComparacao(valor) {
 }
 
 
-function classeStatCard(
+function classeStatCardMultiplo(
   valorAtual,
-  valorOutro
+  todosValores
 ) {
   const atual =
-    numeroComparacao(
-      valorAtual
-    );
+    numeroComparacao(valorAtual);
 
-  const outro =
-    numeroComparacao(
-      valorOutro
-    );
+  const validos =
+    todosValores
+      .map(numeroComparacao)
+      .filter(function(v) {
+        return v !== null;
+      });
 
   if (
     atual === null ||
-    outro === null
+    validos.length < 2
   ) {
     return "";
   }
 
-  if (atual === outro) {
+  const maximo =
+    Math.max.apply(null, validos);
+
+  const minimo =
+    Math.min.apply(null, validos);
+
+  if (maximo === minimo) {
     return "empate";
   }
 
-  return atual > outro
-    ? "maior"
-    : "menor";
+  if (atual === maximo) {
+    return "maior";
+  }
+
+  if (atual === minimo) {
+    return "menor";
+  }
+
+  return "";
 }
 
 
-function setaStatCard(
+function setaStatCardMultiplo(
   valorAtual,
-  valorOutro
+  todosValores
 ) {
   const classe =
-    classeStatCard(
+    classeStatCardMultiplo(
       valorAtual,
-      valorOutro
+      todosValores
     );
 
   if (classe === "maior") {
@@ -3764,15 +3876,15 @@ function setaStatCard(
 }
 
 
-function statCardComparacao(
+function statCardComparacaoMultipla(
   label,
   valorAtual,
-  valorOutro
+  todosValores
 ) {
   const classe =
-    classeStatCard(
+    classeStatCardMultiplo(
       valorAtual,
-      valorOutro
+      todosValores
     );
 
   return `
@@ -3783,7 +3895,7 @@ function statCardComparacao(
       </div>
 
       <div class="comparacao-stat-value ${classe}">
-        ${setaStatCard(valorAtual, valorOutro)}
+        ${setaStatCardMultiplo(valorAtual, todosValores)}
         <span>
           ${valorSeguroComparacao(valorAtual)}
         </span>
@@ -3794,14 +3906,22 @@ function statCardComparacao(
 }
 
 
-function cardComparacao(
+function cardComparacaoMultipla(
   d,
-  outro
+  selecionados
 ) {
   const tipo =
-    normalizarType(
-      d.type
-    );
+    normalizarType(d.type);
+
+  const valores = {
+    hp: selecionados.map(function(x) { return x.hp; }),
+    sp: selecionados.map(function(x) { return x.sp; }),
+    str: selecionados.map(function(x) { return x.str; }),
+    int: selecionados.map(function(x) { return x.int; }),
+    def: selecionados.map(function(x) { return x.def; }),
+    res: selecionados.map(function(x) { return x.res; }),
+    spd: selecionados.map(function(x) { return x.spd; })
+  };
 
   return `
     <div class="comparacao-card">
@@ -3831,13 +3951,13 @@ function cardComparacao(
 
       <div class="comparacao-stats">
 
-        ${statCardComparacao("HP", d.hp, outro.hp)}
-        ${statCardComparacao("SP", d.sp, outro.sp)}
-        ${statCardComparacao("STR", d.str, outro.str)}
-        ${statCardComparacao("INT", d.int, outro.int)}
-        ${statCardComparacao("DEF", d.def, outro.def)}
-        ${statCardComparacao("RES", d.res, outro.res)}
-        ${statCardComparacao("SPD", d.spd, outro.spd)}
+        ${statCardComparacaoMultipla("HP", d.hp, valores.hp)}
+        ${statCardComparacaoMultipla("SP", d.sp, valores.sp)}
+        ${statCardComparacaoMultipla("STR", d.str, valores.str)}
+        ${statCardComparacaoMultipla("INT", d.int, valores.int)}
+        ${statCardComparacaoMultipla("DEF", d.def, valores.def)}
+        ${statCardComparacaoMultipla("RES", d.res, valores.res)}
+        ${statCardComparacaoMultipla("SPD", d.spd, valores.spd)}
 
       </div>
 
@@ -3882,28 +4002,53 @@ function renderizarComparacao() {
     return;
   }
 
-  const a =
-    comparacaoSelecionados.A;
+  const ladosAtivos =
+    comparacaoLados.slice(
+      0,
+      quantidadeComparacao
+    );
 
-  const b =
-    comparacaoSelecionados.B;
+  const selecionados =
+    ladosAtivos
+      .map(function(lado) {
+        return comparacaoSelecionados[lado];
+      });
 
-  if (!a || !b) {
+  const completos =
+    selecionados.filter(Boolean);
+
+  if (
+    completos.length !== quantidadeComparacao
+  ) {
+    const faltam =
+      quantidadeComparacao - completos.length;
+
     resultado.innerHTML = `
       <div class="comparacao-empty">
-        Escolha dois Digimons para iniciar a comparação.
+        ${
+          quantidadeComparacao === 2
+            ? "Escolha dois Digimons para iniciar a comparação."
+            : "Selecione os " + quantidadeComparacao +
+              " Digimons para iniciar a comparação. Faltam " +
+              faltam + "."
+        }
       </div>
     `;
     return;
   }
 
   resultado.innerHTML = `
-    <div class="comparacao-grid">
-
-      ${cardComparacao(a, b)}
-
-      ${cardComparacao(b, a)}
-
+    <div class="comparacao-grid comparacao-grid-${quantidadeComparacao}">
+      ${
+        completos
+          .map(function(d) {
+            return cardComparacaoMultipla(
+              d,
+              completos
+            );
+          })
+          .join("")
+      }
     </div>
   `;
 }
@@ -3913,7 +4058,7 @@ document.addEventListener(
   "click",
   function(evento) {
 
-    ["A", "B"].forEach(
+    comparacaoLados.forEach(
       function(lado) {
 
         const input =

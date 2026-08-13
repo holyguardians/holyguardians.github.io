@@ -10900,3 +10900,188 @@ body {
 .elementos-info-tab {
   margin-top: -18px;
 }
+
+
+/* =====================================================
+   COMPARAÇÃO — SELETOR 2 / 4 / 8
+===================================================== */
+
+.comparacao-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.comparacao-quantidade {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid rgba(48,155,255,.42);
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8,35,76,.92),
+      rgba(3,18,43,.96)
+    );
+  box-shadow:
+    inset 0 0 16px rgba(0,134,255,.07),
+    0 0 12px rgba(0,116,255,.08);
+}
+
+.comparacao-quantidade-label {
+  padding: 0 8px;
+  color: #78ddff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.comparacao-qtd-btn {
+  width: 38px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(58,145,235,.45);
+  border-radius: 7px;
+  background: rgba(4,19,45,.88);
+  color: #a9c9e6;
+  font-family: "Oxanium", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    border-color .16s ease,
+    background .16s ease,
+    color .16s ease,
+    box-shadow .16s ease;
+}
+
+.comparacao-qtd-btn:hover {
+  color: #eaf8ff;
+  border-color: rgba(70,194,255,.75);
+}
+
+.comparacao-qtd-btn.ativo {
+  color: #ffffff;
+  border-color: #52d9ff;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(25,132,239,.92),
+      rgba(10,83,184,.96)
+    );
+  box-shadow:
+    inset 0 0 10px rgba(255,255,255,.10),
+    0 0 10px rgba(38,177,255,.32);
+}
+
+/* 2 mantém exatamente a composição principal com VS central. */
+.comparacao-selectores-2 {
+  grid-template-columns:
+    minmax(0,1fr)
+    72px
+    minmax(0,1fr);
+}
+
+/* 4 = 2 x 2 */
+.comparacao-selectores-4 {
+  grid-template-columns:
+    repeat(2, minmax(0,1fr));
+}
+
+/* 8 = 4 x 2 */
+.comparacao-selectores-8 {
+  grid-template-columns:
+    repeat(4, minmax(0,1fr));
+}
+
+/* Resultado: 2 continua principal; 4 e 8 expandem a mesma lógica. */
+.comparacao-grid-2 {
+  grid-template-columns:
+    repeat(2, minmax(0,1fr));
+}
+
+.comparacao-grid-4 {
+  grid-template-columns:
+    repeat(2, minmax(0,1fr));
+}
+
+.comparacao-grid-8 {
+  grid-template-columns:
+    repeat(4, minmax(0,1fr));
+}
+
+/* Em 8 cards, reduz apenas a escala interna para caber sem mudar a lógica. */
+.comparacao-grid-8 .comparacao-card {
+  padding: 14px;
+}
+
+.comparacao-grid-8 .comparacao-retrato {
+  width: 132px;
+  height: 132px;
+  flex-basis: 132px;
+}
+
+.comparacao-grid-8 .comparacao-card-head .comparacao-retrato img {
+  width: 118px;
+  height: 118px;
+  max-width: 118px;
+  max-height: 118px;
+}
+
+.comparacao-grid-8 .comparacao-card-head {
+  min-height: 190px;
+}
+
+.comparacao-grid-8 .comparacao-card-head h3 {
+  font-size: 15px;
+}
+
+.comparacao-grid-8 .comparacao-card-type {
+  min-width: 92px;
+  font-size: 9px;
+}
+
+.comparacao-grid-8 .comparacao-stat {
+  min-height: 52px;
+  padding: 7px 8px;
+}
+
+.comparacao-grid-8 .comparacao-stat-value {
+  font-size: 12px;
+}
+
+@media (max-width: 1180px) {
+  .comparacao-selectores-8,
+  .comparacao-grid-8 {
+    grid-template-columns:
+      repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .comparacao-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .comparacao-quantidade {
+    order: 2;
+  }
+
+  .comparacao-selectores-2,
+  .comparacao-selectores-4,
+  .comparacao-selectores-8,
+  .comparacao-grid-2,
+  .comparacao-grid-4,
+  .comparacao-grid-8 {
+    grid-template-columns: 1fr;
+  }
+
+  .comparacao-selectores-2 .comparacao-vs {
+    margin: -5px 0;
+  }
+}

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HOLY GUARDIANS</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260813-2055">
+  <link rel="stylesheet" href="styles.css?v=20260813-2140">
 </head>
 <body>
 
@@ -869,15 +869,24 @@
           DIGIMON ANALYSIS // HOLY GUARDIANS SYSTEM
         </div>
         <h2 class="page-title">COMPARAÇÃO</h2>
-        <p class="page-subtitle">
+        <p id="comparacaoSubtitle" class="page-subtitle">
           Selecione dois Digimons e compare seus dados lado a lado.
         </p>
       </div>
 
-      <img id="comparacaoHeroIcon" class="comparacao-hero-icon" alt="Comparação">
+      <div class="comparacao-header-actions">
+        <div class="comparacao-quantidade" aria-label="Quantidade de Digimons para comparar">
+          <span class="comparacao-quantidade-label">COMPARAR</span>
+          <button type="button" class="comparacao-qtd-btn ativo" data-qtd="2" onclick="setQuantidadeComparacao(2)">2</button>
+          <button type="button" class="comparacao-qtd-btn" data-qtd="4" onclick="setQuantidadeComparacao(4)">4</button>
+          <button type="button" class="comparacao-qtd-btn" data-qtd="8" onclick="setQuantidadeComparacao(8)">8</button>
+        </div>
+
+        <img id="comparacaoHeroIcon" class="comparacao-hero-icon" alt="Comparação">
+      </div>
     </div>
 
-    <div class="comparacao-selectores">
+    <div id="comparacaoSelectores" class="comparacao-selectores comparacao-selectores-2">
       <div class="comparacao-selector">
         <label for="comparacaoDigimonA">DIGIMON 1</label>
         <input
@@ -1217,6 +1226,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260813-2055"></script>
+<script src="scripts.js?v=20260813-2140"></script>
 </body>
 </html>
