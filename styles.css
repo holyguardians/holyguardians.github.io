@@ -11136,3 +11136,127 @@ body {
     max-width: none;
   }
 }
+
+
+/* =====================================================
+   LOGO HG — PNG LIMPA + BRILHO DOURADO SOMENTE NO ARCO
+   A camada .brand-logo-glow repete a mesma PNG, mas é
+   recortada para que o brilho nasça apenas do arco superior.
+   ===================================================== */
+.brand-logo-shell {
+  position: relative;
+  width: 138px;
+  height: 138px;
+  flex: 0 0 138px;
+  display: block;
+  overflow: visible;
+  transform: scale(1.28);
+  transform-origin: center;
+  transition: transform .28s ease;
+}
+
+.brand-logo-shell .brand-logo {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none;
+  max-height: none;
+  flex: none !important;
+  object-fit: contain;
+  transform: none !important;
+  animation: none !important;
+  pointer-events: none;
+}
+
+/* Imagem principal: sem neon azul e sem brilho geral. */
+.brand-logo-shell .brand-logo-main {
+  z-index: 2;
+  filter: none !important;
+}
+
+/*
+  Camada de aura: só a faixa do arco fica visível.
+  O brilho é gerado a partir dos pixels NÃO transparentes
+  dessa região, então acompanha o desenho do arco da PNG.
+*/
+.brand-logo-shell .brand-logo-glow {
+  z-index: 1;
+  opacity: .82;
+  clip-path: polygon(
+    5% 0%,
+    95% 0%,
+    91% 44%,
+    82% 39%,
+    70% 34%,
+    50% 31%,
+    30% 34%,
+    18% 39%,
+    9% 44%
+  );
+  filter:
+    drop-shadow(0 0 4px rgba(255, 213, 92, .95))
+    drop-shadow(0 0 10px rgba(255, 180, 35, .72))
+    drop-shadow(0 0 20px rgba(255, 145, 12, .42)) !important;
+}
+
+.brand:hover .brand-logo-shell {
+  animation: hgLogoArcPulse 1.15s ease-in-out infinite alternate;
+}
+
+.brand:hover .brand-logo-shell .brand-logo-main {
+  filter: none !important;
+}
+
+.brand:hover .brand-logo-shell .brand-logo-glow {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 5px rgba(255, 226, 125, 1))
+    drop-shadow(0 0 13px rgba(255, 190, 45, .92))
+    drop-shadow(0 0 27px rgba(255, 145, 12, .60)) !important;
+}
+
+@keyframes hgLogoArcPulse {
+  from { transform: scale(1.34) rotate(-2deg); }
+  to   { transform: scale(1.42) rotate(2deg); }
+}
+
+@media (min-width: 1900px) {
+  .brand-logo-shell {
+    width: 150px;
+    height: 150px;
+    flex-basis: 150px;
+    transform: scale(1.30);
+  }
+}
+
+@media (max-width: 1400px) {
+  .brand-logo-shell {
+    width: 100px;
+    height: 100px;
+    flex-basis: 100px;
+    transform: scale(1.18);
+  }
+}
+
+@media (max-width: 1050px) {
+  .brand-logo-shell {
+    width: 78px;
+    height: 78px;
+    flex-basis: 78px;
+  }
+}
+
+@media (max-width: 700px) {
+  .brand-logo-shell {
+    width: 58px;
+    height: 58px;
+    flex-basis: 58px;
+    transform: none;
+  }
+
+  .brand:hover .brand-logo-shell {
+    animation: none;
+    transform: scale(1.06);
+  }
+}

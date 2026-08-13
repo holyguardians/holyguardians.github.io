@@ -3387,12 +3387,22 @@ function carregarImagensSite() {
             "headerLogo"
           );
 
+        const headerLogoGlow =
+          document.getElementById(
+            "headerLogoGlow"
+          );
+
         if (
           headerLogo &&
           logo
         ) {
           headerLogo.src =
             logo;
+
+          if (headerLogoGlow) {
+            headerLogoGlow.src =
+              logo;
+          }
         }
 
         aplicarAssetsHome();
