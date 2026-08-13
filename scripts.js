@@ -2024,31 +2024,36 @@ function filtrar() {
 
         if (elementosSelecionados.length) {
 
-          const elementosDoDigimon = [];
+          const skillsSelecionadas = [];
 
           if (buscarSkill1) {
-            elementosDoDigimon.push(
-              ...obterElementosSkill(d.skill1)
+            skillsSelecionadas.push(
+              obterElementosSkill(d.skill1)
             );
           }
 
           if (buscarSkill2) {
-            elementosDoDigimon.push(
-              ...obterElementosSkill(d.skill2)
+            skillsSelecionadas.push(
+              obterElementosSkill(d.skill2)
             );
           }
 
           if (buscarSkill3) {
-            elementosDoDigimon.push(
-              ...obterElementosSkill(d.skill3)
+            skillsSelecionadas.push(
+              obterElementosSkill(d.skill3)
             );
           }
 
           skillOk =
-            elementosSelecionados.some(
-              function(elemento) {
-                return elementosDoDigimon.includes(
-                  elemento
+            skillsSelecionadas.length > 0 &&
+            skillsSelecionadas.every(
+              function(elementosDaSkill) {
+                return elementosSelecionados.some(
+                  function(elemento) {
+                    return elementosDaSkill.includes(
+                      elemento
+                    );
+                  }
                 );
               }
             );
