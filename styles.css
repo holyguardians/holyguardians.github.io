@@ -11260,3 +11260,75 @@ body {
     transform: scale(1.06);
   }
 }
+
+/* =====================================================
+   AJUSTE FINAL HEADER HG — 2026-08-13
+   Mantém o tamanho atual da logo e apenas harmoniza a topbar.
+   ===================================================== */
+
+/* Remove a camada recortada do teste anterior. */
+.brand-logo-shell .brand-logo-glow {
+  display: none !important;
+}
+
+/* Volta ao glow simples da logo, agora em dourado. */
+.brand-logo-shell .brand-logo-main {
+  filter:
+    drop-shadow(0 0 8px rgba(255, 196, 58, .48))
+    drop-shadow(0 0 14px rgba(255, 170, 24, .22)) !important;
+  transition: filter .22s ease;
+}
+
+.brand:hover .brand-logo-shell .brand-logo-main {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 210, 82, .72))
+    drop-shadow(0 0 18px rgba(255, 174, 24, .34)) !important;
+}
+
+/* Dá espaço real para a arte ampliada sem alterar o tamanho dela. */
+@media (min-width: 1501px) {
+  .topbar {
+    min-height: 150px !important;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .brand {
+    min-height: 150px !important;
+    gap: 10px;
+  }
+
+  /* Afasta o nome da área visual ocupada pela logo escalada. */
+  .brand-name {
+    margin-left: 24px !important;
+  }
+}
+
+@media (min-width: 1900px) {
+  .topbar,
+  .brand {
+    min-height: 158px !important;
+  }
+
+  .brand-name {
+    margin-left: 30px !important;
+  }
+}
+
+/* Mantém notebooks/desktop menor proporcionais. */
+@media (min-width: 701px) and (max-width: 1500px) {
+  .topbar,
+  .brand {
+    min-height: 104px !important;
+  }
+
+  .brand-name {
+    margin-left: 16px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .brand-name {
+    margin-left: 6px !important;
+  }
+}
