@@ -10508,3 +10508,86 @@ body {
   }
 
 }
+
+
+/* =====================================================
+   ELEMENTOS — MINI-ABAS COLADAS À PLACA "ELEMENTOS"
+   Ajuste final de posicionamento.
+===================================================== */
+
+/*
+  A placa branca ELEMENTOS ocupa aproximadamente o miolo superior
+  da arte. As abas ficam na mesma linha visual, encostadas nas
+  laterais dela e continuam abrindo para FORA.
+*/
+.elementos-info-tab {
+  top: 13.7%;
+}
+
+.elementos-info-tab-buff {
+  left: 30.7%;
+  right: auto;
+  transform: translate(-100%, -50%);
+  flex-direction: row-reverse;
+}
+
+.elementos-info-tab-remove {
+  right: 30.7%;
+  left: auto;
+  transform: translate(100%, -50%);
+  flex-direction: row;
+}
+
+/* Faz as linguetas parecerem extensões da aba branca central. */
+.elementos-info-tab-handle {
+  width: 104px;
+  min-height: 58px;
+  padding: 8px 10px;
+}
+
+.elementos-info-tab-buff .elementos-info-tab-handle {
+  border-radius: 12px 0 0 12px;
+  border-right-width: 1px;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-handle {
+  border-radius: 0 12px 12px 0;
+  border-left-width: 1px;
+}
+
+/* Mantém a leitura sem alterar a geometria do quadro. */
+.elementos-info-tab-panel {
+  min-height: 76px;
+}
+
+/* Cores semânticas */
+.elementos-info-tab-buff .elementos-info-tab-dot {
+  color: #35f29a;
+  background: #35f29a;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-dot {
+  color: #ff4d68;
+  background: #ff4d68;
+}
+
+/* Em telas menores preservamos o fallback seguro já criado. */
+@media (max-width: 980px) {
+
+  .elementos-info-tab {
+    top: auto;
+  }
+
+  .elementos-info-tab-buff {
+    left: 12px;
+    right: auto;
+    transform: none;
+  }
+
+  .elementos-info-tab-remove {
+    right: 12px;
+    left: auto;
+    transform: none;
+  }
+
+}
