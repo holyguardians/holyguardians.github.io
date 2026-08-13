@@ -10678,3 +10678,90 @@ body {
   }
 
 }
+
+
+/* =====================================================
+   ELEMENTOS — AJUSTE FINO DAS MINI-ABAS
+   Fora da faixa branca, próximas e maiores novamente.
+===================================================== */
+
+.elementos-info-tab {
+  top: 19.6%;
+}
+
+/* Encostam por fora da placa branca, sem invadir. */
+.elementos-info-tab-buff {
+  left: 25.4%;
+  right: auto;
+  transform: translate(-100%, -50%);
+  flex-direction: row-reverse;
+}
+
+.elementos-info-tab-remove {
+  right: 25.4%;
+  left: auto;
+  transform: translate(100%, -50%);
+  flex-direction: row;
+}
+
+/* Volta ao porte maior, mais coerente com a moldura. */
+.elementos-info-tab-handle {
+  width: 106px;
+  min-height: 58px;
+  height: 58px;
+  padding: 8px 10px;
+  font-size: 10px;
+  gap: 7px;
+}
+
+/* Mantém o aspecto de extensão lateral da aba principal. */
+.elementos-info-tab-buff .elementos-info-tab-handle {
+  border-radius: 12px 0 0 12px;
+  border-right-width: 1px;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-handle {
+  border-radius: 0 12px 12px 0;
+  border-left-width: 1px;
+}
+
+/* Painéis continuam abrindo para fora. */
+.elementos-info-tab-panel {
+  min-height: 78px;
+}
+
+.elementos-info-tab.aberta .elementos-info-tab-panel,
+.elementos-info-tab:hover .elementos-info-tab-panel {
+  width: 245px;
+}
+
+/* Cores semânticas */
+.elementos-info-tab-buff .elementos-info-tab-dot {
+  color: #35f29a;
+  background: #35f29a;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-dot {
+  color: #ff4d68;
+  background: #ff4d68;
+}
+
+@media (max-width: 980px) {
+
+  .elementos-info-tab {
+    top: auto;
+  }
+
+  .elementos-info-tab-buff {
+    left: 12px;
+    right: auto;
+    transform: none;
+  }
+
+  .elementos-info-tab-remove {
+    right: 12px;
+    left: auto;
+    transform: none;
+  }
+
+}
