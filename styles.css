@@ -11332,3 +11332,260 @@ body {
     margin-left: 6px !important;
   }
 }
+
+/* =====================================================
+   TYPE ICONS
+===================================================== */
+
+.type-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  vertical-align: middle;
+}
+
+.type-icon-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(70, 185, 255, .22));
+}
+
+.type-label {
+  font-size: 11px;
+  letter-spacing: .13em;
+  opacity: .7;
+  margin-right: 5px;
+}
+
+.type,
+.digidex-table-type,
+.comparacao-card-type {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.digidex-table-type .type-icon-img,
+.comparacao-card-type .type-icon-img {
+  width: 38px;
+  height: 38px;
+}
+
+.type-filter {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid rgba(85, 199, 255, .34);
+  border-radius: 10px;
+  background: rgba(3, 13, 29, .88);
+}
+
+.type-filter-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  color: #b9dfff;
+  font-size: 11px;
+  font-weight: 900;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.type-filter-btn img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.type-filter-btn:hover,
+.type-filter-btn.ativo {
+  border-color: #4cc8ff;
+  background: rgba(52, 181, 255, .13);
+  box-shadow: 0 0 13px rgba(52, 181, 255, .28);
+  transform: translateY(-1px);
+}
+
+/* =====================================================
+   RAID BOSS
+===================================================== */
+
+.raid-wrap { padding-bottom: 80px; }
+
+.raid-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 24px;
+  padding: 28px;
+  border: 1px solid rgba(68, 198, 255, .3);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(5, 20, 42, .96), rgba(16, 8, 36, .94));
+  box-shadow: 0 20px 55px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .04);
+}
+
+.raid-kicker {
+  margin-bottom: 7px;
+  color: #61d3ff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.raid-controls { display: flex; align-items: center; gap: 12px; }
+
+.raid-alarm-control,
+.raid-notice-control {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid rgba(91, 206, 255, .28);
+  border-radius: 10px;
+  color: #d7efff;
+  background: rgba(2, 12, 27, .72);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.raid-notice-control { flex-direction: column; align-items: flex-start; gap: 3px; }
+.raid-notice-control input { width: 74px; color: #fff; border: 0; background: transparent; font-weight: 900; }
+.raid-alarm-control input { accent-color: #38c8ff; width: 18px; height: 18px; }
+
+.raid-time-strip {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-left: 3px solid #4bcfff;
+  color: #a9c9de;
+  background: rgba(4, 16, 33, .72);
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+.raid-time-strip strong { color: #70ddff; font-size: 18px; font-variant-numeric: tabular-nums; }
+.raid-time-strip small { text-align: right; opacity: .75; }
+
+.raid-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.raid-card {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid rgba(91, 178, 230, .23);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(7, 19, 39, .95), rgba(12, 11, 29, .94));
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.raid-card:hover { transform: translateY(-2px); border-color: rgba(82, 207, 255, .55); }
+.raid-card.raid-next { border-color: rgba(255, 199, 70, .62); box-shadow: 0 0 24px rgba(255, 168, 35, .13); }
+
+.raid-card-icon {
+  width: 82px;
+  height: 82px;
+  flex: 0 0 82px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(91, 201, 255, .25);
+  border-radius: 11px;
+  background: #070d1b;
+}
+.raid-card-icon img { width: 100%; height: 100%; object-fit: contain; }
+.raid-card-main { min-width: 0; flex: 1; }
+.raid-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.raid-card h3 { margin: 0 0 5px; color: #fff; font-size: 18px; }
+.raid-rotation-tag { margin-left: 8px; padding: 3px 6px; border-radius: 5px; color: #ffd665; background: rgba(255, 194, 49, .13); font-size: 9px; letter-spacing: .1em; }
+.raid-kst-time { flex: 0 0 auto; color: #7bdcff; font-size: 12px; font-weight: 800; }
+.raid-map-link { padding: 0; border: 0; color: #9ab6cb; background: none; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.raid-map-link:hover { color: #5ed8ff; }
+.raid-countdown { margin-top: 9px; color: #e5f5ff; font-size: 21px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.raid-countdown.raid-soon { color: #ff5d5d; text-shadow: 0 0 10px rgba(255, 61, 61, .45); }
+
+.raid-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 4, 13, .86);
+  backdrop-filter: blur(7px);
+}
+.raid-modal.ativo { display: grid; }
+.raid-modal-card { position: relative; width: min(820px, 94vw); max-height: 92vh; overflow: auto; padding: 20px; border: 1px solid rgba(72, 207, 255, .5); border-radius: 15px; background: #071120; box-shadow: 0 25px 80px #000; }
+.raid-modal-card h3 { margin: 0 45px 15px 0; color: #fff; }
+.raid-modal-close { position: absolute; top: 10px; right: 12px; width: 36px; height: 36px; border: 0; color: #fff; background: rgba(255,255,255,.08); border-radius: 50%; cursor: pointer; font-size: 25px; }
+.raid-map-stage { position: relative; width: 100%; line-height: 0; }
+.raid-map-stage > img { width: 100%; height: auto; display: block; border-radius: 9px; }
+.raid-map-spots { position: absolute; inset: 0; pointer-events: none; }
+.raid-map-spot { position: absolute; width: 20px; height: 20px; transform: translate(-50%, -50%); border: 3px solid #fff; border-radius: 50% 50% 50% 0; background: #ed2b3a; box-shadow: 0 0 0 4px rgba(237,43,58,.28), 0 0 18px #ed2b3a; }
+
+.raid-alert {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 10020;
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #ffcc55;
+  border-radius: 14px;
+  background: rgba(13, 12, 25, .97);
+  box-shadow: 0 15px 55px rgba(0,0,0,.55), 0 0 22px rgba(255,190,48,.18);
+  transform: translateY(150%);
+  opacity: 0;
+  transition: .25s ease;
+}
+.raid-alert.ativo { transform: translateY(0); opacity: 1; }
+.raid-alert img { width: 58px; height: 58px; object-fit: contain; border-radius: 8px; background: #071020; }
+.raid-alert div { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.raid-alert strong { color: #ffd866; }
+.raid-alert span { color: #dceeff; }
+.raid-alert button { border: 0; color: #fff; background: transparent; cursor: pointer; font-size: 22px; }
+
+@media (max-width: 900px) {
+  .raid-header { align-items: stretch; flex-direction: column; }
+  .raid-grid { grid-template-columns: 1fr; }
+  .raid-time-strip { grid-template-columns: 1fr; }
+  .raid-time-strip small { text-align: left; }
+}
+
+@media (max-width: 620px) {
+  .type-filter { width: 100%; overflow-x: auto; }
+  .raid-controls { align-items: stretch; flex-direction: column; }
+  .raid-card { align-items: flex-start; }
+  .raid-card-icon { width: 66px; height: 66px; flex-basis: 66px; }
+  .raid-card-top { flex-direction: column; }
+}
+
+/* O oitavo item mantém a navbar em uma única linha sem atropelar a marca. */
+@media (min-width: 1051px) {
+  .nav-menu { gap: clamp(4px, .42vw, 10px) !important; }
+  .nav-button {
+    min-height: 50px !important;
+    padding: 9px clamp(9px, .65vw, 15px) !important;
+    gap: 7px !important;
+    font-size: clamp(11px, .68vw, 14px) !important;
+  }
+  .nav-button img { width: clamp(21px, 1.1vw, 27px) !important; height: clamp(21px, 1.1vw, 27px) !important; }
+}

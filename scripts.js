@@ -91,6 +91,16 @@ let database = [];
 
 let imagensSite = {};
 
+let filtroTypeSelecionado = "";
+
+const TYPE_ICONS = {
+  DATA: "type_icons/type_data.png",
+  VACCINE: "type_icons/type_vaccine.png",
+  VIRUS: "type_icons/type_virus.png",
+  UNKNOWN: "type_icons/type_unknown.png",
+  FREE: "type_icons/type_free.png"
+};
+
 
 /* =====================================================
    DIGIDEX — VIEW / FILTROS AVANÇADOS
@@ -259,7 +269,7 @@ function criarLinhaTabelaDigidex(d) {
 
       <td>
         <span class="digidex-table-type ${getClasseType(tipo)}">
-          ${escaparHtml(tipo || "-")}
+          ${renderizarTypeIcon(tipo)}
         </span>
       </td>
 
@@ -766,6 +776,34 @@ function getClasseType(tipo) {
 }
 
 
+function renderizarTypeIcon(tipo, mostrarNome = false) {
+  const valor = normalizarType(tipo);
+  const src = TYPE_ICONS[valor];
+
+  if (!src) {
+    return `<span class="type-icon-fallback">${escaparHtml(valor || "-")}</span>`;
+  }
+
+  return `
+    <span class="type-icon-wrap" title="${escaparHtml(valor)}" aria-label="${escaparHtml(valor)}">
+      <img class="type-icon-img" src="${src}" alt="${escaparHtml(valor)}">
+      ${mostrarNome ? `<span class="type-icon-name">${escaparHtml(valor)}</span>` : ""}
+    </span>
+  `;
+}
+
+
+function selecionarFiltroType(tipo, botao) {
+  filtroTypeSelecionado = normalizarType(tipo);
+
+  document.querySelectorAll(".type-filter-btn").forEach(function(item) {
+    item.classList.toggle("ativo", item === botao);
+  });
+
+  filtrar();
+}
+
+
 /* =====================================================
    NAVEGAÇÃO
 ===================================================== */
@@ -847,6 +885,7 @@ function mostrarPagina(
       builderPagina: "team-builder",
       elementosPagina: "elementos",
       calculadoraPagina: "calculadora",
+      raidBossPagina: "raid-boss",
       socialPagina: "social"
     };
 
@@ -910,6 +949,10 @@ function abrirPaginaPelaUrl() {
     calculadora: {
       pagina: "calculadoraPagina",
       botao: "btnCalculadora"
+    },
+    "raid-boss": {
+      pagina: "raidBossPagina",
+      botao: "btnRaidBoss"
     },
     social: {
       pagina: "socialPagina",
@@ -1832,8 +1875,8 @@ function criarCard(d) {
       <div class="stats">
 
         <div class="type ${classeTipo}">
-          TYPE:
-          ${tipo || "-"}
+          <span class="type-label">TYPE</span>
+          ${renderizarTypeIcon(tipo)}
         </div>
 
         <div class="stat">
@@ -1941,11 +1984,6 @@ function filtrar() {
       "pesquisa"
     );
 
-  const filtroTipo =
-    document.getElementById(
-      "filtroTipo"
-    );
-
   const ordenacao =
     document.getElementById(
       "ordenacao"
@@ -1959,9 +1997,7 @@ function filtrar() {
 
 
   const tipoSelecionado =
-    filtroTipo
-      ? normalizarType(filtroTipo.value)
-      : "";
+    filtroTypeSelecionado;
 
 
   const ordem =
@@ -2996,13 +3032,8 @@ function mostrarDadosDoSlot(
     );
 
 
-  typeBox.textContent =
-    "TYPE: "
-    +
-    (
-      tipo ||
-      "-"
-    );
+  typeBox.innerHTML =
+    `<span class="type-label">TYPE</span>${renderizarTypeIcon(tipo)}`;
 
 
   info.appendChild(
@@ -3980,7 +4011,7 @@ function cardComparacaoMultipla(
         </h3>
 
         <div class="comparacao-card-type ${getClasseType(tipo)}">
-          ${escaparHtml(tipo || "-")}
+          ${renderizarTypeIcon(tipo)}
         </div>
       </div>
 
@@ -5301,6 +5332,326 @@ function atualizarCalculadora() {
 }
 
 /* =====================================================
+   RAID BOSS — AGENDA KST
+===================================================== */
+
+const RAID_DAY_MS = 24 * 60 * 60 * 1000;
+const RAID_KST_OFFSET = 9 * 60 * 60 * 1000;
+
+let raidConfigAtual = {
+  name: "Kimeramon",
+  cycleStart: "2026-08-13",
+  baseTime: "19:00",
+  increment: 25,
+  cycleDays: 14,
+  map: "Desert Area",
+  iconFile: "rotation_boss.webp",
+  mapFile: "rotation_boss_map.png",
+  spots: []
+};
+
+let raidEventosAtuais = [];
+let raidNotificados = {};
+let raidTimerInterval = null;
+
+const RAID_SCHEDULE = [
+  { name: "Pumpmon", icon: "pumpmon.webp", map: "Shibuya", mapFile: "pumpmon_shibuya_1930.png", type: "daily", time: "19:30" },
+  { name: "Golemon", icon: "golemon.webp", map: "Shibuya", mapFile: "golemon_shibuya_2130.png", type: "daily", time: "21:30" },
+  { name: "BlackSeraphimon", icon: "blackseraphimon.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "23:00", baseDate: "2025-05-31" },
+  { name: "Ophanimon Falldown Mode", icon: "ophanimon_falldown_mode.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "23:00", baseDate: "2025-06-07" },
+  { name: "Megidramon", icon: "megidramon.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "22:00", baseDate: "2025-06-08" },
+  { name: "Omegamon", icon: "omegamon.png", map: "Dark Castle Valley", mapFile: "omegamon_dark_castle.png", type: "biweekly", time: "22:00", baseDate: "2025-06-01" },
+  { name: "Zhuqiaomon", icon: "zhuqiaomon.webp", map: "Gear Savanna", mapFile: "zhuqiaomon_gear_savanna.png", type: "weekly", time: "22:00", days: [2] },
+  { name: "Ebonwumon", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "ebonwumon_dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [] },
+  { name: "Qinglongmon", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "qinglongmon_dark_castle.png", type: "weekly", time: "22:00", days: [4] },
+  { name: "Baihumon", icon: "baihumon.webp", map: "Desert Area", mapFile: "baihumon_desert_area.png", type: "weekly", time: "22:00", days: [5] },
+  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "examon_dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [] },
+  { name: "Yggdrasill_7D6", icon: "yggdrasill_7d6.webp", map: "Infinite Mountain", mapFile: "yggdrasill_infinite_mountain.png", type: "custom", schedules: [
+    { day: 5, time: "21:00" }, { day: 6, time: "09:00" }, { day: 6, time: "21:00" },
+    { day: 0, time: "09:00" }, { day: 0, time: "21:00" }, { day: 1, time: "09:00" }
+  ] }
+];
+
+function raidKstDate(dateString, timeString) {
+  return new Date(dateString + "T" + timeString + ":00+09:00");
+}
+
+function raidKstParts(date) {
+  const kst = new Date(date.getTime() + RAID_KST_OFFSET);
+  return {
+    year: kst.getUTCFullYear(),
+    month: kst.getUTCMonth() + 1,
+    date: kst.getUTCDate(),
+    day: kst.getUTCDay(),
+    hour: kst.getUTCHours(),
+    minute: kst.getUTCMinutes(),
+    second: kst.getUTCSeconds()
+  };
+}
+
+function raidDateString(date) {
+  const p = raidKstParts(date);
+  return p.year + "-" + String(p.month).padStart(2, "0") + "-" + String(p.date).padStart(2, "0");
+}
+
+function proximoRaidFixo(raid, agora) {
+  if (raid.type === "daily") {
+    let alvo = raidKstDate(raidDateString(agora), raid.time);
+    if (alvo <= agora) alvo = new Date(alvo.getTime() + RAID_DAY_MS);
+    return alvo;
+  }
+
+  if (raid.type === "weekly") {
+    for (let i = 0; i < 14; i++) {
+      const dia = new Date(agora.getTime() + i * RAID_DAY_MS);
+      const alvo = raidKstDate(raidDateString(dia), raid.time);
+      if (raid.days.includes(raidKstParts(alvo).day) && alvo > agora) return alvo;
+    }
+  }
+
+  if (raid.type === "biweekly") {
+    const base = raidKstDate(raid.baseDate, raid.time);
+    const ciclo = 14 * RAID_DAY_MS;
+    let saltos = Math.floor((agora.getTime() - base.getTime()) / ciclo);
+    if (saltos < 0) saltos = 0;
+    let alvo = new Date(base.getTime() + saltos * ciclo);
+    if (alvo <= agora) alvo = new Date(alvo.getTime() + ciclo);
+    return alvo;
+  }
+
+  if (raid.type === "custom") {
+    let melhor = null;
+    raid.schedules.forEach(function(item) {
+      const candidato = proximoRaidFixo({ type: "weekly", time: item.time, days: [item.day] }, agora);
+      if (!melhor || candidato < melhor) melhor = candidato;
+    });
+    return melhor;
+  }
+
+  return null;
+}
+
+function proximoBossRotativo(agora) {
+  const cfg = raidConfigAtual;
+  const cicloDias = Math.max(1, Number(cfg.cycleDays) || 14);
+  const incremento = Number(cfg.increment) || 0;
+  const base = raidKstDate(cfg.cycleStart, cfg.baseTime);
+  const cicloMs = cicloDias * RAID_DAY_MS;
+  let ciclo = Math.floor((agora.getTime() - base.getTime()) / cicloMs);
+  if (ciclo < 0) ciclo = 0;
+
+  for (let tentativa = 0; tentativa < 2; tentativa++) {
+    const inicio = new Date(base.getTime() + (ciclo + tentativa) * cicloMs);
+    for (let dia = 0; dia < cicloDias; dia++) {
+      const alvo = new Date(inicio.getTime() + dia * RAID_DAY_MS + dia * incremento * 60000);
+      if (alvo > agora) return alvo;
+    }
+  }
+
+  return new Date(base.getTime() + (ciclo + 1) * cicloMs);
+}
+
+function montarEventosRaid() {
+  const agora = new Date();
+  const eventos = RAID_SCHEDULE.map(function(raid) {
+    return Object.assign({}, raid, {
+      nextTime: proximoRaidFixo(raid, agora),
+      iconPath: "raid_assets/icons/" + raid.icon,
+      mapPath: raid.mapFile ? "raid_assets/maps/" + raid.mapFile : ""
+    });
+  });
+
+  eventos.push({
+    name: raidConfigAtual.name || "Boss de Rotação",
+    map: raidConfigAtual.map || "-",
+    nextTime: proximoBossRotativo(agora),
+    iconPath: "raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp"),
+    mapPath: "raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png"),
+    spots: raidConfigAtual.spots || [],
+    rotation: true
+  });
+
+  eventos.sort(function(a, b) { return a.nextTime - b.nextTime; });
+  raidEventosAtuais = eventos;
+}
+
+function formatarRaidContagem(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const dias = Math.floor(total / 86400);
+  const horas = Math.floor((total % 86400) / 3600);
+  const minutos = Math.floor((total % 3600) / 60);
+  const segundos = total % 60;
+  return (dias ? dias + "d " : "") + String(horas).padStart(2, "0") + ":" + String(minutos).padStart(2, "0") + ":" + String(segundos).padStart(2, "0");
+}
+
+function formatarRaidKst(date) {
+  const p = raidKstParts(date);
+  return String(p.date).padStart(2, "0") + "/" + String(p.month).padStart(2, "0") + " " + String(p.hour).padStart(2, "0") + ":" + String(p.minute).padStart(2, "0") + " KST";
+}
+
+function renderizarRaids() {
+  const lista = document.getElementById("raidList");
+  if (!lista) return;
+  montarEventosRaid();
+  lista.innerHTML = raidEventosAtuais.map(function(raid, indice) {
+    return `
+      <article class="raid-card ${indice === 0 ? "raid-next" : ""}" data-raid-index="${indice}">
+        <div class="raid-card-icon"><img src="${raid.iconPath}" alt="${escaparHtml(raid.name)}"></div>
+        <div class="raid-card-main">
+          <div class="raid-card-top">
+            <h3>${escaparHtml(raid.name)}${raid.rotation ? '<span class="raid-rotation-tag">ROTAÇÃO</span>' : ""}</h3>
+            <span class="raid-kst-time">${formatarRaidKst(raid.nextTime)}</span>
+          </div>
+          <button class="raid-map-link" type="button" onclick="abrirMapaRaid(${indice})">${escaparHtml(raid.map || "Mapa indisponível")} <span>⌖</span></button>
+          <div class="raid-countdown" id="raidCountdown${indice}">${formatarRaidContagem(raid.nextTime - new Date())}</div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function atualizarRaidTimers() {
+  const agora = new Date();
+  const clock = document.getElementById("raidKstClock");
+  if (clock) {
+    const p = raidKstParts(agora);
+    clock.textContent = String(p.date).padStart(2, "0") + "/" + String(p.month).padStart(2, "0") + "/" + p.year + " " + String(p.hour).padStart(2, "0") + ":" + String(p.minute).padStart(2, "0") + ":" + String(p.second).padStart(2, "0");
+  }
+
+  let precisaRenderizar = false;
+  raidEventosAtuais.forEach(function(raid, indice) {
+    const diff = raid.nextTime - agora;
+    const contador = document.getElementById("raidCountdown" + indice);
+    if (contador) {
+      contador.textContent = formatarRaidContagem(diff);
+      contador.classList.toggle("raid-soon", diff > 0 && diff <= 5 * 60000);
+    }
+    if (diff <= 0) precisaRenderizar = true;
+    verificarRaidAlerta(raid, diff);
+  });
+
+  if (precisaRenderizar) renderizarRaids();
+}
+
+function verificarRaidAlerta(raid, diff) {
+  const toggle = document.getElementById("raidAlarmToggle");
+  const input = document.getElementById("raidNoticeMinutes");
+  const minutos = Math.min(60, Math.max(1, Number(input && input.value) || 5));
+  const chave = raid.name + "_" + raid.nextTime.getTime();
+  if (!toggle || !toggle.checked || diff <= 0 || diff > minutos * 60000 || raidNotificados[chave]) return;
+
+  raidNotificados[chave] = true;
+  tocarAlarmeRaid();
+  const alerta = document.getElementById("raidAlert");
+  const icon = document.getElementById("raidAlertIcon");
+  const titulo = document.getElementById("raidAlertTitle");
+  const texto = document.getElementById("raidAlertText");
+  if (alerta && icon && titulo && texto) {
+    icon.src = raid.iconPath;
+    titulo.textContent = raid.name;
+    texto.textContent = "Nasce em " + formatarRaidContagem(diff) + " — " + raid.map;
+    alerta.classList.add("ativo");
+  }
+
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("Holy Guardians — Raid Boss", { body: raid.name + " nasce em " + minutos + " minutos — " + raid.map, icon: raid.iconPath });
+  }
+}
+
+function tocarAlarmeRaid() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const ganho = ctx.createGain();
+    osc.frequency.value = 880;
+    ganho.gain.setValueAtTime(0.18, ctx.currentTime);
+    ganho.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.connect(ganho); ganho.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.8);
+  } catch (erro) {}
+}
+
+function fecharRaidAlerta() {
+  const alerta = document.getElementById("raidAlert");
+  if (alerta) alerta.classList.remove("ativo");
+}
+
+function abrirMapaRaid(indice) {
+  const raid = raidEventosAtuais[indice];
+  const modal = document.getElementById("raidMapModal");
+  const imagem = document.getElementById("raidMapImage");
+  const titulo = document.getElementById("raidMapTitle");
+  const spots = document.getElementById("raidMapSpots");
+  if (!raid || !modal || !imagem || !titulo || !spots || !raid.mapPath) return;
+
+  titulo.textContent = raid.name + " — " + raid.map;
+  imagem.src = raid.mapPath;
+  spots.innerHTML = (raid.spots || []).map(function(spot) {
+    return `<span class="raid-map-spot" style="left:${Number(spot.x)}%;top:${Number(spot.y)}%" title="Possível ponto de nascimento"></span>`;
+  }).join("");
+  modal.classList.add("ativo");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function fecharMapaRaid() {
+  const modal = document.getElementById("raidMapModal");
+  if (modal) { modal.classList.remove("ativo"); modal.setAttribute("aria-hidden", "true"); }
+}
+
+function parseRaidSpots(valor) {
+  if (Array.isArray(valor)) return valor;
+  return String(valor || "").split(";").map(function(par) {
+    const partes = par.trim().split(",").map(Number);
+    return partes.length === 2 && partes.every(Number.isFinite) ? { x: partes[0], y: partes[1] } : null;
+  }).filter(Boolean);
+}
+
+function aplicarRaidConfigBruto(bruto) {
+  if (Array.isArray(bruto)) bruto = bruto[0];
+  if (!bruto || typeof bruto !== "object") return false;
+  function campo() {
+    for (let i = 0; i < arguments.length; i++) if (bruto[arguments[i]] !== undefined && bruto[arguments[i]] !== "") return bruto[arguments[i]];
+    return undefined;
+  }
+  raidConfigAtual = {
+    name: campo("name", "NAME") || raidConfigAtual.name,
+    cycleStart: campo("cycleStart", "CYCLE START", "cycle_start") || raidConfigAtual.cycleStart,
+    baseTime: campo("baseTime", "BASE TIME", "base_time") || raidConfigAtual.baseTime,
+    increment: Number(campo("increment", "INCREMENT")) || raidConfigAtual.increment,
+    cycleDays: Number(campo("cycleDays", "CYCLE DAYS", "cycle_days")) || raidConfigAtual.cycleDays,
+    map: campo("map", "MAP") || raidConfigAtual.map,
+    iconFile: campo("iconFile", "ICON FILE", "icon_file") || "rotation_boss.webp",
+    mapFile: campo("mapFile", "MAP FILE", "map_file") || "rotation_boss_map.png",
+    spots: parseRaidSpots(campo("spots", "SPOTS"))
+  };
+  return true;
+}
+
+function carregarRaidConfig() {
+  chamarApiJsonp("raid-config").then(function(resposta) {
+    aplicarRaidConfigBruto(resposta.raidConfig || resposta.config || resposta.data);
+    renderizarRaids();
+  }).catch(function() {
+    renderizarRaids();
+  });
+}
+
+function inicializarRaidBoss() {
+  const toggle = document.getElementById("raidAlarmToggle");
+  const fechar = document.getElementById("raidMapClose");
+  const modal = document.getElementById("raidMapModal");
+  if (toggle) toggle.addEventListener("change", function() {
+    if (this.checked && "Notification" in window && Notification.permission === "default") Notification.requestPermission();
+  });
+  if (fechar) fechar.addEventListener("click", fecharMapaRaid);
+  if (modal) modal.addEventListener("click", function(evento) { if (evento.target === modal) fecharMapaRaid(); });
+  carregarRaidConfig();
+  if (raidTimerInterval) clearInterval(raidTimerInterval);
+  raidTimerInterval = setInterval(atualizarRaidTimers, 1000);
+  atualizarRaidTimers();
+}
+
+/* =====================================================
    CARREGAR DATABASE
 ===================================================== */
 
@@ -5386,6 +5737,8 @@ document.addEventListener(
     inicializarCalculadora();
 
     carregarDatabase();
+
+    inicializarRaidBoss();
 
   }
 );

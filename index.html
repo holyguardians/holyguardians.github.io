@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HOLY GUARDIANS</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260813-header-hg-gold-final">
+  <link rel="stylesheet" href="styles.css?v=20260813-raid-types-v1">
 </head>
 <body>
 
@@ -58,6 +58,12 @@
       onclick="mostrarPagina('calculadoraPagina', this)">
       <img id="navIconCalculadora" alt="">
       <span>Calculadora</span>
+    </button>
+
+    <button id="btnRaidBoss" class="nav-button"
+      onclick="mostrarPagina('raidBossPagina', this)">
+      <img src="raid_assets/icons/rotation_boss.webp" alt="">
+      <span>Raid Boss</span>
     </button>
 
     <button id="btnSocial" class="nav-button"
@@ -771,14 +777,14 @@
         oninput="filtrar()"
       >
 
-      <select id="filtroTipo" class="filtro-select" onchange="filtrar()">
-        <option value="">TODOS OS TIPOS</option>
-        <option value="VACCINE">VACCINE</option>
-        <option value="VIRUS">VIRUS</option>
-        <option value="DATA">DATA</option>
-        <option value="FREE">FREE</option>
-        <option value="UK">UK</option>
-      </select>
+      <div class="type-filter" aria-label="Filtrar por Type">
+        <button type="button" class="type-filter-btn ativo" title="Todos os Types" onclick="selecionarFiltroType('', this)">ALL</button>
+        <button type="button" class="type-filter-btn" title="Data" onclick="selecionarFiltroType('DATA', this)"><img src="type_icons/type_data.png" alt="DATA"></button>
+        <button type="button" class="type-filter-btn" title="Vaccine" onclick="selecionarFiltroType('VACCINE', this)"><img src="type_icons/type_vaccine.png" alt="VACCINE"></button>
+        <button type="button" class="type-filter-btn" title="Virus" onclick="selecionarFiltroType('VIRUS', this)"><img src="type_icons/type_virus.png" alt="VIRUS"></button>
+        <button type="button" class="type-filter-btn" title="Unknown / UK" onclick="selecionarFiltroType('UNKNOWN', this)"><img src="type_icons/type_unknown.png" alt="UNKNOWN"></button>
+        <button type="button" class="type-filter-btn" title="Free" onclick="selecionarFiltroType('FREE', this)"><img src="type_icons/type_free.png" alt="FREE"></button>
+      </div>
 
       <details id="filtroSkillElemento" class="digidex-filter-menu">
         <summary>
@@ -1149,6 +1155,63 @@
 </section>
 
 <!-- =====================================================
+     RAID BOSS
+===================================================== -->
+
+<section id="raidBossPagina" class="pagina">
+  <div class="internal-wrap raid-wrap">
+    <div class="raid-header">
+      <div>
+        <div class="raid-kicker">KST RAID MONITOR // HOLY GUARDIANS</div>
+        <h2 class="page-title">RAID BOSS</h2>
+        <p class="page-subtitle">Próximos nascimentos sincronizados com o horário do servidor coreano.</p>
+      </div>
+
+      <div class="raid-controls">
+        <label class="raid-alarm-control">
+          <input id="raidAlarmToggle" type="checkbox">
+          <span>AVISAR</span>
+        </label>
+        <label class="raid-notice-control">
+          <span>MINUTOS ANTES</span>
+          <input id="raidNoticeMinutes" type="number" min="1" max="60" value="5">
+        </label>
+      </div>
+    </div>
+
+    <div class="raid-time-strip">
+      <span>HORÁRIO DO SERVIDOR (KST)</span>
+      <strong id="raidKstClock">--/--/---- --:--:--</strong>
+      <small>Os avisos funcionam enquanto esta página estiver aberta.</small>
+    </div>
+
+    <div id="raidList" class="raid-grid">
+      <div class="raid-empty">Carregando agenda de raids...</div>
+    </div>
+  </div>
+</section>
+
+<div id="raidMapModal" class="raid-modal" aria-hidden="true">
+  <div class="raid-modal-card" role="dialog" aria-modal="true" aria-labelledby="raidMapTitle">
+    <button id="raidMapClose" class="raid-modal-close" type="button" aria-label="Fechar">×</button>
+    <h3 id="raidMapTitle">MAPA DO RAID</h3>
+    <div id="raidMapStage" class="raid-map-stage">
+      <img id="raidMapImage" alt="Mapa do raid">
+      <div id="raidMapSpots" class="raid-map-spots"></div>
+    </div>
+  </div>
+</div>
+
+<div id="raidAlert" class="raid-alert" role="alert" aria-live="assertive">
+  <img id="raidAlertIcon" alt="">
+  <div>
+    <strong id="raidAlertTitle">RAID PRÓXIMA</strong>
+    <span id="raidAlertText"></span>
+  </div>
+  <button type="button" onclick="fecharRaidAlerta()">×</button>
+</div>
+
+<!-- =====================================================
      SOCIAL
 ===================================================== -->
 
@@ -1229,6 +1292,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260813-logo-gold-arc"></script>
+<script src="scripts.js?v=20260813-raid-types-v1"></script>
 </body>
 </html>
