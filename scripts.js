@@ -93,6 +93,372 @@ let imagensSite = {};
 
 
 /* =====================================================
+   DIGIDEX — VIEW / FILTROS AVANÇADOS
+===================================================== */
+
+let digidexView =
+  localStorage.getItem("hg_digidex_view") === "table"
+    ? "table"
+    : "card";
+
+
+const DIGIDEX_ELEMENTOS = [
+  "DARKNESS",
+  "EARTH",
+  "FIRE",
+  "ICE",
+  "LIGHT",
+  "PHYSICAL",
+  "STEEL",
+  "THUNDER",
+  "WATER",
+  "WIND",
+  "WOOD"
+];
+
+
+const DIGIDEX_FIELDS = [
+  "DA",
+  "DR",
+  "DS",
+  "JT",
+  "ME",
+  "NSO",
+  "NSP",
+  "UK",
+  "VB",
+  "WG"
+];
+
+
+function obterElementosSkill(skill) {
+
+  if (!skill) {
+    return [];
+  }
+
+  let valores = [];
+
+  if (
+    typeof skill === "object" &&
+    !Array.isArray(skill)
+  ) {
+
+    if (Array.isArray(skill.elementos)) {
+      valores = skill.elementos;
+    } else if (skill.base) {
+      valores = [skill.base];
+    }
+
+  } else if (Array.isArray(skill)) {
+
+    valores = skill;
+
+  } else {
+
+    valores = [skill];
+
+  }
+
+  return valores
+    .map(function(valor) {
+      return normalizarElemento(valor);
+    })
+    .filter(Boolean)
+    .filter(function(valor, indice, lista) {
+      return lista.indexOf(valor) === indice;
+    });
+
+}
+
+
+function renderizarElementosSkillTabela(skill) {
+
+  const elementos =
+    obterElementosSkill(skill);
+
+  if (!elementos.length) {
+    return "-";
+  }
+
+  return `
+    <div class="digidex-table-elements">
+      ${elementos.map(function(elemento) {
+        return renderizarIconeElemento(elemento);
+      }).join("")}
+    </div>
+  `;
+
+}
+
+
+function alterarVisualizacaoDigidex(modo) {
+
+  digidexView =
+    modo === "table"
+      ? "table"
+      : "card";
+
+  localStorage.setItem(
+    "hg_digidex_view",
+    digidexView
+  );
+
+  atualizarBotoesViewDigidex();
+  filtrar();
+
+}
+
+
+function atualizarBotoesViewDigidex() {
+
+  const card =
+    document.getElementById(
+      "digidexViewCard"
+    );
+
+  const table =
+    document.getElementById(
+      "digidexViewTable"
+    );
+
+  if (card) {
+    card.classList.toggle(
+      "ativo",
+      digidexView === "card"
+    );
+  }
+
+  if (table) {
+    table.classList.toggle(
+      "ativo",
+      digidexView === "table"
+    );
+  }
+
+}
+
+
+function criarLinhaTabelaDigidex(d) {
+
+  const tipo =
+    normalizarType(d.type);
+
+  return `
+    <tr>
+      <td class="digidex-table-name">
+        <div class="digidex-table-name-wrap">
+          ${
+            d.icon
+              ? `<img src="${d.icon}" alt="" loading="lazy">`
+              : ""
+          }
+          <strong>${escaparHtml(d.digimon || "-")}</strong>
+        </div>
+      </td>
+
+      <td>
+        <span class="digidex-table-type ${getClasseType(tipo)}">
+          ${escaparHtml(tipo || "-")}
+        </span>
+      </td>
+
+      <td>${renderizarIconeElemento(d.strong)}</td>
+      <td>${renderizarIconeElemento(d.weak)}</td>
+      <td>${renderizarField(d.field)}</td>
+
+      <td>${escaparHtml(d.hp || "-")}</td>
+      <td>${escaparHtml(d.sp || "-")}</td>
+      <td>${escaparHtml(d.str || "-")}</td>
+      <td>${escaparHtml(d.int || "-")}</td>
+      <td>${escaparHtml(d.def || "-")}</td>
+      <td>${escaparHtml(d.res || "-")}</td>
+      <td>${escaparHtml(d.spd || "-")}</td>
+
+      <td>${escaparHtml(d.cc || "-")}</td>
+      <td>${escaparHtml(d.dot || "-")}</td>
+      <td>${escaparHtml(d.defBreak || "-")}</td>
+
+      <td>${renderizarElementosSkillTabela(d.skill1)}</td>
+      <td>${renderizarElementosSkillTabela(d.skill2)}</td>
+      <td>${renderizarElementosSkillTabela(d.skill3)}</td>
+    </tr>
+  `;
+
+}
+
+
+function renderizarTabelaDigidex(lista) {
+
+  return `
+    <div class="digidex-table-shell">
+      <table class="digidex-table">
+        <thead>
+          <tr>
+            <th>DIGIMON</th>
+            <th>TYPE</th>
+            <th>STRONG</th>
+            <th>WEAK</th>
+            <th>FIELD</th>
+            <th>HP</th>
+            <th>SP</th>
+            <th>STR</th>
+            <th>INT</th>
+            <th>DEF</th>
+            <th>RES</th>
+            <th>SPD</th>
+            <th>CC</th>
+            <th>DOT</th>
+            <th>DEF BREAK</th>
+            <th>SKILL 1</th>
+            <th>SKILL 2</th>
+            <th>SKILL 3</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${lista.map(criarLinhaTabelaDigidex).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+}
+
+
+function valoresMarcadosDigidex(seletor) {
+
+  return Array.from(
+    document.querySelectorAll(
+      seletor + ":checked"
+    )
+  ).map(function(input) {
+    return String(input.value || "")
+      .trim()
+      .toUpperCase();
+  });
+
+}
+
+
+function atualizarContadoresFiltrosDigidex() {
+
+  const skillMarcados =
+    valoresMarcadosDigidex(
+      ".digidex-skill-element-check"
+    );
+
+  const fieldMarcados =
+    valoresMarcadosDigidex(
+      ".digidex-field-check"
+    );
+
+  const skillCount =
+    document.getElementById(
+      "filtroSkillContador"
+    );
+
+  const fieldCount =
+    document.getElementById(
+      "filtroFieldContador"
+    );
+
+  if (skillCount) {
+    skillCount.textContent =
+      skillMarcados.length
+        ? "(" + skillMarcados.length + ")"
+        : "";
+  }
+
+  if (fieldCount) {
+    fieldCount.textContent =
+      fieldMarcados.length
+        ? "(" + fieldMarcados.length + ")"
+        : "";
+  }
+
+}
+
+
+function montarFiltrosAvancadosDigidex() {
+
+  const listaSkills =
+    document.getElementById(
+      "filtroSkillElementosLista"
+    );
+
+  const listaFields =
+    document.getElementById(
+      "filtroFieldsLista"
+    );
+
+  if (listaSkills) {
+
+    listaSkills.innerHTML =
+      DIGIDEX_ELEMENTOS.map(function(elemento) {
+
+        return `
+          <label class="digidex-check-item">
+            <input
+              class="digidex-skill-element-check"
+              type="checkbox"
+              value="${elemento}"
+              onchange="filtrar()"
+            >
+
+            <span class="digidex-filter-icon">
+              ${renderizarIconeElemento(elemento)}
+            </span>
+
+            <span>${elemento}</span>
+          </label>
+        `;
+
+      }).join("");
+
+  }
+
+
+  if (listaFields) {
+
+    listaFields.innerHTML =
+      DIGIDEX_FIELDS.map(function(field) {
+
+        const src =
+          pegarImagemField(field);
+
+        return `
+          <label class="digidex-check-item">
+            <input
+              class="digidex-field-check"
+              type="checkbox"
+              value="${field}"
+              onchange="filtrar()"
+            >
+
+            <span class="digidex-filter-icon">
+              ${
+                src
+                  ? `<img src="${src}" alt="${field}">`
+                  : field
+              }
+            </span>
+
+            <span>${field}</span>
+          </label>
+        `;
+
+      }).join("");
+
+  }
+
+  atualizarContadoresFiltrosDigidex();
+  atualizarBotoesViewDigidex();
+
+}
+
+
+/* =====================================================
    ELEMENTOS
 ===================================================== */
 
@@ -1418,12 +1784,10 @@ function filtrar() {
       "pesquisa"
     );
 
-
   const filtroTipo =
     document.getElementById(
       "filtroTipo"
     );
-
 
   const ordenacao =
     document.getElementById(
@@ -1433,30 +1797,48 @@ function filtrar() {
 
   const texto =
     campo
-      ?
-      campo.value
-        .toLowerCase()
-        .trim()
-      :
-      "";
+      ? campo.value.toLowerCase().trim()
+      : "";
 
 
   const tipoSelecionado =
     filtroTipo
-      ?
-      normalizarType(
-        filtroTipo.value
-      )
-      :
-      "";
+      ? normalizarType(filtroTipo.value)
+      : "";
 
 
   const ordem =
     ordenacao
-      ?
-      ordenacao.value
-      :
-      "";
+      ? ordenacao.value
+      : "";
+
+
+  const elementosSelecionados =
+    valoresMarcadosDigidex(
+      ".digidex-skill-element-check"
+    ).map(normalizarElemento);
+
+
+  const fieldsSelecionados =
+    valoresMarcadosDigidex(
+      ".digidex-field-check"
+    );
+
+
+  const buscarSkill1 =
+    document.getElementById("filtroSkill1")
+      ? document.getElementById("filtroSkill1").checked
+      : true;
+
+  const buscarSkill2 =
+    document.getElementById("filtroSkill2")
+      ? document.getElementById("filtroSkill2").checked
+      : true;
+
+  const buscarSkill3 =
+    document.getElementById("filtroSkill3")
+      ? document.getElementById("filtroSkill3").checked
+      : true;
 
 
   let filtrados =
@@ -1464,30 +1846,86 @@ function filtrar() {
       function(d) {
 
         const nome =
-          String(
-            d.digimon ||
-            ""
-          )
+          String(d.digimon || "")
             .toLowerCase();
 
 
         const tipo =
-          normalizarType(
-            d.type
-          );
+          normalizarType(d.type);
+
+
+        const nomeOk =
+          nome.includes(texto);
+
+
+        const tipoOk =
+          !tipoSelecionado ||
+          tipo === tipoSelecionado;
+
+
+        let skillOk = true;
+
+        if (elementosSelecionados.length) {
+
+          const elementosDoDigimon = [];
+
+          if (buscarSkill1) {
+            elementosDoDigimon.push(
+              ...obterElementosSkill(d.skill1)
+            );
+          }
+
+          if (buscarSkill2) {
+            elementosDoDigimon.push(
+              ...obterElementosSkill(d.skill2)
+            );
+          }
+
+          if (buscarSkill3) {
+            elementosDoDigimon.push(
+              ...obterElementosSkill(d.skill3)
+            );
+          }
+
+          skillOk =
+            elementosSelecionados.some(
+              function(elemento) {
+                return elementosDoDigimon.includes(
+                  elemento
+                );
+              }
+            );
+
+        }
+
+
+        let fieldOk = true;
+
+        if (fieldsSelecionados.length) {
+
+          const fieldsDoDigimon =
+            separarFields(d.field)
+              .map(function(field) {
+                return field.toUpperCase();
+              });
+
+          fieldOk =
+            fieldsSelecionados.some(
+              function(field) {
+                return fieldsDoDigimon.includes(
+                  field
+                );
+              }
+            );
+
+        }
 
 
         return (
-          nome.includes(
-            texto
-          )
-          &&
-          (
-            !tipoSelecionado
-            ||
-            tipo ===
-            tipoSelecionado
-          )
+          nomeOk &&
+          tipoOk &&
+          skillOk &&
+          fieldOk
         );
 
       }
@@ -1500,13 +1938,9 @@ function filtrar() {
       function(a,b) {
 
         return String(
-          a.digimon ||
-          ""
+          a.digimon || ""
         ).localeCompare(
-          String(
-            b.digimon ||
-            ""
-          )
+          String(b.digimon || "")
         );
 
       }
@@ -1517,20 +1951,13 @@ function filtrar() {
     let campoOrdenacao =
       ordem;
 
-
     let crescente =
       false;
 
 
-    if (
-      ordem.endsWith(
-        "_ASC"
-      )
-    ) {
+    if (ordem.endsWith("_ASC")) {
 
-      crescente =
-        true;
-
+      crescente = true;
 
       campoOrdenacao =
         ordem.replace(
@@ -1544,29 +1971,18 @@ function filtrar() {
     filtrados.sort(
       function(a,b) {
 
-        const valorA =
-          Number(
-            a[
-              campoOrdenacao
-                .toLowerCase()
-            ]
-          ) || 0;
+        const chave =
+          campoOrdenacao.toLowerCase();
 
+        const valorA =
+          Number(a[chave]) || 0;
 
         const valorB =
-          Number(
-            b[
-              campoOrdenacao
-                .toLowerCase()
-            ]
-          ) || 0;
-
+          Number(b[chave]) || 0;
 
         return crescente
-          ?
-          valorA - valorB
-          :
-          valorB - valorA;
+          ? valorA - valorB
+          : valorB - valorA;
 
       }
     );
@@ -1585,21 +2001,21 @@ function filtrar() {
   }
 
 
-  lista.innerHTML =
-    "";
+  atualizarContadoresFiltrosDigidex();
+  atualizarBotoesViewDigidex();
 
 
-  if (
-    filtrados.length ===
-    0
-  ) {
+  if (!filtrados.length) {
+
+    lista.className =
+      digidexView === "table"
+        ? "digidex-table-container"
+        : "grid";
 
     lista.innerHTML = `
-
       <div class="erro">
         Nenhum Digimon encontrado.
       </div>
-
     `;
 
     return;
@@ -1607,16 +2023,28 @@ function filtrar() {
   }
 
 
-  filtrados.forEach(
-    function(d) {
+  if (digidexView === "table") {
 
-      lista.innerHTML +=
-        criarCard(
-          d
-        );
+    lista.className =
+      "digidex-table-container";
 
-    }
-  );
+    lista.innerHTML =
+      renderizarTabelaDigidex(
+        filtrados
+      );
+
+    return;
+
+  }
+
+
+  lista.className =
+    "grid";
+
+  lista.innerHTML =
+    filtrados
+      .map(criarCard)
+      .join("");
 
 }
 
@@ -2782,6 +3210,7 @@ function carregarImagensSite() {
           resposta.images ||
           {};
 
+        montarFiltrosAvancadosDigidex();
         montarCenaElementosHakase();
 
         if (
@@ -4581,6 +5010,9 @@ function carregarDatabase() {
 document.addEventListener(
   "DOMContentLoaded",
   function() {
+
+    atualizarBotoesViewDigidex();
+    montarFiltrosAvancadosDigidex();
 
     carregarImagensSite();
 

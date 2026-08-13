@@ -9741,3 +9741,434 @@ body {
     min-height: 0 !important;
   }
 }
+
+/* =====================================================
+   DIGIDEX — CARD/TABLE VIEW + FILTROS AVANÇADOS
+===================================================== */
+
+.digidex-header-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.digidex-view-toggle {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 3px;
+  border: 1px solid rgba(53, 139, 223, .52);
+  border-radius: 7px;
+  background: rgba(2, 13, 31, .68);
+  box-shadow:
+    inset 0 0 14px rgba(34,191,255,.04),
+    0 5px 16px rgba(0,0,0,.18);
+}
+
+.digidex-view-button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #7f9fbe;
+  font-family: "Oxanium", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .45px;
+  cursor: pointer;
+  transition:
+    color .18s ease,
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.digidex-view-button:hover {
+  color: #d9f5ff;
+  background: rgba(26, 91, 166, .20);
+}
+
+.digidex-view-button.ativo {
+  color: #eafaff;
+  border-color: #32cfff;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13,114,224,.78),
+      rgba(7,52,124,.84)
+    );
+  box-shadow:
+    inset 0 0 13px rgba(65,210,255,.16),
+    0 0 9px rgba(31,180,255,.27);
+}
+
+
+/* Barra de filtros passa a aceitar os novos menus sem esmagar a busca. */
+#databasePagina .filtros {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns:
+    minmax(330px, 1fr)
+    150px
+    165px
+    135px
+    190px;
+  align-items: start;
+  gap: 9px;
+}
+
+
+/* Menus dropdown de Skill Element / Field */
+.digidex-filter-menu {
+  position: relative;
+  min-width: 0;
+}
+
+.digidex-filter-menu > summary {
+  min-height: 46px;
+  width: 100%;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid #2b6cae;
+  border-radius: 8px;
+  background: #081b35;
+  color: #edf7ff;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 0 14px rgba(34,191,255,.05),
+    0 4px 14px rgba(0,0,0,.16);
+}
+
+.digidex-filter-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.digidex-filter-menu > summary::after {
+  content: "▾";
+  color: #79cfff;
+  font-size: 10px;
+  transition: transform .18s ease;
+}
+
+.digidex-filter-menu[open] > summary {
+  border-color: #33d8ff;
+  background: #0b2140;
+  box-shadow:
+    0 0 0 2px rgba(51,216,255,.10),
+    0 0 12px rgba(0,159,255,.28);
+}
+
+.digidex-filter-menu[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.digidex-filter-count {
+  margin-left: auto;
+  color: #58dcff;
+  font-size: 8px;
+}
+
+.digidex-filter-panel {
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 240px;
+  width: max-content;
+  max-width: 310px;
+  padding: 10px;
+  border: 1px solid rgba(54, 122, 194, .78);
+  border-radius: 9px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 30, 59, .99),
+      rgba(4, 16, 35, .995)
+    );
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.48),
+    inset 0 0 18px rgba(34,191,255,.04);
+}
+
+.digidex-filter-title {
+  margin-bottom: 7px;
+  color: #77a4ce;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .8px;
+}
+
+.digidex-skill-scope {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 9px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(48, 105, 165, .42);
+}
+
+.digidex-skill-scope label {
+  min-height: 28px;
+  padding: 5px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid rgba(55, 119, 188, .50);
+  border-radius: 6px;
+  background: rgba(9, 35, 70, .72);
+  color: #b8d3ed;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.digidex-filter-panel input[type="checkbox"] {
+  accent-color: #24bfff;
+}
+
+.digidex-check-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.digidex-check-item {
+  min-height: 29px;
+  padding: 4px 7px;
+  display: grid;
+  grid-template-columns: 16px 25px 1fr;
+  align-items: center;
+  gap: 6px;
+  border-radius: 5px;
+  color: #d4e6f7;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.digidex-check-item:hover {
+  background: rgba(30, 100, 178, .20);
+}
+
+.digidex-filter-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digidex-filter-icon img,
+.digidex-filter-icon .element-icon-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.digidex-filter-icon .element-icon-wrap {
+  width: 24px;
+  height: 24px;
+}
+
+
+/* TABLE VIEW */
+#databasePagina .digidex-table-container {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  min-width: 0;
+}
+
+.digidex-table-shell {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(35, 94, 157, .68);
+  border-radius: 10px;
+  background: rgba(2, 10, 24, .82);
+  box-shadow:
+    inset 0 0 26px rgba(32, 115, 212, .05),
+    0 10px 28px rgba(0,0,0,.18);
+}
+
+.digidex-table {
+  width: 100%;
+  min-width: 1540px;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 9px;
+}
+
+.digidex-table th {
+  position: sticky;
+  top: 58px;
+  z-index: 3;
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(58, 126, 200, .52);
+  background: #0b1c38;
+  color: #8cb8df;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .35px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.digidex-table td {
+  min-height: 43px;
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(37, 77, 124, .38);
+  color: #dceaf7;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.digidex-table tbody tr {
+  transition:
+    background .16s ease,
+    box-shadow .16s ease;
+}
+
+.digidex-table tbody tr:hover {
+  background: rgba(18, 68, 126, .18);
+  box-shadow:
+    inset 2px 0 0 #2bcfff;
+}
+
+.digidex-table-name {
+  min-width: 180px;
+}
+
+.digidex-table-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.digidex-table-name-wrap img {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 2px;
+  object-fit: contain;
+  border: 1px solid rgba(46, 137, 224, .52);
+  border-radius: 5px;
+  background: #07162b;
+}
+
+.digidex-table-type {
+  display: inline-flex;
+  min-width: 68px;
+  min-height: 24px;
+  padding: 4px 7px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 5px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.digidex-table td .field-icons {
+  min-width: 82px;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.digidex-table td .field-icon-item {
+  width: 25px;
+  height: 25px;
+}
+
+.digidex-table td .field-icon-img {
+  max-width: 24px;
+  max-height: 24px;
+}
+
+.digidex-table td .element-icon-wrap {
+  width: 25px;
+  height: 25px;
+}
+
+.digidex-table td .element-icon-img {
+  width: 24px;
+  height: 24px;
+}
+
+.digidex-table-elements {
+  min-width: 58px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+
+/* Responsividade */
+@media (max-width: 1180px) {
+
+  #databasePagina .filtros {
+    grid-template-columns:
+      minmax(280px, 1fr)
+      repeat(2, minmax(140px, .45fr));
+  }
+
+  #databasePagina .search {
+    grid-column: 1 / -1;
+  }
+
+  .digidex-header-tech {
+    align-items: flex-start;
+  }
+
+  .digidex-header-actions {
+    flex-wrap: wrap;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .digidex-header-tech {
+    display: block;
+  }
+
+  .digidex-header-actions {
+    margin-top: 12px;
+    justify-content: flex-start;
+  }
+
+  .digidex-view-toggle {
+    width: 100%;
+  }
+
+  .digidex-view-button {
+    flex: 1;
+  }
+
+  #databasePagina .filtros {
+    grid-template-columns: 1fr;
+  }
+
+  #databasePagina .search {
+    grid-column: auto;
+  }
+
+  .digidex-filter-panel {
+    width: min(300px, calc(100vw - 44px));
+  }
+
+}

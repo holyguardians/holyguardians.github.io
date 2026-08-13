@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HOLY GUARDIANS</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260812-2140">
+  <link rel="stylesheet" href="styles.css?v=20260813-1640">
 </head>
 <body>
 
@@ -729,9 +729,33 @@
         </p>
       </div>
 
-      <div class="digidex-system-status">
-        <span class="digidex-status-dot"></span>
-        DATABASE ONLINE
+      <div class="digidex-header-actions">
+
+        <div class="digidex-view-toggle" aria-label="Modo de visualização">
+          <button
+            id="digidexViewCard"
+            class="digidex-view-button ativo"
+            type="button"
+            onclick="alterarVisualizacaoDigidex('card')"
+          >
+            ▦ CARD VIEW
+          </button>
+
+          <button
+            id="digidexViewTable"
+            class="digidex-view-button"
+            type="button"
+            onclick="alterarVisualizacaoDigidex('table')"
+          >
+            ☷ TABLE VIEW
+          </button>
+        </div>
+
+        <div class="digidex-system-status">
+          <span class="digidex-status-dot"></span>
+          DATABASE ONLINE
+        </div>
+
       </div>
     </div>
 
@@ -753,17 +777,77 @@
         <option value="UK">UK</option>
       </select>
 
+      <details id="filtroSkillElemento" class="digidex-filter-menu">
+        <summary>
+          <span>SKILL ELEMENT</span>
+          <span id="filtroSkillContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel">
+          <div class="digidex-filter-title">PROCURAR EM</div>
+
+          <div class="digidex-skill-scope">
+            <label>
+              <input
+                id="filtroSkill1"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 1
+            </label>
+
+            <label>
+              <input
+                id="filtroSkill2"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 2
+            </label>
+
+            <label>
+              <input
+                id="filtroSkill3"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 3
+            </label>
+          </div>
+
+          <div id="filtroSkillElementosLista" class="digidex-check-list"></div>
+        </div>
+      </details>
+
+      <details id="filtroField" class="digidex-filter-menu">
+        <summary>
+          <span>FIELD</span>
+          <span id="filtroFieldContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel">
+          <div id="filtroFieldsLista" class="digidex-check-list"></div>
+        </div>
+      </details>
+
       <select id="ordenacao" class="filtro-select" onchange="filtrar()">
         <option value="">ORDEM ALFABÉTICA</option>
         <option value="STR">MAIOR STR</option>
         <option value="INT">MAIOR INT</option>
         <option value="DEF">MAIOR DEF</option>
         <option value="HP">MAIOR HP</option>
+        <option value="SP">MAIOR SP</option>
+        <option value="RES">MAIOR RES</option>
         <option value="SPD">MAIOR SPEED</option>
         <option value="STR_ASC">MENOR STR</option>
         <option value="INT_ASC">MENOR INT</option>
         <option value="DEF_ASC">MENOR DEF</option>
         <option value="HP_ASC">MENOR HP</option>
+        <option value="SP_ASC">MENOR SP</option>
+        <option value="RES_ASC">MENOR RES</option>
         <option value="SPD_ASC">MENOR SPEED</option>
       </select>
     </div>
@@ -1091,6 +1175,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260812-2140"></script>
+<script src="scripts.js?v=20260813-1640"></script>
 </body>
 </html>
