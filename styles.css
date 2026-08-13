@@ -9842,7 +9842,7 @@ body {
   border-radius: 8px;
   background: #081b35;
   color: #edf7ff;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
   box-shadow:
@@ -10014,8 +10014,8 @@ body {
 
 .digidex-table th {
   position: sticky;
-  top: 58px;
-  z-index: 3;
+  top: 0;
+  z-index: 5;
   padding: 9px 8px;
   border-bottom: 1px solid rgba(58, 126, 200, .52);
   background: #0b1c38;

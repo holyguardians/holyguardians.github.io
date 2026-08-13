@@ -539,6 +539,75 @@ const emojisElementos = {
 };
 
 
+
+
+/* =====================================================
+   DIGIDEX — FECHAR FILTROS AO CLICAR FORA
+===================================================== */
+
+function inicializarFechamentoFiltrosDigidex() {
+
+  document.addEventListener(
+    "click",
+    function(event) {
+
+      const menus =
+        Array.from(
+          document.querySelectorAll(
+            ".digidex-filter-menu[open]"
+          )
+        );
+
+      if (!menus.length) {
+        return;
+      }
+
+      menus.forEach(function(menu) {
+
+        if (!menu.contains(event.target)) {
+          menu.removeAttribute("open");
+        }
+
+      });
+
+    }
+  );
+
+
+  document
+    .querySelectorAll(
+      ".digidex-filter-menu"
+    )
+    .forEach(function(menu) {
+
+      menu.addEventListener(
+        "toggle",
+        function() {
+
+          if (!menu.open) {
+            return;
+          }
+
+          document
+            .querySelectorAll(
+              ".digidex-filter-menu[open]"
+            )
+            .forEach(function(outro) {
+
+              if (outro !== menu) {
+                outro.removeAttribute("open");
+              }
+
+            });
+
+        }
+      );
+
+    });
+
+}
+
+
 /* =====================================================
    STAFF
 ===================================================== */
@@ -703,7 +772,8 @@ function getClasseType(tipo) {
 
 function mostrarPagina(
   id,
-  botao
+  botao,
+  atualizarUrl = true
 ) {
 
   document
@@ -768,10 +838,97 @@ function mostrarPagina(
   }
 
 
+  if (atualizarUrl) {
+
+    const mapaRotas = {
+      homePagina: "home",
+      databasePagina: "digidex",
+      comparacaoPagina: "comparacao",
+      builderPagina: "team-builder",
+      elementosPagina: "elementos",
+      calculadoraPagina: "calculadora",
+      socialPagina: "social"
+    };
+
+    const rota =
+      mapaRotas[id] || "home";
+
+    if (
+      window.location.hash !==
+      "#" + rota
+    ) {
+      history.pushState(
+        { pagina: id },
+        "",
+        "#" + rota
+      );
+    }
+
+  }
+
+
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
+
+}
+
+
+function abrirPaginaPelaUrl() {
+
+  const rota =
+    String(
+      window.location.hash || "#home"
+    )
+      .replace(/^#/, "")
+      .trim()
+      .toLowerCase();
+
+
+  const mapa = {
+    home: {
+      pagina: "homePagina",
+      botao: "btnHome"
+    },
+    digidex: {
+      pagina: "databasePagina",
+      botao: "btnDatabase"
+    },
+    comparacao: {
+      pagina: "comparacaoPagina",
+      botao: "btnComparacao"
+    },
+    "team-builder": {
+      pagina: "builderPagina",
+      botao: "btnBuilder"
+    },
+    elementos: {
+      pagina: "elementosPagina",
+      botao: "btnElementos"
+    },
+    calculadora: {
+      pagina: "calculadoraPagina",
+      botao: "btnCalculadora"
+    },
+    social: {
+      pagina: "socialPagina",
+      botao: "btnSocial"
+    }
+  };
+
+
+  const destino =
+    mapa[rota] || mapa.home;
+
+
+  mostrarPagina(
+    destino.pagina,
+    document.getElementById(
+      destino.botao
+    ),
+    false
+  );
 
 }
 
@@ -5007,12 +5164,26 @@ function carregarDatabase() {
    INICIAR
 ===================================================== */
 
+
+window.addEventListener(
+  "hashchange",
+  abrirPaginaPelaUrl
+);
+
+window.addEventListener(
+  "popstate",
+  abrirPaginaPelaUrl
+);
+
+
 document.addEventListener(
   "DOMContentLoaded",
   function() {
 
     atualizarBotoesViewDigidex();
     montarFiltrosAvancadosDigidex();
+    inicializarFechamentoFiltrosDigidex();
+    abrirPaginaPelaUrl();
 
     carregarImagensSite();
 
