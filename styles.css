@@ -10765,3 +10765,17 @@ body {
   }
 
 }
+
+
+/* =====================================================
+   ELEMENTOS — MICROAJUSTE HORIZONTAL FINAL
+   Somente X: 12px mais para fora em cada lado.
+===================================================== */
+
+.elementos-info-tab-buff {
+  margin-left: -12px;
+}
+
+.elementos-info-tab-remove {
+  margin-right: -12px;
+}
