@@ -5347,7 +5347,10 @@ let raidConfigAtual = {
   map: "Desert Area",
   iconFile: "rotation_boss.webp",
   mapFile: "rotation_boss_map.png",
-  spots: []
+  spots: [],
+  level: 101,
+  attribute: "DATA",
+  hp: 4873672
 };
 
 let raidEventosAtuais = [];
@@ -5355,17 +5358,17 @@ let raidNotificados = {};
 let raidTimerInterval = null;
 
 const RAID_SCHEDULE = [
-  { name: "Pumpkinmon", icon: "pumpmon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "19:30", spots: [{ x: 26.428, y: 90.168 }, { x: 87.804, y: 68.24 }, { x: 27.76, y: 8.012 }, { x: 19.524, y: 60.128 }, { x: 62.048, y: 77.36 }] },
-  { name: "Gotsumon", icon: "golemon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
-  { name: "BlackSeraphimon", icon: "blackseraphimon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-05-31", spots: [{ x: 43.015, y: 54.66 }] },
-  { name: "Ophanimon: Fallen Mode", icon: "ophanimon_falldown_mode.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-06-07", spots: [{ x: 40.565, y: 44.405 }] },
-  { name: "Megidramon", icon: "megidramon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-08", spots: [{ x: 42.395, y: 47.945 }] },
-  { name: "Omnimon", icon: "omegamon.png", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-01", spots: [{ x: 68.9364, y: 15.3455 }] },
-  { name: "Zhuqiaomon", icon: "zhuqiaomon.webp", map: "Gear Savannah", mapFile: "gear_savanna.webp", type: "weekly", time: "22:00", days: [2], spots: [{ x: 76.3314, y: 68.5859 }, { x: 65.3514, y: 72.1425 }] },
-  { name: "Ebonwumon", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [{ x: 43.35, y: 60.9214 }, { x: 44.0643, y: 86.7786 }] },
-  { name: "Azulongmon", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "weekly", time: "22:00", days: [4], spots: [{ x: 36.2909, y: 30.3545 }, { x: 32.4091, y: 40.4364 }] },
-  { name: "Baihumon", icon: "baihumon.webp", map: "Desert Area", mapFile: "desert_area.webp", type: "weekly", time: "22:00", days: [5], spots: [{ x: 50.9849, y: 42.3209 }, { x: 45.3686, y: 26.3093 }] },
-  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [{ x: 29.4182, y: 14.6182 }] },
+  { name: "Pumpkinmon", gameName: "PUMPKINMON", level: 91, attribute: "DATA", hp: 2481551, gameLocation: "Shibuya", icon: "pumpmon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "19:30", spots: [{ x: 26.428, y: 90.168 }, { x: 87.804, y: 68.24 }, { x: 27.76, y: 8.012 }, { x: 19.524, y: 60.128 }, { x: 62.048, y: 77.36 }] },
+  { name: "Gotsumon", gameName: "MUTATIONGOTSUMON", level: 91, attribute: "DATA", hp: 2271328, gameLocation: "Shibuya", icon: "golemon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
+  { name: "BlackSeraphimon", gameName: "BLACKSERAPHIMON", level: 100, attribute: "VIRUS", hp: 4513252, gameLocation: "???", icon: "blackseraphimon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-05-31", spots: [{ x: 43.015, y: 54.66 }] },
+  { name: "Ophanimon: Fallen Mode", gameName: "OPHANIMON:FALLDOWNMODE", level: 100, attribute: "VACCINE", hp: 5014724, gameLocation: "???", icon: "ophanimon_falldown_mode.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-06-07", spots: [{ x: 40.565, y: 44.405 }] },
+  { name: "Megidramon", gameName: "MEGIDRAMON", level: 100, attribute: "VIRUS", hp: 5050544, gameLocation: "???", icon: "megidramon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-08", spots: [{ x: 42.395, y: 47.945 }] },
+  { name: "Omnimon", gameName: "OMNIMON", level: 100, attribute: "VACCINE", hp: 7465767, gameLocation: "Dark Castle Valley", icon: "omegamon.png", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-01", spots: [{ x: 68.9364, y: 15.3455 }] },
+  { name: "Zhuqiaomon", gameName: "ZHUQIAOMON", level: 100, attribute: "VIRUS", hp: 4656529, gameLocation: "Gear Savannah", icon: "zhuqiaomon.webp", map: "Gear Savannah", mapFile: "gear_savanna.webp", type: "weekly", time: "22:00", days: [2], spots: [{ x: 76.3314, y: 68.5859 }, { x: 65.3514, y: 72.1425 }] },
+  { name: "Ebonwumon", gameName: "EBONWUMON", level: 100, attribute: "VACCINE", hp: 4656529, gameLocation: "Dragon's Eye Lake", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [{ x: 43.35, y: 60.9214 }, { x: 44.0643, y: 86.7786 }] },
+  { name: "Azulongmon", gameName: "AZULONGMON", level: 100, attribute: "DATA", hp: 4656529, gameLocation: "Dark Castle Valley", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "weekly", time: "22:00", days: [4], spots: [{ x: 36.2909, y: 30.3545 }, { x: 32.4091, y: 40.4364 }] },
+  { name: "Baihumon", gameName: "BAIHUMON", level: 100, attribute: "DATA", hp: 4656529, gameLocation: "Desert Area", icon: "baihumon.webp", map: "Desert Area", mapFile: "desert_area.webp", type: "weekly", time: "22:00", days: [5], spots: [{ x: 50.9849, y: 42.3209 }, { x: 45.3686, y: 26.3093 }] },
+  { name: "Examon", gameName: "EXAMON", level: 100, attribute: "DATA", hp: 5723587, gameLocation: "Dark Castle Valley", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [{ x: 29.4182, y: 14.6182 }] },
   { name: "Kingdrasil_7D6", icon: "yggdrasill_7d6.webp", map: "Infinity Mountain", mapFile: "infinite_mountain.webp", type: "custom", spots: [{ x: 19.6574, y: 50.8294 }], schedules: [
     { day: 5, time: "21:00" }, { day: 6, time: "09:00" }, { day: 6, time: "21:00" },
     { day: 0, time: "09:00" }, { day: 0, time: "21:00" }, { day: 1, time: "09:00" }
@@ -5468,6 +5471,11 @@ function montarEventosRaid() {
     iconPath: "raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp"),
     mapPath: "raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png"),
     spots: raidConfigAtual.spots || [],
+    gameName: String(raidConfigAtual.name || "Boss de Rotação").toUpperCase(),
+    level: raidConfigAtual.level,
+    attribute: raidConfigAtual.attribute,
+    hp: raidConfigAtual.hp,
+    gameLocation: raidConfigAtual.map || "-",
     rotation: true
   });
 
@@ -5489,6 +5497,27 @@ function formatarRaidKst(date) {
   return String(p.date).padStart(2, "0") + "/" + String(p.month).padStart(2, "0") + " " + String(p.hour).padStart(2, "0") + ":" + String(p.minute).padStart(2, "0") + " KST";
 }
 
+function formatarRaidHp(valor) {
+  const numero = Number(String(valor || "").replace(/[^0-9]/g, ""));
+  return Number.isFinite(numero) && numero > 0
+    ? numero.toLocaleString("pt-BR")
+    : "-";
+}
+
+function renderizarRaidTooltip(raid) {
+  if (!raid.level && !raid.hp && !raid.attribute) return "";
+  const atributo = String(raid.attribute || "UNKNOWN").toUpperCase();
+  return `
+    <div class="raid-boss-tooltip" role="tooltip">
+      <div><span>Level:</span><strong>${escaparHtml(raid.level || "-")}</strong></div>
+      <div><span>Name:</span><strong>${escaparHtml(raid.gameName || raid.name)}</strong></div>
+      <div class="raid-tooltip-attribute"><span>Attribute:</span>${renderizarTypeIcon(atributo, true)}</div>
+      <div><span>HP:</span><strong>${formatarRaidHp(raid.hp)}</strong></div>
+      <div><span>Implementation Location:</span><strong>${escaparHtml(raid.gameLocation || raid.map || "-")}</strong></div>
+    </div>
+  `;
+}
+
 function renderizarRaids() {
   const lista = document.getElementById("raidList");
   if (!lista) return;
@@ -5496,7 +5525,10 @@ function renderizarRaids() {
   lista.innerHTML = raidEventosAtuais.map(function(raid, indice) {
     return `
       <article class="raid-card ${indice === 0 ? "raid-next" : ""}" data-raid-index="${indice}">
-        <div class="raid-card-icon"><img src="${raid.iconPath}" alt="${escaparHtml(raid.name)}"></div>
+        <div class="raid-card-icon" tabindex="0" aria-label="Informações de ${escaparHtml(raid.name)}">
+          <img src="${raid.iconPath}" alt="${escaparHtml(raid.name)}">
+          ${renderizarRaidTooltip(raid)}
+        </div>
         <div class="raid-card-main">
           <div class="raid-card-top">
             <h3>${escaparHtml(raid.name)}${raid.rotation ? '<span class="raid-rotation-tag">ROTAÇÃO</span>' : ""}</h3>
@@ -5622,7 +5654,10 @@ function aplicarRaidConfigBruto(bruto) {
     map: campo("map", "MAP") || raidConfigAtual.map,
     iconFile: campo("iconFile", "ICON FILE", "icon_file") || "rotation_boss.webp",
     mapFile: campo("mapFile", "MAP FILE", "map_file") || "rotation_boss_map.png",
-    spots: parseRaidSpots(campo("spots", "SPOTS"))
+    spots: parseRaidSpots(campo("spots", "SPOTS")),
+    level: Number(campo("level", "LEVEL")) || raidConfigAtual.level,
+    attribute: campo("attribute", "ATTRIBUTE") || raidConfigAtual.attribute,
+    hp: Number(String(campo("hp", "HP") || "").replace(/[^0-9]/g, "")) || raidConfigAtual.hp
   };
   return true;
 }
