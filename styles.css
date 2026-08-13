@@ -11429,9 +11429,9 @@ body {
 .raid-wrap { padding-bottom: 80px; }
 
 .raid-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(300px, 520px) auto;
   align-items: flex-end;
-  justify-content: space-between;
   gap: 30px;
   margin-bottom: 24px;
   padding: 28px;
@@ -11440,6 +11440,29 @@ body {
   background: linear-gradient(135deg, rgba(5, 20, 42, .96), rgba(16, 8, 36, .94));
   box-shadow: 0 20px 55px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .04);
 }
+
+.raid-how-to {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px 14px;
+  border-left: 2px solid rgba(97, 211, 255, .72);
+  color: #9dbbd0;
+  background: linear-gradient(90deg, rgba(48, 181, 242, .08), transparent);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.raid-how-to strong {
+  color: #61d3ff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.raid-how-to span { display: block; }
 
 .raid-kicker {
   margin-bottom: 7px;
@@ -11642,8 +11665,14 @@ body {
 .raid-alert span { color: #dceeff; }
 .raid-alert button { border: 0; color: #fff; background: transparent; cursor: pointer; font-size: 22px; }
 
+@media (max-width: 1180px) {
+  .raid-header { grid-template-columns: minmax(300px, 1fr) auto; }
+  .raid-how-to { grid-column: 1 / -1; grid-row: 2; }
+}
+
 @media (max-width: 900px) {
-  .raid-header { align-items: stretch; flex-direction: column; }
+  .raid-header { align-items: stretch; grid-template-columns: 1fr; }
+  .raid-how-to { grid-column: auto; grid-row: auto; }
   .raid-grid { grid-template-columns: 1fr; }
   .raid-time-strip { grid-template-columns: 1fr; }
   .raid-time-strip small { text-align: left; }
