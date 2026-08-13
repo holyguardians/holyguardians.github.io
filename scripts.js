@@ -2493,13 +2493,18 @@ function mostrarDadosDoSlot(
 
   const status = [
 
-    ["CC", d.cc],
-    ["DOT", d.dot],
+    /* STATUS PRINCIPAIS */
     ["HP", d.hp],
+    ["SP", d.sp],
     ["STR", d.str],
     ["INT", d.int],
     ["DEF", d.def],
+    ["RES", d.res],
     ["SPD", d.spd],
+
+    /* STATUS SECUNDÁRIOS */
+    ["CC", d.cc],
+    ["DOT", d.dot],
     ["DEF BREAK", d.defBreak]
 
   ];

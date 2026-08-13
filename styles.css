@@ -6403,6 +6403,7 @@ body {
 
 /* -----------------------------------------------------
    Conteúdo do Digimon em formato horizontal
+   V2 — informações compactas + stats principais maiores
 ----------------------------------------------------- */
 
 #builderPagina .selected-info {
@@ -6410,24 +6411,25 @@ body {
   display: grid;
 
   /*
-    COLUNA 1 = imagem
-    COLUNAS 2–6 = informações
+    COLUNA 1 = retrato
+    COLUNAS 2–7 = informações
   */
   grid-template-columns:
-    104px
-    repeat(5, minmax(0, 1fr));
+    148px
+    repeat(6, minmax(0, 1fr));
 
-  gap: 5px;
+  gap: 6px;
   align-items: stretch;
 }
 
-/* FOTO — fica à esquerda em vez de ocupar a largura toda */
+
+/* FOTO — maior e proporcional ao bloco de informações */
 #builderPagina .team-image-box {
   grid-column: 1;
   grid-row: 1 / span 4;
 
-  width: 104px;
-  height: 104px;
+  width: 148px;
+  height: 148px;
 
   border-radius: 8px;
 }
@@ -6436,12 +6438,19 @@ body {
   padding: 5px;
 }
 
+
+/* -----------------------------------------------------
+   LINHA 1 — TYPE / FIELD / STRONG / WEAK COMPACTOS
+----------------------------------------------------- */
+
 /* TYPE */
 #builderPagina .selected-info > .type {
-  grid-column: 2 / span 2;
+  grid-column: 2;
   grid-row: 1;
 
-  padding: 5px 6px;
+  min-height: 34px;
+  padding: 4px 5px;
+
   font-size: 9px;
 
   display: flex;
@@ -6449,82 +6458,219 @@ body {
   justify-content: center;
 }
 
+
 /* FIELD */
 #builderPagina .selected-info > .field {
-  grid-column: 4 / span 3;
+  grid-column: 3 / span 2;
   grid-row: 1;
 
-  padding: 4px 6px;
-  min-height: 31px;
+  min-height: 34px;
+  padding: 3px 5px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* STRONG / WEAK lado a lado */
+
+/* STRONG */
 #builderPagina .selected-info > .strong {
-  grid-column: 2 / span 2;
-  grid-row: 2;
+  grid-column: 5 / span 1;
+  grid-row: 1;
 }
 
+
+/* WEAK */
 #builderPagina .selected-info > .weak {
-  grid-column: 4 / span 3;
-  grid-row: 2;
+  grid-column: 6 / span 2;
+  grid-row: 1;
 }
+
 
 #builderPagina .selected-info > .strong,
 #builderPagina .selected-info > .weak {
-  min-height: 38px;
-  padding: 4px 5px;
+  min-height: 34px;
+  padding: 3px 4px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Ícones Strong/Weak compactos */
-#builderPagina .selected-info > .strong .element-icon-wrap,
-#builderPagina .selected-info > .weak .element-icon-wrap {
-  width: 27px;
-  height: 27px;
+
+/* Labels auxiliares menores */
+#builderPagina .selected-info > .field .label,
+#builderPagina .selected-info > .strong .label,
+#builderPagina .selected-info > .weak .label {
+  margin-bottom: 1px;
+  font-size: 7px;
+  line-height: 1;
 }
 
-#builderPagina .selected-info > .strong .element-icon-img,
-#builderPagina .selected-info > .weak .element-icon-img {
+
+/* FIELD compacto */
+#builderPagina .selected-info > .field .field-icons {
+  gap: 4px;
+  justify-content: center;
+}
+
+#builderPagina .selected-info > .field .field-icon-img {
   width: 25px;
   height: 25px;
 }
 
-/* Os 8 mini-status ocupam duas linhas compactas */
+
+/* Ícones STRONG / WEAK compactos */
+#builderPagina .selected-info > .strong .element-icon-wrap,
+#builderPagina .selected-info > .weak .element-icon-wrap {
+  width: 25px;
+  height: 25px;
+  padding: 1px;
+}
+
+#builderPagina .selected-info > .strong .element-icon-img,
+#builderPagina .selected-info > .weak .element-icon-img {
+  width: 23px;
+  height: 23px;
+}
+
+
+/* -----------------------------------------------------
+   STATUS
+----------------------------------------------------- */
+
 #builderPagina .selected-info > .mini-stat {
-  padding: 5px 3px;
   min-width: 0;
+
+  padding: 8px 5px;
+  min-height: 43px;
+
   text-align: center;
-  font-size: 8px;
+
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.15;
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* CC / DOT / HP / STR */
-#builderPagina .selected-info > .mini-stat:nth-child(6)  { grid-column: 2; grid-row: 3; }
-#builderPagina .selected-info > .mini-stat:nth-child(7)  { grid-column: 3; grid-row: 3; }
-#builderPagina .selected-info > .mini-stat:nth-child(8)  { grid-column: 4; grid-row: 3; }
-#builderPagina .selected-info > .mini-stat:nth-child(9)  { grid-column: 5 / span 2; grid-row: 3; }
 
-/* INT / DEF / SPD / DEF BREAK */
-#builderPagina .selected-info > .mini-stat:nth-child(10) { grid-column: 2; grid-row: 4; }
-#builderPagina .selected-info > .mini-stat:nth-child(11) { grid-column: 3; grid-row: 4; }
-#builderPagina .selected-info > .mini-stat:nth-child(12) { grid-column: 4; grid-row: 4; }
-#builderPagina .selected-info > .mini-stat:nth-child(13) { grid-column: 5 / span 2; grid-row: 4; }
+/*
+  Após imagem/type/field/strong/weak:
+  6  = HP
+  7  = SP
+  8  = STR
+  9  = INT
+  10 = DEF
+  11 = RES
+  12 = SPD
+  13 = CC
+  14 = DOT
+  15 = DEF BREAK
+*/
 
-/* SKILL 1 / 2 / 3 ficam lado a lado */
-#builderPagina .selected-info > .skill:nth-child(14) {
+
+/* LINHA 2 — quatro status principais */
+#builderPagina .selected-info > .mini-stat:nth-child(6) {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+  font-size: 12px;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(7) {
+  grid-column: 4;
+  grid-row: 2;
+  font-size: 12px;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(8) {
+  grid-column: 5;
+  grid-row: 2;
+  font-size: 12px;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(9) {
+  grid-column: 6 / span 2;
+  grid-row: 2;
+  font-size: 12px;
+}
+
+
+/* LINHA 3 — DEF / RES / SPD maiores */
+#builderPagina .selected-info > .mini-stat:nth-child(10) {
+  grid-column: 2 / span 2;
+  grid-row: 3;
+  font-size: 12px;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(11) {
+  grid-column: 4 / span 2;
+  grid-row: 3;
+  font-size: 12px;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(12) {
+  grid-column: 6 / span 2;
+  grid-row: 3;
+  font-size: 12px;
+}
+
+
+/* LINHA 4 — CC / DOT / DEF BREAK menores */
+#builderPagina .selected-info > .mini-stat:nth-child(13) {
+  grid-column: 2 / span 2;
+  grid-row: 4;
+
+  min-height: 30px;
+  padding: 5px 4px;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(14) {
+  grid-column: 4 / span 2;
+  grid-row: 4;
+
+  min-height: 30px;
+  padding: 5px 4px;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+#builderPagina .selected-info > .mini-stat:nth-child(15) {
+  grid-column: 6 / span 2;
+  grid-row: 4;
+
+  min-height: 30px;
+  padding: 5px 4px;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+/* -----------------------------------------------------
+   SKILL 1 / 2 / 3 — continuam lado a lado
+----------------------------------------------------- */
+
+#builderPagina .selected-info > .skill:nth-child(16) {
   grid-column: 1 / span 2;
   grid-row: 5;
 }
 
-#builderPagina .selected-info > .skill:nth-child(15) {
+#builderPagina .selected-info > .skill:nth-child(17) {
   grid-column: 3 / span 2;
   grid-row: 5;
 }
 
-#builderPagina .selected-info > .skill:nth-child(16) {
-  grid-column: 5 / span 2;
+#builderPagina .selected-info > .skill:nth-child(18) {
+  grid-column: 5 / span 3;
   grid-row: 5;
 }
 
@@ -6532,6 +6678,7 @@ body {
   min-width: 0;
   padding: 6px;
 }
+
 
 #builderPagina .skill-title {
   margin-bottom: 3px;
