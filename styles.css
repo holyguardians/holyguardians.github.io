@@ -617,8 +617,8 @@ body {
 
 .action-button img {
 
-  width: 23px;
-  height: 23px;
+  width: 29px;
+  height: 29px;
 
   object-fit: contain;
 
@@ -6338,22 +6338,22 @@ body {
 
 /* Dá ao Builder espaço suficiente para 3 cards horizontais */
 #builderPagina .internal-wrap {
-  max-width: 1840px;
-  padding-left: 22px;
-  padding-right: 22px;
+  max-width: 1640px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
 /* 6 Digimons = 3 em cima + 3 embaixo */
 #builderPagina .builder-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
   align-items: stretch;
 }
 
 /* Mesmo acabamento visual da DigiDex */
 #builderPagina .slot {
   min-width: 0;
-  padding: 12px;
+  padding: 16px;
   border: 1px solid #174f92;
   border-radius: 12px;
   background:
@@ -6380,19 +6380,19 @@ body {
 }
 
 #builderPagina .slot-title {
-  margin-bottom: 6px;
-  font-size: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 #builderPagina .team-search {
-  padding: 9px 11px;
-  font-size: 11px;
+  padding: 12px 13px;
+  font-size: 13px;
 }
 
 #builderPagina .team-search-status {
-  min-height: 13px;
-  margin-top: 3px;
-  font-size: 8px;
+  min-height: 15px;
+  margin-top: 4px;
+  font-size: 9px;
 }
 
 #builderPagina .team-suggestions {
@@ -6415,10 +6415,10 @@ body {
     COLUNAS 2–7 = informações
   */
   grid-template-columns:
-    148px
-    repeat(6, minmax(0, 1fr));
+    172px
+    repeat(12, minmax(0, 1fr));
 
-  gap: 6px;
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -6428,8 +6428,8 @@ body {
   grid-column: 1;
   grid-row: 1 / span 4;
 
-  width: 148px;
-  height: 148px;
+  width: 172px;
+  height: 172px;
 
   border-radius: 8px;
 }
@@ -6445,13 +6445,13 @@ body {
 
 /* TYPE */
 #builderPagina .selected-info > .type {
-  grid-column: 2;
+  grid-column: 2 / span 2;
   grid-row: 1;
 
-  min-height: 34px;
-  padding: 4px 5px;
+  min-height: 46px;
+  padding: 6px 8px;
 
-  font-size: 9px;
+  font-size: 11px;
 
   display: flex;
   align-items: center;
@@ -6461,11 +6461,11 @@ body {
 
 /* FIELD */
 #builderPagina .selected-info > .field {
-  grid-column: 3 / span 2;
+  grid-column: 4 / span 6;
   grid-row: 1;
 
-  min-height: 34px;
-  padding: 3px 5px;
+  min-height: 46px;
+  padding: 5px 7px;
 
   display: flex;
   flex-direction: column;
@@ -6476,22 +6476,22 @@ body {
 
 /* STRONG */
 #builderPagina .selected-info > .strong {
-  grid-column: 5 / span 1;
+  grid-column: 10 / span 2;
   grid-row: 1;
 }
 
 
 /* WEAK */
 #builderPagina .selected-info > .weak {
-  grid-column: 6 / span 2;
+  grid-column: 12 / span 2;
   grid-row: 1;
 }
 
 
 #builderPagina .selected-info > .strong,
 #builderPagina .selected-info > .weak {
-  min-height: 34px;
-  padding: 3px 4px;
+  min-height: 46px;
+  padding: 5px 6px;
 
   display: flex;
   flex-direction: column;
@@ -6504,29 +6504,32 @@ body {
 #builderPagina .selected-info > .field .label,
 #builderPagina .selected-info > .strong .label,
 #builderPagina .selected-info > .weak .label {
-  margin-bottom: 1px;
-  font-size: 7px;
+  margin-bottom: 2px;
+  font-size: 9px;
   line-height: 1;
 }
 
 
 /* FIELD compacto */
 #builderPagina .selected-info > .field .field-icons {
-  gap: 4px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
   justify-content: center;
+  align-items: center;
 }
 
 #builderPagina .selected-info > .field .field-icon-img {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
 }
 
 
 /* Ícones STRONG / WEAK compactos */
 #builderPagina .selected-info > .strong .element-icon-wrap,
 #builderPagina .selected-info > .weak .element-icon-wrap {
-  width: 25px;
-  height: 25px;
+  width: 31px;
+  height: 31px;
   padding: 1px;
 }
 
@@ -6544,12 +6547,12 @@ body {
 #builderPagina .selected-info > .mini-stat {
   min-width: 0;
 
-  padding: 8px 5px;
-  min-height: 43px;
+  padding: 10px 7px;
+  min-height: 50px;
 
   text-align: center;
 
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.15;
 
@@ -6576,81 +6579,81 @@ body {
 
 /* LINHA 2 — quatro status principais */
 #builderPagina .selected-info > .mini-stat:nth-child(6) {
-  grid-column: 2 / span 2;
+  grid-column: 2 / span 3;
   grid-row: 2;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(7) {
-  grid-column: 4;
+  grid-column: 5 / span 3;
   grid-row: 2;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(8) {
-  grid-column: 5;
+  grid-column: 8 / span 3;
   grid-row: 2;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(9) {
-  grid-column: 6 / span 2;
+  grid-column: 11 / span 3;
   grid-row: 2;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 
 /* LINHA 3 — DEF / RES / SPD maiores */
 #builderPagina .selected-info > .mini-stat:nth-child(10) {
-  grid-column: 2 / span 2;
+  grid-column: 2 / span 4;
   grid-row: 3;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(11) {
-  grid-column: 4 / span 2;
+  grid-column: 6 / span 4;
   grid-row: 3;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(12) {
-  grid-column: 6 / span 2;
+  grid-column: 10 / span 4;
   grid-row: 3;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 
 /* LINHA 4 — CC / DOT / DEF BREAK menores */
 #builderPagina .selected-info > .mini-stat:nth-child(13) {
-  grid-column: 2 / span 2;
+  grid-column: 2 / span 4;
   grid-row: 4;
 
-  min-height: 30px;
-  padding: 5px 4px;
+  min-height: 36px;
+  padding: 6px 5px;
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(14) {
-  grid-column: 4 / span 2;
+  grid-column: 6 / span 4;
   grid-row: 4;
 
-  min-height: 30px;
-  padding: 5px 4px;
+  min-height: 36px;
+  padding: 6px 5px;
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
 }
 
 #builderPagina .selected-info > .mini-stat:nth-child(15) {
-  grid-column: 6 / span 2;
+  grid-column: 10 / span 4;
   grid-row: 4;
 
-  min-height: 30px;
-  padding: 5px 4px;
+  min-height: 36px;
+  padding: 6px 5px;
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
 }
 
@@ -6660,37 +6663,37 @@ body {
 ----------------------------------------------------- */
 
 #builderPagina .selected-info > .skill:nth-child(16) {
-  grid-column: 1 / span 2;
+  grid-column: 1 / span 4;
   grid-row: 5;
 }
 
 #builderPagina .selected-info > .skill:nth-child(17) {
-  grid-column: 3 / span 2;
+  grid-column: 5 / span 4;
   grid-row: 5;
 }
 
 #builderPagina .selected-info > .skill:nth-child(18) {
-  grid-column: 5 / span 3;
+  grid-column: 9 / span 5;
   grid-row: 5;
 }
 
 #builderPagina .selected-info > .skill {
   min-width: 0;
-  padding: 6px;
+  padding: 9px;
 }
 
 
 #builderPagina .skill-title {
-  margin-bottom: 3px;
-  font-size: 8px;
+  margin-bottom: 5px;
+  font-size: 10px;
   text-align: center;
 }
 
 #builderPagina .skill select {
   min-width: 0;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  font-size: 9px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 11px;
 }
 
 #builderPagina .skill select.skill-select-icon {
@@ -9629,3 +9632,30 @@ body {
   }
 }
 
+
+
+/* =====================================================
+   TEAM BUILDER V4 — 2 COLUNAS / ESCALA MAIOR
+===================================================== */
+
+#builderPagina .efeito-buff,
+#builderPagina .efeito-remove {
+  padding: 5px 7px;
+  font-size: 10px;
+}
+
+#builderPagina .skill .element-icon-wrap {
+  width: 24px;
+  height: 24px;
+}
+
+#builderPagina .skill .element-icon-img {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 1180px) {
+  #builderPagina .builder-grid {
+    grid-template-columns: 1fr;
+  }
+}
