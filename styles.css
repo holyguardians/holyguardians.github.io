@@ -11542,7 +11542,20 @@ body {
 .raid-map-stage { position: relative; width: 100%; line-height: 0; }
 .raid-map-stage > img { width: 100%; height: auto; display: block; border-radius: 9px; }
 .raid-map-spots { position: absolute; inset: 0; pointer-events: none; }
-.raid-map-spot { position: absolute; width: 20px; height: 20px; transform: translate(-50%, -50%); border: 3px solid #fff; border-radius: 50% 50% 50% 0; background: #ed2b3a; box-shadow: 0 0 0 4px rgba(237,43,58,.28), 0 0 18px #ed2b3a; }
+.raid-map-spot {
+  position: absolute;
+  width: 48px;
+  height: 57px;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .72));
+}
+
+.raid-map-spot img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
 
 .raid-alert {
   position: fixed;
@@ -11588,20 +11601,20 @@ body {
    AJUSTES CIRÚRGICOS — TYPES
 ===================================================== */
 
-/* Builder: box mais estreita e conteúdo sempre em uma única linha. */
+/* Builder: TYPE legível e FIELD compacto, mantendo a linha equilibrada. */
 #builderPagina .selected-info > .type {
-  grid-column: 2 / span 1 !important;
+  grid-column: 2 / span 3 !important;
   min-width: 0 !important;
-  padding: 4px !important;
-  gap: 2px !important;
+  padding: 5px 7px !important;
+  gap: 5px !important;
   flex-wrap: nowrap !important;
-  overflow: hidden;
+  overflow: visible;
 }
 
 #builderPagina .selected-info > .type .type-label {
-  margin-right: 1px;
-  font-size: 8px;
-  letter-spacing: .06em;
+  margin-right: 2px;
+  font-size: 9px;
+  letter-spacing: .08em;
   flex: 0 0 auto;
 }
 
@@ -11610,13 +11623,19 @@ body {
 }
 
 #builderPagina .selected-info > .type .type-icon-img {
-  width: 33px !important;
-  height: 33px !important;
+  width: 42px !important;
+  height: 42px !important;
 }
 
-/* O espaço liberado pelo Type volta para o Field. */
+/* FIELD cede uma coluna ao TYPE; seus ícones permanecem lado a lado. */
 #builderPagina .selected-info > .field {
-  grid-column: 3 / span 7 !important;
+  grid-column: 5 / span 5 !important;
+  min-width: 0 !important;
+}
+
+#builderPagina .selected-info > .field .field-icons {
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
 }
 
 /* Table View: ícone menor somente dentro da tabela. Card View não muda. */
@@ -11632,11 +11651,11 @@ body {
 
 @media (max-width: 900px) {
   #builderPagina .selected-info > .type {
-    grid-column: 2 / span 1 !important;
+    grid-column: 2 / span 3 !important;
   }
 
   #builderPagina .selected-info > .field {
-    grid-column: 3 / span 3 !important;
+    grid-column: 5 / span 5 !important;
   }
 }
 

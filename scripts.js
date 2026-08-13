@@ -5587,7 +5587,7 @@ function abrirMapaRaid(indice) {
   titulo.textContent = raid.name + " — " + raid.map;
   imagem.src = raid.mapPath;
   spots.innerHTML = (raid.spots || []).map(function(spot) {
-    return `<span class="raid-map-spot" style="left:${Number(spot.x)}%;top:${Number(spot.y)}%" title="Possível ponto de nascimento"></span>`;
+    return `<span class="raid-map-spot" style="left:${Number(spot.x)}%;top:${Number(spot.y)}%" title="Possível ponto de nascimento"><img src="raid_marker.png" alt="" aria-hidden="true"></span>`;
   }).join("");
   modal.classList.add("ativo");
   modal.setAttribute("aria-hidden", "false");
