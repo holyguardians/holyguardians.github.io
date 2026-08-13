@@ -11386,6 +11386,12 @@ body {
   background: rgba(3, 13, 29, .88);
 }
 
+.digidex-type-filter-row {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 0 10px;
+}
+
 .type-filter-btn {
   width: 44px;
   height: 44px;
@@ -11576,6 +11582,69 @@ body {
   .raid-card { align-items: flex-start; }
   .raid-card-icon { width: 66px; height: 66px; flex-basis: 66px; }
   .raid-card-top { flex-direction: column; }
+}
+
+/* =====================================================
+   AJUSTES CIRÚRGICOS — TYPES
+===================================================== */
+
+/* Builder: box mais estreita e conteúdo sempre em uma única linha. */
+#builderPagina .selected-info > .type {
+  grid-column: 2 / span 1 !important;
+  min-width: 0 !important;
+  padding: 4px !important;
+  gap: 2px !important;
+  flex-wrap: nowrap !important;
+  overflow: hidden;
+}
+
+#builderPagina .selected-info > .type .type-label {
+  margin-right: 1px;
+  font-size: 8px;
+  letter-spacing: .06em;
+  flex: 0 0 auto;
+}
+
+#builderPagina .selected-info > .type .type-icon-wrap {
+  flex: 0 0 auto;
+}
+
+#builderPagina .selected-info > .type .type-icon-img {
+  width: 33px !important;
+  height: 33px !important;
+}
+
+/* O espaço liberado pelo Type volta para o Field. */
+#builderPagina .selected-info > .field {
+  grid-column: 3 / span 7 !important;
+}
+
+/* Table View: ícone menor somente dentro da tabela. Card View não muda. */
+.digidex-table .digidex-table-type {
+  min-width: 26px;
+  padding: 1px 3px;
+}
+
+.digidex-table .digidex-table-type .type-icon-img {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+@media (max-width: 900px) {
+  #builderPagina .selected-info > .type {
+    grid-column: 2 / span 1 !important;
+  }
+
+  #builderPagina .selected-info > .field {
+    grid-column: 3 / span 3 !important;
+  }
+}
+
+@media (max-width: 620px) {
+  #builderPagina .selected-info > .type,
+  #builderPagina .selected-info > .field {
+    grid-column: auto !important;
+  }
 }
 
 /* O oitavo item mantém a navbar em uma única linha sem atropelar a marca. */

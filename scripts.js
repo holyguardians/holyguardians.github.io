@@ -5365,7 +5365,7 @@ const RAID_SCHEDULE = [
   { name: "Ebonwumon", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "ebonwumon_dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [] },
   { name: "Qinglongmon", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "qinglongmon_dark_castle.png", type: "weekly", time: "22:00", days: [4] },
   { name: "Baihumon", icon: "baihumon.webp", map: "Desert Area", mapFile: "baihumon_desert_area.png", type: "weekly", time: "22:00", days: [5] },
-  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "examon_dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [] },
+  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "examon_dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [{ x: 29.4182, y: 14.6182 }] },
   { name: "Yggdrasill_7D6", icon: "yggdrasill_7d6.webp", map: "Infinite Mountain", mapFile: "yggdrasill_infinite_mountain.png", type: "custom", schedules: [
     { day: 5, time: "21:00" }, { day: 6, time: "09:00" }, { day: 6, time: "21:00" },
     { day: 0, time: "09:00" }, { day: 0, time: "21:00" }, { day: 1, time: "09:00" }

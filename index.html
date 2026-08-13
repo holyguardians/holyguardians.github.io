@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HOLY GUARDIANS</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260813-raid-types-v1">
+  <link rel="stylesheet" href="styles.css?v=20260813-raid-types-fix2">
 </head>
 <body>
 
@@ -768,15 +768,7 @@
       </div>
     </div>
 
-    <div class="filtros">
-      <input
-        id="pesquisa"
-        class="search"
-        type="text"
-        placeholder="Pesquisar Digimon..."
-        oninput="filtrar()"
-      >
-
+    <div class="digidex-type-filter-row">
       <div class="type-filter" aria-label="Filtrar por Type">
         <button type="button" class="type-filter-btn ativo" title="Todos os Types" onclick="selecionarFiltroType('', this)">ALL</button>
         <button type="button" class="type-filter-btn" title="Data" onclick="selecionarFiltroType('DATA', this)"><img src="type_icons/type_data.png" alt="DATA"></button>
@@ -785,6 +777,16 @@
         <button type="button" class="type-filter-btn" title="Unknown / UK" onclick="selecionarFiltroType('UNKNOWN', this)"><img src="type_icons/type_unknown.png" alt="UNKNOWN"></button>
         <button type="button" class="type-filter-btn" title="Free" onclick="selecionarFiltroType('FREE', this)"><img src="type_icons/type_free.png" alt="FREE"></button>
       </div>
+    </div>
+
+    <div class="filtros">
+      <input
+        id="pesquisa"
+        class="search"
+        type="text"
+        placeholder="Pesquisar Digimon..."
+        oninput="filtrar()"
+      >
 
       <details id="filtroSkillElemento" class="digidex-filter-menu">
         <summary>
@@ -1292,6 +1294,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260813-raid-types-v1"></script>
+<script src="scripts.js?v=20260813-raid-types-fix2"></script>
 </body>
 </html>
