@@ -11085,3 +11085,54 @@ body {
     margin: -5px 0;
   }
 }
+
+
+/* =====================================================
+   COMPARAÇÃO — CARDS PROGRESSIVOS / COMPARAÇÃO GLOBAL
+===================================================== */
+
+/* Um único selecionado: mostra o card sem esmagá-lo. */
+.comparacao-grid-4.comparacao-grid-preenchidos-1,
+.comparacao-grid-8.comparacao-grid-preenchidos-1 {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Conforme seleciona, os cards já aparecem e se comparam. */
+.comparacao-grid-4.comparacao-grid-preenchidos-2,
+.comparacao-grid-4.comparacao-grid-preenchidos-3,
+.comparacao-grid-4.comparacao-grid-preenchidos-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.comparacao-grid-8.comparacao-grid-preenchidos-2,
+.comparacao-grid-8.comparacao-grid-preenchidos-3,
+.comparacao-grid-8.comparacao-grid-preenchidos-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.comparacao-grid-8.comparacao-grid-preenchidos-5,
+.comparacao-grid-8.comparacao-grid-preenchidos-6,
+.comparacao-grid-8.comparacao-grid-preenchidos-7,
+.comparacao-grid-8.comparacao-grid-preenchidos-8 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1180px) {
+  .comparacao-grid-8.comparacao-grid-preenchidos-5,
+  .comparacao-grid-8.comparacao-grid-preenchidos-6,
+  .comparacao-grid-8.comparacao-grid-preenchidos-7,
+  .comparacao-grid-8.comparacao-grid-preenchidos-8 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .comparacao-grid-4[class*="comparacao-grid-preenchidos-"],
+  .comparacao-grid-8[class*="comparacao-grid-preenchidos-"] {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+}

@@ -4008,40 +4008,57 @@ function renderizarComparacao() {
       quantidadeComparacao
     );
 
-  const selecionados =
+  /*
+   * Só entram na comparação os Digimons que já foram
+   * realmente selecionados nos slots ativos.
+   *
+   * Assim:
+   * 1 escolhido  -> 1 card aparece, ainda neutro
+   * 2 escolhidos -> os 2 já se comparam
+   * 3 escolhidos -> os 3 já se comparam
+   * 4 escolhidos -> comparação global entre os 4
+   * e o mesmo vale progressivamente até 8.
+   */
+  const completos =
     ladosAtivos
       .map(function(lado) {
         return comparacaoSelecionados[lado];
-      });
+      })
+      .filter(Boolean);
 
-  const completos =
-    selecionados.filter(Boolean);
 
-  if (
-    completos.length !== quantidadeComparacao
-  ) {
-    const faltam =
-      quantidadeComparacao - completos.length;
+  if (!completos.length) {
 
     resultado.innerHTML = `
       <div class="comparacao-empty">
         ${
           quantidadeComparacao === 2
             ? "Escolha dois Digimons para iniciar a comparação."
-            : "Selecione os " + quantidadeComparacao +
-              " Digimons para iniciar a comparação. Faltam " +
-              faltam + "."
+            : "Selecione até " + quantidadeComparacao +
+              " Digimons para iniciar a comparação."
         }
       </div>
     `;
+
     return;
   }
 
+
   resultado.innerHTML = `
-    <div class="comparacao-grid comparacao-grid-${quantidadeComparacao}">
+    <div class="
+      comparacao-grid
+      comparacao-grid-${quantidadeComparacao}
+      comparacao-grid-preenchidos-${completos.length}
+    ">
       ${
         completos
           .map(function(d) {
+            /*
+             * IMPORTANTE:
+             * passamos a lista COMPLETA dos selecionados atuais.
+             * Logo HP/SP/STR/INT/DEF/RES/SPD de cada card são
+             * comparados contra todos os demais, e não em pares.
+             */
             return cardComparacaoMultipla(
               d,
               completos
@@ -4052,7 +4069,6 @@ function renderizarComparacao() {
     </div>
   `;
 }
-
 
 document.addEventListener(
   "click",
