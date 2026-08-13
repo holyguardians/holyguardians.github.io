@@ -10890,3 +10890,13 @@ body {
   }
 
 }
+
+
+/* =====================================================
+   ELEMENTOS — MICROAJUSTE VERTICAL
+   Somente Y: sobe BUFF e REMOVE 18px.
+===================================================== */
+
+.elementos-info-tab {
+  margin-top: -18px;
+}
