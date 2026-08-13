@@ -5355,18 +5355,18 @@ let raidNotificados = {};
 let raidTimerInterval = null;
 
 const RAID_SCHEDULE = [
-  { name: "Pumpmon", icon: "pumpmon.webp", map: "Shibuya", mapFile: "pumpmon_shibuya_1930.png", type: "daily", time: "19:30" },
-  { name: "Golemon", icon: "golemon.webp", map: "Shibuya", mapFile: "golemon_shibuya_2130.png", type: "daily", time: "21:30" },
-  { name: "BlackSeraphimon", icon: "blackseraphimon.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "23:00", baseDate: "2025-05-31" },
-  { name: "Ophanimon Falldown Mode", icon: "ophanimon_falldown_mode.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "23:00", baseDate: "2025-06-07" },
-  { name: "Megidramon", icon: "megidramon.webp", map: "Rotation Map", mapFile: "weekend_rotation.png", type: "biweekly", time: "22:00", baseDate: "2025-06-08" },
-  { name: "Omegamon", icon: "omegamon.png", map: "Dark Castle Valley", mapFile: "omegamon_dark_castle.png", type: "biweekly", time: "22:00", baseDate: "2025-06-01" },
-  { name: "Zhuqiaomon", icon: "zhuqiaomon.webp", map: "Gear Savanna", mapFile: "zhuqiaomon_gear_savanna.png", type: "weekly", time: "22:00", days: [2] },
-  { name: "Ebonwumon", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "ebonwumon_dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [] },
-  { name: "Qinglongmon", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "qinglongmon_dark_castle.png", type: "weekly", time: "22:00", days: [4] },
-  { name: "Baihumon", icon: "baihumon.webp", map: "Desert Area", mapFile: "baihumon_desert_area.png", type: "weekly", time: "22:00", days: [5] },
-  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "examon_dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [{ x: 29.4182, y: 14.6182 }] },
-  { name: "Yggdrasill_7D6", icon: "yggdrasill_7d6.webp", map: "Infinite Mountain", mapFile: "yggdrasill_infinite_mountain.png", type: "custom", schedules: [
+  { name: "Pumpkinmon", icon: "pumpmon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "19:30", spots: [{ x: 26.428, y: 90.168 }, { x: 87.804, y: 68.24 }, { x: 27.76, y: 8.012 }, { x: 19.524, y: 60.128 }, { x: 62.048, y: 77.36 }] },
+  { name: "Gotsumon", icon: "golemon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
+  { name: "BlackSeraphimon", icon: "blackseraphimon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-05-31", spots: [{ x: 43.015, y: 54.66 }] },
+  { name: "Ophanimon: Fallen Mode", icon: "ophanimon_falldown_mode.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-06-07", spots: [{ x: 40.565, y: 44.405 }] },
+  { name: "Megidramon", icon: "megidramon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-08", spots: [{ x: 42.395, y: 47.945 }] },
+  { name: "Omnimon", icon: "omegamon.png", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-01", spots: [{ x: 68.9364, y: 15.3455 }] },
+  { name: "Zhuqiaomon", icon: "zhuqiaomon.webp", map: "Gear Savannah", mapFile: "gear_savanna.webp", type: "weekly", time: "22:00", days: [2], spots: [{ x: 76.3314, y: 68.5859 }, { x: 65.3514, y: 72.1425 }] },
+  { name: "Ebonwumon", icon: "ebonwumon.webp", map: "Dragon's Eye Lake", mapFile: "dragons_eye_lake.webp", type: "weekly", time: "22:00", days: [3], spots: [{ x: 43.35, y: 60.9214 }, { x: 44.0643, y: 86.7786 }] },
+  { name: "Azulongmon", icon: "qinglongmon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "weekly", time: "22:00", days: [4], spots: [{ x: 36.2909, y: 30.3545 }, { x: 32.4091, y: 40.4364 }] },
+  { name: "Baihumon", icon: "baihumon.webp", map: "Desert Area", mapFile: "desert_area.webp", type: "weekly", time: "22:00", days: [5], spots: [{ x: 50.9849, y: 42.3209 }, { x: 45.3686, y: 26.3093 }] },
+  { name: "Examon", icon: "examon.webp", map: "Dark Castle Valley", mapFile: "dark_castle_valley.webp", type: "biweekly", time: "00:30", baseDate: "2026-04-26", spots: [{ x: 29.4182, y: 14.6182 }] },
+  { name: "Kingdrasil_7D6", icon: "yggdrasill_7d6.webp", map: "Infinity Mountain", mapFile: "infinite_mountain.webp", type: "custom", spots: [{ x: 19.6574, y: 50.8294 }], schedules: [
     { day: 5, time: "21:00" }, { day: 6, time: "09:00" }, { day: 6, time: "21:00" },
     { day: 0, time: "09:00" }, { day: 0, time: "21:00" }, { day: 1, time: "09:00" }
   ] }
