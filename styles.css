@@ -10779,3 +10779,114 @@ body {
 .elementos-info-tab-remove {
   margin-right: -12px;
 }
+
+
+/* =====================================================
+   ELEMENTOS — RETORNO AO VISUAL DA PRIMEIRA VERSÃO
+   Mantém X atual, sobe levemente e restaura aba vertical compacta.
+===================================================== */
+
+/* Sobe somente um pouco as duas abas. */
+.elementos-info-tab {
+  top: 18.9%;
+}
+
+/* Mantém o microajuste horizontal final já aprovado. */
+.elementos-info-tab-buff {
+  margin-left: -12px;
+}
+
+.elementos-info-tab-remove {
+  margin-right: -12px;
+}
+
+/* Lingueta vertical e compacta, como na primeira versão. */
+.elementos-info-tab-handle {
+  width: 52px;
+  height: 92px;
+  min-height: 92px;
+  padding: 8px 5px;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 8px;
+  line-height: 1.05;
+}
+
+/* BUFF e REMOVE ficam visualmente integrados ao painel aberto. */
+.elementos-info-tab-buff .elementos-info-tab-handle {
+  border-radius: 10px 0 0 10px;
+  border-right-width: 1px;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-handle {
+  border-radius: 0 10px 10px 0;
+  border-left-width: 1px;
+}
+
+/* Painel compacto: mesma linguagem e praticamente a mesma altura da lingueta. */
+.elementos-info-tab-panel {
+  min-height: 92px;
+  height: 92px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.elementos-info-tab.aberta .elementos-info-tab-panel,
+.elementos-info-tab:hover .elementos-info-tab-panel {
+  width: 168px;
+  padding: 10px 11px;
+}
+
+.elementos-info-tab-panel strong {
+  margin-bottom: 5px;
+  font-size: 9px;
+  line-height: 1.05;
+}
+
+.elementos-info-tab-panel p {
+  width: 144px;
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+/* Bolinhas semânticas mantidas. */
+.elementos-info-tab-buff .elementos-info-tab-dot {
+  color: #35f29a;
+  background: #35f29a;
+}
+
+.elementos-info-tab-remove .elementos-info-tab-dot {
+  color: #ff4d68;
+  background: #ff4d68;
+}
+
+/* Seta também volta a ficar pequena/vertical, como no primeiro design. */
+.elementos-info-tab-arrow {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Mobile continua usando o fallback seguro já existente. */
+@media (max-width: 980px) {
+
+  .elementos-info-tab {
+    top: auto;
+  }
+
+  .elementos-info-tab-handle {
+    width: 92px;
+    height: auto;
+    min-height: 38px;
+    flex-direction: row;
+    padding: 7px 9px;
+    font-size: 8px;
+  }
+
+  .elementos-info-tab-panel {
+    height: auto;
+    min-height: 0;
+  }
+
+}
