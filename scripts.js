@@ -1329,6 +1329,11 @@ function criarCard(d) {
         </div>
 
         <div class="stat">
+          <div class="label">SP</div>
+          <div class="value">${d.sp || "-"}</div>
+        </div>
+
+        <div class="stat">
           <div class="label">STR</div>
           <div class="value">${d.str || "-"}</div>
         </div>
@@ -1341,6 +1346,11 @@ function criarCard(d) {
         <div class="stat">
           <div class="label">DEF</div>
           <div class="value">${d.def || "-"}</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">RES</div>
+          <div class="value">${d.res || "-"}</div>
         </div>
 
         <div class="stat">
