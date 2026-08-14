@@ -5579,12 +5579,64 @@ function formatarProbabilidadeDigivolution(valor) {
   return `${Number.isInteger(arredondado) ? arredondado : String(arredondado).replace(".", ",")}%`;
 }
 
+function normalizarClassificacaoDigivolution(item) {
+  const nome = normalizarChaveDigivolution(item.displayName || item.to);
+  if (nome.startsWith("justimon")) {
+    return Object.assign({}, item, {
+      category: "MEGA",
+      subtype: "normal"
+    });
+  }
+  return item;
+}
+
+function criarResultadoMutantDigivolution(item, probabilidade) {
+  const anterior = (item.from || [])[0];
+  return {
+    name: "Mutant",
+    to: "mutant",
+    icon: anterior && typeof anterior !== "string" ? anterior.icon : "",
+    probability: formatarProbabilidadeDigivolution(probabilidade),
+    originalId: "",
+    mutant: true
+  };
+}
+
+function criarGrupoComMutantDigivolution(item, chanceMutant) {
+  return Object.assign({}, item, {
+    id: `mutant-${normalizarChaveDigivolution(item.id || item.to)}-${normalizarChaveDigivolution(item.requirementOwner)}`,
+    grouped: true,
+    outcomes: [{
+      name: item.displayName || item.to,
+      to: item.to,
+      icon: item.targetIcon,
+      probability: formatarProbabilidadeDigivolution(numeroProbabilidadeDigivolution(item.probability)),
+      originalId: item.id,
+      mutant: false
+    }, criarResultadoMutantDigivolution(item, chanceMutant)],
+    displayName: "POSSÍVEIS EVOLUÇÕES",
+    probability: "100%"
+  });
+}
+
 function agruparDigivolutions(dados) {
   const grupos = new Map();
   const saida = [];
 
-  dados.forEach(function(item) {
+  dados.map(normalizarClassificacaoDigivolution).forEach(function(item) {
+    const categoria = String(item.category || "").toUpperCase();
+    const chance = numeroProbabilidadeDigivolution(item.probability);
+
+    if (categoria === "JOGRESS" && chance > 0 && chance < 100) {
+      saida.push(criarGrupoComMutantDigivolution(item, 100 - chance));
+      return;
+    }
+
     if (!categoriaNormalDigivolution(item)) {
+      if (Math.abs(chance - 95) < 0.001) {
+        saida.push(criarGrupoComMutantDigivolution(item, 5));
+        return;
+      }
       saida.push(item);
       return;
     }
@@ -5595,7 +5647,11 @@ function agruparDigivolutions(dados) {
 
   grupos.forEach(function(itens) {
     if (itens.length < 2) {
-      saida.push(itens[0]);
+      const unico = itens[0];
+      const chance = numeroProbabilidadeDigivolution(unico.probability);
+      saida.push(Math.abs(chance - 95) < 0.001
+        ? criarGrupoComMutantDigivolution(unico, 5)
+        : unico);
       return;
     }
 
@@ -5604,8 +5660,6 @@ function agruparDigivolutions(dados) {
       return total + numeroProbabilidadeDigivolution(item.probability);
     }, 0);
     const fator = somaInformada > 0 ? 95 / somaInformada : 1;
-    const anterior = (base.from || [])[0];
-    const iconeMutant = anterior && typeof anterior !== "string" ? anterior.icon : "";
     const resultados = itens.map(function(item) {
       return {
         name: item.displayName || item.to,
@@ -5616,14 +5670,7 @@ function agruparDigivolutions(dados) {
         mutant: false
       };
     });
-    resultados.push({
-      name: "Mutant",
-      to: "mutant",
-      icon: iconeMutant,
-      probability: "5%",
-      originalId: "",
-      mutant: true
-    });
+    resultados.push(criarResultadoMutantDigivolution(base, 5));
 
     saida.push(Object.assign({}, base, {
       id: `grupo-${normalizarChaveDigivolution(base.requirementOwner)}-${normalizarChaveDigivolution(base.id)}`,
