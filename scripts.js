@@ -6562,6 +6562,11 @@ const OFD_DAY_NAMES = {
   QUI: "QUINTA-FEIRA", SEX: "SEXTA-FEIRA", SAB: "SÁBADO", DOM: "DOMINGO"
 };
 
+const OFD_DAY_NEXT = {
+  SEG: "TER", TER: "QUA", QUA: "QUI", QUI: "SEX",
+  SEX: "SAB", SAB: "DOM", DOM: "SEG"
+};
+
 const OFD_HOME_FALLBACK = [
   { name: "Infinity Mountain", map: "Infinity Mountain", level: "41–60", ticket: "C", days: [3, 5, 0], order: 1 },
   { name: "Desert Area", map: "Desert Area", level: "55–75", ticket: "D", days: [2, 4, 6], order: 2 },
@@ -6636,17 +6641,23 @@ function obterRelogioBrasilia() {
 
   return {
     weekday: dataLogica.getUTCDay(),
-    dateLabel: new Intl.DateTimeFormat("pt-BR", {
+    brazilWeekday: new Date(Date.UTC(partes.year, partes.month - 1, partes.day)).getUTCDay(),
+    brazilDateLabel: new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo", weekday: "long", day: "2-digit", month: "2-digit"
+    }).format(agora),
+    kstDateLabel: new Intl.DateTimeFormat("pt-BR", {
       timeZone: "UTC", weekday: "long", day: "2-digit", month: "2-digit"
     }).format(dataLogica),
     nextReset: proximoReset
   };
 }
 
-function renderizarOfdsHome(ofds, diaTexto) {
+function renderizarOfdsHome(ofds, diaBrasilTexto, diaKstTexto) {
   const lista = document.getElementById("ofdHomeList");
   const dia = document.getElementById("ofdHomeDay");
-  if (dia) dia.textContent = String(diaTexto || "OFDs DISPONÍVEIS").toUpperCase();
+  const diaKst = document.getElementById("ofdHomeKstDay");
+  if (dia) dia.textContent = String(diaBrasilTexto || "HOJE NO BRASIL").toUpperCase() + " • HORÁRIO DO BRASIL";
+  if (diaKst) diaKst.textContent = String(diaKstTexto || "ROTAÇÃO KST").toUpperCase() + " • DISPONIBILIDADE KST";
   if (!lista) return;
 
   const validas = (Array.isArray(ofds) ? ofds : [])
@@ -6696,18 +6707,21 @@ function renderizarAgendaOfdHome() {
   const titulo = document.getElementById("ofdWeekTitle");
   if (!lista) return;
 
-  const codigo = ofdDiaSelecionadoHome || "SEG";
+  const codigoBrasil = ofdDiaSelecionadoHome || "SEG";
+  const codigoKst = OFD_DAY_NEXT[codigoBrasil] || "TER";
   const itens = ofdAgendaHome.filter(function(ofd) {
     return String(ofd.ticket || "").toUpperCase() !== "B" &&
-      obterDiasCodigosOfdHome(ofd).includes(codigo);
+      obterDiasCodigosOfdHome(ofd).includes(codigoKst);
   }).sort(function(a, b) {
     return (Number(a.order) || 99) - (Number(b.order) || 99);
   });
 
-  if (titulo) titulo.textContent = `OFDs DE ${OFD_DAY_NAMES[codigo] || codigo}`;
+  if (titulo) {
+    titulo.innerHTML = `<strong>${escaparHtml(OFD_DAY_NAMES[codigoBrasil] || codigoBrasil)} • HORÁRIO DO BRASIL</strong><small>${escaparHtml(OFD_DAY_NAMES[codigoKst] || codigoKst)} • KST</small>`;
+  }
 
   document.querySelectorAll(".ofd-week-days button").forEach(function(botao) {
-    const ativo = botao.dataset.ofdDay === codigo;
+    const ativo = botao.dataset.ofdDay === codigoBrasil;
     botao.classList.toggle("ativo", ativo);
     botao.setAttribute("aria-pressed", ativo ? "true" : "false");
   });
@@ -6754,13 +6768,13 @@ function atualizarContadorOfdHome() {
 
 function carregarOfdsHome() {
   const relogio = obterRelogioBrasilia();
-  if (!ofdDiaSelecionadoHome) ofdDiaSelecionadoHome = OFD_DAY_CODES[relogio.weekday];
+  if (!ofdDiaSelecionadoHome) ofdDiaSelecionadoHome = OFD_DAY_CODES[relogio.brazilWeekday];
   ofdAgendaHome = OFD_HOME_FALLBACK.slice();
   const fallback = OFD_HOME_FALLBACK.filter(function(ofd) {
     return ofd.days.includes(relogio.weekday);
   });
 
-  renderizarOfdsHome(fallback, relogio.dateLabel);
+  renderizarOfdsHome(fallback, relogio.brazilDateLabel, relogio.kstDateLabel);
   renderizarAgendaOfdHome();
 
   chamarApiJsonp("ofds")
@@ -6769,10 +6783,14 @@ function carregarOfdsHome() {
         ofdAgendaHome = resposta.schedule;
         renderizarAgendaOfdHome();
       }
-      renderizarOfdsHome(resposta.ofds || [], resposta.dayLabel || relogio.dateLabel);
+      renderizarOfdsHome(
+        resposta.ofds || [],
+        resposta.brazilDayLabel || relogio.brazilDateLabel,
+        resposta.kstDayLabel || resposta.dayLabel || relogio.kstDateLabel
+      );
     })
     .catch(function() {
-      renderizarOfdsHome(fallback, relogio.dateLabel);
+      renderizarOfdsHome(fallback, relogio.brazilDateLabel, relogio.kstDateLabel);
     });
 
   clearInterval(ofdHomeTimer);

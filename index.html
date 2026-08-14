@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-home-ofd-agenda-v10">
+  <link rel="stylesheet" href="styles.css?v=20260814-home-ofd-time-v11">
 </head>
 <body>
 
@@ -483,7 +483,7 @@
         <div class="ofd-home-status">
           <div>
             <span id="ofdHomeDay">CARREGANDO ROTAÇÃO...</span>
-            <small>RESET DIÁRIO ÀS 12:00 • HORÁRIO DE BRASÍLIA</small>
+            <small id="ofdHomeKstDay">ROTAÇÃO CALCULADA PELO HORÁRIO KST</small>
           </div>
           <div class="ofd-home-countdown">
             <small>PRÓXIMA ATUALIZAÇÃO</small>
@@ -495,9 +495,9 @@
           <div class="ofd-home-empty">Consultando OFDs disponíveis...</div>
         </div>
 
-        <div class="ofd-home-note">
-          <span>●</span>
-          <p>Seleção automática conforme o calendário semanal. O antigo Passe B não participa da rotação.</p>
+        <div class="ofd-time-alert">
+          <span class="ofd-time-alert-icon">!</span>
+          <p><strong>ATENÇÃO AO RESET:</strong> as Overflow Dungeons mudam às <b>00:00 KST</b>, equivalente às <b>12:00 no horário de Brasília</b>. A data principal é brasileira; a disponibilidade segue o dia KST indicado.</p>
         </div>
 
       </section>
@@ -507,13 +507,13 @@
       <section class="hg-panel ofd-week-panel">
         <div class="panel-heading">
           <div class="heading-icon">⌁</div>
-          <h2>Agenda Semanal</h2>
+          <h2>Overflow Dungeons Semanal</h2>
           <div class="heading-line"></div>
         </div>
 
         <div class="ofd-week-copy">
           <strong>CONSULTAR OUTRO DIA</strong>
-          <small>Selecione um dia para visualizar as OFDs disponíveis.</small>
+          <small>Selecione o dia brasileiro. Abaixo mostramos também o dia correspondente na Coreia.</small>
         </div>
 
         <div class="ofd-week-days" aria-label="Dias da semana">
@@ -527,6 +527,10 @@
         </div>
 
         <div id="ofdWeekTitle" class="ofd-week-title">OFDs DO DIA</div>
+        <div class="ofd-week-time-hint">
+          <span>!</span>
+          <p>O ciclo selecionado começa às <b>12:00 BRT</b> e corresponde às <b>00:00 KST</b> do dia seguinte.</p>
+        </div>
         <div id="ofdWeekList" class="ofd-week-list"></div>
       </section>
 
@@ -1598,6 +1602,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-home-ofd-agenda-v10"></script>
+<script src="scripts.js?v=20260814-home-ofd-time-v11"></script>
 </body>
 </html>
