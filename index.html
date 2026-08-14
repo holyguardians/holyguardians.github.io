@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-dekyu-ui-v3">
+  <link rel="stylesheet" href="styles.css?v=20260814-dekyu-layout-v4">
 </head>
 <body>
 
@@ -1365,10 +1365,15 @@
 <section id="dekyuTreasurePagina" class="pagina">
   <div class="internal-wrap dekyu-wrap">
     <header class="dekyu-header">
-      <div>
+      <div class="dekyu-header-copy">
         <div class="dekyu-kicker">TREASURE COORDINATES // HOLY GUARDIANS</div>
         <h2 class="page-title">DEKYU TREASURE</h2>
         <p class="page-subtitle">Selecione uma área e um mapa para localizar todos os Dekyu Treasures disponíveis.</p>
+
+        <aside class="dekyu-alert" role="note">
+          <span class="dekyu-alert-symbol" aria-hidden="true">!</span>
+          <p><strong>ATENÇÃO:</strong> O Dekyu Treasure pode surgir de forma aleatória em qualquer um dos spots mostrados nos mapas abaixo, de 6 em 6 horas, a partir do momento em que surgiu pela última vez.</p>
+        </aside>
       </div>
 
       <div class="dekyu-header-icon" aria-hidden="true">
@@ -1376,46 +1381,49 @@
       </div>
     </header>
 
-    <div class="dekyu-controls">
-      <label class="dekyu-select-field">
-        <span>ÁREA</span>
-        <select id="dekyuZone" onchange="alterarZonaDekyu()">
-          <option value="">Carregando áreas...</option>
-        </select>
-      </label>
-
-      <label class="dekyu-select-field">
-        <span>MAPA</span>
-        <select id="dekyuMap" onchange="renderizarMapaDekyu()">
-          <option value="">Carregando mapas...</option>
-        </select>
-      </label>
-
-      <div class="dekyu-summary">
-        <span>LOCALIZAÇÕES</span>
-        <strong id="dekyuCount">0</strong>
-      </div>
-    </div>
-
-    <aside class="dekyu-alert" role="note">
-      <span class="dekyu-alert-symbol" aria-hidden="true">!</span>
-      <p><strong>ATENÇÃO:</strong> O Dekyu Treasure pode surgir de forma aleatória em qualquer um dos spots mostrados nos mapas abaixo, de 6 em 6 horas, a partir do momento em que surgiu pela última vez.</p>
-    </aside>
-
-    <div class="dekyu-map-card">
-      <div class="dekyu-map-title-row">
-        <div>
-          <small id="dekyuZoneLabel">ÁREA</small>
-          <h3 id="dekyuMapTitle">Selecione um mapa</h3>
+    <div class="dekyu-dashboard">
+      <div class="dekyu-map-card">
+        <div class="dekyu-map-title-row">
+          <div>
+            <small id="dekyuZoneLabel">ÁREA</small>
+            <h3 id="dekyuMapTitle">Selecione um mapa</h3>
+          </div>
+          <span id="dekyuMapStatus">Carregando coordenadas...</span>
         </div>
-        <span id="dekyuMapStatus">Carregando coordenadas...</span>
+
+        <div id="dekyuMapStage" class="dekyu-map-stage">
+          <img id="dekyuMapImage" alt="Mapa com localizações de Dekyu Treasure">
+          <div id="dekyuSpots" class="dekyu-spots"></div>
+          <div id="dekyuEmpty" class="dekyu-empty">Carregando mapa...</div>
+        </div>
       </div>
 
-      <div id="dekyuMapStage" class="dekyu-map-stage">
-        <img id="dekyuMapImage" alt="Mapa com localizações de Dekyu Treasure">
-        <div id="dekyuSpots" class="dekyu-spots"></div>
-        <div id="dekyuEmpty" class="dekyu-empty">Carregando mapa...</div>
-      </div>
+      <aside class="dekyu-side-panel" aria-label="Controles do mapa">
+        <div class="dekyu-panel-kicker">MAP NAVIGATION // HG</div>
+        <h3>LOCALIZAR TESOUROS</h3>
+
+        <div class="dekyu-controls">
+          <label class="dekyu-select-field">
+            <span>ÁREA</span>
+            <select id="dekyuZone" onchange="alterarZonaDekyu()">
+              <option value="">Carregando áreas...</option>
+            </select>
+          </label>
+
+          <label class="dekyu-select-field">
+            <span>MAPA</span>
+            <select id="dekyuMap" onchange="renderizarMapaDekyu()">
+              <option value="">Carregando mapas...</option>
+            </select>
+          </label>
+
+          <div class="dekyu-summary">
+            <span>LOCALIZAÇÕES</span>
+            <strong id="dekyuCount">0</strong>
+            <small>SPOTS MAPEADOS</small>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 </section>
@@ -1501,6 +1509,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-dekyu-ui-v3"></script>
+<script src="scripts.js?v=20260814-dekyu-layout-v4"></script>
 </body>
 </html>
