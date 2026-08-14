@@ -5860,7 +5860,7 @@ function montarEventosRaid() {
   const eventos = RAID_SCHEDULE.map(function(raid) {
     return Object.assign({}, raid, {
       nextTime: proximoRaidFixo(raid, agora),
-      iconPath: "raid_assets/icons/" + raid.icon,
+      iconPath: raid.iconUrl || ("raid_assets/icons/" + raid.icon),
       mapPath: raid.mapFile ? "raid_assets/maps/" + raid.mapFile : ""
     });
   });
@@ -5869,7 +5869,7 @@ function montarEventosRaid() {
     name: raidConfigAtual.name || "Boss de Rotação",
     map: raidConfigAtual.map || "-",
     nextTime: proximoBossRotativo(agora),
-    iconPath: "raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp"),
+    iconPath: raidConfigAtual.iconUrl || ("raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp")),
     mapPath: "raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png"),
     spots: raidConfigAtual.spots || [],
     gameName: String(raidConfigAtual.name || "Boss de Rotação").toUpperCase(),
@@ -6054,6 +6054,7 @@ function aplicarRaidConfigBruto(bruto) {
     cycleDays: Number(campo("cycleDays", "CYCLE DAYS", "cycle_days")) || raidConfigAtual.cycleDays,
     map: campo("map", "MAP") || raidConfigAtual.map,
     iconFile: campo("iconFile", "ICON FILE", "icon_file") || "rotation_boss.webp",
+    iconUrl: campo("icon", "ICON", "iconUrl", "ICON URL", "icon_url") || "",
     mapFile: campo("mapFile", "MAP FILE", "map_file") || "rotation_boss_map.png",
     spots: parseRaidSpots(campo("spots", "SPOTS")),
     level: Number(campo("level", "LEVEL")) || raidConfigAtual.level,
@@ -6079,6 +6080,7 @@ function aplicarRaidBossesBruto(bruto) {
         hp: Number(raid.hp) || 0,
         gameLocation: raid.location || raid.map || "-",
         icon: raid.iconFile || "",
+        iconUrl: raid.icon || raid.iconUrl || "",
         map: raid.map || raid.location || "-",
         mapFile: raid.mapFile || "",
         type: String(raid.type || "").toLowerCase(),

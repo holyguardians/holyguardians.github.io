@@ -11520,11 +11520,39 @@ body {
   background: #061124;
   color: #56ddff;
 }
-.digivolution-target-icon { width: 82px; height: 82px; flex: 0 0 82px; border-radius: 11px; box-shadow: inset 0 0 14px rgba(49, 203, 255, .10); }
+.digivolution-target-icon { width: 82px; height: 82px; flex: 0 0 82px; border-radius: 11px; box-shadow: inset 0 0 14px rgba(49, 203, 255, .10), 0 0 12px rgba(49, 203, 255, .08); }
 .digivolution-target-icon::before,
-.digivolution-from-icon::before { content: ""; position: absolute; z-index: 2; inset: 4px; pointer-events: none; border: solid #58edff; border-width: 2px 0 0 2px; width: 13px; height: 13px; }
+.digivolution-from-icon::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 7px;
+  background:
+    linear-gradient(#58edff, #58edff) left top / 15px 2px no-repeat,
+    linear-gradient(#58edff, #58edff) left top / 2px 15px no-repeat,
+    linear-gradient(#58edff, #58edff) right top / 15px 2px no-repeat,
+    linear-gradient(#58edff, #58edff) right top / 2px 15px no-repeat,
+    linear-gradient(#58edff, #58edff) left bottom / 15px 2px no-repeat,
+    linear-gradient(#58edff, #58edff) left bottom / 2px 15px no-repeat,
+    linear-gradient(#58edff, #58edff) right bottom / 15px 2px no-repeat,
+    linear-gradient(#58edff, #58edff) right bottom / 2px 15px no-repeat;
+  filter: drop-shadow(0 0 4px rgba(88, 237, 255, .72));
+}
+.digivolution-target-icon::after,
+.digivolution-from-icon::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 1px;
+  pointer-events: none;
+  border: 1px solid rgba(88, 237, 255, .18);
+  border-radius: 9px;
+  box-shadow: inset 0 0 12px rgba(49, 203, 255, .12);
+}
 .digivolution-target-icon img,
-.digivolution-from-icon img { width: 100%; height: 100%; object-fit: contain; }
+.digivolution-from-icon img { position: relative; z-index: 0; width: 100%; height: 100%; object-fit: contain; }
 .digivolution-target-copy { min-width: 0; }
 .digivolution-target-copy h3 { margin: 6px 0 4px; color: #fff; font-size: 20px; overflow-wrap: anywhere; }
 .digivolution-target-copy > small { color: #83a4bd; font-size: 9px; font-weight: 700; }
@@ -11534,7 +11562,20 @@ body {
 .digivolution-from-list { display: flex; flex-wrap: wrap; gap: 7px; }
 .digivolution-from { min-width: 0; display: flex; align-items: center; gap: 7px; padding: 6px 9px 6px 6px; border: 1px solid rgba(51, 120, 181, .31); border-radius: 8px; background: rgba(8, 31, 60, .60); color: #dceeff; font-size: 10px; }
 .digivolution-from-icon { width: 35px; height: 35px; flex: 0 0 35px; border-radius: 6px; }
-.digivolution-from-icon::before { inset: 2px; width: 7px; height: 7px; border-width: 1px 0 0 1px; }
+.digivolution-from-icon::before {
+  inset: 2px;
+  border-radius: 4px;
+  background:
+    linear-gradient(#58edff, #58edff) left top / 7px 1px no-repeat,
+    linear-gradient(#58edff, #58edff) left top / 1px 7px no-repeat,
+    linear-gradient(#58edff, #58edff) right top / 7px 1px no-repeat,
+    linear-gradient(#58edff, #58edff) right top / 1px 7px no-repeat,
+    linear-gradient(#58edff, #58edff) left bottom / 7px 1px no-repeat,
+    linear-gradient(#58edff, #58edff) left bottom / 1px 7px no-repeat,
+    linear-gradient(#58edff, #58edff) right bottom / 7px 1px no-repeat,
+    linear-gradient(#58edff, #58edff) right bottom / 1px 7px no-repeat;
+}
+.digivolution-from-icon::after { border-radius: 5px; }
 .digivolution-requirements { display: flex; flex-wrap: wrap; gap: 6px; }
 .digivolution-requirements > span { min-width: 80px; flex: 1 1 85px; padding: 8px; border: 1px solid rgba(57, 129, 189, .34); border-radius: 7px; background: rgba(5, 20, 42, .72); }
 .digivolution-requirements small { display: block; margin-bottom: 3px; color: #668eaa; font-size: 7px; font-weight: 800; }
