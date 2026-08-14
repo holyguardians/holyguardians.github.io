@@ -5703,6 +5703,7 @@ function atualizarPotentialPlanner() {
   if (board) board.innerHTML = blocos.map(function(bloco) {
     return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${bloco.stat}</strong><span>${bloco.valor}%</span></div>`;
   }).join("") || `<div class="potential-board-empty">NENHUM CUBO NECESSÁRIO</div>`;
+  if (board) board.style.setProperty("--tetris-rows", Math.max(1, Math.ceil(blocos.length / 4)));
   if (cubeTotal) cubeTotal.textContent = `${blocos.length} CUBO${blocos.length === 1 ? "" : "S"}`;
   if (result) result.textContent = blocos.length > 20 ? "ATENÇÃO: A CONFIGURAÇÃO ULTRAPASSA 20 ESPAÇOS DE POTENCIAL." : `${20 - blocos.length} DE 20 ESPAÇOS LIVRES.`;
   if (board) board.classList.toggle("potential-overflow", blocos.length > 20);
