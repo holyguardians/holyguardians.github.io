@@ -12,6 +12,9 @@
   "vars": {
     "HG_API_URL": "https://script.google.com/macros/s/AKfycbzp08aXLQCFeNGRiWHmRKRLZ3qO11_RvBGCnogF79DsMwiYX3_HgTkkZMwTgTNGEwvX/exec",
     "SITE_URL": "https://holyguardians.github.io/",
-    "ALERT_MINUTES": "5"
+    "ALERT_MINUTES": "5",
+    "DISCORD_APPLICATION_ID": "1537618369564381214",
+    "GUILD_ID": "398573317214306306",
+    "CHANNEL_ID": "1537623422161387580"
   }
 }
