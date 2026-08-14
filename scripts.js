@@ -1305,12 +1305,6 @@ function aplicarAssetsHome() {
 
 
   definirImagem(
-    "navIconDigivolution",
-    "icon_digivolution"
-  );
-
-
-  definirImagem(
     "navIconComparacao",
     "comparlayout"
   );

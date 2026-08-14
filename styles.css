@@ -11563,9 +11563,10 @@ body {
 .potential-heading p { margin: 0 0 17px; color: #6a95b5; font-size: 9px; font-weight: 700; }
 .potential-layout { display: grid; grid-template-columns: 250px 285px minmax(330px, 1fr); gap: 10px; align-items: start; }
 .potential-panel { padding: 13px; border: 1px solid rgba(55, 126, 185, .35); border-radius: 10px; background: rgba(5, 17, 36, .76); }
+.potential-layout > .potential-panel:first-child { align-self: stretch; display: flex; flex-direction: column; }
 .potential-panel h4 { margin: 0 0 9px; color: #dff6ff; font-size: 10px; }
 .potential-help { margin: -3px 0 9px; color: #668aa5; font-size: 8px; line-height: 1.5; }
-.baby-correction-grid { display: grid; gap: 5px; }
+.baby-correction-grid { display: grid; flex: 1 1 auto; grid-template-rows: repeat(7, minmax(42px, 1fr)); align-items: center; gap: 7px; }
 .baby-correction-grid label { display: grid; grid-template-columns: 35px 1fr 13px; align-items: center; gap: 5px; color: #9ab7cc; font-size: 8px; font-weight: 800; }
 .baby-stepper { position: relative; display: block; min-width: 0; }
 .baby-correction-grid input { width: 100%; min-width: 0; padding: 9px 42px 9px 10px; border: 1px solid rgba(67, 139, 197, .58); border-radius: 7px; outline: 0; appearance: textfield; -moz-appearance: textfield; background: #071225; color: #fff; font-family: inherit; }
@@ -11591,7 +11592,7 @@ body {
 .potential-board-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .potential-board-head strong { color: #69dcff; font-size: 8px; }
 .potential-board { display: grid; grid-template-columns: repeat(4, minmax(58px, 1fr)); gap: 6px; align-content: start; min-height: 316px; padding: 8px; border: 1px solid rgba(53, 117, 174, .28); border-radius: 8px; background: #030a1b; }
-.potential-cube { aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 3px; border: 1px solid color-mix(in srgb, var(--cube-color), #fff 16%); border-radius: 6px; background: var(--cube-color); color: #020713; text-shadow: 0 1px 1px rgba(255,255,255,.25); box-shadow: inset 0 0 16px rgba(255,255,255,.08); }
+.potential-cube { aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 3px; border: 1px solid color-mix(in srgb, var(--cube-color), #fff 16%); border-radius: 6px; background: var(--cube-color); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.78); box-shadow: inset 0 0 16px rgba(255,255,255,.08); }
 .potential-cube strong { font-size: 10px; }
 .potential-cube span { font-size: 8px; font-weight: 800; }
 .potential-board-empty { grid-column: 1 / -1; align-self: center; color: #54728a; font-size: 9px; text-align: center; }
