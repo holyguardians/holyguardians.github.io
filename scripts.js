@@ -3,7 +3,7 @@
    GITHUB PAGES → HOLY GUARDIANS API
 ===================================================== */
 
-const HG_API_URL = "https://script.google.com/macros/s/AKfycbxVM3E369Cofmp6SOcB3IISDFPnVebwVUzKp9Vcnf8JmSFXsnQJWzV1OQsWzuUSqKYG/exec";
+const HG_API_URL = "https://script.google.com/macros/s/AKfycbzp08aXLQCFeNGRiWHmRKRLZ3qO11_RvBGCnogF79DsMwiYX3_HgTkkZMwTgTNGEwvX/exec";
 
 function chamarApiJsonp(api) {
   return new Promise(function(resolve, reject) {
@@ -5357,7 +5357,7 @@ let raidEventosAtuais = [];
 let raidNotificados = {};
 let raidTimerInterval = null;
 
-const RAID_SCHEDULE = [
+let RAID_SCHEDULE = [
   { name: "Pumpkinmon", gameName: "PUMPKINMON", level: 91, attribute: "DATA", hp: 2481551, gameLocation: "Shibuya", icon: "pumpmon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "19:30", spots: [{ x: 26.428, y: 90.168 }, { x: 87.804, y: 68.24 }, { x: 27.76, y: 8.012 }, { x: 19.524, y: 60.128 }, { x: 62.048, y: 77.36 }] },
   { name: "Gotsumon", gameName: "MUTATIONGOTSUMON", level: 91, attribute: "DATA", hp: 2271328, gameLocation: "Shibuya", icon: "golemon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
   { name: "BlackSeraphimon", gameName: "BLACKSERAPHIMON", level: 100, attribute: "VIRUS", hp: 4513252, gameLocation: "???", icon: "blackseraphimon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-05-31", spots: [{ x: 43.015, y: 54.66 }] },
@@ -5662,11 +5662,63 @@ function aplicarRaidConfigBruto(bruto) {
   return true;
 }
 
-function carregarRaidConfig() {
-  chamarApiJsonp("raid-config").then(function(resposta) {
-    aplicarRaidConfigBruto(resposta.raidConfig || resposta.config || resposta.data);
-    renderizarRaids();
-  }).catch(function() {
+function aplicarRaidBossesBruto(bruto) {
+  if (!Array.isArray(bruto)) return false;
+
+  const agenda = bruto
+    .filter(function(raid) {
+      return raid && raid.enabled !== false && raid.name;
+    })
+    .map(function(raid) {
+      return {
+        name: raid.name,
+        gameName: raid.gameName || String(raid.name).toUpperCase(),
+        level: Number(raid.level) || 0,
+        attribute: String(raid.attribute || "UNKNOWN").toUpperCase(),
+        hp: Number(raid.hp) || 0,
+        gameLocation: raid.location || raid.map || "-",
+        icon: raid.iconFile || "",
+        map: raid.map || raid.location || "-",
+        mapFile: raid.mapFile || "",
+        type: String(raid.type || "").toLowerCase(),
+        time: raid.time || "",
+        days: Array.isArray(raid.days) ? raid.days.map(Number) : [],
+        baseDate: raid.baseDate || "",
+        schedules: Array.isArray(raid.schedules) ? raid.schedules : [],
+        spots: parseRaidSpots(raid.spots)
+      };
+    });
+
+  RAID_SCHEDULE = agenda;
+  return true;
+}
+
+function carregarDadosRaid() {
+  return Promise.allSettled([
+    chamarApiJsonp("raid-config"),
+    chamarApiJsonp("raid-bosses")
+  ]).then(function(resultados) {
+    const config = resultados[0];
+    const bosses = resultados[1];
+
+    if (config.status === "fulfilled") {
+      const respostaConfig = config.value;
+      aplicarRaidConfigBruto(
+        respostaConfig.raidConfig ||
+        respostaConfig.config ||
+        respostaConfig.data
+      );
+    }
+
+    if (bosses.status === "fulfilled") {
+      const respostaBosses = bosses.value;
+      aplicarRaidBossesBruto(
+        respostaBosses.raidBosses ||
+        respostaBosses.bosses ||
+        respostaBosses.data
+      );
+    }
+
     renderizarRaids();
   });
 }
@@ -5680,7 +5732,7 @@ function inicializarRaidBoss() {
   });
   if (fechar) fechar.addEventListener("click", fecharMapaRaid);
   if (modal) modal.addEventListener("click", function(evento) { if (evento.target === modal) fecharMapaRaid(); });
-  carregarRaidConfig();
+  carregarDadosRaid();
   if (raidTimerInterval) clearInterval(raidTimerInterval);
   raidTimerInterval = setInterval(atualizarRaidTimers, 1000);
   atualizarRaidTimers();
