@@ -6154,6 +6154,45 @@ function inicializarRaidBoss() {
 ===================================================== */
 
 let dekyuZonas = [];
+let dekyuTimerInterval = null;
+
+function obterProximoHorarioDekyu(agoraMs) {
+  const agora = Number.isFinite(agoraMs) ? agoraMs : Date.now();
+  const deslocamentoBrasilia = 3 * 60 * 60 * 1000;
+  const agoraBrasilia = new Date(agora - deslocamentoBrasilia);
+  const ano = agoraBrasilia.getUTCFullYear();
+  const mes = agoraBrasilia.getUTCMonth();
+  const dia = agoraBrasilia.getUTCDate();
+  const horarios = [2, 8, 14, 20];
+
+  for (const hora of horarios) {
+    const candidato = Date.UTC(ano, mes, dia, hora, 0, 0) + deslocamentoBrasilia;
+    if (candidato > agora) return { instante: candidato, hora: hora };
+  }
+
+  return {
+    instante: Date.UTC(ano, mes, dia + 1, 2, 0, 0) + deslocamentoBrasilia,
+    hora: 2
+  };
+}
+
+function atualizarContadorDekyu() {
+  const contador = document.getElementById("dekyuCountdown");
+  const proximoHorario = document.getElementById("dekyuNextTime");
+  if (!contador || !proximoHorario) return;
+
+  const agora = Date.now();
+  const proximo = obterProximoHorarioDekyu(agora);
+  const restante = Math.max(0, proximo.instante - agora);
+  const horas = Math.floor(restante / 3600000);
+  const minutos = Math.floor((restante % 3600000) / 60000);
+  const segundos = Math.floor((restante % 60000) / 1000);
+
+  contador.textContent = [horas, minutos, segundos]
+    .map(function(valor) { return String(valor).padStart(2, "0"); })
+    .join(":");
+  proximoHorario.textContent = String(proximo.hora).padStart(2, "0") + ":00";
+}
 
 function obterZonaDekyuSelecionada() {
   const select = document.getElementById("dekyuZone");
@@ -6251,6 +6290,10 @@ function inicializarDekyuTreasure() {
   const selectMapa = document.getElementById("dekyuMap");
   const vazio = document.getElementById("dekyuEmpty");
   if (!selectZona || !selectMapa) return;
+
+  atualizarContadorDekyu();
+  if (dekyuTimerInterval) clearInterval(dekyuTimerInterval);
+  dekyuTimerInterval = setInterval(atualizarContadorDekyu, 1000);
 
   chamarApiJsonp("dekyu-treasures")
     .then(function(resposta) {
