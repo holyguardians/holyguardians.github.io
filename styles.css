@@ -11440,6 +11440,251 @@ body {
   text-shadow: 0 0 8px #26c9ff;
 }
 
+/* =====================================================
+   HOME V8 — PAINÉIS TECNOLÓGICOS, HISTÓRIA E OFDS
+===================================================== */
+
+#homePagina .hg-panel {
+  border: 1px solid rgba(41, 177, 255, .42);
+  background:
+    linear-gradient(135deg, rgba(9, 34, 70, .94), rgba(4, 14, 35, .97)),
+    radial-gradient(circle at 12% 0, rgba(57, 218, 255, .12), transparent 38%);
+  box-shadow:
+    inset 0 0 34px rgba(31, 147, 255, .055),
+    0 10px 30px rgba(0, 4, 18, .24);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+}
+
+#homePagina .panel-heading {
+  border-bottom: 1px solid rgba(46, 186, 255, .18);
+}
+
+.home-feature-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.home-feature-grid > .hg-panel {
+  min-width: 0;
+  min-height: 420px;
+}
+
+.history-panel {
+  padding-bottom: 12px !important;
+  overflow: hidden !important;
+}
+
+.history-carousel {
+  position: relative;
+  min-height: 348px;
+  padding: 0 45px 31px;
+  overflow: hidden;
+}
+
+.history-grid {
+  position: relative;
+  display: block !important;
+  height: 320px;
+  padding: 0 !important;
+  overflow: visible;
+}
+
+.history-grid .history-card {
+  position: absolute;
+  inset: 15px 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 300px !important;
+  height: 300px;
+  margin: 0 !important;
+  padding: 42px 42px 18px !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(34px) scale(.985);
+  transition: opacity .42s ease, transform .42s ease, visibility .42s;
+}
+
+.history-grid .history-card.ativo {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+}
+
+.history-grid .history-logo { height: 78px !important; }
+.history-grid .history-logo img { max-height: 66px !important; }
+.history-grid .history-card h3 { margin: 2px 0 8px !important; font-size: 15px !important; }
+.history-grid .history-card p {
+  width: min(520px, 92%);
+  min-height: 52px !important;
+  margin: 0 auto !important;
+  font-size: 12px !important;
+  line-height: 1.48;
+}
+
+.history-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 34px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(72, 218, 255, .48);
+  border-radius: 7px;
+  background: linear-gradient(180deg, rgba(12, 61, 104, .94), rgba(5, 22, 50, .96));
+  color: #78eaff;
+  box-shadow: inset 0 0 14px rgba(57, 208, 255, .08);
+  font: 700 28px/1 Arial, sans-serif;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: .2s ease;
+}
+.history-arrow:hover { border-color: #55e7ff; color: #fff; box-shadow: 0 0 15px rgba(53, 218, 255, .28); }
+.history-arrow-prev { left: 7px; }
+.history-arrow-next { right: 7px; }
+
+.history-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 5;
+  display: flex;
+  gap: 7px;
+  transform: translateX(-50%);
+}
+.history-dots button {
+  width: 22px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: rgba(99, 160, 201, .35);
+  cursor: pointer;
+  transition: .25s ease;
+}
+.history-dots button.ativo { width: 38px; background: #55e6ff; box-shadow: 0 0 8px rgba(69, 220, 255, .7); }
+
+.ofd-home-panel {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 14px;
+  overflow: hidden;
+}
+
+.ofd-home-status {
+  margin: 12px 18px 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  border: 1px solid rgba(66, 190, 255, .28);
+  border-radius: 8px;
+  background: rgba(5, 22, 49, .68);
+}
+.ofd-home-status > div:first-child { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ofd-home-status span { color: #eaf8ff; font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+.ofd-home-status small { color: #6b9dbc; font-size: 7px; font-weight: 800; letter-spacing: .08em; }
+.ofd-home-countdown { flex: 0 0 auto; padding-left: 13px; border-left: 1px solid rgba(74, 198, 255, .25); text-align: right; }
+.ofd-home-countdown small { display: block; margin-bottom: 3px; }
+.ofd-home-countdown strong { color: #65ebff; font-size: 16px; letter-spacing: .1em; text-shadow: 0 0 10px rgba(63, 223, 255, .38); }
+
+.ofd-home-list {
+  display: grid;
+  gap: 8px;
+  padding: 0 18px;
+}
+.ofd-home-card {
+  position: relative;
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 12px 8px 9px;
+  border: 1px solid rgba(61, 158, 222, .32);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(7, 29, 61, .94), rgba(5, 17, 39, .88));
+  box-shadow: inset 3px 0 0 rgba(71, 219, 255, .42);
+  overflow: hidden;
+}
+.ofd-home-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #53e4ff);
+}
+.ofd-ticket-icon {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(92, 210, 255, .65);
+  border-radius: 8px;
+  background: radial-gradient(circle, rgba(45, 129, 255, .5), rgba(8, 27, 71, .96) 65%);
+  box-shadow: inset 0 0 10px rgba(94, 225, 255, .18), 0 0 10px rgba(45, 168, 255, .12);
+}
+.ofd-ticket-icon::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background:
+    linear-gradient(#66efff, #66efff) left top / 10px 2px no-repeat,
+    linear-gradient(#66efff, #66efff) left top / 2px 10px no-repeat,
+    linear-gradient(#66efff, #66efff) right bottom / 10px 2px no-repeat,
+    linear-gradient(#66efff, #66efff) right bottom / 2px 10px no-repeat;
+}
+.ofd-ticket-icon span { color: #fff; font-size: 22px; font-weight: 1000; font-style: italic; text-shadow: 0 0 7px #37a9ff; }
+.ofd-home-copy { min-width: 0; }
+.ofd-home-copy strong { display: block; color: #f0f9ff; font-size: 12px; }
+.ofd-home-copy small { display: block; margin-top: 5px; color: #79a7c4; font-size: 8px; font-weight: 800; }
+.ofd-home-copy small b { margin: 0 4px; color: #3cd8ff; }
+.ofd-home-open { display: flex; align-items: center; gap: 5px; color: #51e5ad; font-size: 7px; font-weight: 900; letter-spacing: .08em; }
+.ofd-home-open i { width: 6px; height: 6px; border-radius: 50%; background: #32ef9e; box-shadow: 0 0 8px #32ef9e; }
+.ofd-home-empty { min-height: 170px; display: grid; place-items: center; color: #729ab5; font-size: 10px; text-align: center; }
+.ofd-home-note { margin: auto 18px 0; padding-top: 10px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(61, 158, 222, .18); }
+.ofd-home-note span { color: #55e4ff; font-size: 8px; text-shadow: 0 0 8px #55e4ff; }
+.ofd-home-note p { margin: 0; color: #678fab; font-size: 7px; line-height: 1.4; }
+
+#homePagina .server-card,
+#homePagina .staff-master,
+#homePagina .staff-sub,
+#homePagina .home-social-card {
+  border-color: rgba(55, 172, 235, .34);
+  background: linear-gradient(135deg, rgba(7, 29, 60, .9), rgba(5, 16, 36, .92));
+  box-shadow: inset 0 0 18px rgba(50, 187, 255, .04);
+}
+
+@media (max-width: 1050px) {
+  .home-feature-grid { grid-template-columns: 1fr; }
+  .home-feature-grid > .hg-panel { min-height: 410px; }
+}
+
+@media (max-width: 620px) {
+  .history-carousel { padding: 0 35px 30px; }
+  .history-grid .history-card { padding: 40px 18px 15px !important; }
+  .history-grid .history-card p { width: 100%; font-size: 10px !important; }
+  .history-arrow { width: 28px; height: 50px; }
+  .history-arrow-prev { left: 3px; }
+  .history-arrow-next { right: 3px; }
+  .ofd-home-status { align-items: flex-start; }
+  .ofd-home-countdown strong { font-size: 13px; }
+  .ofd-home-card { grid-template-columns: 44px minmax(0, 1fr); }
+  .ofd-home-open { grid-column: 2; }
+  .ofd-ticket-icon { width: 42px; height: 42px; }
+}
+
 .digivolution-wrap { padding-bottom: 90px; }
 .digivolution-header {
   display: flex;

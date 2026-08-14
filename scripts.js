@@ -6547,6 +6547,163 @@ function carregarDatabase() {
 
 
 /* =====================================================
+   HOME — HISTÓRIA E OFDS DIÁRIAS
+===================================================== */
+
+let historiaHomeIndice = 0;
+let historiaHomeTimer = null;
+let ofdHomeTimer = null;
+
+const OFD_HOME_FALLBACK = [
+  { name: "Infinity Mountain", level: "41–60", ticket: "C", days: [3, 5, 0], order: 1 },
+  { name: "Desert Area", level: "55–75", ticket: "D", days: [2, 4, 6], order: 2 },
+  { name: "Dark Castle Valley", level: "60–80", ticket: "E", days: [1, 5, 0], order: 3 },
+  { name: "Real World", level: "85–95", ticket: "F", days: [1, 3, 6], order: 4 },
+  { name: "Sprial Mt.", level: "90–100", ticket: "G", days: [1, 4, 0], order: 5 },
+  { name: "Data World", level: "95–103", ticket: "H", days: [2, 4, 6], order: 6 }
+];
+
+function atualizarHistoriaHome() {
+  const cards = Array.from(document.querySelectorAll(".history-grid .history-card"));
+  const dots = Array.from(document.querySelectorAll(".history-dots button"));
+  if (!cards.length) return;
+  historiaHomeIndice = (historiaHomeIndice + cards.length) % cards.length;
+  cards.forEach(function(card, indice) {
+    card.classList.toggle("ativo", indice === historiaHomeIndice);
+    card.setAttribute("aria-hidden", indice === historiaHomeIndice ? "false" : "true");
+  });
+  dots.forEach(function(dot, indice) {
+    dot.classList.toggle("ativo", indice === historiaHomeIndice);
+    dot.setAttribute("aria-current", indice === historiaHomeIndice ? "true" : "false");
+  });
+}
+
+function iniciarRotacaoHistoriaHome() {
+  clearInterval(historiaHomeTimer);
+  historiaHomeTimer = setInterval(function() {
+    historiaHomeIndice += 1;
+    atualizarHistoriaHome();
+  }, 10000);
+}
+
+function mudarHistoria(direcao) {
+  historiaHomeIndice += Number(direcao) || 0;
+  atualizarHistoriaHome();
+  iniciarRotacaoHistoriaHome();
+}
+
+function selecionarHistoria(indice) {
+  historiaHomeIndice = Number(indice) || 0;
+  atualizarHistoriaHome();
+  iniciarRotacaoHistoriaHome();
+}
+
+function inicializarHistoriaHome() {
+  const carrossel = document.querySelector(".history-carousel");
+  if (!carrossel) return;
+  atualizarHistoriaHome();
+  iniciarRotacaoHistoriaHome();
+  carrossel.addEventListener("mouseenter", function() { clearInterval(historiaHomeTimer); });
+  carrossel.addEventListener("mouseleave", iniciarRotacaoHistoriaHome);
+  carrossel.addEventListener("focusin", function() { clearInterval(historiaHomeTimer); });
+  carrossel.addEventListener("focusout", iniciarRotacaoHistoriaHome);
+}
+
+function obterRelogioBrasilia() {
+  const agora = new Date();
+  const partes = {};
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(agora).forEach(function(parte) {
+    if (parte.type !== "literal") partes[parte.type] = Number(parte.value);
+  });
+
+  let dataLogica = new Date(Date.UTC(partes.year, partes.month - 1, partes.day));
+  if (partes.hour >= 12) dataLogica.setUTCDate(dataLogica.getUTCDate() + 1);
+  let proximoReset = Date.UTC(partes.year, partes.month - 1, partes.day, 15, 0, 0);
+  if (agora.getTime() >= proximoReset) proximoReset += 86400000;
+
+  return {
+    weekday: dataLogica.getUTCDay(),
+    dateLabel: new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "UTC", weekday: "long", day: "2-digit", month: "2-digit"
+    }).format(dataLogica),
+    nextReset: proximoReset
+  };
+}
+
+function renderizarOfdsHome(ofds, diaTexto) {
+  const lista = document.getElementById("ofdHomeList");
+  const dia = document.getElementById("ofdHomeDay");
+  if (dia) dia.textContent = String(diaTexto || "OFDs DISPONÍVEIS").toUpperCase();
+  if (!lista) return;
+
+  const validas = (Array.isArray(ofds) ? ofds : [])
+    .filter(function(ofd) { return String(ofd.ticket || "").toUpperCase() !== "B"; })
+    .sort(function(a, b) { return (Number(a.order) || 99) - (Number(b.order) || 99); });
+
+  if (!validas.length) {
+    lista.innerHTML = `<div class="ofd-home-empty">Nenhuma OFD disponível neste período.</div>`;
+    return;
+  }
+
+  lista.innerHTML = validas.map(function(ofd) {
+    const ticket = String(ofd.ticket || "-").toUpperCase();
+    return `
+      <article class="ofd-home-card">
+        <div class="ofd-ticket-icon ticket-${escaparHtml(ticket.toLowerCase())}">
+          <span>${escaparHtml(ticket)}</span>
+        </div>
+        <div class="ofd-home-copy">
+          <strong>${escaparHtml(ofd.name || "OFD")}</strong>
+          <small>NV ${escaparHtml(ofd.level || "-")} <b>•</b> TICKET ${escaparHtml(ticket)}</small>
+        </div>
+        <div class="ofd-home-open"><i></i> DISPONÍVEL</div>
+      </article>
+    `;
+  }).join("");
+}
+
+function atualizarContadorOfdHome() {
+  const campo = document.getElementById("ofdHomeCountdown");
+  if (!campo) return;
+  const relogio = obterRelogioBrasilia();
+  const restante = Math.max(0, relogio.nextReset - Date.now());
+  const horas = Math.floor(restante / 3600000);
+  const minutos = Math.floor((restante % 3600000) / 60000);
+  const segundos = Math.floor((restante % 60000) / 1000);
+  campo.textContent = [horas, minutos, segundos].map(function(valor) {
+    return String(valor).padStart(2, "0");
+  }).join(":");
+  if (restante < 1000) carregarOfdsHome();
+}
+
+function carregarOfdsHome() {
+  const relogio = obterRelogioBrasilia();
+  const fallback = OFD_HOME_FALLBACK.filter(function(ofd) {
+    return ofd.days.includes(relogio.weekday);
+  });
+
+  renderizarOfdsHome(fallback, relogio.dateLabel);
+
+  chamarApiJsonp("ofds")
+    .then(function(resposta) {
+      renderizarOfdsHome(resposta.ofds || [], resposta.dayLabel || relogio.dateLabel);
+    })
+    .catch(function() {
+      renderizarOfdsHome(fallback, relogio.dateLabel);
+    });
+
+  clearInterval(ofdHomeTimer);
+  atualizarContadorOfdHome();
+  ofdHomeTimer = setInterval(atualizarContadorOfdHome, 1000);
+}
+
+
+/* =====================================================
    INICIAR
 ===================================================== */
 
@@ -6583,6 +6740,10 @@ document.addEventListener(
     inicializarRaidBoss();
 
     inicializarDekyuTreasure();
+
+    inicializarHistoriaHome();
+
+    carregarOfdsHome();
 
   }
 );

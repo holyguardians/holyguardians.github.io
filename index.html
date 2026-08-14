@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-digivolution-mutant-v7">
+  <link rel="stylesheet" href="styles.css?v=20260814-home-ofd-v8">
 </head>
 <body>
 
@@ -236,6 +236,8 @@
     <div class="home-content">
 
 
+      <div class="home-feature-grid">
+
       <!-- HISTÓRIA -->
 
       <section class="hg-panel history-panel">
@@ -256,7 +258,11 @@
         </div>
 
 
-        <div class="history-grid">
+        <div class="history-carousel" aria-label="Linha do tempo da Holy Guardians">
+
+          <button class="history-arrow history-arrow-prev" type="button" onclick="mudarHistoria(-1)" aria-label="História anterior">‹</button>
+
+          <div class="history-grid">
 
 
           <article class="history-card year-2012">
@@ -448,9 +454,55 @@
 
           </article>
 
+          </div>
+
+          <button class="history-arrow history-arrow-next" type="button" onclick="mudarHistoria(1)" aria-label="Próxima história">›</button>
+
+          <div class="history-dots" aria-label="Selecionar período">
+            <button type="button" class="ativo" onclick="selecionarHistoria(0)" aria-label="2012"></button>
+            <button type="button" onclick="selecionarHistoria(1)" aria-label="2017"></button>
+            <button type="button" onclick="selecionarHistoria(2)" aria-label="2022"></button>
+            <button type="button" onclick="selecionarHistoria(3)" aria-label="Atualmente"></button>
+          </div>
+
         </div>
 
       </section>
+
+
+      <!-- OFDS DO DIA -->
+
+      <section class="hg-panel ofd-home-panel">
+
+        <div class="panel-heading">
+          <div class="heading-icon">▦</div>
+          <h2>OFDs de Hoje</h2>
+          <div class="heading-line"></div>
+        </div>
+
+        <div class="ofd-home-status">
+          <div>
+            <span id="ofdHomeDay">CARREGANDO ROTAÇÃO...</span>
+            <small>RESET DIÁRIO ÀS 12:00 • HORÁRIO DE BRASÍLIA</small>
+          </div>
+          <div class="ofd-home-countdown">
+            <small>PRÓXIMA ATUALIZAÇÃO</small>
+            <strong id="ofdHomeCountdown">--:--:--</strong>
+          </div>
+        </div>
+
+        <div id="ofdHomeList" class="ofd-home-list">
+          <div class="ofd-home-empty">Consultando OFDs disponíveis...</div>
+        </div>
+
+        <div class="ofd-home-note">
+          <span>●</span>
+          <p>Seleção automática conforme o calendário semanal. O antigo Passe B não participa da rotação.</p>
+        </div>
+
+      </section>
+
+      </div>
 
 
       <!-- PARTE INFERIOR -->
@@ -1518,6 +1570,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-digivolution-mutant-v7"></script>
+<script src="scripts.js?v=20260814-home-ofd-v8"></script>
 </body>
 </html>
