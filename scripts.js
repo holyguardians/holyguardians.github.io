@@ -5468,8 +5468,7 @@ function normalizarChaveDigivolution(valor) {
     .toLowerCase();
 }
 
-function obterIconeDigivolution(nome, iconeExplicito) {
-  if (iconeExplicito) return iconeExplicito;
+function obterIconeDigivolution(nome) {
   const chave = normalizarChaveDigivolution(nome);
   const digi = (database || []).find(function(item) {
     return normalizarChaveDigivolution(item.digimon) === chave;
@@ -5477,8 +5476,8 @@ function obterIconeDigivolution(nome, iconeExplicito) {
   return digi && digi.icon ? digi.icon : pegarImagem(nome);
 }
 
-function renderizarAvatarDigivolution(nome, classe, iconeExplicito) {
-  const src = obterIconeDigivolution(nome, iconeExplicito);
+function renderizarAvatarDigivolution(nome, classe) {
+  const src = obterIconeDigivolution(nome);
   const inicial = String(nome || "?").replace(/^\[MUTANT\]\s*/i, "").charAt(0).toUpperCase();
   return `
     <span class="${classe || "digivolution-avatar"}">
@@ -5534,16 +5533,15 @@ function renderizarItensDigivolution(item) {
 }
 
 function criarCardDigivolution(item) {
-  const anteriores = (item.from || []).map(function(entrada) {
-    const anterior = typeof entrada === "string" ? { name: entrada, icon: "" } : entrada;
-    return `<div class="digivolution-from">${renderizarAvatarDigivolution(anterior.name, "digivolution-from-icon", anterior.icon)}<strong>${escaparHtml(anterior.name)}</strong></div>`;
+  const anteriores = (item.from || []).map(function(nome) {
+    return `<div class="digivolution-from">${renderizarAvatarDigivolution(nome, "digivolution-from-icon")}<strong>${escaparHtml(nome)}</strong></div>`;
   }).join("");
   const podeCalcular = digivolutionTemPotential(item);
 
   return `
     <article class="digivolution-card">
       <div class="digivolution-card-top">
-        ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon", item.targetIcon)}
+        ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon")}
         <div class="digivolution-target-copy">
           <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(item.category || "NORMAL")}</span></div>
           <h3>${escaparHtml(item.displayName || item.to)}</h3>
@@ -5554,7 +5552,7 @@ function criarCardDigivolution(item) {
       <div class="digivolution-section-label">EVOLVES FROM</div>
       <div class="digivolution-from-list">${anteriores || "-"}</div>
 
-      <div class="digivolution-section-label">EVOLUTION REQUIREMENTS — ${escaparHtml(item.requirementOwner || "")}</div>
+      <div class="digivolution-section-label">EVOLUTION REQUIREMENTS</div>
       <div class="digivolution-requirements">${renderizarRequisitosDigivolution(item)}</div>
       <div class="digivolution-items">${renderizarItensDigivolution(item)}</div>
 
@@ -5572,21 +5570,18 @@ function filtrarDigivolutions() {
   const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
   const busca = String((document.getElementById("digivolutionBusca") || {}).value || "").trim().toLowerCase();
   const stage = String((document.getElementById("digivolutionStage") || {}).value || "").toUpperCase();
-  const category = String((document.getElementById("digivolutionCategory") || {}).value || "").toUpperCase();
   const tipo = String((document.getElementById("digivolutionRequirement") || {}).value || "").toUpperCase();
 
   const filtrados = dados.filter(function(item) {
-    const anteriores = (item.from || []).map(function(entrada) { return typeof entrada === "string" ? entrada : entrada.name; });
-    const texto = [item.to, item.displayName, item.requirementOwner].concat(anteriores).join(" ").toLowerCase();
+    const texto = [item.to, item.displayName].concat(item.from || []).join(" ").toLowerCase();
     const req = item.requirements || {};
     const buscaOk = !busca || texto.includes(busca);
     const stageOk = !stage || String(item.stage || "").toUpperCase() === stage;
-    const categoryOk = !category || String(item.category || "").toUpperCase() === category;
     let requisitoOk = true;
     if (tipo === "STATUS") requisitoOk = digivolutionTemStatus(item);
     if (tipo === "ITEM") requisitoOk = Array.isArray(req.items) && req.items.length > 0;
     if (tipo === "BOND") requisitoOk = req.bond != null;
-    return buscaOk && stageOk && categoryOk && requisitoOk;
+    return buscaOk && stageOk && requisitoOk;
   });
 
   const lista = document.getElementById("digivolutionLista");
@@ -5596,7 +5591,7 @@ function filtrarDigivolutions() {
 }
 
 function limparFiltrosDigivolution() {
-  ["digivolutionBusca", "digivolutionStage", "digivolutionCategory", "digivolutionRequirement"].forEach(function(id) {
+  ["digivolutionBusca", "digivolutionStage", "digivolutionRequirement"].forEach(function(id) {
     const campo = document.getElementById(id);
     if (campo) campo.value = "";
   });
@@ -5623,7 +5618,7 @@ function abrirPotentialModal(id) {
   const subtitulo = document.getElementById("potentialSubtitle");
   const campos = document.getElementById("babyCorrectionFields");
   if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
-  if (subtitulo) subtitulo.textContent = `${digivolutionAtual.requirementOwner || "DIGIMON ANTERIOR"} // LEVEL ${digivolutionAtual.requirements.level || "-"} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
+  if (subtitulo) subtitulo.textContent = `LEVEL ${digivolutionAtual.requirements.level || "-"} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
   if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
     return `<label><span>${stat}</span><input id="baby-${stat}" type="number" min="0" max="14" step="0.1" value="0" inputmode="decimal" oninput="alterarBabyCorrection('${stat}', this)"><small>%</small></label>`;
   }).join("");
