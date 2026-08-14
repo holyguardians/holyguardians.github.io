@@ -363,6 +363,11 @@ function atualizarContadoresFiltrosDigidex() {
       ".digidex-field-check"
     );
 
+  const efeitosMarcados =
+    valoresMarcadosDigidex(
+      ".digidex-effect-check"
+    );
+
   const skillCount =
     document.getElementById(
       "filtroSkillContador"
@@ -371,6 +376,11 @@ function atualizarContadoresFiltrosDigidex() {
   const fieldCount =
     document.getElementById(
       "filtroFieldContador"
+    );
+
+  const efeitoCount =
+    document.getElementById(
+      "filtroEfeitoContador"
     );
 
   if (skillCount) {
@@ -386,6 +396,69 @@ function atualizarContadoresFiltrosDigidex() {
         ? "(" + fieldMarcados.length + ")"
         : "";
   }
+
+  if (efeitoCount) {
+    efeitoCount.textContent =
+      efeitosMarcados.length
+        ? "(" + efeitosMarcados.length + ")"
+        : "";
+  }
+
+}
+
+
+function valorPossuiEfeitoDigidex(valor) {
+
+  const normalizado =
+    String(valor == null ? "" : valor)
+      .trim()
+      .toUpperCase();
+
+  return ![
+    "",
+    "-",
+    "NO",
+    "NÃO",
+    "NAO",
+    "FALSE",
+    "0",
+    "NONE",
+    "N/A"
+  ].includes(normalizado);
+
+}
+
+
+function limparFiltrosDigidex() {
+
+  const pesquisa = document.getElementById("pesquisa");
+  const ordenacao = document.getElementById("ordenacao");
+
+  if (pesquisa) pesquisa.value = "";
+  if (ordenacao) ordenacao.value = "";
+
+  filtroTypeSelecionado = "";
+
+  document.querySelectorAll(".type-filter-btn").forEach(function(botao, indice) {
+    botao.classList.toggle("ativo", indice === 0);
+  });
+
+  document.querySelectorAll(
+    ".digidex-skill-element-check, .digidex-field-check, .digidex-effect-check"
+  ).forEach(function(input) {
+    input.checked = false;
+  });
+
+  ["filtroSkill1", "filtroSkill2", "filtroSkill3"].forEach(function(id) {
+    const input = document.getElementById(id);
+    if (input) input.checked = true;
+  });
+
+  document.querySelectorAll(".digidex-filter-menu[open]").forEach(function(menu) {
+    menu.removeAttribute("open");
+  });
+
+  filtrar();
 
 }
 
@@ -2018,6 +2091,12 @@ function filtrar() {
     );
 
 
+  const efeitosSelecionados =
+    valoresMarcadosDigidex(
+      ".digidex-effect-check"
+    );
+
+
   const buscarSkill1 =
     document.getElementById("filtroSkill1")
       ? document.getElementById("filtroSkill1").checked
@@ -2119,11 +2198,37 @@ function filtrar() {
         }
 
 
+        let efeitoOk = true;
+
+        if (efeitosSelecionados.length) {
+
+          efeitoOk = efeitosSelecionados.some(function(efeito) {
+
+            if (efeito === "DOT") {
+              return valorPossuiEfeitoDigidex(d.dot);
+            }
+
+            if (efeito === "CC") {
+              return valorPossuiEfeitoDigidex(d.cc);
+            }
+
+            if (efeito === "DEF_BREAK") {
+              return valorPossuiEfeitoDigidex(d.defBreak);
+            }
+
+            return false;
+
+          });
+
+        }
+
+
         return (
           nomeOk &&
           tipoOk &&
           skillOk &&
-          fieldOk
+          fieldOk &&
+          efeitoOk
         );
 
       }

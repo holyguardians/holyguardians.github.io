@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-raid-frame">
+  <link rel="stylesheet" href="styles.css?v=20260814-digidex-effects">
 </head>
 <body>
 
@@ -865,6 +865,37 @@
         </div>
       </details>
 
+      <details id="filtroEfeito" class="digidex-filter-menu">
+        <summary>
+          <span>EFFECT</span>
+          <span id="filtroEfeitoContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-effect-panel">
+          <div class="digidex-filter-title">FILTRAR POR EFEITO</div>
+
+          <div class="digidex-effect-list">
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="DOT" onchange="filtrar()">
+              <span class="digidex-effect-mark">D</span>
+              <span>DOT</span>
+            </label>
+
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="CC" onchange="filtrar()">
+              <span class="digidex-effect-mark">C</span>
+              <span>CC</span>
+            </label>
+
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="DEF_BREAK" onchange="filtrar()">
+              <span class="digidex-effect-mark">↓</span>
+              <span>DEF BREAK</span>
+            </label>
+          </div>
+        </div>
+      </details>
+
       <select id="ordenacao" class="filtro-select" onchange="filtrar()">
         <option value="">ORDEM ALFABÉTICA</option>
         <option value="STR">MAIOR STR</option>
@@ -882,6 +913,10 @@
         <option value="RES_ASC">MENOR RES</option>
         <option value="SPD_ASC">MENOR SPEED</option>
       </select>
+
+      <button type="button" class="digidex-clear-filters" onclick="limparFiltrosDigidex()">
+        LIMPAR FILTROS
+      </button>
     </div>
 
     <div id="lista" class="grid"></div>
@@ -1320,6 +1355,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260813-raid-types-fix2"></script>
+<script src="scripts.js?v=20260814-digidex-effects"></script>
 </body>
 </html>
