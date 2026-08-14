@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "evil-guardians-raid-monitor",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-13",
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "vars": {
+    "HG_API_URL": "https://script.google.com/macros/s/AKfycbzp08aXLQCFeNGRiWHmRKRLZ3qO11_RvBGCnogF79DsMwiYX3_HgTkkZMwTgTNGEwvX/exec",
+    "SITE_URL": "https://holyguardians.github.io/",
+    "ALERT_MINUTES": "5"
+  }
+}
