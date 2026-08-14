@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-home-ofd-icons-v9">
+  <link rel="stylesheet" href="styles.css?v=20260814-home-ofd-agenda-v10">
 </head>
 <body>
 
@@ -500,6 +500,34 @@
           <p>Seleção automática conforme o calendário semanal. O antigo Passe B não participa da rotação.</p>
         </div>
 
+      </section>
+
+      <!-- CONSULTA SEMANAL DE OFDS -->
+
+      <section class="hg-panel ofd-week-panel">
+        <div class="panel-heading">
+          <div class="heading-icon">⌁</div>
+          <h2>Agenda Semanal</h2>
+          <div class="heading-line"></div>
+        </div>
+
+        <div class="ofd-week-copy">
+          <strong>CONSULTAR OUTRO DIA</strong>
+          <small>Selecione um dia para visualizar as OFDs disponíveis.</small>
+        </div>
+
+        <div class="ofd-week-days" aria-label="Dias da semana">
+          <button type="button" data-ofd-day="SEG" onclick="selecionarDiaOfdHome('SEG')"><span>SEG</span><small>SEGUNDA</small></button>
+          <button type="button" data-ofd-day="TER" onclick="selecionarDiaOfdHome('TER')"><span>TER</span><small>TERÇA</small></button>
+          <button type="button" data-ofd-day="QUA" onclick="selecionarDiaOfdHome('QUA')"><span>QUA</span><small>QUARTA</small></button>
+          <button type="button" data-ofd-day="QUI" onclick="selecionarDiaOfdHome('QUI')"><span>QUI</span><small>QUINTA</small></button>
+          <button type="button" data-ofd-day="SEX" onclick="selecionarDiaOfdHome('SEX')"><span>SEX</span><small>SEXTA</small></button>
+          <button type="button" data-ofd-day="SAB" onclick="selecionarDiaOfdHome('SAB')"><span>SÁB</span><small>SÁBADO</small></button>
+          <button type="button" data-ofd-day="DOM" onclick="selecionarDiaOfdHome('DOM')"><span>DOM</span><small>DOMINGO</small></button>
+        </div>
+
+        <div id="ofdWeekTitle" class="ofd-week-title">OFDs DO DIA</div>
+        <div id="ofdWeekList" class="ofd-week-list"></div>
       </section>
 
       </div>
@@ -1570,6 +1598,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-home-ofd-icons-v9"></script>
+<script src="scripts.js?v=20260814-home-ofd-agenda-v10"></script>
 </body>
 </html>

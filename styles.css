@@ -11461,7 +11461,7 @@ body {
 
 .home-feature-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -11493,7 +11493,7 @@ body {
 
 .history-grid .history-card {
   position: absolute;
-  inset: 15px 0 0;
+  inset: 22px 0 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -11507,6 +11507,12 @@ body {
   pointer-events: none;
   transform: translateX(34px) scale(.985);
   transition: opacity .42s ease, transform .42s ease, visibility .42s;
+}
+
+/* Mantém o selo do ano completamente dentro da área visível do carrossel. */
+.history-grid .history-year {
+  top: -14px;
+  line-height: 1.2;
 }
 
 .history-grid .history-card.ativo {
@@ -11648,7 +11654,10 @@ body {
 .ofd-ticket-icon span { color: #fff; font-size: 22px; font-weight: 1000; font-style: italic; text-shadow: 0 0 7px #37a9ff; }
 .ofd-ticket-icon img { position: relative; z-index: 1; width: 88%; height: 88%; display: block; object-fit: contain; }
 .ofd-home-copy { min-width: 0; }
-.ofd-home-copy strong { display: block; color: #f0f9ff; font-size: 12px; }
+.ofd-home-copy strong { color: #f0f9ff; font-size: 12px; }
+.ofd-location-line { min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 5px; }
+.ofd-location-line strong { display: inline; }
+.ofd-location-line span { color: #6fa6ca; font-size: 9px; font-weight: 800; line-height: 1.25; }
 .ofd-home-copy small { display: block; margin-top: 5px; color: #79a7c4; font-size: 8px; font-weight: 800; }
 .ofd-home-copy small b { margin: 0 4px; color: #3cd8ff; }
 .ofd-home-open { display: flex; align-items: center; gap: 5px; color: #51e5ad; font-size: 7px; font-weight: 900; letter-spacing: .08em; }
@@ -11657,6 +11666,85 @@ body {
 .ofd-home-note { margin: auto 18px 0; padding-top: 10px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(61, 158, 222, .18); }
 .ofd-home-note span { color: #55e4ff; font-size: 8px; text-shadow: 0 0 8px #55e4ff; }
 .ofd-home-note p { margin: 0; color: #678fab; font-size: 7px; line-height: 1.4; }
+
+.ofd-week-panel {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 14px;
+  overflow: hidden;
+}
+
+.ofd-week-copy {
+  margin: 12px 18px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ofd-week-copy strong { color: #dff7ff; font-size: 10px; letter-spacing: .1em; }
+.ofd-week-copy small { color: #6f9bb7; font-size: 8px; line-height: 1.35; }
+
+.ofd-week-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  padding: 0 18px 11px;
+}
+.ofd-week-days button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px 2px 5px;
+  border: 1px solid rgba(62, 161, 220, .34);
+  border-radius: 7px;
+  color: #77a8c7;
+  background: linear-gradient(180deg, rgba(8, 31, 63, .96), rgba(5, 19, 43, .96));
+  font-family: inherit;
+  cursor: pointer;
+  transition: .18s ease;
+}
+.ofd-week-days button span { display: block; font-size: 9px; font-weight: 900; }
+.ofd-week-days button small { display: block; margin-top: 4px; overflow: hidden; color: #527b98; font-size: 5px; font-weight: 800; letter-spacing: .02em; }
+.ofd-week-days button:hover,
+.ofd-week-days button.ativo {
+  border-color: #55e4ff;
+  color: #effcff;
+  background: linear-gradient(180deg, rgba(13, 66, 108, .98), rgba(7, 31, 64, .98));
+  box-shadow: 0 0 12px rgba(52, 207, 255, .2), inset 0 0 12px rgba(52, 207, 255, .07);
+}
+.ofd-week-days button.ativo small { color: #62dff8; }
+
+.ofd-week-title {
+  margin: 0 18px 8px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(61, 158, 222, .18);
+  color: #66dff8;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+.ofd-week-list { display: grid; gap: 8px; padding: 0 18px; }
+.ofd-week-card {
+  position: relative;
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  padding: 8px 12px 8px 9px;
+  overflow: hidden;
+  border: 1px solid rgba(61, 158, 222, .32);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(7, 29, 61, .96), rgba(5, 17, 39, .92));
+  box-shadow: inset 3px 0 0 rgba(71, 219, 255, .42);
+}
+.ofd-week-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #53e4ff);
+}
 
 #homePagina .server-card,
 #homePagina .staff-master,
@@ -11667,9 +11755,17 @@ body {
   box-shadow: inset 0 0 18px rgba(50, 187, 255, .04);
 }
 
+@media (max-width: 1280px) {
+  .home-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ofd-week-panel { grid-column: 1 / -1; min-height: 0 !important; }
+  .ofd-week-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 1050px) {
   .home-feature-grid { grid-template-columns: 1fr; }
   .home-feature-grid > .hg-panel { min-height: 410px; }
+  .ofd-week-panel { grid-column: auto; }
+  .ofd-week-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
@@ -11684,6 +11780,8 @@ body {
   .ofd-home-card { grid-template-columns: 44px minmax(0, 1fr); }
   .ofd-home-open { grid-column: 2; }
   .ofd-ticket-icon { width: 42px; height: 42px; }
+  .ofd-week-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ofd-week-days button small { font-size: 6px; }
 }
 
 .digivolution-wrap { padding-bottom: 90px; }

@@ -6553,14 +6553,22 @@ function carregarDatabase() {
 let historiaHomeIndice = 0;
 let historiaHomeTimer = null;
 let ofdHomeTimer = null;
+let ofdAgendaHome = [];
+let ofdDiaSelecionadoHome = "";
+
+const OFD_DAY_CODES = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
+const OFD_DAY_NAMES = {
+  SEG: "SEGUNDA-FEIRA", TER: "TERÇA-FEIRA", QUA: "QUARTA-FEIRA",
+  QUI: "QUINTA-FEIRA", SEX: "SEXTA-FEIRA", SAB: "SÁBADO", DOM: "DOMINGO"
+};
 
 const OFD_HOME_FALLBACK = [
-  { name: "Infinity Mountain", level: "41–60", ticket: "C", days: [3, 5, 0], order: 1 },
-  { name: "Desert Area", level: "55–75", ticket: "D", days: [2, 4, 6], order: 2 },
-  { name: "Dark Castle Valley", level: "60–80", ticket: "E", days: [1, 5, 0], order: 3 },
-  { name: "Real World", level: "85–95", ticket: "F", days: [1, 3, 6], order: 4 },
-  { name: "Sprial Mt.", level: "90–100", ticket: "G", days: [1, 4, 0], order: 5 },
-  { name: "Data World", level: "95–103", ticket: "H", days: [2, 4, 6], order: 6 }
+  { name: "Infinity Mountain", map: "Infinity Mountain", level: "41–60", ticket: "C", days: [3, 5, 0], order: 1 },
+  { name: "Desert Area", map: "Desert Area", level: "55–75", ticket: "D", days: [2, 4, 6], order: 2 },
+  { name: "Dark Castle Valley", map: "Dark Castle", level: "60–80", ticket: "E", days: [1, 5, 0], order: 3 },
+  { name: "Real World", map: "World Expo Hall", level: "85–95", ticket: "F", days: [1, 3, 6], order: 4 },
+  { name: "Sprial Mt.", map: "Spiral Mountain Top", level: "90–100", ticket: "G", days: [1, 4, 0], order: 5 },
+  { name: "Data World", map: "Data Area", level: "95–103", ticket: "H", days: [2, 4, 6], order: 6 }
 ];
 
 function atualizarHistoriaHome() {
@@ -6660,13 +6668,74 @@ function renderizarOfdsHome(ofds, diaTexto) {
             : `<span>${escaparHtml(ticket)}</span>`}
         </div>
         <div class="ofd-home-copy">
-          <strong>${escaparHtml(ofd.name || "OFD")}</strong>
+          <div class="ofd-location-line">
+            <strong>${escaparHtml(ofd.name || "OFD")}</strong>
+            ${ofd.map ? `<span>— ${escaparHtml(ofd.map)}</span>` : ""}
+          </div>
           <small>NV ${escaparHtml(ofd.level || "-")} <b>•</b> TICKET ${escaparHtml(ticket)}</small>
         </div>
         <div class="ofd-home-open"><i></i> DISPONÍVEL</div>
       </article>
     `;
   }).join("");
+}
+
+function obterDiasCodigosOfdHome(ofd) {
+  const dias = Array.isArray(ofd.days)
+    ? ofd.days
+    : String(ofd.days || "").split(/[,;|/\s]+/);
+  return dias.map(function(dia) {
+    return typeof dia === "number"
+      ? OFD_DAY_CODES[dia]
+      : String(dia || "").trim().toUpperCase().slice(0, 3);
+  }).filter(Boolean);
+}
+
+function renderizarAgendaOfdHome() {
+  const lista = document.getElementById("ofdWeekList");
+  const titulo = document.getElementById("ofdWeekTitle");
+  if (!lista) return;
+
+  const codigo = ofdDiaSelecionadoHome || "SEG";
+  const itens = ofdAgendaHome.filter(function(ofd) {
+    return String(ofd.ticket || "").toUpperCase() !== "B" &&
+      obterDiasCodigosOfdHome(ofd).includes(codigo);
+  }).sort(function(a, b) {
+    return (Number(a.order) || 99) - (Number(b.order) || 99);
+  });
+
+  if (titulo) titulo.textContent = `OFDs DE ${OFD_DAY_NAMES[codigo] || codigo}`;
+
+  document.querySelectorAll(".ofd-week-days button").forEach(function(botao) {
+    const ativo = botao.dataset.ofdDay === codigo;
+    botao.classList.toggle("ativo", ativo);
+    botao.setAttribute("aria-pressed", ativo ? "true" : "false");
+  });
+
+  lista.innerHTML = itens.length ? itens.map(function(ofd) {
+    const ticket = String(ofd.ticket || "-").toUpperCase();
+    return `
+      <article class="ofd-week-card">
+        <div class="ofd-ticket-icon ticket-${escaparHtml(ticket.toLowerCase())}">
+          ${ofd.icon
+            ? `<img src="${escaparHtml(ofd.icon)}" alt="Passe ${escaparHtml(ticket)}" loading="lazy">`
+            : `<span>${escaparHtml(ticket)}</span>`}
+        </div>
+        <div class="ofd-home-copy">
+          <div class="ofd-location-line">
+            <strong>${escaparHtml(ofd.name || "OFD")}</strong>
+            ${ofd.map ? `<span>— ${escaparHtml(ofd.map)}</span>` : ""}
+          </div>
+          <small>NV ${escaparHtml(ofd.level || "-")} <b>•</b> TICKET ${escaparHtml(ticket)}</small>
+        </div>
+      </article>
+    `;
+  }).join("") : `<div class="ofd-home-empty">Nenhuma OFD disponível neste dia.</div>`;
+}
+
+function selecionarDiaOfdHome(codigo) {
+  ofdDiaSelecionadoHome = String(codigo || "").toUpperCase();
+  renderizarAgendaOfdHome();
 }
 
 function atualizarContadorOfdHome() {
@@ -6685,14 +6754,21 @@ function atualizarContadorOfdHome() {
 
 function carregarOfdsHome() {
   const relogio = obterRelogioBrasilia();
+  if (!ofdDiaSelecionadoHome) ofdDiaSelecionadoHome = OFD_DAY_CODES[relogio.weekday];
+  ofdAgendaHome = OFD_HOME_FALLBACK.slice();
   const fallback = OFD_HOME_FALLBACK.filter(function(ofd) {
     return ofd.days.includes(relogio.weekday);
   });
 
   renderizarOfdsHome(fallback, relogio.dateLabel);
+  renderizarAgendaOfdHome();
 
   chamarApiJsonp("ofds")
     .then(function(resposta) {
+      if (Array.isArray(resposta.schedule) && resposta.schedule.length) {
+        ofdAgendaHome = resposta.schedule;
+        renderizarAgendaOfdHome();
+      }
       renderizarOfdsHome(resposta.ofds || [], resposta.dayLabel || relogio.dateLabel);
     })
     .catch(function() {
