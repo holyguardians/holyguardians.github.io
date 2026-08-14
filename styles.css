@@ -11538,7 +11538,7 @@ body {
 .digivolution-requirements { display: flex; flex-wrap: wrap; gap: 6px; }
 .digivolution-requirements > span { min-width: 80px; flex: 1 1 85px; padding: 8px; border: 1px solid rgba(57, 129, 189, .34); border-radius: 7px; background: rgba(5, 20, 42, .72); }
 .digivolution-requirements small { display: block; margin-bottom: 3px; color: #668eaa; font-size: 7px; font-weight: 800; }
-.digivolution-requirements strong { color: #e8f7ff; font-size: 11px; }
+.digivolution-requirements strong { color: #55e69a; font-size: 12px; text-shadow: 0 0 8px rgba(64, 226, 148, .20); }
 .digivolution-requirements em { color: #ffcb5e; font-size: 9px; font-style: normal; }
 .digivolution-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 9px; }
 .digivolution-item { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px; border: 1px solid rgba(182, 137, 43, .28); border-radius: 8px; background: rgba(75, 51, 8, .13); }
@@ -11557,7 +11557,7 @@ body {
 
 .potential-modal { position: fixed; z-index: 10000; inset: 0; display: none; place-items: center; padding: 18px; background: rgba(0, 5, 15, .82); backdrop-filter: blur(8px); }
 .potential-modal.ativo { display: grid; }
-.potential-dialog { position: relative; width: min(1100px, 96vw); max-height: 94vh; overflow: auto; padding: 20px; border: 1px solid rgba(56, 211, 255, .52); border-radius: 15px; background: linear-gradient(145deg, #07162c, #070b1b); box-shadow: 0 30px 90px #000, inset 0 0 28px rgba(32, 164, 255, .05); }
+.potential-dialog { position: relative; width: min(1100px, 96vw); height: min(720px, 94vh); max-height: 94vh; box-sizing: border-box; overflow: auto; padding: 20px; border: 1px solid rgba(56, 211, 255, .52); border-radius: 15px; background: linear-gradient(145deg, #07162c, #070b1b); box-shadow: 0 30px 90px #000, inset 0 0 28px rgba(32, 164, 255, .05); }
 .potential-close { position: absolute; top: 11px; right: 13px; width: 35px; height: 35px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; font-size: 23px; cursor: pointer; }
 .potential-heading h3 { margin: 0 45px 3px 0; color: #fff; font-size: 18px; }
 .potential-heading p { margin: 0 0 17px; color: #6a95b5; font-size: 9px; font-weight: 700; }
@@ -11591,7 +11591,7 @@ body {
 .potential-board-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .potential-board-head strong { color: #69dcff; font-size: 8px; }
 .potential-board { display: grid; grid-template-columns: repeat(4, minmax(58px, 1fr)); gap: 6px; align-content: start; min-height: 316px; padding: 8px; border: 1px solid rgba(53, 117, 174, .28); border-radius: 8px; background: #030a1b; }
-.potential-cube { aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 3px; border: 1px solid color-mix(in srgb, var(--cube-color), #fff 16%); border-radius: 6px; background: var(--cube-color); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.75); box-shadow: inset 0 0 16px rgba(255,255,255,.08); }
+.potential-cube { aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 3px; border: 1px solid color-mix(in srgb, var(--cube-color), #fff 16%); border-radius: 6px; background: var(--cube-color); color: #020713; text-shadow: 0 1px 1px rgba(255,255,255,.25); box-shadow: inset 0 0 16px rgba(255,255,255,.08); }
 .potential-cube strong { font-size: 10px; }
 .potential-cube span { font-size: 8px; font-weight: 800; }
 .potential-board-empty { grid-column: 1 / -1; align-self: center; color: #54728a; font-size: 9px; text-align: center; }

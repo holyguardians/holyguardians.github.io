@@ -5515,8 +5515,8 @@ function renderizarRequisitosDigivolution(item) {
 
   Object.keys(stats).forEach(function(nome) {
     const stat = stats[nome] || {};
-    const percentual = Number.isFinite(Number(stat.percent)) ? ` <em>(+${Number(stat.percent)}%)</em>` : "";
-    requisitos.push(`<span class="req-${nome.toLowerCase()}"><small>${escaparHtml(nome)}</small><strong>${escaparHtml(stat.value || "-")}${percentual}</strong></span>`);
+    const valorNecessario = Number.isFinite(Number(stat.percent)) ? `${Number(stat.percent)}%` : (stat.value || "-");
+    requisitos.push(`<span class="req-${nome.toLowerCase()}"><small>${escaparHtml(nome)}</small><strong>${escaparHtml(valorNecessario)}</strong></span>`);
   });
 
   return requisitos.join("");
