@@ -12030,6 +12030,13 @@ body {
     grid-row: 2;
   }
 
+  /* O rodapé continua ocupando toda a largura da Home. */
+  #homePagina .home-footer {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+  }
+
   #homePagina .servers-panel {
     display: none;
   }
