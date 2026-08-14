@@ -1305,6 +1305,12 @@ function aplicarAssetsHome() {
 
 
   definirImagem(
+    "navIconDigivolution",
+    "icon_digivolution"
+  );
+
+
+  definirImagem(
     "navIconComparacao",
     "comparlayout"
   );
@@ -5521,7 +5527,9 @@ function renderizarItensDigivolution(item) {
   if (!itens.length) return `<div class="digivolution-no-items">NENHUM ITEM NECESSÁRIO</div>`;
 
   return itens.map(function(requisito) {
-    const src = requisito.icon || pegarImagem(requisito.name);
+    const nomeArquivo = String(requisito.icon || "").split("/").pop();
+    const iconesIncorporados = window.HG_DIGIVOLUTION_ITEM_ICONS || {};
+    const src = iconesIncorporados[nomeArquivo] || requisito.icon || pegarImagem(requisito.name);
     return `
       <div class="digivolution-item">
         <span class="digivolution-item-icon">
@@ -5539,13 +5547,14 @@ function criarCardDigivolution(item) {
     return `<div class="digivolution-from">${renderizarAvatarDigivolution(anterior.name, "digivolution-from-icon", anterior.icon)}<strong>${escaparHtml(anterior.name)}</strong></div>`;
   }).join("");
   const podeCalcular = digivolutionTemPotential(item);
+  const categoriaVisivel = String(item.category || "").toUpperCase() === "MEGA" ? "NORMAL" : (item.category || "NORMAL");
 
   return `
     <article class="digivolution-card">
       <div class="digivolution-card-top">
         ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon", item.targetIcon)}
         <div class="digivolution-target-copy">
-          <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(item.category || "NORMAL")}</span></div>
+          <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(categoriaVisivel)}</span></div>
           <h3>${escaparHtml(item.displayName || item.to)}</h3>
           <small>PROBABILIDADE: ${escaparHtml(item.probability || "-")}</small>
         </div>
@@ -5571,7 +5580,6 @@ function criarCardDigivolution(item) {
 function filtrarDigivolutions() {
   const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
   const busca = String((document.getElementById("digivolutionBusca") || {}).value || "").trim().toLowerCase();
-  const stage = String((document.getElementById("digivolutionStage") || {}).value || "").toUpperCase();
   const category = String((document.getElementById("digivolutionCategory") || {}).value || "").toUpperCase();
   const tipo = String((document.getElementById("digivolutionRequirement") || {}).value || "").toUpperCase();
 
@@ -5580,7 +5588,7 @@ function filtrarDigivolutions() {
     const texto = [item.to, item.displayName, item.requirementOwner].concat(anteriores).join(" ").toLowerCase();
     const req = item.requirements || {};
     const buscaOk = !busca || texto.includes(busca);
-    const stageOk = !stage || String(item.stage || "").toUpperCase() === stage;
+    const stageOk = String(item.stage || "").toUpperCase() === "MEGA";
     const categoryOk = !category || String(item.category || "").toUpperCase() === category;
     let requisitoOk = true;
     if (tipo === "STATUS") requisitoOk = digivolutionTemStatus(item);
@@ -5596,7 +5604,7 @@ function filtrarDigivolutions() {
 }
 
 function limparFiltrosDigivolution() {
-  ["digivolutionBusca", "digivolutionStage", "digivolutionCategory", "digivolutionRequirement"].forEach(function(id) {
+  ["digivolutionBusca", "digivolutionCategory", "digivolutionRequirement"].forEach(function(id) {
     const campo = document.getElementById(id);
     if (campo) campo.value = "";
   });
@@ -5625,7 +5633,7 @@ function abrirPotentialModal(id) {
   if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
   if (subtitulo) subtitulo.textContent = `${digivolutionAtual.requirementOwner || "DIGIMON ANTERIOR"} // LEVEL ${digivolutionAtual.requirements.level || "-"} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
   if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
-    return `<label><span>${stat}</span><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><small>%</small></label>`;
+    return `<label><span>${stat}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="Aumentar ${stat}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="Diminuir ${stat}">▼</button></span></span><small>%</small></label>`;
   }).join("");
 
   modal.classList.add("ativo");
@@ -5655,6 +5663,13 @@ function alterarBabyCorrection(stat, input) {
   babyCorrections[stat] = valor;
   if (Number(input.value) !== valor || anterior !== valor) input.value = valor;
   atualizarPotentialPlanner();
+}
+
+function ajustarBabyCorrection(stat, delta) {
+  const input = document.getElementById(`baby-${stat}`);
+  if (!input) return;
+  input.value = (Number(babyCorrections[stat]) || 0) + Number(delta || 0);
+  alterarBabyCorrection(stat, input);
 }
 
 function atualizarPotentialPlanner() {

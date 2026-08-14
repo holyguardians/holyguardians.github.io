@@ -11459,9 +11459,33 @@ body {
 
 .digivolution-filters {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 165px 190px 190px 140px;
+  grid-template-columns: minmax(260px, 1fr) 210px 210px 150px;
   gap: 9px;
   margin-bottom: 12px;
+}
+.digivolution-filters .filtro-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  border-color: rgba(64, 176, 231, .60);
+  background-color: #071a32;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #57e4ff 50%),
+    linear-gradient(135deg, #57e4ff 50%, transparent 50%),
+    linear-gradient(to right, rgba(67, 193, 243, .28), rgba(67, 193, 243, .28));
+  background-position:
+    calc(100% - 19px) 19px,
+    calc(100% - 13px) 19px,
+    calc(100% - 39px) 8px;
+  background-size: 7px 7px, 7px 7px, 1px 30px;
+  background-repeat: no-repeat;
+  color: #d9f5ff;
+  cursor: pointer;
+}
+.digivolution-filters .filtro-select:hover,
+.digivolution-filters .filtro-select:focus {
+  border-color: #51e4ff;
+  box-shadow: 0 0 14px rgba(48, 207, 255, .20);
 }
 .digivolution-clear {
   min-height: 46px;
@@ -11543,7 +11567,14 @@ body {
 .potential-help { margin: -3px 0 9px; color: #668aa5; font-size: 8px; line-height: 1.5; }
 .baby-correction-grid { display: grid; gap: 5px; }
 .baby-correction-grid label { display: grid; grid-template-columns: 35px 1fr 13px; align-items: center; gap: 5px; color: #9ab7cc; font-size: 8px; font-weight: 800; }
-.baby-correction-grid input { width: 100%; min-width: 0; padding: 7px 8px; border: 1px solid rgba(67, 139, 197, .45); border-radius: 6px; outline: 0; background: #071225; color: #fff; font-family: inherit; }
+.baby-stepper { position: relative; display: block; min-width: 0; }
+.baby-correction-grid input { width: 100%; min-width: 0; padding: 9px 42px 9px 10px; border: 1px solid rgba(67, 139, 197, .58); border-radius: 7px; outline: 0; appearance: textfield; -moz-appearance: textfield; background: #071225; color: #fff; font-family: inherit; }
+.baby-correction-grid input::-webkit-inner-spin-button,
+.baby-correction-grid input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+.baby-stepper-buttons { position: absolute; top: 3px; right: 3px; bottom: 3px; width: 34px; display: grid; grid-template-rows: 1fr 1fr; gap: 2px; }
+.baby-stepper-buttons button { min-height: 0; padding: 0; border: 1px solid rgba(64, 208, 255, .52); border-radius: 4px; background: linear-gradient(180deg, #0d5f88, #073a5c); color: #77ecff; font-family: Arial, sans-serif; font-size: 10px; line-height: 1; cursor: pointer; text-shadow: 0 0 6px rgba(62, 222, 255, .9); }
+.baby-stepper-buttons button:hover { border-color: #81efff; background: linear-gradient(180deg, #1385b7, #07557c); color: #fff; box-shadow: 0 0 7px rgba(65, 221, 255, .32); }
+.baby-stepper-buttons button:active { transform: translateY(1px); }
 .baby-correction-grid input:focus { border-color: #4bdfff; box-shadow: 0 0 8px rgba(50, 205, 255, .18); }
 .baby-total-line { display: flex; justify-content: space-between; gap: 8px; margin-top: 11px; color: #7597af; font-size: 8px; font-weight: 800; }
 .baby-total-line strong { color: #72e5ff; }
