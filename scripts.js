@@ -6655,7 +6655,9 @@ function renderizarOfdsHome(ofds, diaTexto) {
     return `
       <article class="ofd-home-card">
         <div class="ofd-ticket-icon ticket-${escaparHtml(ticket.toLowerCase())}">
-          <span>${escaparHtml(ticket)}</span>
+          ${ofd.icon
+            ? `<img src="${escaparHtml(ofd.icon)}" alt="Passe ${escaparHtml(ticket)}" loading="lazy">`
+            : `<span>${escaparHtml(ticket)}</span>`}
         </div>
         <div class="ofd-home-copy">
           <strong>${escaparHtml(ofd.name || "OFD")}</strong>
