@@ -18,8 +18,8 @@ export default {
       if (request.headers.get("authorization") !== `Bearer ${env.SETUP_SECRET}`) {
         return new Response("Unauthorized", { status: 401 });
       }
-      await registerGuildCommands(env);
-      return Response.json({ ok: true, commands: ["raid", "agenda"] });
+      await registerGlobalCommands(env);
+      return Response.json({ ok: true, commands: ["raid", "agenda", "configurar", "desativar"] });
     }
 
     if (request.method !== "POST" || url.pathname !== "/interactions") {
@@ -43,8 +43,9 @@ export default {
       return discordMessage("Comando não reconhecido.", true);
     }
 
+    const administrative = ["configurar", "desativar"].includes(interaction.data.name);
     ctx.waitUntil(handleCommand(interaction, env));
-    return Response.json({ type: 5 });
+    return Response.json({ type: 5, data: administrative ? { flags: 64 } : undefined });
   },
 
   async scheduled(controller, env, ctx) {
@@ -54,6 +55,36 @@ export default {
 
 async function handleCommand(interaction, env) {
   try {
+    if (interaction.data.name === "configurar") {
+      if (!interaction.guild_id) {
+        return editInteraction(interaction, { content: "Este comando só pode ser usado dentro de um servidor." });
+      }
+      if (!hasManageGuild(interaction)) {
+        return editInteraction(interaction, { content: "Você precisa da permissão **Gerenciar Servidor** para configurar o bot." });
+      }
+      const channelId = commandOption(interaction, "canal");
+      const minutes = Math.min(60, Math.max(1, Number(commandOption(interaction, "minutos")) || 5));
+      await env.SERVER_CONFIG.put(`guild:${interaction.guild_id}`, JSON.stringify({
+        guildId: interaction.guild_id,
+        channelId,
+        minutes
+      }));
+      return editInteraction(interaction, {
+        content: `✅ Alertas configurados em <#${channelId}>, **${minutes} minuto(s)** antes de cada boss.`
+      });
+    }
+
+    if (interaction.data.name === "desativar") {
+      if (!interaction.guild_id || !hasManageGuild(interaction)) {
+        return editInteraction(interaction, { content: "Você precisa da permissão **Gerenciar Servidor** para desativar os alertas." });
+      }
+      await env.SERVER_CONFIG.put(`guild:${interaction.guild_id}`, JSON.stringify({
+        guildId: interaction.guild_id,
+        disabled: true
+      }));
+      return editInteraction(interaction, { content: "🔕 Alertas automáticos desativados neste servidor." });
+    }
+
     const events = await loadEvents(env, new Date());
     if (interaction.data.name === "raid") {
       if (!events[0]) return editInteraction(interaction, { content: "Nenhum raid ativo encontrado." });
@@ -86,42 +117,109 @@ async function editInteraction(interaction, payload) {
 
 async function runScheduled(env, now) {
   const events = await loadEvents(env, now);
-  const alertMinutes = Math.max(1, Number(env.ALERT_MINUTES) || 5);
-  const windowStart = alertMinutes * 60000;
-  const windowEnd = windowStart - 60000;
+  const servers = await loadServerConfigs(env);
 
-  for (const event of events) {
-    const diff = event.nextTime.getTime() - now.getTime();
-    if (diff <= windowStart && diff > windowEnd) {
-      await sendChannelMessage(env, {
-        content: "@everyone",
-        allowed_mentions: { parse: ["everyone"] },
-        embeds: [eventEmbed(event, env, `⚠ RAID EM ${alertMinutes} MINUTOS`)]
-      });
+  for (const server of servers) {
+    const alertMinutes = Math.min(60, Math.max(1, Number(server.minutes) || 5));
+    const windowStart = alertMinutes * 60000;
+    const windowEnd = windowStart - 60000;
+
+    for (const event of events) {
+      const diff = event.nextTime.getTime() - now.getTime();
+      if (diff <= windowStart && diff > windowEnd) {
+        try {
+          await sendChannelMessage(env, server.channelId, {
+            content: "@everyone",
+            allowed_mentions: { parse: ["everyone"] },
+            embeds: [eventEmbed(event, env, `⚠ RAID EM ${alertMinutes} MINUTOS`)]
+          });
+        } catch (error) {
+          console.error(`Falha no servidor ${server.guildId}:`, error);
+        }
+      }
     }
   }
 }
 
-async function registerGuildCommands(env) {
+async function registerGlobalCommands(env) {
   const commands = [
     { name: "raid", description: "Mostra o próximo Raid Boss" },
-    { name: "agenda", description: "Mostra os próximos Raid Bosses" }
+    { name: "agenda", description: "Mostra os próximos Raid Bosses" },
+    {
+      name: "configurar",
+      description: "Escolhe o canal e a antecedência dos alertas",
+      default_member_permissions: "32",
+      dm_permission: false,
+      options: [
+        { type: 7, name: "canal", description: "Canal que receberá os alertas", required: true },
+        { type: 4, name: "minutos", description: "Antecedência entre 1 e 60 minutos", required: true, min_value: 1, max_value: 60 }
+      ]
+    },
+    {
+      name: "desativar",
+      description: "Desativa os alertas automáticos neste servidor",
+      default_member_permissions: "32",
+      dm_permission: false
+    }
   ];
-  const response = await fetch(`${DISCORD_API}/applications/${env.DISCORD_APPLICATION_ID}/guilds/${env.GUILD_ID}/commands`, {
+  const response = await fetch(`${DISCORD_API}/applications/${env.DISCORD_APPLICATION_ID}/commands`, {
     method: "PUT",
     headers: discordHeaders(env),
     body: JSON.stringify(commands)
   });
   if (!response.ok) throw new Error(`Falha ao registrar comandos: ${response.status} ${await response.text()}`);
+
+  const clearGuild = await fetch(`${DISCORD_API}/applications/${env.DISCORD_APPLICATION_ID}/guilds/${env.GUILD_ID}/commands`, {
+    method: "PUT",
+    headers: discordHeaders(env),
+    body: "[]"
+  });
+  if (!clearGuild.ok) throw new Error(`Falha ao limpar comandos locais antigos: ${clearGuild.status} ${await clearGuild.text()}`);
 }
 
-async function sendChannelMessage(env, payload) {
-  const response = await fetch(`${DISCORD_API}/channels/${env.CHANNEL_ID}/messages`, {
+async function sendChannelMessage(env, channelId, payload) {
+  const response = await fetch(`${DISCORD_API}/channels/${channelId}/messages`, {
     method: "POST",
     headers: discordHeaders(env),
     body: JSON.stringify(payload)
   });
   if (!response.ok) throw new Error(`Falha ao enviar alerta: ${response.status} ${await response.text()}`);
+}
+
+function commandOption(interaction, name) {
+  const option = (interaction.data.options || []).find(item => item.name === name);
+  return option ? option.value : undefined;
+}
+
+function hasManageGuild(interaction) {
+  try {
+    return (BigInt(interaction.member?.permissions || "0") & 32n) === 32n;
+  } catch {
+    return false;
+  }
+}
+
+async function loadServerConfigs(env) {
+  const configs = [];
+  let cursor;
+
+  do {
+    const listOptions = cursor ? { prefix: "guild:", cursor } : { prefix: "guild:" };
+    const page = await env.SERVER_CONFIG.list(listOptions);
+    const values = await Promise.all(page.keys.map(key => env.SERVER_CONFIG.get(key.name, "json")));
+    values.filter(Boolean).forEach(config => configs.push(config));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  if (env.GUILD_ID && env.CHANNEL_ID && !configs.some(config => config.guildId === env.GUILD_ID)) {
+    configs.push({
+      guildId: env.GUILD_ID,
+      channelId: env.CHANNEL_ID,
+      minutes: Number(env.ALERT_MINUTES) || 5
+    });
+  }
+
+  return configs.filter(config => !config.disabled && config.channelId);
 }
 
 function discordHeaders(env) {
