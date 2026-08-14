@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-digivolution-v1">
+  <link rel="stylesheet" href="styles.css?v=20260814-digivolution-completa">
 </head>
 <body>
 
@@ -948,10 +948,16 @@
       <input id="digivolutionBusca" class="search" type="search" placeholder="Pesquisar evolução ou Digimon anterior..." oninput="filtrarDigivolutions()">
       <select id="digivolutionStage" class="filtro-select" onchange="filtrarDigivolutions()">
         <option value="">TODOS OS ESTÁGIOS</option>
-        <option value="ROOKIE">ROOKIE</option>
-        <option value="CHAMPION">CHAMPION</option>
         <option value="ULTIMATE">ULTIMATE</option>
         <option value="MEGA">MEGA</option>
+      </select>
+      <select id="digivolutionCategory" class="filtro-select" onchange="filtrarDigivolutions()">
+        <option value="">TODAS AS CATEGORIAS</option>
+        <option value="ULTIMATE">ULTIMATE NORMAL</option>
+        <option value="MEGA">MEGA NORMAL</option>
+        <option value="SPECIAL EVOLUTION">SPECIAL EVOLUTION</option>
+        <option value="DARK EVOLUTION">DARK EVOLUTION</option>
+        <option value="JOGRESS">JOGRESS</option>
       </select>
       <select id="digivolutionRequirement" class="filtro-select" onchange="filtrarDigivolutions()">
         <option value="">TODOS OS REQUISITOS</option>
@@ -1434,7 +1440,7 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="digivolution-data.js?v=20260814-digivolution-v1"></script>
-<script src="scripts.js?v=20260814-digivolution-v1"></script>
+<script src="digivolution-data.js?v=20260814-digivolution-completa"></script>
+<script src="scripts.js?v=20260814-digivolution-completa"></script>
 </body>
 </html>
