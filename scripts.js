@@ -5540,6 +5540,114 @@ function renderizarItensDigivolution(item) {
   }).join("");
 }
 
+function categoriaNormalDigivolution(item) {
+  const categoria = String(item.category || "").toUpperCase();
+  const subtipo = String(item.subtype || "").toLowerCase();
+  return subtipo === "normal" && (categoria === "MEGA" || categoria === "NORMAL");
+}
+
+function assinaturaRequisitosDigivolution(item) {
+  const req = item.requirements || {};
+  const anteriores = (item.from || []).map(function(entrada) {
+    return normalizarChaveDigivolution(typeof entrada === "string" ? entrada : entrada.name);
+  }).sort();
+  const stats = Object.keys(req.stats || {}).sort().map(function(nome) {
+    const stat = req.stats[nome] || {};
+    return [nome, stat.value ?? null, stat.natural ?? null, stat.percent ?? null];
+  });
+  const itens = (req.items || []).map(function(requisito) {
+    return [normalizarChaveDigivolution(requisito.name), Number(requisito.quantity) || 1];
+  }).sort(function(a, b) { return a[0].localeCompare(b[0]); });
+  return JSON.stringify({
+    anteriores: anteriores,
+    dono: normalizarChaveDigivolution(item.requirementOwner),
+    nivel: req.level ?? null,
+    amizade: req.bond ?? null,
+    stats: stats,
+    itens: itens,
+    cubo: Number(item.cubePercent) || 0
+  });
+}
+
+function numeroProbabilidadeDigivolution(valor) {
+  const numero = Number(String(valor || "").replace("%", "").replace(",", ".").trim());
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function formatarProbabilidadeDigivolution(valor) {
+  const arredondado = Math.round(Number(valor) * 10) / 10;
+  return `${Number.isInteger(arredondado) ? arredondado : String(arredondado).replace(".", ",")}%`;
+}
+
+function agruparDigivolutions(dados) {
+  const grupos = new Map();
+  const saida = [];
+
+  dados.forEach(function(item) {
+    if (!categoriaNormalDigivolution(item)) {
+      saida.push(item);
+      return;
+    }
+    const assinatura = assinaturaRequisitosDigivolution(item);
+    if (!grupos.has(assinatura)) grupos.set(assinatura, []);
+    grupos.get(assinatura).push(item);
+  });
+
+  grupos.forEach(function(itens) {
+    if (itens.length < 2) {
+      saida.push(itens[0]);
+      return;
+    }
+
+    const base = itens[0];
+    const somaInformada = itens.reduce(function(total, item) {
+      return total + numeroProbabilidadeDigivolution(item.probability);
+    }, 0);
+    const fator = somaInformada > 0 ? 95 / somaInformada : 1;
+    const anterior = (base.from || [])[0];
+    const iconeMutant = anterior && typeof anterior !== "string" ? anterior.icon : "";
+    const resultados = itens.map(function(item) {
+      return {
+        name: item.displayName || item.to,
+        to: item.to,
+        icon: item.targetIcon,
+        probability: formatarProbabilidadeDigivolution(numeroProbabilidadeDigivolution(item.probability) * fator),
+        originalId: item.id,
+        mutant: false
+      };
+    });
+    resultados.push({
+      name: "Mutant",
+      to: "mutant",
+      icon: iconeMutant,
+      probability: "5%",
+      originalId: "",
+      mutant: true
+    });
+
+    saida.push(Object.assign({}, base, {
+      id: `grupo-${normalizarChaveDigivolution(base.requirementOwner)}-${normalizarChaveDigivolution(base.id)}`,
+      grouped: true,
+      outcomes: resultados,
+      displayName: "POSSÍVEIS EVOLUÇÕES",
+      probability: "100%"
+    }));
+  });
+
+  return saida;
+}
+
+function renderizarResultadosDigivolution(item) {
+  return (item.outcomes || []).map(function(resultado) {
+    return `
+      <div class="digivolution-outcome${resultado.mutant ? " is-mutant" : ""}">
+        ${renderizarAvatarDigivolution(resultado.name, "digivolution-outcome-icon", resultado.icon)}
+        <span><strong>${escaparHtml(resultado.name)}</strong><small>PROBABILIDADE: ${escaparHtml(resultado.probability)}</small></span>
+      </div>
+    `;
+  }).join("");
+}
+
 function criarCardDigivolution(item) {
   const anteriores = (item.from || []).map(function(entrada) {
     const anterior = typeof entrada === "string" ? { name: entrada, icon: "" } : entrada;
@@ -5550,14 +5658,22 @@ function criarCardDigivolution(item) {
 
   return `
     <article class="digivolution-card">
-      <div class="digivolution-card-top">
-        ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon", item.targetIcon)}
-        <div class="digivolution-target-copy">
+      ${item.grouped ? `
+        <div class="digivolution-group-heading">
           <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(categoriaVisivel)}</span></div>
-          <h3>${escaparHtml(item.displayName || item.to)}</h3>
-          <small>PROBABILIDADE: ${escaparHtml(item.probability || "-")}</small>
+          <h3>POSSÍVEIS EVOLUÇÕES</h3>
         </div>
-      </div>
+        <div class="digivolution-outcomes">${renderizarResultadosDigivolution(item)}</div>
+      ` : `
+        <div class="digivolution-card-top">
+          ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon", item.targetIcon)}
+          <div class="digivolution-target-copy">
+            <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(categoriaVisivel)}</span></div>
+            <h3>${escaparHtml(item.displayName || item.to)}</h3>
+            <small>PROBABILIDADE: ${escaparHtml(item.probability || "-")}</small>
+          </div>
+        </div>
+      `}
 
       <div class="digivolution-section-label">EVOLVES FROM</div>
       <div class="digivolution-from-list">${anteriores || "-"}</div>
@@ -5576,14 +5692,16 @@ function criarCardDigivolution(item) {
 }
 
 function filtrarDigivolutions() {
-  const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  const originais = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  const dados = agruparDigivolutions(originais);
   const busca = String((document.getElementById("digivolutionBusca") || {}).value || "").trim().toLowerCase();
   const category = String((document.getElementById("digivolutionCategory") || {}).value || "").toUpperCase();
   const tipo = String((document.getElementById("digivolutionRequirement") || {}).value || "").toUpperCase();
 
   const filtrados = dados.filter(function(item) {
     const anteriores = (item.from || []).map(function(entrada) { return typeof entrada === "string" ? entrada : entrada.name; });
-    const texto = [item.to, item.displayName, item.requirementOwner].concat(anteriores).join(" ").toLowerCase();
+    const resultados = (item.outcomes || []).map(function(resultado) { return resultado.name; });
+    const texto = [item.to, item.displayName, item.requirementOwner].concat(anteriores, resultados).join(" ").toLowerCase();
     const req = item.requirements || {};
     const buscaOk = !busca || texto.includes(busca);
     const stageOk = String(item.stage || "").toUpperCase() === "MEGA";
@@ -5642,7 +5760,8 @@ function carregarDigivolutions() {
 }
 
 function abrirPotentialModal(id) {
-  const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  const originais = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  const dados = agruparDigivolutions(originais);
   digivolutionAtual = dados.find(function(item) { return item.id === id; }) || null;
   if (!digivolutionAtual) return;
   POTENTIAL_STATS.forEach(function(stat) { babyCorrections[stat] = 0; });
