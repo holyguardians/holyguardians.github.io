@@ -102,7 +102,7 @@
     <button id="btnSocial" class="nav-button"
       onclick="mostrarPagina('socialPagina', this)">
       <img id="navIconSocial" alt="">
-      <span>Social</span>
+      <span>Comunidade</span>
     </button>
 
   </div>
@@ -1522,7 +1522,7 @@
 </section>
 
 <!-- =====================================================
-     SOCIAL
+     COMUNIDADE
 ===================================================== -->
 
 <section id="socialPagina" class="pagina">
@@ -1531,63 +1531,65 @@
     <div class="social-content">
 
       <div class="social-kicker">
-        HOLY GUARDIANS NETWORK
+        HOLY GUARDIANS COMMUNITY
       </div>
 
       <h2 class="social-title-main">
-        CONECTE-SE À <span>GUILD</span>
+        NOSSA <span>COMUNIDADE</span>
       </h2>
 
       <p class="social-intro">
-        Acompanhe conteúdos, lives e novidades da Holy Guardians
-        ou entre diretamente para a nossa comunidade.
+        Acompanhe conteúdos, lives e novidades do mundo digital.
       </p>
 
-      <div class="social-page-grid">
+      <div class="community-platforms" id="communityPlatforms">
+        <article class="community-platform youtube" data-community-platform="youtube">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('youtube', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialYoutube" alt="YouTube"></span>
+            <span class="social-card-copy"><strong>YouTube</strong><small>Canais e conteúdos da comunidade</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListYoutube" class="community-link-list" hidden></div>
+        </article>
 
-        <a
-          class="social-page-card"
-          href="https://www.youtube.com/@HolyGuardiansDMO"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img id="socialYoutube" alt="YouTube">
-          <div class="social-card-copy">
-            <h3>YouTube</h3>
-            <p>Holy Guardians DMO</p>
-          </div>
-          <span class="social-card-action">ACESSAR ↗</span>
-        </a>
+        <article class="community-platform twitch" data-community-platform="twitch">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('twitch', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialTwitch" alt="Twitch"></span>
+            <span class="social-card-copy"><strong>Twitch</strong><small>Lives e transmissões da comunidade</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListTwitch" class="community-link-list" hidden></div>
+        </article>
 
-        <a
-          class="social-page-card"
-          href="https://www.twitch.tv/grim_sleepz"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img id="socialTwitch" alt="Twitch">
-          <div class="social-card-copy">
-            <h3>Twitch</h3>
-            <p>GrimSleep</p>
-          </div>
-          <span class="social-card-action">ASSISTIR ↗</span>
-        </a>
+        <article class="community-platform kick" data-community-platform="kick">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('kick', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img src="kick_icon.png" alt="Kick"></span>
+            <span class="social-card-copy"><strong>Kick</strong><small>Lives e canais parceiros</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListKick" class="community-link-list" hidden></div>
+        </article>
 
-        <a
-          class="social-page-card"
-          href="https://discord.gg/czAvSwPTku"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img id="socialDiscord" alt="Discord">
-          <div class="social-card-copy">
-            <h3>Discord</h3>
-            <p>Entre para a comunidade.</p>
-          </div>
-          <span class="social-card-action">ENTRAR ↗</span>
-        </a>
-
+        <article class="community-platform discord" data-community-platform="discord">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('discord', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialDiscord" alt="Discord"></span>
+            <span class="social-card-copy"><strong>Discord</strong><small>Servidores e comunidades</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListDiscord" class="community-link-list" hidden></div>
+        </article>
       </div>
+
+      <aside class="community-wiki-card">
+        <div>
+          <strong>Precisa de guias ou informações detalhadas sobre drops e etc.?</strong>
+          <small>Consulte a DSR Wiki para informações completas do jogo.</small>
+        </div>
+        <a href="https://dsrworldwiki.com/pt/home" target="_blank" rel="noopener noreferrer" aria-label="Abrir DSR Wiki">
+          <span class="community-wiki-aura"><img src="dsr_wiki_icon.png" alt="DSR Wiki"></span>
+          <b>DSR WIKI ↗</b>
+        </a>
+      </aside>
     </div>
 
     <div class="social-art-wrap" aria-hidden="true">
@@ -1602,6 +1604,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-ofd-api-v12"></script>
+<script src="scripts.js?v=20260814-comunidade-v13"></script>
 </body>
 </html>

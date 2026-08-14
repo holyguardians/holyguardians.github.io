@@ -961,7 +961,7 @@ function mostrarPagina(
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
-      socialPagina: "social"
+      socialPagina: "comunidade"
     };
 
     const rota =
@@ -1038,6 +1038,10 @@ function abrirPaginaPelaUrl() {
       botao: "btnDekyuTreasure"
     },
     social: {
+      pagina: "socialPagina",
+      botao: "btnSocial"
+    },
+    comunidade: {
       pagina: "socialPagina",
       botao: "btnSocial"
     }
@@ -6800,6 +6804,79 @@ function carregarOfdsHome() {
 
 
 /* =====================================================
+   COMUNIDADE — LINKS CONTROLADOS PELA PLANILHA SOCIAL
+===================================================== */
+
+const COMMUNITY_PLATFORMS = ["youtube", "twitch", "kick", "discord"];
+
+function renderCommunityLinks(platform, links) {
+  const platformName = String(platform || "").toLowerCase();
+  const target = document.getElementById(
+    "communityList" + platformName.charAt(0).toUpperCase() + platformName.slice(1)
+  );
+  if (!target) return;
+
+  const validLinks = (Array.isArray(links) ? links : []).filter(function(item) {
+    return item && item.url;
+  });
+
+  if (!validLinks.length) {
+    target.innerHTML = `<div class="community-empty">Nenhum link cadastrado nesta plataforma.</div>`;
+    return;
+  }
+
+  target.innerHTML = validLinks.map(function(item) {
+    return `
+      <a class="community-channel-link" href="${escaparHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+        <span><strong>${escaparHtml(item.name || "Canal da comunidade")}</strong>${item.description ? `<small>${escaparHtml(item.description)}</small>` : ""}</span>
+        <b>ACESSAR ↗</b>
+      </a>
+    `;
+  }).join("");
+}
+
+function carregarComunidade() {
+  COMMUNITY_PLATFORMS.forEach(function(platform) {
+    renderCommunityLinks(platform, []);
+  });
+
+  chamarApiJsonp("social")
+    .then(function(response) {
+      const social = response.social || {};
+      COMMUNITY_PLATFORMS.forEach(function(platform) {
+        renderCommunityLinks(platform, social[platform] || []);
+      });
+    })
+    .catch(function() {
+      document.querySelectorAll(".community-link-list").forEach(function(list) {
+        list.innerHTML = `<div class="community-empty">Não foi possível carregar os links agora.</div>`;
+      });
+    });
+}
+
+function toggleCommunityPlatform(platform, button) {
+  const card = button ? button.closest(".community-platform") : null;
+  if (!card) return;
+  const list = card.querySelector(".community-link-list");
+  const willOpen = !card.classList.contains("aberta");
+
+  document.querySelectorAll(".community-platform.aberta").forEach(function(other) {
+    other.classList.remove("aberta");
+    const otherButton = other.querySelector(".community-platform-trigger");
+    const otherList = other.querySelector(".community-link-list");
+    if (otherButton) otherButton.setAttribute("aria-expanded", "false");
+    if (otherList) otherList.hidden = true;
+  });
+
+  if (willOpen) {
+    card.classList.add("aberta");
+    button.setAttribute("aria-expanded", "true");
+    if (list) list.hidden = false;
+  }
+}
+
+
+/* =====================================================
    INICIAR
 ===================================================== */
 
@@ -6840,6 +6917,8 @@ document.addEventListener(
     inicializarHistoriaHome();
 
     carregarOfdsHome();
+
+    carregarComunidade();
 
   }
 );

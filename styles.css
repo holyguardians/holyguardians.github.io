@@ -11748,6 +11748,175 @@ body {
 .ofd-week-time-hint > span { flex: 0 0 auto; display: grid; place-items: center; width: 15px; height: 15px; border: 1px solid #ffc85b; border-radius: 50%; color: #ffd67c; font-size: 8px; font-weight: 900; }
 .ofd-week-time-hint p { margin: 0; color: #789db5; font-size: 7px; line-height: 1.4; }
 .ofd-week-time-hint b { color: #f7d58f; }
+
+/* =====================================================
+   COMUNIDADE V13 — LISTAS SOCIAIS E DSR WIKI
+===================================================== */
+
+#socialPagina .social-stage {
+  grid-template-columns: minmax(560px, .98fr) minmax(390px, 1.02fr);
+  max-width: 1640px;
+  padding-top: 34px;
+  padding-bottom: 34px;
+}
+
+#socialPagina .social-content { max-width: 760px; }
+#socialPagina .social-intro { margin-bottom: 18px; }
+
+.community-platforms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.community-platform {
+  --community-color: 78, 210, 255;
+  position: relative;
+  border: 1px solid rgba(var(--community-color), .34);
+  border-radius: 10px;
+  background: linear-gradient(120deg, rgba(8, 31, 66, .94), rgba(5, 17, 39, .91));
+  box-shadow: inset 0 0 18px rgba(var(--community-color), .035);
+  overflow: hidden;
+  transition: border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+
+.community-platform.youtube { --community-color: 255, 45, 60; }
+.community-platform.twitch { --community-color: 171, 88, 255; }
+.community-platform.kick { --community-color: 83, 255, 44; }
+.community-platform.discord { --community-color: 93, 122, 255; }
+
+.community-platform:hover,
+.community-platform.aberta {
+  border-color: rgba(var(--community-color), .78);
+  box-shadow: inset 0 0 20px rgba(var(--community-color), .06), 0 0 20px rgba(var(--community-color), .15);
+  transform: translateY(-2px);
+}
+
+.community-platform-trigger {
+  width: 100%;
+  min-height: 91px;
+  padding: 13px 13px;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.community-icon-aura,
+.community-wiki-aura {
+  position: relative;
+  width: 51px;
+  height: 51px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  isolation: isolate;
+}
+
+.community-icon-aura::before,
+.community-wiki-aura::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(var(--community-color), .24);
+  filter: blur(9px);
+  opacity: .35;
+  transform: scale(.72);
+  transition: opacity .25s ease, transform .25s ease, filter .25s ease;
+}
+
+.community-platform:hover .community-icon-aura::before,
+.community-platform.aberta .community-icon-aura::before,
+.community-wiki-card a:hover .community-wiki-aura::before {
+  opacity: .92;
+  transform: scale(1.55);
+  filter: blur(12px);
+}
+
+.community-icon-aura img,
+.community-wiki-aura img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(var(--community-color), .26));
+}
+
+.community-platform .social-card-copy strong { display: block; color: #f4fbff; font-size: 15px; }
+.community-platform .social-card-copy small { display: block; margin-top: 4px; color: #769bb8; font-size: 8px; line-height: 1.35; }
+.community-open-label { color: rgba(var(--community-color), .88); font-size: 7px; font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
+.community-open-label b { display: inline-block; margin-left: 3px; font-size: 12px; transition: transform .2s ease; }
+.community-platform.aberta .community-open-label b { transform: rotate(180deg); }
+
+.community-link-list {
+  padding: 0 11px 11px;
+  border-top: 1px solid rgba(var(--community-color), .15);
+}
+.community-link-list[hidden] { display: none; }
+
+.community-channel-link {
+  margin-top: 8px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(var(--community-color), .22);
+  border-radius: 7px;
+  color: #e9f8ff;
+  background: rgba(3, 14, 33, .62);
+  text-decoration: none;
+  transition: .18s ease;
+}
+.community-channel-link:hover { border-color: rgba(var(--community-color), .7); background: rgba(var(--community-color), .075); }
+.community-channel-link span { min-width: 0; }
+.community-channel-link strong { display: block; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.community-channel-link small { display: block; margin-top: 3px; overflow: hidden; color: #6f95af; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.community-channel-link > b { color: rgba(var(--community-color), .95); font-size: 7px; white-space: nowrap; }
+.community-empty { padding: 13px 5px 3px; color: #6f91aa; font-size: 8px; text-align: center; }
+
+.community-wiki-card {
+  --community-color: 255, 218, 50;
+  margin-top: 12px;
+  padding: 13px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(255, 213, 55, .28);
+  border-radius: 10px;
+  background: linear-gradient(100deg, rgba(43, 39, 8, .38), rgba(5, 19, 42, .88));
+}
+.community-wiki-card > div strong { display: block; color: #f1f7fb; font-size: 11px; line-height: 1.35; }
+.community-wiki-card > div small { display: block; margin-top: 4px; color: #7f9eb3; font-size: 8px; }
+.community-wiki-card a { display: flex; align-items: center; gap: 7px; color: #ffe55d; text-decoration: none; }
+.community-wiki-card a b { font-size: 8px; white-space: nowrap; }
+.community-wiki-aura { width: 45px; height: 45px; }
+.community-wiki-aura img { width: 40px; height: 40px; }
+
+#socialPagina .social-art-wrap { justify-content: flex-end; transform: translateX(22px); }
+#socialPagina .social-mikomode { height: min(70vh, 700px); }
+
+@media (max-width: 1120px) {
+  #socialPagina .social-stage { grid-template-columns: 1fr; }
+  #socialPagina .social-art-wrap { justify-content: center; transform: none; }
+}
+
+@media (max-width: 680px) {
+  .community-platforms { grid-template-columns: 1fr; }
+  .community-platform-trigger { grid-template-columns: 48px minmax(0, 1fr) auto; min-height: 82px; }
+  .community-open-label { font-size: 0; }
+  .community-open-label b { font-size: 14px; }
+  .community-wiki-card { grid-template-columns: 1fr; }
+  .community-wiki-card a { justify-content: flex-start; }
+}
 .ofd-week-list { display: grid; gap: 8px; padding: 0 18px; }
 .ofd-week-card {
   position: relative;
