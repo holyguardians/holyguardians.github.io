@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-dekyu-treasure">
+  <link rel="stylesheet" href="styles.css?v=20260814-dekyu-ui-v3">
 </head>
 <body>
 
@@ -1377,14 +1377,14 @@
     </header>
 
     <div class="dekyu-controls">
-      <label>
+      <label class="dekyu-select-field">
         <span>ÁREA</span>
         <select id="dekyuZone" onchange="alterarZonaDekyu()">
           <option value="">Carregando áreas...</option>
         </select>
       </label>
 
-      <label>
+      <label class="dekyu-select-field">
         <span>MAPA</span>
         <select id="dekyuMap" onchange="renderizarMapaDekyu()">
           <option value="">Carregando mapas...</option>
@@ -1396,6 +1396,11 @@
         <strong id="dekyuCount">0</strong>
       </div>
     </div>
+
+    <aside class="dekyu-alert" role="note">
+      <span class="dekyu-alert-symbol" aria-hidden="true">!</span>
+      <p><strong>ATENÇÃO:</strong> O Dekyu Treasure pode surgir de forma aleatória em qualquer um dos spots mostrados nos mapas abaixo, de 6 em 6 horas, a partir do momento em que surgiu pela última vez.</p>
+    </aside>
 
     <div class="dekyu-map-card">
       <div class="dekyu-map-title-row">
@@ -1496,6 +1501,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-dekyu-api-v2"></script>
+<script src="scripts.js?v=20260814-dekyu-ui-v3"></script>
 </body>
 </html>

@@ -6217,16 +6217,15 @@ function renderizarMapaDekyu() {
   if (status) status.textContent = `${localizacoes.length} PONTO${localizacoes.length === 1 ? "" : "S"} MAPEADO${localizacoes.length === 1 ? "" : "S"}`;
   if (contador) contador.textContent = String(localizacoes.length);
 
-  spots.innerHTML = localizacoes.map(function(spot, indice) {
+  spots.innerHTML = localizacoes.map(function(spot) {
     const x = Math.max(0, Math.min(100, Number(spot.x) || 0));
     const y = Math.max(0, Math.min(100, Number(spot.y) || 0));
     return `
-      <button class="dekyu-spot" type="button"
+      <span class="dekyu-spot"
         style="left:${x}%;top:${y}%"
-        aria-label="Dekyu Treasure ${indice + 1}: X ${x}, Y ${y}"
-        data-coordinate="X ${x} • Y ${y}">
+        aria-hidden="true">
         <img src="dekyu_treasure.png" alt="" aria-hidden="true">
-      </button>
+      </span>
     `;
   }).join("");
 
