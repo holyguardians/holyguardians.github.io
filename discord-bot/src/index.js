@@ -63,14 +63,16 @@ async function handleCommand(interaction, env) {
         return editInteraction(interaction, { content: "Você precisa da permissão **Gerenciar Servidor** para configurar o bot." });
       }
       const channelId = commandOption(interaction, "canal");
+      const roleId = commandOption(interaction, "cargo");
       const minutes = Math.min(60, Math.max(1, Number(commandOption(interaction, "minutos")) || 5));
       await env.SERVER_CONFIG.put(`guild:${interaction.guild_id}`, JSON.stringify({
         guildId: interaction.guild_id,
         channelId,
+        roleId,
         minutes
       }));
       return editInteraction(interaction, {
-        content: `✅ Alertas configurados em <#${channelId}>, **${minutes} minuto(s)** antes de cada boss.`
+        content: `✅ Alertas configurados em <#${channelId}>, mencionando <@&${roleId}>, **${minutes} minuto(s)** antes de cada boss.`
       });
     }
 
@@ -128,9 +130,13 @@ async function runScheduled(env, now) {
       const diff = event.nextTime.getTime() - now.getTime();
       if (diff <= windowStart && diff > windowEnd) {
         try {
+          const mention = server.roleId ? `<@&${server.roleId}>` : "@everyone";
+          const allowedMentions = server.roleId
+            ? { parse: [], roles: [server.roleId] }
+            : { parse: ["everyone"] };
           await sendChannelMessage(env, server.channelId, {
-            content: "@everyone",
-            allowed_mentions: { parse: ["everyone"] },
+            content: mention,
+            allowed_mentions: allowedMentions,
             embeds: [eventEmbed(event, env, `⚠ RAID EM ${alertMinutes} MINUTOS`)]
           });
         } catch (error) {
@@ -152,6 +158,7 @@ async function registerGlobalCommands(env) {
       dm_permission: false,
       options: [
         { type: 7, name: "canal", description: "Canal que receberá os alertas", required: true },
+        { type: 8, name: "cargo", description: "Cargo que será mencionado nos alertas", required: true },
         { type: 4, name: "minutos", description: "Antecedência entre 1 e 60 minutos", required: true, min_value: 1, max_value: 60 }
       ]
     },
