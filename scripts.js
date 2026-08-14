@@ -3,7 +3,7 @@
    GITHUB PAGES → HOLY GUARDIANS API
 ===================================================== */
 
-const HG_API_URL = "https://script.google.com/macros/s/AKfycbzp08aXLQCFeNGRiWHmRKRLZ3qO11_RvBGCnogF79DsMwiYX3_HgTkkZMwTgTNGEwvX/exec";
+const HG_API_URL = "https://script.google.com/macros/s/AKfycbyHB9uhhDVHek1Hcm92eZUB6f4H9XWRdrGhp0LJ4yXl2Wpz6mXkW7_-UR63Rkz_9Xk/exec";
 
 function chamarApiJsonp(api) {
   return new Promise(function(resolve, reject) {
@@ -5613,6 +5613,29 @@ function inicializarDigivolution() {
   });
 }
 
+function carregarDigivolutions() {
+  const lista = document.getElementById("digivolutionLista");
+  const resumo = document.getElementById("digivolutionResumo");
+
+  if (resumo) resumo.textContent = "CARREGANDO EVOLUÇÕES...";
+  if (lista) lista.innerHTML = `<div class="digivolution-empty">Carregando database de Digivolutions...</div>`;
+
+  return chamarApiJsonp("digivolutions")
+    .then(function(resposta) {
+      window.HG_DIGIVOLUTIONS = Array.isArray(resposta.digivolutions)
+        ? resposta.digivolutions
+        : [];
+      filtrarDigivolutions();
+    })
+    .catch(function(erro) {
+      window.HG_DIGIVOLUTIONS = [];
+      if (resumo) resumo.textContent = "NÃO FOI POSSÍVEL CARREGAR AS EVOLUÇÕES";
+      if (lista) {
+        lista.innerHTML = `<div class="digivolution-empty">Erro ao carregar Digivolutions. ${escaparHtml(erro.message || erro)}</div>`;
+      }
+    });
+}
+
 function abrirPotentialModal(id) {
   const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
   digivolutionAtual = dados.find(function(item) { return item.id === id; }) || null;
@@ -6198,6 +6221,8 @@ document.addEventListener(
     inicializarFechamentoFiltrosDigidex();
     inicializarDigivolution();
     abrirPaginaPelaUrl();
+
+    carregarDigivolutions();
 
     carregarImagensSite();
 
