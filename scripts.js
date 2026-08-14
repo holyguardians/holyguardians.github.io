@@ -3,7 +3,7 @@
    GITHUB PAGES → HOLY GUARDIANS API
 ===================================================== */
 
-const HG_API_URL = "https://script.google.com/macros/s/AKfycbwhGWmIeDAdmC0v5Ir_O_kNlSdJCujLEBnNxwnkegYHqZEikGYyNs4vXB4lLqBILotb/exec";
+const HG_API_URL = "https://script.google.com/macros/s/AKfycbyeDr6LUt2zmahKgxUn1fUjqFfMEVD943VvvkSNaHbM4CLEojXGxi14oOKBA3U-rMzF/exec";
 
 function chamarApiJsonp(api) {
   return new Promise(function(resolve, reject) {
