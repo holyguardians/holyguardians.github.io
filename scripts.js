@@ -954,6 +954,7 @@ function mostrarPagina(
     const mapaRotas = {
       homePagina: "home",
       databasePagina: "digidex",
+      digivolutionPagina: "digivolution",
       comparacaoPagina: "comparacao",
       builderPagina: "team-builder",
       elementosPagina: "elementos",
@@ -1006,6 +1007,10 @@ function abrirPaginaPelaUrl() {
     digidex: {
       pagina: "databasePagina",
       botao: "btnDatabase"
+    },
+    digivolution: {
+      pagina: "digivolutionPagina",
+      botao: "btnDigivolution"
     },
     comparacao: {
       pagina: "comparacaoPagina",
@@ -3509,6 +3514,7 @@ function carregarImagensSite() {
           {};
 
         montarFiltrosAvancadosDigidex();
+        filtrarDigivolutions();
         montarCenaElementosHakase();
 
         if (
@@ -5437,6 +5443,257 @@ function atualizarCalculadora() {
 }
 
 /* =====================================================
+   DIGIVOLUTION — REQUISITOS E POTENTIAL PLANNER
+===================================================== */
+
+const POTENTIAL_STATS = ["HP", "SP", "STR", "INT", "DEF", "RES", "SPD"];
+const POTENTIAL_COLORS = {
+  HP: "#20c879",
+  SP: "#38c7e8",
+  STR: "#ff3548",
+  INT: "#3388f5",
+  DEF: "#ffd62e",
+  RES: "#a747ef",
+  SPD: "#53d25e"
+};
+
+let digivolutionAtual = null;
+let babyCorrections = {};
+
+function normalizarChaveDigivolution(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+function obterIconeDigivolution(nome) {
+  const chave = normalizarChaveDigivolution(nome);
+  const digi = (database || []).find(function(item) {
+    return normalizarChaveDigivolution(item.digimon) === chave;
+  });
+  return digi && digi.icon ? digi.icon : pegarImagem(nome);
+}
+
+function renderizarAvatarDigivolution(nome, classe) {
+  const src = obterIconeDigivolution(nome);
+  const inicial = String(nome || "?").replace(/^\[MUTANT\]\s*/i, "").charAt(0).toUpperCase();
+  return `
+    <span class="${classe || "digivolution-avatar"}">
+      ${src ? `<img src="${escaparHtml(src)}" alt="${escaparHtml(nome)}" loading="lazy">` : `<b>${escaparHtml(inicial)}</b>`}
+    </span>
+  `;
+}
+
+function digivolutionTemStatus(item) {
+  return Object.values((item.requirements && item.requirements.stats) || {}).some(function(stat) {
+    return stat && (Number.isFinite(Number(stat.value)) || Number.isFinite(Number(stat.percent)));
+  });
+}
+
+function digivolutionTemPotential(item) {
+  return Object.values((item.requirements && item.requirements.stats) || {}).some(function(stat) {
+    return stat && Number.isFinite(Number(stat.percent));
+  });
+}
+
+function renderizarRequisitosDigivolution(item) {
+  const req = item.requirements || {};
+  const stats = req.stats || {};
+  const requisitos = [];
+
+  if (req.level) requisitos.push(`<span><small>LEVEL</small><strong>${escaparHtml(req.level)}</strong></span>`);
+  if (req.bond != null) requisitos.push(`<span><small>FRIENDSHIP</small><strong>${escaparHtml(req.bond)}%</strong></span>`);
+
+  Object.keys(stats).forEach(function(nome) {
+    const stat = stats[nome] || {};
+    const percentual = Number.isFinite(Number(stat.percent)) ? ` <em>(+${Number(stat.percent)}%)</em>` : "";
+    requisitos.push(`<span class="req-${nome.toLowerCase()}"><small>${escaparHtml(nome)}</small><strong>${escaparHtml(stat.value || "-")}${percentual}</strong></span>`);
+  });
+
+  return requisitos.join("");
+}
+
+function renderizarItensDigivolution(item) {
+  const itens = (item.requirements && item.requirements.items) || [];
+  if (!itens.length) return `<div class="digivolution-no-items">NENHUM ITEM NECESSÁRIO</div>`;
+
+  return itens.map(function(requisito) {
+    const src = requisito.icon || pegarImagem(requisito.name);
+    return `
+      <div class="digivolution-item">
+        <span class="digivolution-item-icon">
+          ${src ? `<img src="${escaparHtml(src)}" alt="${escaparHtml(requisito.name)}">` : `<b>◆</b>`}
+        </span>
+        <span><strong>${escaparHtml(requisito.name)}</strong><small>QUANTIDADE: ${Number(requisito.quantity) || 1}</small></span>
+      </div>
+    `;
+  }).join("");
+}
+
+function criarCardDigivolution(item) {
+  const anteriores = (item.from || []).map(function(nome) {
+    return `<div class="digivolution-from">${renderizarAvatarDigivolution(nome, "digivolution-from-icon")}<strong>${escaparHtml(nome)}</strong></div>`;
+  }).join("");
+  const podeCalcular = digivolutionTemPotential(item);
+
+  return `
+    <article class="digivolution-card">
+      <div class="digivolution-card-top">
+        ${renderizarAvatarDigivolution(item.displayName || item.to, "digivolution-target-icon")}
+        <div class="digivolution-target-copy">
+          <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(item.category || "NORMAL")}</span></div>
+          <h3>${escaparHtml(item.displayName || item.to)}</h3>
+          <small>PROBABILIDADE: ${escaparHtml(item.probability || "-")}</small>
+        </div>
+      </div>
+
+      <div class="digivolution-section-label">EVOLVES FROM</div>
+      <div class="digivolution-from-list">${anteriores || "-"}</div>
+
+      <div class="digivolution-section-label">EVOLUTION REQUIREMENTS</div>
+      <div class="digivolution-requirements">${renderizarRequisitosDigivolution(item)}</div>
+      <div class="digivolution-items">${renderizarItensDigivolution(item)}</div>
+
+      <div class="digivolution-card-actions">
+        <button type="button" ${podeCalcular ? `onclick="abrirPotentialModal('${escaparHtml(item.id)}')"` : "disabled"}>
+          ${podeCalcular ? "MOSTRAR POTENCIAL" : "PERCENTUAIS EM VALIDAÇÃO"}
+        </button>
+        <a href="${escaparHtml(item.source || "#")}" target="_blank" rel="noopener noreferrer">FONTE ↗</a>
+      </div>
+    </article>
+  `;
+}
+
+function filtrarDigivolutions() {
+  const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  const busca = String((document.getElementById("digivolutionBusca") || {}).value || "").trim().toLowerCase();
+  const stage = String((document.getElementById("digivolutionStage") || {}).value || "").toUpperCase();
+  const tipo = String((document.getElementById("digivolutionRequirement") || {}).value || "").toUpperCase();
+
+  const filtrados = dados.filter(function(item) {
+    const texto = [item.to, item.displayName].concat(item.from || []).join(" ").toLowerCase();
+    const req = item.requirements || {};
+    const buscaOk = !busca || texto.includes(busca);
+    const stageOk = !stage || String(item.stage || "").toUpperCase() === stage;
+    let requisitoOk = true;
+    if (tipo === "STATUS") requisitoOk = digivolutionTemStatus(item);
+    if (tipo === "ITEM") requisitoOk = Array.isArray(req.items) && req.items.length > 0;
+    if (tipo === "BOND") requisitoOk = req.bond != null;
+    return buscaOk && stageOk && requisitoOk;
+  });
+
+  const lista = document.getElementById("digivolutionLista");
+  const resumo = document.getElementById("digivolutionResumo");
+  if (resumo) resumo.textContent = `${filtrados.length} EVOLUÇÃO${filtrados.length === 1 ? "" : "ÕES"} ENCONTRADA${filtrados.length === 1 ? "" : "S"}`;
+  if (lista) lista.innerHTML = filtrados.length ? filtrados.map(criarCardDigivolution).join("") : `<div class="digivolution-empty">Nenhuma evolução encontrada.</div>`;
+}
+
+function limparFiltrosDigivolution() {
+  ["digivolutionBusca", "digivolutionStage", "digivolutionRequirement"].forEach(function(id) {
+    const campo = document.getElementById(id);
+    if (campo) campo.value = "";
+  });
+  filtrarDigivolutions();
+}
+
+function inicializarDigivolution() {
+  POTENTIAL_STATS.forEach(function(stat) { babyCorrections[stat] = 0; });
+  filtrarDigivolutions();
+  const modal = document.getElementById("potentialModal");
+  if (modal) modal.addEventListener("click", function(evento) {
+    if (evento.target === modal) fecharPotentialModal();
+  });
+}
+
+function abrirPotentialModal(id) {
+  const dados = Array.isArray(window.HG_DIGIVOLUTIONS) ? window.HG_DIGIVOLUTIONS : [];
+  digivolutionAtual = dados.find(function(item) { return item.id === id; }) || null;
+  if (!digivolutionAtual) return;
+  POTENTIAL_STATS.forEach(function(stat) { babyCorrections[stat] = 0; });
+
+  const modal = document.getElementById("potentialModal");
+  const titulo = document.getElementById("potentialTitle");
+  const subtitulo = document.getElementById("potentialSubtitle");
+  const campos = document.getElementById("babyCorrectionFields");
+  if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
+  if (subtitulo) subtitulo.textContent = `LEVEL ${digivolutionAtual.requirements.level || "-"} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
+  if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
+    return `<label><span>${stat}</span><input id="baby-${stat}" type="number" min="0" max="14" step="0.1" value="0" inputmode="decimal" oninput="alterarBabyCorrection('${stat}', this)"><small>%</small></label>`;
+  }).join("");
+
+  modal.classList.add("ativo");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  atualizarPotentialPlanner();
+}
+
+function fecharPotentialModal() {
+  const modal = document.getElementById("potentialModal");
+  if (modal) {
+    modal.classList.remove("ativo");
+    modal.setAttribute("aria-hidden", "true");
+  }
+  document.body.classList.remove("modal-open");
+}
+
+function alterarBabyCorrection(stat, input) {
+  const anterior = Number(babyCorrections[stat]) || 0;
+  let valor = Number(String(input.value || "0").replace(",", "."));
+  if (!Number.isFinite(valor)) valor = 0;
+  valor = Math.max(0, Math.min(14, valor));
+  const totalSemAtual = POTENTIAL_STATS.reduce(function(total, nome) {
+    return total + (nome === stat ? 0 : (Number(babyCorrections[nome]) || 0));
+  }, 0);
+  valor = Math.min(valor, Math.max(0, 28 - totalSemAtual));
+  valor = Math.round(valor * 10) / 10;
+  babyCorrections[stat] = valor;
+  if (Number(input.value) !== valor || anterior !== valor) input.value = valor;
+  atualizarPotentialPlanner();
+}
+
+function atualizarPotentialPlanner() {
+  if (!digivolutionAtual) return;
+  const stats = digivolutionAtual.requirements.stats || {};
+  const cubo = Number(digivolutionAtual.cubePercent) || 4;
+  const totalBaby = POTENTIAL_STATS.reduce(function(total, stat) { return total + (Number(babyCorrections[stat]) || 0); }, 0);
+  const totalEl = document.getElementById("babyCorrectionTotal");
+  const track = document.getElementById("babyCorrectionTrack");
+  const message = document.getElementById("babyCorrectionMessage");
+  if (totalEl) totalEl.textContent = `${totalBaby.toFixed(1).replace(".0", "")}% / 28%`;
+  if (track) track.style.width = `${Math.min(100, totalBaby / 28 * 100)}%`;
+  if (message) message.textContent = `${Math.max(0, 28 - totalBaby).toFixed(1).replace(".0", "")}% DE BABY CORRECTION DISPONÍVEL`;
+
+  const requisitos = [];
+  const blocos = [];
+  Object.keys(stats).forEach(function(stat) {
+    const info = stats[stat] || {};
+    if (!Number.isFinite(Number(info.percent))) return;
+    const necessario = Number(info.percent);
+    const baby = Number(babyCorrections[stat]) || 0;
+    const restante = Math.max(0, necessario - baby);
+    const quantidade = Math.ceil(restante / cubo - 1e-9);
+    const potencial = quantidade * cubo;
+    requisitos.push(`<div><span><b>${stat}</b><small>${info.value || "-"} (+${necessario}%)</small></span><strong>${baby}% BABY + ${potencial}% POTENTIAL</strong></div>`);
+    for (let i = 0; i < quantidade; i += 1) blocos.push({ stat: stat, valor: cubo });
+  });
+
+  const reqEl = document.getElementById("potentialRequirements");
+  const board = document.getElementById("potentialBoard");
+  const cubeTotal = document.getElementById("potentialCubeTotal");
+  const result = document.getElementById("potentialResult");
+  if (reqEl) reqEl.innerHTML = requisitos.join("") || `<div class="potential-unavailable">Percentuais ainda não validados.</div>`;
+  if (board) board.innerHTML = blocos.map(function(bloco) {
+    return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${bloco.stat}</strong><span>${bloco.valor}%</span></div>`;
+  }).join("") || `<div class="potential-board-empty">NENHUM CUBO NECESSÁRIO</div>`;
+  if (cubeTotal) cubeTotal.textContent = `${blocos.length} CUBO${blocos.length === 1 ? "" : "S"}`;
+  if (result) result.textContent = blocos.length > 20 ? "ATENÇÃO: A CONFIGURAÇÃO ULTRAPASSA 20 ESPAÇOS DE POTENCIAL." : `${20 - blocos.length} DE 20 ESPAÇOS LIVRES.`;
+  if (board) board.classList.toggle("potential-overflow", blocos.length > 20);
+}
+
+
+/* =====================================================
    RAID BOSS — AGENDA KST
 ===================================================== */
 
@@ -5868,6 +6125,7 @@ function carregarDatabase() {
         }
 
         filtrar();
+        filtrarDigivolutions();
         criarSlots();
         criarElementos();
         renderizarComparacao();
@@ -5922,6 +6180,7 @@ document.addEventListener(
     atualizarBotoesViewDigidex();
     montarFiltrosAvancadosDigidex();
     inicializarFechamentoFiltrosDigidex();
+    inicializarDigivolution();
     abrirPaginaPelaUrl();
 
     carregarImagensSite();

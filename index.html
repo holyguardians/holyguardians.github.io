@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-digidex-effects">
+  <link rel="stylesheet" href="styles.css?v=20260814-digivolution-v1">
 </head>
 <body>
 
@@ -55,6 +55,12 @@
       onclick="mostrarPagina('databasePagina', this)">
       <img id="navIconDigidex" alt="">
       <span>DIGIDEX</span>
+    </button>
+
+    <button id="btnDigivolution" class="nav-button"
+      onclick="mostrarPagina('digivolutionPagina', this)">
+      <span class="nav-tech-symbol" aria-hidden="true">◇</span>
+      <span>DIGIVOLUTION</span>
     </button>
 
     <button id="btnComparacao" class="nav-button"
@@ -927,6 +933,79 @@
      COMPARAÇÃO
 ===================================================== -->
 
+<section id="digivolutionPagina" class="pagina">
+  <div class="internal-wrap digivolution-wrap">
+    <header class="digivolution-header">
+      <div>
+        <div class="digivolution-kicker">EVOLUTION DATABASE // HOLY GUARDIANS</div>
+        <h2 class="page-title">DIGIVOLUTION</h2>
+        <p class="page-subtitle">Consulte linhas anteriores, requisitos, itens e o potencial necessário para cada evolução.</p>
+      </div>
+      <div class="digivolution-source">DADOS DE REFERÊNCIA: DSRWIKI</div>
+    </header>
+
+    <div class="digivolution-filters">
+      <input id="digivolutionBusca" class="search" type="search" placeholder="Pesquisar evolução ou Digimon anterior..." oninput="filtrarDigivolutions()">
+      <select id="digivolutionStage" class="filtro-select" onchange="filtrarDigivolutions()">
+        <option value="">TODOS OS ESTÁGIOS</option>
+        <option value="ROOKIE">ROOKIE</option>
+        <option value="CHAMPION">CHAMPION</option>
+        <option value="ULTIMATE">ULTIMATE</option>
+        <option value="MEGA">MEGA</option>
+      </select>
+      <select id="digivolutionRequirement" class="filtro-select" onchange="filtrarDigivolutions()">
+        <option value="">TODOS OS REQUISITOS</option>
+        <option value="STATUS">EXIGE STATUS</option>
+        <option value="ITEM">EXIGE ITEM</option>
+        <option value="BOND">EXIGE FRIENDSHIP</option>
+      </select>
+      <button class="digivolution-clear" type="button" onclick="limparFiltrosDigivolution()">LIMPAR FILTROS</button>
+    </div>
+
+    <div id="digivolutionResumo" class="digivolution-summary"></div>
+    <div id="digivolutionLista" class="digivolution-grid"></div>
+  </div>
+</section>
+
+<div id="potentialModal" class="potential-modal" aria-hidden="true">
+  <div class="potential-dialog" role="dialog" aria-modal="true" aria-labelledby="potentialTitle">
+    <button class="potential-close" type="button" onclick="fecharPotentialModal()" aria-label="Fechar">×</button>
+    <div class="potential-heading">
+      <div class="digivolution-kicker">POTENTIAL PLANNER</div>
+      <h3 id="potentialTitle">PLANO DE POTENCIAL</h3>
+      <p id="potentialSubtitle"></p>
+    </div>
+
+    <div class="potential-layout">
+      <section class="potential-panel">
+        <h4>BABY CORRECTION</h4>
+        <p class="potential-help">Máximo de 14% por atributo e 28% no total.</p>
+        <div id="babyCorrectionFields" class="baby-correction-grid"></div>
+        <div class="baby-total-line">
+          <span>CORREÇÃO TOTAL</span>
+          <strong id="babyCorrectionTotal">0% / 28%</strong>
+        </div>
+        <div class="baby-total-track"><span id="babyCorrectionTrack"></span></div>
+        <div id="babyCorrectionMessage" class="potential-message"></div>
+      </section>
+
+      <section class="potential-panel">
+        <h4>ATRIBUTOS NECESSÁRIOS</h4>
+        <div id="potentialRequirements" class="potential-requirements"></div>
+      </section>
+
+      <section class="potential-panel potential-board-panel">
+        <div class="potential-board-head">
+          <h4>TETRIS SUGERIDO</h4>
+          <strong id="potentialCubeTotal">0 CUBOS</strong>
+        </div>
+        <div id="potentialBoard" class="potential-board"></div>
+        <div id="potentialResult" class="potential-result"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
 <section id="comparacaoPagina" class="pagina">
   <div class="internal-wrap comparacao-wrap">
 
@@ -1355,6 +1434,7 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-digidex-effects"></script>
+<script src="digivolution-data.js?v=20260814-digivolution-v1"></script>
+<script src="scripts.js?v=20260814-digivolution-v1"></script>
 </body>
 </html>
