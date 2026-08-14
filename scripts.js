@@ -5565,7 +5565,6 @@ function criarCardDigivolution(item) {
         <button type="button" ${podeCalcular ? `onclick="abrirPotentialModal('${escaparHtml(item.id)}')"` : "disabled"}>
           ${podeCalcular ? "MOSTRAR POTENCIAL" : "PERCENTUAIS EM VALIDAÇÃO"}
         </button>
-        <a href="${escaparHtml(item.source || "#")}" target="_blank" rel="noopener noreferrer">FONTE ↗</a>
       </div>
     </article>
   `;
