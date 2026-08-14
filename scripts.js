@@ -5861,7 +5861,7 @@ function montarEventosRaid() {
     return Object.assign({}, raid, {
       nextTime: proximoRaidFixo(raid, agora),
       iconPath: raid.iconUrl || ("raid_assets/icons/" + raid.icon),
-      mapPath: raid.mapFile ? "raid_assets/maps/" + raid.mapFile : ""
+      mapPath: raid.mapUrl || (raid.mapFile ? "raid_assets/maps/" + raid.mapFile : "")
     });
   });
 
@@ -5870,7 +5870,7 @@ function montarEventosRaid() {
     map: raidConfigAtual.map || "-",
     nextTime: proximoBossRotativo(agora),
     iconPath: raidConfigAtual.iconUrl || ("raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp")),
-    mapPath: "raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png"),
+    mapPath: raidConfigAtual.mapUrl || ("raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png")),
     spots: raidConfigAtual.spots || [],
     gameName: String(raidConfigAtual.name || "Boss de Rotação").toUpperCase(),
     level: raidConfigAtual.level,
@@ -6056,6 +6056,7 @@ function aplicarRaidConfigBruto(bruto) {
     iconFile: campo("iconFile", "ICON FILE", "icon_file") || "rotation_boss.webp",
     iconUrl: campo("icon", "ICON", "iconUrl", "ICON URL", "icon_url") || "",
     mapFile: campo("mapFile", "MAP FILE", "map_file") || "rotation_boss_map.png",
+    mapUrl: campo("mapUrl", "MAP URL", "map_url") || "",
     spots: parseRaidSpots(campo("spots", "SPOTS")),
     level: Number(campo("level", "LEVEL")) || raidConfigAtual.level,
     attribute: campo("attribute", "ATTRIBUTE") || raidConfigAtual.attribute,
@@ -6083,6 +6084,7 @@ function aplicarRaidBossesBruto(bruto) {
         iconUrl: raid.icon || raid.iconUrl || "",
         map: raid.map || raid.location || "-",
         mapFile: raid.mapFile || "",
+        mapUrl: raid.mapUrl || "",
         type: String(raid.type || "").toLowerCase(),
         time: raid.time || "",
         days: Array.isArray(raid.days) ? raid.days.map(Number) : [],
