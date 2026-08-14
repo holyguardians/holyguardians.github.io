@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-digivolution-border-raid-icons">
+  <link rel="stylesheet" href="styles.css?v=20260814-dekyu-treasure">
 </head>
 <body>
 
@@ -91,6 +91,12 @@
       onclick="mostrarPagina('raidBossPagina', this)">
       <img src="icon_raid.png" alt="">
       <span>Raid Boss</span>
+    </button>
+
+    <button id="btnDekyuTreasure" class="nav-button"
+      onclick="mostrarPagina('dekyuTreasurePagina', this)">
+      <img src="dekyu_treasure.png" alt="">
+      <span>Dekyu Treasure</span>
     </button>
 
     <button id="btnSocial" class="nav-button"
@@ -1353,6 +1359,63 @@
 </div>
 
 <!-- =====================================================
+     DEKYU TREASURE
+===================================================== -->
+
+<section id="dekyuTreasurePagina" class="pagina">
+  <div class="internal-wrap dekyu-wrap">
+    <header class="dekyu-header">
+      <div>
+        <div class="dekyu-kicker">TREASURE COORDINATES // HOLY GUARDIANS</div>
+        <h2 class="page-title">DEKYU TREASURE</h2>
+        <p class="page-subtitle">Selecione uma área e um mapa para localizar todos os Dekyu Treasures disponíveis.</p>
+      </div>
+
+      <div class="dekyu-header-icon" aria-hidden="true">
+        <img src="dekyu_treasure.png" alt="">
+      </div>
+    </header>
+
+    <div class="dekyu-controls">
+      <label>
+        <span>ÁREA</span>
+        <select id="dekyuZone" onchange="alterarZonaDekyu()">
+          <option value="">Carregando áreas...</option>
+        </select>
+      </label>
+
+      <label>
+        <span>MAPA</span>
+        <select id="dekyuMap" onchange="renderizarMapaDekyu()">
+          <option value="">Carregando mapas...</option>
+        </select>
+      </label>
+
+      <div class="dekyu-summary">
+        <span>LOCALIZAÇÕES</span>
+        <strong id="dekyuCount">0</strong>
+      </div>
+    </div>
+
+    <div class="dekyu-map-card">
+      <div class="dekyu-map-title-row">
+        <div>
+          <small id="dekyuZoneLabel">ÁREA</small>
+          <h3 id="dekyuMapTitle">Selecione um mapa</h3>
+        </div>
+        <span id="dekyuMapStatus">Carregando coordenadas...</span>
+      </div>
+
+      <div id="dekyuMapStage" class="dekyu-map-stage">
+        <img id="dekyuMapImage" alt="Mapa com localizações de Dekyu Treasure">
+        <div id="dekyuSpots" class="dekyu-spots"></div>
+        <div id="dekyuEmpty" class="dekyu-empty">Carregando mapa...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
      SOCIAL
 ===================================================== -->
 
@@ -1433,6 +1496,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-dsr-maps-drive"></script>
+<script src="scripts.js?v=20260814-dekyu-treasure"></script>
 </body>
 </html>

@@ -960,6 +960,7 @@ function mostrarPagina(
       elementosPagina: "elementos",
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
+      dekyuTreasurePagina: "dekyu-treasure",
       socialPagina: "social"
     };
 
@@ -1031,6 +1032,10 @@ function abrirPaginaPelaUrl() {
     "raid-boss": {
       pagina: "raidBossPagina",
       botao: "btnRaidBoss"
+    },
+    "dekyu-treasure": {
+      pagina: "dekyuTreasurePagina",
+      botao: "btnDekyuTreasure"
     },
     social: {
       pagina: "socialPagina",
@@ -6143,6 +6148,139 @@ function inicializarRaidBoss() {
   atualizarRaidTimers();
 }
 
+
+/* =====================================================
+   DEKYU TREASURE
+===================================================== */
+
+let dekyuZonas = [];
+
+function obterZonaDekyuSelecionada() {
+  const select = document.getElementById("dekyuZone");
+  const nome = String(select && select.value || "");
+  return dekyuZonas.find(function(zona) { return zona.name === nome; }) || null;
+}
+
+function obterMapaDekyuSelecionado() {
+  const zona = obterZonaDekyuSelecionada();
+  const select = document.getElementById("dekyuMap");
+  const nome = String(select && select.value || "");
+  return zona && Array.isArray(zona.maps)
+    ? zona.maps.find(function(mapa) { return mapa.name === nome; }) || null
+    : null;
+}
+
+function alterarZonaDekyu(mapaPreferido) {
+  const zona = obterZonaDekyuSelecionada();
+  const selectMapa = document.getElementById("dekyuMap");
+  if (!selectMapa) return;
+
+  const mapas = zona && Array.isArray(zona.maps) ? zona.maps : [];
+  selectMapa.innerHTML = mapas.map(function(mapa) {
+    return `<option value="${escaparHtml(mapa.name)}">${escaparHtml(mapa.name)}</option>`;
+  }).join("");
+
+  const preferido = mapas.find(function(mapa) { return mapa.name === mapaPreferido; });
+  if (preferido) selectMapa.value = preferido.name;
+
+  renderizarMapaDekyu();
+}
+
+function renderizarMapaDekyu() {
+  const zona = obterZonaDekyuSelecionada();
+  const mapa = obterMapaDekyuSelecionado();
+  const imagem = document.getElementById("dekyuMapImage");
+  const spots = document.getElementById("dekyuSpots");
+  const vazio = document.getElementById("dekyuEmpty");
+  const titulo = document.getElementById("dekyuMapTitle");
+  const zonaLabel = document.getElementById("dekyuZoneLabel");
+  const status = document.getElementById("dekyuMapStatus");
+  const contador = document.getElementById("dekyuCount");
+
+  if (!imagem || !spots || !vazio) return;
+
+  if (!zona || !mapa) {
+    imagem.removeAttribute("src");
+    spots.innerHTML = "";
+    vazio.textContent = "Nenhum mapa disponível.";
+    vazio.hidden = false;
+    if (titulo) titulo.textContent = "Selecione um mapa";
+    if (zonaLabel) zonaLabel.textContent = "ÁREA";
+    if (status) status.textContent = "SEM DADOS";
+    if (contador) contador.textContent = "0";
+    return;
+  }
+
+  const localizacoes = Array.isArray(mapa.spots) ? mapa.spots : [];
+  if (titulo) titulo.textContent = mapa.name;
+  if (zonaLabel) zonaLabel.textContent = zona.name;
+  if (status) status.textContent = `${localizacoes.length} PONTO${localizacoes.length === 1 ? "" : "S"} MAPEADO${localizacoes.length === 1 ? "" : "S"}`;
+  if (contador) contador.textContent = String(localizacoes.length);
+
+  spots.innerHTML = localizacoes.map(function(spot, indice) {
+    const x = Math.max(0, Math.min(100, Number(spot.x) || 0));
+    const y = Math.max(0, Math.min(100, Number(spot.y) || 0));
+    return `
+      <button class="dekyu-spot" type="button"
+        style="left:${x}%;top:${y}%"
+        aria-label="Dekyu Treasure ${indice + 1}: X ${x}, Y ${y}"
+        data-coordinate="X ${x} • Y ${y}">
+        <img src="dekyu_treasure.png" alt="" aria-hidden="true">
+      </button>
+    `;
+  }).join("");
+
+  if (!mapa.mapUrl) {
+    imagem.removeAttribute("src");
+    vazio.textContent = "O mapa ainda não foi encontrado na pasta DSR MAPS.";
+    vazio.hidden = false;
+    return;
+  }
+
+  vazio.textContent = "Carregando mapa...";
+  vazio.hidden = false;
+  imagem.onload = function() { vazio.hidden = true; };
+  imagem.onerror = function() {
+    vazio.textContent = "Não foi possível carregar este mapa.";
+    vazio.hidden = false;
+  };
+  imagem.src = mapa.mapUrl;
+}
+
+function inicializarDekyuTreasure() {
+  const selectZona = document.getElementById("dekyuZone");
+  const selectMapa = document.getElementById("dekyuMap");
+  const vazio = document.getElementById("dekyuEmpty");
+  if (!selectZona || !selectMapa) return;
+
+  chamarApiJsonp("dekyu-treasures")
+    .then(function(resposta) {
+      dekyuZonas = Array.isArray(resposta.dekyuTreasures)
+        ? resposta.dekyuTreasures
+        : [];
+
+      selectZona.innerHTML = dekyuZonas.map(function(zona) {
+        return `<option value="${escaparHtml(zona.name)}">${escaparHtml(zona.name)}</option>`;
+      }).join("");
+
+      const zonaInicial = dekyuZonas.find(function(zona) {
+        return zona.name === "File Island";
+      }) || dekyuZonas[0];
+
+      if (zonaInicial) selectZona.value = zonaInicial.name;
+      alterarZonaDekyu("Dragon's Eye Lake");
+    })
+    .catch(function(erro) {
+      dekyuZonas = [];
+      selectZona.innerHTML = `<option value="">Erro ao carregar áreas</option>`;
+      selectMapa.innerHTML = `<option value="">Erro ao carregar mapas</option>`;
+      if (vazio) {
+        vazio.textContent = `Erro ao carregar Dekyu Treasure. ${erro.message || erro}`;
+        vazio.hidden = false;
+      }
+    });
+}
+
 /* =====================================================
    CARREGAR DATABASE
 ===================================================== */
@@ -6235,6 +6373,8 @@ document.addEventListener(
     carregarDatabase();
 
     inicializarRaidBoss();
+
+    inicializarDekyuTreasure();
 
   }
 );

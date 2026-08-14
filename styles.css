@@ -11915,6 +11915,212 @@ body.modal-open { overflow: hidden; }
 .raid-boss-tooltip .type-icon-wrap { gap: 5px; }
 .raid-boss-tooltip .type-icon-img { width: 27px; height: 27px; }
 .raid-boss-tooltip .type-icon-name { color: #fff; font-size: 13px; font-weight: 900; }
+
+
+/* =====================================================
+   DEKYU TREASURE
+===================================================== */
+
+.dekyu-wrap { padding-bottom: 90px; }
+
+.dekyu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 25px 28px;
+  border: 1px solid rgba(66, 211, 255, .3);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(5, 24, 48, .96), rgba(9, 12, 34, .96));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .28), inset 0 1px rgba(255, 255, 255, .04);
+}
+
+.dekyu-kicker {
+  margin-bottom: 7px;
+  color: #5eeaff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .17em;
+}
+
+.dekyu-header-icon {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(73, 220, 255, .38);
+  border-radius: 15px;
+  background: radial-gradient(circle, rgba(37, 191, 255, .18), rgba(3, 12, 29, .88) 68%);
+  box-shadow: inset 0 0 20px rgba(50, 206, 255, .12), 0 0 22px rgba(35, 188, 255, .12);
+}
+
+.dekyu-header-icon img { width: 76px; height: 76px; object-fit: contain; }
+
+.dekyu-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(280px, 1.2fr) 150px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dekyu-controls label,
+.dekyu-summary {
+  min-width: 0;
+  min-height: 66px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(74, 183, 236, .34);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(9, 31, 58, .9), rgba(5, 18, 37, .92));
+}
+
+.dekyu-controls label > span,
+.dekyu-summary span {
+  color: #5d8eac;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.dekyu-controls select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #e8f8ff;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.dekyu-controls select option { color: #e8f8ff; background: #07172d; }
+.dekyu-summary { align-items: center; text-align: center; }
+.dekyu-summary strong { color: #59e7ff; font-size: 25px; line-height: 1; text-shadow: 0 0 12px rgba(51, 211, 255, .32); }
+
+.dekyu-map-card {
+  padding: 18px;
+  border: 1px solid rgba(65, 171, 228, .28);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(6, 20, 42, .98), rgba(7, 10, 27, .98));
+  box-shadow: inset 0 0 26px rgba(30, 164, 241, .035);
+}
+
+.dekyu-map-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto 13px;
+}
+
+.dekyu-map-title-row small { color: #5ba2c8; font-size: 8px; font-weight: 900; letter-spacing: .15em; }
+.dekyu-map-title-row h3 { margin: 4px 0 0; color: #fff; font-size: 20px; }
+.dekyu-map-title-row > span { color: #5fe7ff; font-size: 9px; font-weight: 900; letter-spacing: .1em; text-align: right; }
+
+.dekyu-map-stage {
+  position: relative;
+  width: min(100%, 860px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(70, 211, 255, .42);
+  border-radius: 13px;
+  background: #020817;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .36), inset 0 0 28px rgba(35, 184, 255, .08);
+}
+
+.dekyu-map-stage > img {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dekyu-spots { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+
+.dekyu-spot {
+  position: absolute;
+  width: clamp(25px, 4.2vw, 38px);
+  height: clamp(25px, 4.2vw, 38px);
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: help;
+  pointer-events: auto;
+  filter: drop-shadow(0 0 6px rgba(38, 207, 255, .75));
+  transition: transform .16s ease, filter .16s ease;
+}
+
+.dekyu-spot:hover,
+.dekyu-spot:focus-visible {
+  z-index: 5;
+  transform: translate(-50%, -50%) scale(1.32);
+  outline: none;
+  filter: drop-shadow(0 0 10px rgba(74, 232, 255, 1));
+}
+
+.dekyu-spot img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; }
+
+.dekyu-spot::after {
+  content: attr(data-coordinate);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  width: max-content;
+  max-width: 150px;
+  padding: 5px 7px;
+  transform: translateX(-50%) scale(.9);
+  border: 1px solid rgba(80, 220, 255, .6);
+  border-radius: 6px;
+  color: #eafcff;
+  background: rgba(2, 12, 29, .95);
+  font-size: 8px;
+  font-weight: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+.dekyu-spot:hover::after,
+.dekyu-spot:focus-visible::after { opacity: 1; transform: translateX(-50%) scale(1); }
+
+.dekyu-empty {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 25px;
+  color: #6d98b5;
+  background: rgba(2, 8, 23, .9);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.dekyu-empty[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .dekyu-header { align-items: flex-start; padding: 20px; }
+  .dekyu-header-icon { width: 68px; height: 68px; flex-basis: 68px; }
+  .dekyu-header-icon img { width: 58px; height: 58px; }
+  .dekyu-controls { grid-template-columns: 1fr; }
+  .dekyu-summary { min-height: 58px; }
+  .dekyu-map-title-row { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .dekyu-map-title-row > span { text-align: left; }
+  .dekyu-map-card { padding: 11px; }
+}
 .raid-card-main { min-width: 0; flex: 1; }
 .raid-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .raid-card h3 { margin: 0 0 5px; color: #fff; font-size: 18px; }
