@@ -160,8 +160,13 @@ async function verifyDiscordRequest(body, signatureHex, timestamp, publicKeyHex)
 }
 
 function hexToBytes(hex) {
-  const clean = String(hex || "").trim();
-  if (!clean || clean.length % 2 !== 0) throw new Error("Hexadecimal inválido");
+  const clean = String(hex || "")
+    .trim()
+    .replace(/^0x/i, "")
+    .replace(/\s+/g, "");
+  if (!clean || clean.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(clean)) {
+    throw new Error(`Hexadecimal inválido (${clean.length} caracteres)`);
+  }
   return Uint8Array.from(clean.match(/.{2}/g), byte => parseInt(byte, 16));
 }
 
