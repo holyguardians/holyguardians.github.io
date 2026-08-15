@@ -2637,16 +2637,23 @@ function calcularLinhaStatusSimulator(stat) {
 }
 
 function calcularCritRateStatusSimulator() {
-  const chave = normalizarChaveDigivolution(statusSimulatorDigimon && statusSimulatorDigimon.digimon);
-  const baseMedida = STATUS_SIMULATOR_CRIT_BASES[chave];
-  const baseCrit = Number.isFinite(baseMedida) ? baseMedida : STATUS_SIMULATOR_CRIT_BASE_MEDIA;
+  const intBase = statusSimulatorDigimon ? numeroStatusSimulator(statusSimulatorDigimon.int) : 0;
   const intFinal = calcularLinhaStatusSimulator("INT").final;
-  const bonusInt = intFinal * 0.03;
+  const spdFinal = calcularLinhaStatusSimulator("SPD").final;
+  const critRate = Math.max(0, intFinal * 0.09962227 - intBase * 0.08390656);
+  const critDown = Math.max(0, 15.6142857143 + spdFinal * 0.0107142857);
+  const critDmg = Math.max(0, 173.001 + critDown * 1.1);
+  const damageRangeMin = 95;
+  const damageRangeMax = Math.max(damageRangeMin, 111.867 + critDown * 0.3666666667);
   return {
-    base: baseCrit,
-    bonusInt: bonusInt,
-    final: baseCrit + bonusInt,
-    origem: Number.isFinite(baseMedida) ? "BASE MEDIDA" : "BASE MÉDIA"
+    critRate,
+    critDown,
+    critDmg,
+    damageRangeMin,
+    damageRangeMax,
+    intBase,
+    intFinal,
+    spdFinal
   };
 }
 
@@ -2719,9 +2726,14 @@ function renderizarResultadoStatusSimulator() {
       </div>`;
     }).join("")}
     <div class="status-simulator-crit-result">
-      <div><strong>CRIT RATE</strong><b>${crit.final.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
-      <small>${crit.origem}: ${crit.base.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% · INT FINAL × 3%: +${crit.bonusInt.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</small>
-      <em>VALOR EXPERIMENTAL — COMPARE COM O JOGO</em>
+      <div class="status-simulator-crit-grid">
+        <div><strong>CRIT RATE</strong><b>${crit.critRate.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+        <div><strong>CRIT DOWN</strong><b>${crit.critDown.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+        <div class="status-simulator-range"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+        <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+      </div>
+      <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · SPD FINAL ${formatarStatusSimulator(crit.spdFinal)}</small>
+      <em>FÓRMULA EXPERIMENTAL CALIBRADA COM LILITHMON E BLACKSERAPHIMON</em>
     </div>`;
 }
 
