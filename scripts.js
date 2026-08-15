@@ -2382,6 +2382,38 @@ const STATUS_SIMULATOR_COLORS = {
   DEF: "#e7c900", RES: "#bf3bd4", SPD: "#2ce85c"
 };
 
+const STATUS_SIMULATOR_CRIT_BASES = {
+  imperialfightermode: 17.15,
+  imperialdramonfightermode: 17.15,
+  cressgarurumon: 17.42,
+  cressgaruru: 17.42,
+  metalseadramon: 17.00,
+  dynasmon: 16.57,
+  machinedramon: 17.85,
+  omegamon: 17.58,
+  ulforceveedramon: 16.85,
+  metalgarurumon: 15.85,
+  leopardmon: 18.71,
+  plesiomon: 18.28,
+  goldramon: 16.43,
+  saberleomon: 16.16,
+  skullmammothmon: 14.57,
+  ravemon: 17.57,
+  gallantmon: 17.14,
+  blastmon: 15.92,
+  neptunemon: 16.71,
+  beelzemon: 17.42,
+  shadowseraphimon: 16.71,
+  lilithmon: 18.71,
+  blackwargreymon: 14.85,
+  titamon: 16.57,
+  marsmon: 16.67,
+  kuzuhamon: 15.57,
+  donedevimon: 14.85,
+  lordknightmon: 17.57
+};
+const STATUS_SIMULATOR_CRIT_BASE_MEDIA = 16.7954;
+
 let statusSimulatorDigimon = null;
 let statusSimulatorCubePercent = 4;
 let statusSimulatorCubes = [];
@@ -2596,12 +2628,26 @@ function calcularLinhaStatusSimulator(stat) {
   const tetris = percentuaisTetrisStatusSimulator();
   const babyPercent = Number(statusSimulatorBaby[stat]) || 0;
   const tetrisPercent = Number(tetris[stat]) || 0;
-  const babyGain = Math.floor(base * babyPercent / 100);
-  const tetrisGain = Math.floor(base * tetrisPercent / 100);
+  const babyGain = babyPercent > 0 ? Math.ceil(base * babyPercent / 100) : 0;
+  const tetrisGain = tetrisPercent > 0 ? Math.ceil(base * tetrisPercent / 100) : 0;
   const accessory = Number(statusSimulatorAccessories[stat]) || 0;
   const clothing = Number(statusSimulatorClothing[stat]) || 0;
   const deck = Number(statusSimulatorDeck[stat]) || 0;
   return { stat, base, babyPercent, babyGain, tetrisPercent, tetrisGain, accessory, clothing, deck, final: base + babyGain + tetrisGain + accessory + clothing + deck };
+}
+
+function calcularCritRateStatusSimulator() {
+  const chave = normalizarChaveDigivolution(statusSimulatorDigimon && statusSimulatorDigimon.digimon);
+  const baseMedida = STATUS_SIMULATOR_CRIT_BASES[chave];
+  const baseCrit = Number.isFinite(baseMedida) ? baseMedida : STATUS_SIMULATOR_CRIT_BASE_MEDIA;
+  const intFinal = calcularLinhaStatusSimulator("INT").final;
+  const bonusInt = intFinal * 0.03;
+  return {
+    base: baseCrit,
+    bonusInt: bonusInt,
+    final: baseCrit + bonusInt,
+    origem: Number.isFinite(baseMedida) ? "BASE MEDIDA" : "BASE MÉDIA"
+  };
 }
 
 function renderizarStatusSimulator() {
@@ -2664,13 +2710,19 @@ function renderizarResultadoStatusSimulator() {
     return;
   }
   const linhas = STATUS_SIMULATOR_STATS.map(calcularLinhaStatusSimulator);
+  const crit = calcularCritRateStatusSimulator();
   tabela.innerHTML = `
     ${linhas.map(function(linha) {
       return `<div class="status-simulator-result-row" style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}">
         <strong>${linha.stat}</strong><b>${formatarStatusSimulator(linha.final)}</b>
         <small>BASE ${formatarStatusSimulator(linha.base)} · BABY +${formatarStatusSimulator(linha.babyGain)} (${linha.babyPercent}%) · TETRIS +${formatarStatusSimulator(linha.tetrisGain)} (${linha.tetrisPercent}%) · ACESS. +${formatarStatusSimulator(linha.accessory)} · ROUPA +${formatarStatusSimulator(linha.clothing)} · DECK +${formatarStatusSimulator(linha.deck)}</small>
       </div>`;
-    }).join("")}`;
+    }).join("")}
+    <div class="status-simulator-crit-result">
+      <div><strong>CRIT RATE</strong><b>${crit.final.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+      <small>${crit.origem}: ${crit.base.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% · INT FINAL × 3%: +${crit.bonusInt.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</small>
+      <em>VALOR EXPERIMENTAL — COMPARE COM O JOGO</em>
+    </div>`;
 }
 
 function renderizarEtapaStatusSimulator() {
@@ -3868,6 +3920,7 @@ function carregarImagensSite() {
         montarFiltrosAvancadosDigidex();
         filtrarDigivolutions();
         montarCenaElementosHakase();
+        renderizarRaids();
 
         if (
           Array.isArray(database) &&
@@ -6278,7 +6331,7 @@ let raidTimerInterval = null;
 
 let RAID_SCHEDULE = [
   { name: "Pumpkinmon", gameName: "PUMPKINMON", level: 91, attribute: "DATA", hp: 2481551, gameLocation: "Shibuya", icon: "pumpmon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "19:30", spots: [{ x: 26.428, y: 90.168 }, { x: 87.804, y: 68.24 }, { x: 27.76, y: 8.012 }, { x: 19.524, y: 60.128 }, { x: 62.048, y: 77.36 }] },
-  { name: "Gotsumon", gameName: "MUTATIONGOTSUMON", level: 91, attribute: "DATA", hp: 2271328, gameLocation: "Shibuya", icon: "golemon.webp", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
+  { name: "Gotsumon", gameName: "MUTATIONGOTSUMON", level: 91, attribute: "DATA", hp: 2271328, gameLocation: "Shibuya", icon: "", map: "Shibuya", mapFile: "shibuya.webp", type: "daily", time: "21:30", spots: [{ x: 27.66, y: 87.516 }, { x: 63.016, y: 79.328 }, { x: 68.484, y: 8.48 }, { x: 89.244, y: 70.004 }, { x: 33.156, y: 10.22 }] },
   { name: "BlackSeraphimon", gameName: "BLACKSERAPHIMON", level: 100, attribute: "VIRUS", hp: 4513252, gameLocation: "???", icon: "blackseraphimon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-05-31", spots: [{ x: 43.015, y: 54.66 }] },
   { name: "Ophanimon: Fallen Mode", gameName: "OPHANIMON:FALLDOWNMODE", level: 100, attribute: "VACCINE", hp: 5014724, gameLocation: "???", icon: "ophanimon_falldown_mode.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "23:00", baseDate: "2025-06-07", spots: [{ x: 40.565, y: 44.405 }] },
   { name: "Megidramon", gameName: "MEGIDRAMON", level: 100, attribute: "VIRUS", hp: 5050544, gameLocation: "???", icon: "megidramon.webp", map: "Spiral Mountain — Apocalymon Area", mapFile: "apocalymon_area.webp", type: "biweekly", time: "22:00", baseDate: "2025-06-08", spots: [{ x: 42.395, y: 47.945 }] },
@@ -6378,7 +6431,7 @@ function montarEventosRaid() {
   const eventos = RAID_SCHEDULE.map(function(raid) {
     return Object.assign({}, raid, {
       nextTime: proximoRaidFixo(raid, agora),
-      iconPath: raid.iconUrl || ("raid_assets/icons/" + raid.icon),
+      iconPath: resolverIconeRaid(raid),
       mapPath: raid.mapUrl || (raid.mapFile ? "raid_assets/maps/" + raid.mapFile : "")
     });
   });
@@ -6400,6 +6453,24 @@ function montarEventosRaid() {
 
   eventos.sort(function(a, b) { return a.nextTime - b.nextTime; });
   raidEventosAtuais = eventos;
+}
+
+function normalizarNomeRaidParaIcone(valor) {
+  return normalizarChaveDigivolution(valor)
+    .replace(/^(mutation|mutant)+/, "");
+}
+
+function resolverIconeRaid(raid) {
+  const nomeNormalizado = normalizarNomeRaidParaIcone(raid.gameName || raid.name);
+  const digi = (database || []).find(function(item) {
+    return normalizarNomeRaidParaIcone(item.digimon) === nomeNormalizado;
+  });
+  if (digi && digi.icon) return digi.icon;
+  const drive = pegarImagem(nomeNormalizado) || pegarImagem(raid.name);
+  if (drive) return drive;
+  if (raid.iconUrl) return raid.iconUrl;
+  if (raid.icon) return "raid_assets/icons/" + raid.icon;
+  return "icon_raid.png";
 }
 
 function formatarRaidContagem(ms) {
@@ -6867,6 +6938,7 @@ function carregarDatabase() {
         renderizarComparacao();
         inicializarCalculadora();
         renderizarStatusSimulator();
+        renderizarRaids();
 
       }
     )
