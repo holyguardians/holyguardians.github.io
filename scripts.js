@@ -2639,12 +2639,12 @@ function calcularLinhaStatusSimulator(stat) {
 function calcularCritRateStatusSimulator() {
   const intBase = statusSimulatorDigimon ? numeroStatusSimulator(statusSimulatorDigimon.int) : 0;
   const intFinal = calcularLinhaStatusSimulator("INT").final;
-  const spdFinal = calcularLinhaStatusSimulator("SPD").final;
-  const critRate = Math.max(0, intFinal * 0.09962227 - intBase * 0.08390656);
-  const critDown = Math.max(0, 15.6142857143 + spdFinal * 0.0107142857);
-  const critDmg = Math.max(0, 173.001 + critDown * 1.1);
+  const bonusInt = Math.max(0, intFinal - intBase);
+  const critRate = Math.max(0, 27.059867765427477 + intFinal * 0.04981027213491752 - intBase * 0.03641912610195477);
+  const critDown = Math.max(0, 20.88437523955539 + intFinal * 0.004973169796857045 - intBase * 0.006741088539670393);
+  const critDmg = Math.max(0, 172.43219816021477 + intFinal * 0.048806055960138005 - intBase * 0.04872844001533168);
   const damageRangeMin = 95;
-  const damageRangeMax = Math.max(damageRangeMin, 111.867 + critDown * 0.3666666667);
+  const damageRangeMax = Math.max(damageRangeMin, 112.14588922958994 + intFinal * 0.015406285933307671 - intBase * 0.015420659256419984);
   return {
     critRate,
     critDown,
@@ -2653,7 +2653,7 @@ function calcularCritRateStatusSimulator() {
     damageRangeMax,
     intBase,
     intFinal,
-    spdFinal
+    bonusInt
   };
 }
 
@@ -2732,8 +2732,8 @@ function renderizarResultadoStatusSimulator() {
         <div class="status-simulator-range"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
         <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
       </div>
-      <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · SPD FINAL ${formatarStatusSimulator(crit.spdFinal)}</small>
-      <em>FÓRMULA EXPERIMENTAL CALIBRADA COM LILITHMON E BLACKSERAPHIMON</em>
+      <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · BÔNUS DE INT +${formatarStatusSimulator(crit.bonusInt)}</small>
+      <em>VALORES APROXIMADOS · MARGEM ACEITA DE ATÉ 0,20%</em>
     </div>`;
 }
 
