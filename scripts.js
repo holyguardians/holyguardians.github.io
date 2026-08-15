@@ -2640,11 +2640,20 @@ function calcularCritRateStatusSimulator() {
   const intBase = statusSimulatorDigimon ? numeroStatusSimulator(statusSimulatorDigimon.int) : 0;
   const intFinal = calcularLinhaStatusSimulator("INT").final;
   const bonusInt = Math.max(0, intFinal - intBase);
-  const critRate = Math.max(0, 27.059867765427477 + intFinal * 0.04981027213491752 - intBase * 0.03641912610195477);
-  const critDown = Math.max(0, 20.88437523955539 + intFinal * 0.004973169796857045 - intBase * 0.006741088539670393);
-  const critDmg = Math.max(0, 172.43219816021477 + intFinal * 0.048806055960138005 - intBase * 0.04872844001533168);
+  const chave = normalizarChaveDigivolution(statusSimulatorDigimon && statusSimulatorDigimon.digimon);
+  const burstMode = /burstmode|bm$/.test(chave) ? 1 : 0;
+  const ajustesCritDown = {
+    lilithmon: -0.0706,
+    blackseraphimon: 0.0545,
+    beelzemon: 0.2379,
+    ulforceveedramon: -0.2218
+  };
+  const ajusteCritDown = Number(ajustesCritDown[chave]) || 0;
+  const critRate = Math.max(0, 26.950915089047466 + intFinal * 0.04994600527878049 - intBase * 0.03651377191538811 - burstMode * 0.25833219773252186);
+  const critDown = Math.max(0, 18.26819125664886 + intFinal * 0.00823240939263425 - intBase * 0.009013734512031439 - burstMode * 9.615389959281332 + ajusteCritDown);
+  const critDmg = Math.max(0, 172.3803368817766 + intFinal * 0.04887066469303948 - intBase * 0.04877349125268096 - burstMode * 0.2554690272742557);
   const damageRangeMin = 95;
-  const damageRangeMax = Math.max(damageRangeMin, 112.14588922958994 + intFinal * 0.015406285933307671 - intBase * 0.015420659256419984);
+  const damageRangeMax = Math.max(damageRangeMin, 112.1233752759157 + intFinal * 0.01543433379605434 - intBase * 0.015440216843529378 - burstMode * 0.08093217150093454);
   return {
     critRate,
     critDown,
@@ -2733,7 +2742,7 @@ function renderizarResultadoStatusSimulator() {
         <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
       </div>
       <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · BÔNUS DE INT +${formatarStatusSimulator(crit.bonusInt)}</small>
-      <em>VALORES APROXIMADOS · MARGEM ACEITA DE ATÉ 0,20%</em>
+      <em>VALORES CRÍTICOS APROXIMADOS · A FÓRMULA SEGUE EM CALIBRAÇÃO</em>
     </div>`;
 }
 

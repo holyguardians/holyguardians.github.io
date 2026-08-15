@@ -11490,7 +11490,8 @@ body {
 .status-simulator-header .page-subtitle { margin: 0; }
 .status-simulator-kicker { margin-bottom: 7px; color: #55e8ff; font-size: 9px; font-weight: 900; letter-spacing: .18em; }
 .status-simulator-hero-icon { width: 116px; height: 116px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(42, 192, 255, .47)); }
-.status-simulator-hero-side { display: flex; align-items: center; justify-content: flex-end; gap: 13px; }
+.status-simulator-hero-side { flex: 1; display: flex; align-items: center; justify-content: center; padding-right: 130px; }
+.status-simulator-hero-side .status-simulator-hero-icon { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); }
 .status-simulator-accuracy-note { width: min(250px, 22vw); padding: 10px 12px; border: 1px solid rgba(232,185,71,.38); border-left: 3px solid #e7b84a; border-radius: 7px; background: rgba(73,48,8,.18); box-shadow: 0 0 14px rgba(225,170,42,.06); }
 .status-simulator-accuracy-note strong { display: block; color: #efc35a; font-size: 8px; letter-spacing: .07em; }
 .status-simulator-accuracy-note span { display: block; margin-top: 5px; color: #b9c9d3; font-size: 7px; line-height: 1.45; }
@@ -11782,7 +11783,8 @@ body {
   .status-simulator-stage-panel { grid-column: auto; min-height: 560px; }
   .status-simulator-stage-panel .status-simulator-baby-grid,
   .status-simulator-stage-panel .status-simulator-flat-grid { grid-template-columns: 1fr; }
-  .status-simulator-hero-side { gap: 6px; }
+  .status-simulator-hero-side { justify-content: flex-start; padding-right: 62px; }
+  .status-simulator-hero-side .status-simulator-hero-icon { right: 10px; }
   .status-simulator-accuracy-note { width: auto; max-width: 190px; padding: 8px; }
 }
 
