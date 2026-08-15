@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260815-status-simulator-v3">
+  <link rel="stylesheet" href="styles.css?v=20260815-status-simulator-v4">
 </head>
 <body>
 
@@ -1208,27 +1208,28 @@
       <aside id="statusSimulatorDigiCard" class="status-simulator-digi-card tech-panel"></aside>
 
       <section class="status-simulator-panel status-simulator-tetris-panel tech-panel">
-          <div class="status-simulator-panel-title"><span>02</span><div><strong>TETRIS</strong><small>Escolha o valor e preencha até 16 espaços.</small></div></div>
+          <div class="status-simulator-panel-title status-simulator-tetris-title"><span>02</span><div><strong>TETRIS</strong><small>Escolha o valor e preencha até 16 espaços.</small></div>
+            <aside class="status-simulator-mega-potential">
+              <span>MEGA POTENTIAL</span>
+              <div class="status-simulator-mega-buttons">
+                <button type="button" class="mp4" onclick="alterarMegaPotentialStatus(4)" title="Mega Potential 4 — melhora até 4 cubos"><img src="mega_potential_4.png" alt="Mega Potential 4"><b>4</b></button>
+                <button type="button" class="mp5" onclick="alterarMegaPotentialStatus(5)" title="Mega Potential 5 — melhora até 5 cubos"><img src="mega_potential_5.png" alt="Mega Potential 5"><b>5</b></button>
+                <button type="button" class="mp6" onclick="alterarMegaPotentialStatus(6)" title="Mega Potential 6 — melhora até 6 cubos"><img src="mega_potential_6.png" alt="Mega Potential 6"><b>6</b></button>
+              </div>
+              <small id="statusSimulatorMegaHint">Escolha um ícone e clique nos cubos.</small>
+            </aside>
+          </div>
           <div class="status-simulator-tetris-workspace">
             <div>
               <div class="status-simulator-cube-mode" role="group" aria-label="Valor do próximo cubo">
-                <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">PRÓXIMO CUBO <strong>4%</strong></button>
-                <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">PRÓXIMO CUBO <strong>5%</strong></button>
+                <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">CUBOS DE <strong>4%</strong></button>
+                <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">CUBOS DE <strong>5%</strong></button>
               </div>
               <div id="statusSimulatorTetris" class="status-simulator-tetris"></div>
             </div>
             <aside class="status-simulator-cube-palette">
               <span>ADICIONAR CUBO</span>
               <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
-              <div class="status-simulator-mega-potential">
-                <span>MEGA POTENTIAL</span>
-                <div class="status-simulator-mega-buttons">
-                  <button type="button" class="mp4" onclick="alterarMegaPotentialStatus(4)" title="Melhorar até 4 cubos em +1%"><strong>MP</strong><b>4</b></button>
-                  <button type="button" class="mp5" onclick="alterarMegaPotentialStatus(5)" title="Melhorar até 5 cubos em +1%"><strong>MP</strong><b>5</b></button>
-                  <button type="button" class="mp6" onclick="alterarMegaPotentialStatus(6)" title="Melhorar até 6 cubos em +1%"><strong>MP</strong><b>6</b></button>
-                </div>
-                <small id="statusSimulatorMegaHint">Escolha 4, 5 ou 6 e clique nos cubos.</small>
-              </div>
             </aside>
           </div>
           <div class="status-simulator-tetris-actions">
@@ -1708,6 +1709,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260815-status-simulator-v3"></script>
+<script src="scripts.js?v=20260815-status-simulator-v4"></script>
 </body>
 </html>

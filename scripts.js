@@ -2632,7 +2632,7 @@ function renderizarTetrisStatusSimulator() {
     botao.classList.toggle("ativo", botao.classList.contains(`mp${statusSimulatorMegaPotential}`));
   });
   const hint = document.getElementById("statusSimulatorMegaHint");
-  if (hint) hint.textContent = statusSimulatorMegaPotential ? `${selecionados} / ${statusSimulatorMegaPotential} MELHORADOS · CLIQUE NO MP PARA SAIR` : "Escolha 4, 5 ou 6 e clique nos cubos.";
+  if (hint) hint.textContent = statusSimulatorMegaPotential ? `${selecionados}/${statusSimulatorMegaPotential} MELHORADOS · CLIQUE NO ÍCONE PARA SAIR` : "Escolha um ícone e clique nos cubos.";
 }
 
 function renderizarCardStatusSimulator() {
@@ -2649,7 +2649,7 @@ function renderizarCardStatusSimulator() {
   card.innerHTML = `
     <div class="status-simulator-digi-image">${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="${escaparHtml(digi.digimon)}">` : "◆"}</div>
     <h3>${escaparHtml(digi.digimon)}</h3>
-    <div class="status-simulator-digi-tags"><span>${escaparHtml(digi.stage || "-")}</span><span class="status-simulator-type-tag">${typeIcon ? `<img src="${typeIcon}" alt="${escaparHtml(tipo)}">` : ""}${escaparHtml(tipo)}</span></div>
+    <div class="status-simulator-digi-tags"><span class="status-simulator-stage-tag">${escaparHtml(digi.stage || "-")}</span><span class="status-simulator-type-tag">${typeIcon ? `<img src="${typeIcon}" alt="${escaparHtml(tipo)}">` : ""}${escaparHtml(tipo)}</span></div>
     <div class="status-simulator-card-stats">${linhas.map(function(linha) {
       const bonus = linha.final - linha.base;
       return `<div style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}"><span>${linha.stat}</span><div class="status-simulator-stat-value"><strong>${formatarStatusSimulator(linha.final)}</strong>${bonus > 0 ? `<b>(+${formatarStatusSimulator(bonus)})</b>` : ""}</div><small>BASE ${formatarStatusSimulator(linha.base)}</small></div>`;

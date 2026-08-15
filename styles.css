@@ -11666,38 +11666,42 @@ body {
 .status-simulator-digi-card h3 { font-size: clamp(17px, 1.15vw, 22px); }
 .status-simulator-card-stats { gap: 8px; }
 .status-simulator-card-stats > div {
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 55px max-content;
   grid-template-rows: auto auto;
-  gap: 2px 9px;
-  padding: 10px 11px;
+  justify-content: center;
+  column-gap: 18px;
+  padding: 9px 11px;
+  border-left-width: 3px;
 }
-.status-simulator-card-stats span { grid-row: 1 / span 2; font-size: 10px; }
-.status-simulator-stat-value { display: flex; align-items: baseline; justify-content: center; gap: 7px; min-width: 0; }
-.status-simulator-card-stats strong { font-size: 22px; text-shadow: 0 0 10px color-mix(in srgb, var(--stat-color), transparent 45%); }
-.status-simulator-stat-value b { color: #24f06d; font-size: 14px; text-shadow: -1px -1px 0 #003819, 1px -1px 0 #003819, -1px 1px 0 #003819, 1px 1px 0 #003819, 0 0 8px rgba(29,255,105,.55); }
-.status-simulator-card-stats small { grid-column: 2; color: #83abc4; font-size: 7px; text-align: left; }
+.status-simulator-card-stats span { grid-column: 1; grid-row: 1; align-self: end; font-size: 10px; }
+.status-simulator-stat-value { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: center; justify-content: flex-start; gap: 7px; min-width: 150px; }
+.status-simulator-card-stats strong { font-size: 19px; text-shadow: 0 0 10px color-mix(in srgb, var(--stat-color), transparent 45%); }
+.status-simulator-stat-value b { color: #24f06d; font-size: 13px; text-shadow: -1px -1px 0 #003819, 1px -1px 0 #003819, -1px 1px 0 #003819, 1px 1px 0 #003819, 0 0 8px rgba(29,255,105,.55); }
+.status-simulator-card-stats small { grid-column: 1; grid-row: 2; color: #83abc4; font-size: 6px; text-align: left; white-space: nowrap; }
 .status-simulator-type-tag { display: inline-flex; align-items: center; gap: 5px; }
 .status-simulator-type-tag img { width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(83,225,255,.35)); }
+.status-simulator-stage-tag { min-width: 70px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px !important; letter-spacing: .12em; text-align: center; }
 .status-simulator-tetris-panel { grid-row: auto; padding: 18px; }
 .status-simulator-tetris { gap: 6px; }
 .status-simulator-cube-buttons { grid-template-columns: repeat(5, 1fr); }
-.status-simulator-mega-potential { margin-top: 18px; padding-top: 13px; border-top: 1px solid rgba(70,166,226,.24); }
-.status-simulator-mega-potential > span { display: block; margin-bottom: 8px; color: #78dfff; font-size: 7px; font-weight: 900; letter-spacing: .1em; }
-.status-simulator-mega-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.status-simulator-mega-buttons button { position: relative; min-height: 54px; overflow: hidden; border: 1px solid var(--mp-color); border-radius: 8px; background: linear-gradient(145deg, color-mix(in srgb, var(--mp-color), #fff 14%), color-mix(in srgb, var(--mp-color), #020817 72%)); color: #fff; font-family: inherit; cursor: pointer; opacity: .68; box-shadow: inset 2px 2px 0 rgba(255,255,255,.13); }
-.status-simulator-mega-buttons button::after { content: ""; position: absolute; inset: 5px; border: 1px solid color-mix(in srgb, var(--mp-color), white 28%); border-radius: 5px; pointer-events: none; }
-.status-simulator-mega-buttons strong, .status-simulator-mega-buttons b { position: relative; z-index: 1; display: block; }
-.status-simulator-mega-buttons strong { font-size: 7px; }
-.status-simulator-mega-buttons b { font-size: 17px; }
-.status-simulator-mega-buttons .mp4 { --mp-color: #f0a42d; }
+.status-simulator-tetris-title { align-items: center; }
+.status-simulator-tetris-title > div:not(.status-simulator-mega-buttons) { min-width: 0; }
+.status-simulator-mega-potential { margin-left: auto; text-align: center; }
+.status-simulator-mega-potential > span { display: block; margin-bottom: 3px; color: #78dfff; font-size: 6px; font-weight: 900; letter-spacing: .08em; }
+.status-simulator-mega-buttons { display: flex; justify-content: flex-end; gap: 4px; }
+.status-simulator-mega-buttons button { position: relative; width: 42px; height: 42px; padding: 2px; border: 1px solid transparent; border-radius: 7px; background: rgba(3,12,29,.5); color: #fff; font-family: inherit; cursor: pointer; opacity: .62; }
+.status-simulator-mega-buttons img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px var(--mp-color)); }
+.status-simulator-mega-buttons b { position: absolute; right: 2px; bottom: 1px; min-width: 12px; color: #fff; font-size: 7px; text-shadow: 0 1px 3px #000; }
+.status-simulator-mega-buttons .mp4 { --mp-color: #ff315b; }
 .status-simulator-mega-buttons .mp5 { --mp-color: #45cffa; }
 .status-simulator-mega-buttons .mp6 { --mp-color: #9656ff; }
-.status-simulator-mega-buttons button.ativo { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 16px color-mix(in srgb, var(--mp-color), transparent 35%), inset 2px 2px 0 rgba(255,255,255,.2); }
-.status-simulator-mega-potential small { display: block; min-height: 25px; margin-top: 7px; color: #6d91aa; font-size: 6px; line-height: 1.4; text-align: center; }
+.status-simulator-mega-buttons button.ativo { border-color: var(--mp-color); opacity: 1; transform: translateY(-1px); box-shadow: 0 0 13px color-mix(in srgb, var(--mp-color), transparent 25%); }
+.status-simulator-mega-potential small { display: block; max-width: 145px; margin-top: 2px; color: #6d91aa; font-size: 5px; line-height: 1.25; text-align: center; }
 .status-simulator-cube { position: relative; }
-.status-simulator-cube.is-mega { z-index: 1; border-color: #55ff8d; color: #baffcf; filter: saturate(1.08); box-shadow: 0 0 9px #35ff79, 0 0 21px rgba(41,255,116,.72), inset 0 0 13px rgba(75,255,137,.45); animation: statusSimulatorMegaGlow 1.35s ease-in-out infinite alternate; }
-.status-simulator-cube.is-mega em { position: absolute; top: 3px; right: 4px; color: #79ff9f; font-size: 6px; font-style: normal; font-weight: 900; text-shadow: 0 0 5px #19e95d; }
-@keyframes statusSimulatorMegaGlow { from { box-shadow: 0 0 7px #35ff79, 0 0 14px rgba(41,255,116,.5), inset 0 0 9px rgba(75,255,137,.32); } to { box-shadow: 0 0 12px #5cff91, 0 0 27px rgba(41,255,116,.82), inset 0 0 16px rgba(75,255,137,.55); } }
+.status-simulator-cube.is-mega { z-index: 1; border-color: #ffd75b; box-shadow: 0 0 8px #ffd24a, 0 0 22px rgba(255,188,39,.86), inset 0 0 8px rgba(255,220,102,.22); animation: statusSimulatorMegaGlow 1.35s ease-in-out infinite alternate; }
+.status-simulator-cube.is-mega strong, .status-simulator-cube.is-mega small { color: #50ff7f; text-shadow: -1px -1px 0 #073516, 1px 1px 0 #073516, 0 0 6px #22e85a; }
+.status-simulator-cube.is-mega em { position: absolute; top: 3px; right: 4px; color: #62ff8c; font-size: 6px; font-style: normal; font-weight: 900; text-shadow: 0 0 5px #19e95d; }
+@keyframes statusSimulatorMegaGlow { from { box-shadow: 0 0 6px #ffd24a, 0 0 15px rgba(255,188,39,.62), inset 0 0 7px rgba(255,220,102,.18); } to { box-shadow: 0 0 11px #ffe071, 0 0 28px rgba(255,188,39,.96), inset 0 0 12px rgba(255,220,102,.3); } }
 .status-simulator-stage-panel {
   display: flex;
   flex-direction: column;
