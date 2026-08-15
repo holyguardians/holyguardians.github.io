@@ -2387,7 +2387,9 @@ let statusSimulatorCubePercent = 4;
 let statusSimulatorCubes = [];
 let statusSimulatorBaby = {};
 let statusSimulatorAccessories = {};
+let statusSimulatorClothing = {};
 let statusSimulatorDeck = {};
+let statusSimulatorStep = 0;
 
 function numeroStatusSimulator(valor) {
   const numero = Number(String(valor ?? 0).replace(/\./g, "").replace(",", "."));
@@ -2403,9 +2405,11 @@ function resetarValoresStatusSimulator() {
     statusSimulatorBaby[stat] = 0;
     statusSimulatorDeck[stat] = 0;
     statusSimulatorAccessories[stat] = 0;
+    statusSimulatorClothing[stat] = 0;
   });
   statusSimulatorCubes = [];
   statusSimulatorCubePercent = 4;
+  statusSimulatorStep = 0;
 }
 
 function inicializarStatusSimulator() {
@@ -2471,6 +2475,7 @@ function selecionarDigimonStatusSimulator(indice) {
 function renderizarCamposStatusSimulator() {
   const baby = document.getElementById("statusSimulatorBabyFields");
   const accessories = document.getElementById("statusSimulatorAccessoryFields");
+  const clothing = document.getElementById("statusSimulatorClothingFields");
   const deck = document.getElementById("statusSimulatorDeckFields");
   const cubeButtons = document.getElementById("statusSimulatorCubeButtons");
   if (baby) baby.innerHTML = STATUS_SIMULATOR_STATS.map(function(stat) {
@@ -2478,6 +2483,9 @@ function renderizarCamposStatusSimulator() {
   }).join("");
   if (accessories) accessories.innerHTML = STATUS_SIMULATOR_TETRIS_STATS.map(function(stat) {
     return criarCampoFixoStatusSimulator(stat, "accessory");
+  }).join("");
+  if (clothing) clothing.innerHTML = STATUS_SIMULATOR_TETRIS_STATS.map(function(stat) {
+    return criarCampoFixoStatusSimulator(stat, "clothing");
   }).join("");
   if (deck) deck.innerHTML = STATUS_SIMULATOR_STATS.map(function(stat) {
     return criarCampoFixoStatusSimulator(stat, "deck");
@@ -2506,17 +2514,13 @@ function alterarValorFixoStatusSimulator(grupo, stat, input) {
   const valor = Math.round(numeroStatusSimulator(input.value));
   input.value = valor;
   if (grupo === "deck") statusSimulatorDeck[stat] = valor;
+  else if (grupo === "clothing") statusSimulatorClothing[stat] = valor;
   else statusSimulatorAccessories[stat] = valor;
   renderizarStatusSimulator();
 }
 
 function alterarModoCuboStatus(percentual) {
   const novo = Number(percentual) === 5 ? 5 : 4;
-  if (novo !== statusSimulatorCubePercent && statusSimulatorCubes.length) {
-    const confirmou = window.confirm("Trocar o valor dos cubos limpará o Tetris atual. Deseja continuar?");
-    if (!confirmou) return;
-    statusSimulatorCubes = [];
-  }
   statusSimulatorCubePercent = novo;
   renderizarCamposCubosStatusSimulator();
   renderizarStatusSimulator();
@@ -2524,7 +2528,7 @@ function alterarModoCuboStatus(percentual) {
 
 function adicionarCuboStatus(stat) {
   if (!STATUS_SIMULATOR_TETRIS_STATS.includes(stat) || statusSimulatorCubes.length >= 16) return;
-  statusSimulatorCubes.push(stat);
+  statusSimulatorCubes.push({ stat, percent: statusSimulatorCubePercent });
   renderizarStatusSimulator();
 }
 
@@ -2557,7 +2561,7 @@ function renderizarCamposCubosStatusSimulator() {
 function percentuaisTetrisStatusSimulator() {
   const totais = {};
   STATUS_SIMULATOR_STATS.forEach(function(stat) { totais[stat] = 0; });
-  statusSimulatorCubes.forEach(function(stat) { totais[stat] += statusSimulatorCubePercent; });
+  statusSimulatorCubes.forEach(function(cube) { totais[cube.stat] += cube.percent; });
   return totais;
 }
 
@@ -2569,8 +2573,9 @@ function calcularLinhaStatusSimulator(stat) {
   const babyGain = Math.floor(base * babyPercent / 100);
   const tetrisGain = Math.floor(base * tetrisPercent / 100);
   const accessory = Number(statusSimulatorAccessories[stat]) || 0;
+  const clothing = Number(statusSimulatorClothing[stat]) || 0;
   const deck = Number(statusSimulatorDeck[stat]) || 0;
-  return { stat, base, babyPercent, babyGain, tetrisPercent, tetrisGain, accessory, deck, final: base + babyGain + tetrisGain + accessory + deck };
+  return { stat, base, babyPercent, babyGain, tetrisPercent, tetrisGain, accessory, clothing, deck, final: base + babyGain + tetrisGain + accessory + clothing + deck };
 }
 
 function renderizarStatusSimulator() {
@@ -2583,6 +2588,7 @@ function renderizarStatusSimulator() {
   renderizarTetrisStatusSimulator();
   renderizarCardStatusSimulator();
   renderizarResultadoStatusSimulator();
+  renderizarEtapaStatusSimulator();
 }
 
 function renderizarTetrisStatusSimulator() {
@@ -2591,9 +2597,9 @@ function renderizarTetrisStatusSimulator() {
   if (counter) counter.textContent = `${statusSimulatorCubes.length} / 16 ESPAÇOS`;
   if (!board) return;
   board.innerHTML = Array.from({ length: 16 }, function(_, indice) {
-    const stat = statusSimulatorCubes[indice];
-    if (!stat) return `<div class="status-simulator-cube-slot"><span>${String(indice + 1).padStart(2, "0")}</span></div>`;
-    return `<button type="button" class="status-simulator-cube is-filled" style="--cube-color:${STATUS_SIMULATOR_COLORS[stat]}" onclick="removerCuboStatus(${indice})" title="Clique para remover"><strong>${stat}</strong><small>${statusSimulatorCubePercent}%</small></button>`;
+    const cube = statusSimulatorCubes[indice];
+    if (!cube) return `<div class="status-simulator-cube-slot"><span>${String(indice + 1).padStart(2, "0")}</span></div>`;
+    return `<button type="button" class="status-simulator-cube is-filled" style="--cube-color:${STATUS_SIMULATOR_COLORS[cube.stat]}" onclick="removerCuboStatus(${indice})" title="Clique para remover"><strong>${cube.stat}</strong><small>${cube.percent}%</small></button>`;
   }).join("");
 }
 
@@ -2624,16 +2630,38 @@ function renderizarResultadoStatusSimulator() {
   }
   const linhas = STATUS_SIMULATOR_STATS.map(calcularLinhaStatusSimulator);
   tabela.innerHTML = `
-    <div class="status-simulator-result-row status-simulator-result-head"><span>STATUS</span><span>BASE</span><span>BABY</span><span>TETRIS</span><span>ACESSÓRIO</span><span>DECK</span><span>FINAL</span></div>
     ${linhas.map(function(linha) {
       return `<div class="status-simulator-result-row" style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}">
-        <strong>${linha.stat}</strong><span>${formatarStatusSimulator(linha.base)}</span>
-        <span>+${formatarStatusSimulator(linha.babyGain)} <small>(${linha.babyPercent}%)</small></span>
-        <span>+${formatarStatusSimulator(linha.tetrisGain)} <small>(${linha.tetrisPercent}%)</small></span>
-        <span>+${formatarStatusSimulator(linha.accessory)}</span><span>+${formatarStatusSimulator(linha.deck)}</span>
-        <b>${formatarStatusSimulator(linha.final)}</b>
+        <strong>${linha.stat}</strong><b>${formatarStatusSimulator(linha.final)}</b>
+        <small>BASE ${formatarStatusSimulator(linha.base)} · BABY +${formatarStatusSimulator(linha.babyGain)} (${linha.babyPercent}%) · TETRIS +${formatarStatusSimulator(linha.tetrisGain)} (${linha.tetrisPercent}%) · ACESS. +${formatarStatusSimulator(linha.accessory)} · ROUPA +${formatarStatusSimulator(linha.clothing)} · DECK +${formatarStatusSimulator(linha.deck)}</small>
       </div>`;
     }).join("")}`;
+}
+
+function renderizarEtapaStatusSimulator() {
+  document.querySelectorAll("#statusSimulatorStagePanel .status-simulator-step").forEach(function(step) {
+    step.classList.toggle("ativo", Number(step.dataset.statusStep) === statusSimulatorStep);
+  });
+  const panel = document.getElementById("statusSimulatorStagePanel");
+  const back = document.getElementById("statusSimulatorBack");
+  const next = document.getElementById("statusSimulatorNext");
+  const label = document.getElementById("statusSimulatorStepLabel");
+  const track = document.getElementById("statusSimulatorProgressTrack");
+  if (panel) panel.dataset.step = statusSimulatorStep;
+  if (back) back.disabled = statusSimulatorStep === 0;
+  if (next) {
+    next.textContent = statusSimulatorStep === 4 ? "EDITAR" : (statusSimulatorStep === 3 ? "VER RESULTADO" : "NEXT");
+    next.disabled = !statusSimulatorDigimon;
+  }
+  if (label) label.textContent = statusSimulatorStep === 4 ? "SIMULAÇÃO CONCLUÍDA" : `ETAPA ${statusSimulatorStep + 1} DE 5`;
+  if (track) track.style.width = `${(statusSimulatorStep + 1) * 20}%`;
+}
+
+function mudarEtapaStatusSimulator(direcao) {
+  if (!statusSimulatorDigimon) return;
+  if (statusSimulatorStep === 4 && Number(direcao) > 0) statusSimulatorStep = 0;
+  else statusSimulatorStep = Math.max(0, Math.min(4, statusSimulatorStep + Number(direcao || 0)));
+  renderizarEtapaStatusSimulator();
 }
 
 function limparStatusSimulator() {
@@ -2641,7 +2669,7 @@ function limparStatusSimulator() {
   resetarValoresStatusSimulator();
   const busca = document.getElementById("statusSimulatorSearch");
   if (busca) busca.value = "";
-  document.querySelectorAll("#statusSimulatorBabyFields input, #statusSimulatorAccessoryFields input, #statusSimulatorDeckFields input").forEach(function(input) { input.value = 0; });
+  document.querySelectorAll("#statusSimulatorBabyFields input, #statusSimulatorAccessoryFields input, #statusSimulatorClothingFields input, #statusSimulatorDeckFields input").forEach(function(input) { input.value = 0; });
   fecharSugestoesStatusSimulator();
   renderizarStatusSimulator();
 }

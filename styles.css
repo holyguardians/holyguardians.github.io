@@ -11647,6 +11647,98 @@ body {
   .status-simulator-cube-buttons { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* STATUS SIMULATOR V2 — CARD | TETRIS | FLUXO RPG */
+.status-simulator-main {
+  grid-template-columns: minmax(300px, .92fr) minmax(390px, 1.22fr) minmax(320px, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.status-simulator-digi-card,
+.status-simulator-tetris-panel,
+.status-simulator-stage-panel {
+  position: relative !important;
+  top: auto;
+  min-height: 720px;
+  height: 100%;
+}
+.status-simulator-digi-card { padding: 22px; }
+.status-simulator-digi-image { width: 230px; height: 230px; }
+.status-simulator-digi-card h3 { font-size: clamp(17px, 1.15vw, 22px); }
+.status-simulator-card-stats { gap: 8px; }
+.status-simulator-card-stats > div {
+  grid-template-columns: 42px minmax(76px, 1fr);
+  grid-template-rows: auto auto;
+  gap: 2px 9px;
+  padding: 10px 11px;
+}
+.status-simulator-card-stats span { grid-row: 1 / span 2; font-size: 10px; }
+.status-simulator-card-stats strong { font-size: 18px; text-shadow: 0 0 10px color-mix(in srgb, var(--stat-color), transparent 45%); }
+.status-simulator-card-stats small { grid-column: 2; color: #83abc4; font-size: 7px; text-align: left; }
+.status-simulator-tetris-panel { grid-row: auto; padding: 18px; }
+.status-simulator-tetris { gap: 6px; }
+.status-simulator-cube-buttons { grid-template-columns: repeat(5, 1fr); }
+.status-simulator-stage-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(35, 156, 232, .12), transparent 35%),
+    linear-gradient(145deg, rgba(6, 24, 49, .98), rgba(5, 10, 27, .99)) !important;
+}
+.status-simulator-progress { height: 4px; margin: -4px 3px 18px; overflow: hidden; border-radius: 10px; background: #020817; }
+.status-simulator-progress span { display: block; width: 20%; height: 100%; background: linear-gradient(90deg, #35bfff, #8e5bff); box-shadow: 0 0 10px #42d9ff; transition: width .35s ease; }
+.status-simulator-step { display: none; min-height: 0; flex: 1; opacity: 0; transform: translateX(20px) scale(.985); }
+.status-simulator-step.ativo { display: block; animation: statusSimulatorRpgIn .32s ease forwards; }
+@keyframes statusSimulatorRpgIn { to { opacity: 1; transform: translateX(0) scale(1); } }
+.status-simulator-panel-title {
+  margin: -2px -2px 18px;
+  padding: 11px;
+  border: 1px solid rgba(62, 196, 255, .18);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(16, 104, 158, .28), rgba(62, 34, 126, .12));
+  box-shadow: inset 0 0 18px rgba(44, 194, 255, .05), 0 0 15px rgba(37, 181, 255, .06);
+}
+.status-simulator-panel-title strong { color: #fff; font-size: 11px; text-shadow: 0 0 9px rgba(82, 224, 255, .65); }
+.status-simulator-stage-panel .status-simulator-baby-grid,
+.status-simulator-stage-panel .status-simulator-flat-grid { grid-template-columns: 1fr; gap: 11px; }
+.status-simulator-stage-panel .status-simulator-baby-grid label,
+.status-simulator-stage-panel .status-simulator-flat-grid label { min-height: 47px; padding-left: 10px; font-size: 10px; }
+.status-simulator-stage-panel .status-simulator-baby-grid input,
+.status-simulator-stage-panel .status-simulator-flat-grid input { height: 42px; font-size: 13px; }
+.status-simulator-step-actions { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(65, 151, 211, .22); }
+.status-simulator-step-actions button {
+  min-height: 39px; padding: 0 15px; border: 1px solid rgba(74, 202, 255, .55); border-radius: 7px;
+  background: linear-gradient(180deg, #0e6898, #074266); color: #eaffff; font-family: inherit; font-size: 8px; font-weight: 900; cursor: pointer;
+}
+.status-simulator-step-actions button:disabled { opacity: .3; cursor: not-allowed; }
+.status-simulator-step-actions span { color: #6f99b4; font-size: 7px; font-weight: 900; text-align: center; }
+.status-simulator-result { margin: 0; padding: 0; }
+.status-simulator-result-table { display: grid; gap: 7px; overflow: visible; }
+.status-simulator-result-row {
+  min-width: 0; display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto; gap: 3px 8px;
+  padding: 9px 10px; border: 1px solid rgba(56, 119, 166, .2); border-left: 2px solid var(--stat-color); border-radius: 7px; background: rgba(3, 14, 31, .68);
+}
+.status-simulator-result-row > * { padding: 0; text-align: left; }
+.status-simulator-result-row strong { grid-row: 1 / span 2; align-self: center; color: var(--stat-color); font-size: 9px; }
+.status-simulator-result-row b { color: #63efa4; font-size: 16px; text-shadow: 0 0 9px rgba(61, 244, 157, .25); }
+.status-simulator-result-row small { color: #789bb3; font-size: 6px; line-height: 1.45; }
+.status-simulator-result-empty { padding: 24px 12px; }
+
+@media (max-width: 1240px) {
+  .status-simulator-main { grid-template-columns: minmax(290px, .9fr) minmax(370px, 1.15fr); }
+  .status-simulator-stage-panel { grid-column: 1 / -1; min-height: 570px; }
+  .status-simulator-stage-panel .status-simulator-baby-grid,
+  .status-simulator-stage-panel .status-simulator-flat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .status-simulator-main { grid-template-columns: 1fr; }
+  .status-simulator-digi-card, .status-simulator-tetris-panel, .status-simulator-stage-panel { min-height: auto; }
+  .status-simulator-stage-panel { grid-column: auto; min-height: 560px; }
+  .status-simulator-stage-panel .status-simulator-baby-grid,
+  .status-simulator-stage-panel .status-simulator-flat-grid { grid-template-columns: 1fr; }
+}
+
 /* =====================================================
    HOME V8 — PAINÉIS TECNOLÓGICOS, HISTÓRIA E OFDS
 ===================================================== */

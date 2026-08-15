@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-status-simulator-v1">
+  <link rel="stylesheet" href="styles.css?v=20260814-status-simulator-v2">
 </head>
 <body>
 
@@ -1207,45 +1207,65 @@
     <div class="status-simulator-main">
       <aside id="statusSimulatorDigiCard" class="status-simulator-digi-card tech-panel"></aside>
 
-      <div class="status-simulator-controls">
-        <section class="status-simulator-panel tech-panel">
-          <div class="status-simulator-panel-title"><span>01</span><div><strong>BABY CORRECTION</strong><small>Máximo de 14% por status e 28% no total.</small></div></div>
-          <div id="statusSimulatorBabyFields" class="status-simulator-baby-grid"></div>
-          <div class="status-simulator-meter-line"><span>TOTAL UTILIZADO</span><strong id="statusSimulatorBabyTotal">0% / 28%</strong></div>
-          <div class="status-simulator-meter"><span id="statusSimulatorBabyTrack"></span></div>
-        </section>
-
-        <section class="status-simulator-panel status-simulator-tetris-panel tech-panel">
+      <section class="status-simulator-panel status-simulator-tetris-panel tech-panel">
           <div class="status-simulator-panel-title"><span>02</span><div><strong>TETRIS</strong><small>Escolha o valor e preencha até 16 espaços.</small></div></div>
-          <div class="status-simulator-cube-mode" role="group" aria-label="Valor dos cubos">
-            <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">CUBOS 4% <small>MÁX. 64%</small></button>
-            <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">CUBOS 5% <small>MÁX. 80%</small></button>
+          <div class="status-simulator-tetris-workspace">
+            <div>
+              <div class="status-simulator-cube-mode" role="group" aria-label="Valor do próximo cubo">
+                <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">PRÓXIMO CUBO <strong>4%</strong></button>
+                <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">PRÓXIMO CUBO <strong>5%</strong></button>
+              </div>
+              <div id="statusSimulatorTetris" class="status-simulator-tetris"></div>
+            </div>
+            <aside class="status-simulator-cube-palette">
+              <span>ADICIONAR CUBO</span>
+              <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
+            </aside>
           </div>
-          <div id="statusSimulatorTetris" class="status-simulator-tetris"></div>
-          <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
           <div class="status-simulator-tetris-actions">
             <span id="statusSimulatorCubeCount">0 / 16 ESPAÇOS</span>
             <button type="button" onclick="removerUltimoCuboStatus()">DESFAZER</button>
             <button type="button" onclick="resetarTetrisStatus()">RESET</button>
           </div>
-        </section>
+      </section>
 
-        <section class="status-simulator-panel tech-panel">
-          <div class="status-simulator-panel-title"><span>03</span><div><strong>ACESSÓRIOS</strong><small>Informe os valores fixos presentes nos seus equipamentos.</small></div></div>
+      <section id="statusSimulatorStagePanel" class="status-simulator-panel status-simulator-stage-panel tech-panel" data-step="0">
+        <div class="status-simulator-progress"><span id="statusSimulatorProgressTrack"></span></div>
+
+        <div class="status-simulator-step ativo" data-status-step="0">
+          <div class="status-simulator-panel-title"><span>01</span><div><strong>BABY CORRECTION</strong><small>Máximo de 14% por status e 28% no total.</small></div></div>
+          <div id="statusSimulatorBabyFields" class="status-simulator-baby-grid"></div>
+          <div class="status-simulator-meter-line"><span>TOTAL UTILIZADO</span><strong id="statusSimulatorBabyTotal">0% / 28%</strong></div>
+          <div class="status-simulator-meter"><span id="statusSimulatorBabyTrack"></span></div>
+        </div>
+
+        <div class="status-simulator-step" data-status-step="1">
+          <div class="status-simulator-panel-title"><span>03</span><div><strong>ACESSÓRIOS</strong><small>Informe os valores fixos presentes nos equipamentos.</small></div></div>
           <div id="statusSimulatorAccessoryFields" class="status-simulator-flat-grid"></div>
-        </section>
+        </div>
 
-        <section class="status-simulator-panel tech-panel">
-          <div class="status-simulator-panel-title"><span>04</span><div><strong>STATUS OBTIDOS POR DECK</strong><small>Informe os bônus fixos concedidos pelo deck.</small></div></div>
+        <div class="status-simulator-step" data-status-step="2">
+          <div class="status-simulator-panel-title"><span>04</span><div><strong>STATUS EM ROUPA</strong><small>Informe os bônus fixos presentes nas roupas.</small></div></div>
+          <div id="statusSimulatorClothingFields" class="status-simulator-flat-grid"></div>
+        </div>
+
+        <div class="status-simulator-step" data-status-step="3">
+          <div class="status-simulator-panel-title"><span>05</span><div><strong>STATUS OBTIDOS POR DECK</strong><small>Informe os bônus fixos concedidos pelo deck.</small></div></div>
           <div id="statusSimulatorDeckFields" class="status-simulator-flat-grid status-simulator-flat-grid-all"></div>
-        </section>
-      </div>
-    </div>
+        </div>
 
-    <section class="status-simulator-result tech-panel">
-      <div class="status-simulator-panel-title"><span>05</span><div><strong>RESULTADO FINAL</strong><small>Baby e Tetris calculados sobre a base; acessórios e deck adicionados depois.</small></div></div>
-      <div id="statusSimulatorResultTable" class="status-simulator-result-table"></div>
-    </section>
+        <div class="status-simulator-step status-simulator-result" data-status-step="4">
+          <div class="status-simulator-panel-title"><span>06</span><div><strong>RESULTADO FINAL</strong><small>Composição completa pronta para captura.</small></div></div>
+          <div id="statusSimulatorResultTable" class="status-simulator-result-table"></div>
+        </div>
+
+        <div class="status-simulator-step-actions">
+          <button id="statusSimulatorBack" type="button" onclick="mudarEtapaStatusSimulator(-1)">VOLTAR</button>
+          <span id="statusSimulatorStepLabel">ETAPA 1 DE 5</span>
+          <button id="statusSimulatorNext" type="button" onclick="mudarEtapaStatusSimulator(1)">NEXT</button>
+        </div>
+      </section>
+    </div>
   </div>
 </section>
 
@@ -1679,6 +1699,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-status-simulator-v1"></script>
+<script src="scripts.js?v=20260814-status-simulator-v2"></script>
 </body>
 </html>
