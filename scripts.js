@@ -957,6 +957,7 @@ function mostrarPagina(
       digivolutionPagina: "digivolution",
       comparacaoPagina: "comparacao",
       builderPagina: "team-builder",
+      statusSimulatorPagina: "status-simulator",
       elementosPagina: "elementos",
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
@@ -1020,6 +1021,10 @@ function abrirPaginaPelaUrl() {
     "team-builder": {
       pagina: "builderPagina",
       botao: "btnBuilder"
+    },
+    "status-simulator": {
+      pagina: "statusSimulatorPagina",
+      botao: "btnStatusSimulator"
     },
     elementos: {
       pagina: "elementosPagina",
@@ -2365,6 +2370,281 @@ function filtrar() {
 
 }
 
+
+/* =====================================================
+   STATUS SIMULATOR
+===================================================== */
+
+const STATUS_SIMULATOR_STATS = ["HP", "SP", "STR", "INT", "DEF", "RES", "SPD"];
+const STATUS_SIMULATOR_TETRIS_STATS = ["STR", "INT", "DEF", "RES", "SPD"];
+const STATUS_SIMULATOR_COLORS = {
+  HP: "#20c879", SP: "#38c7e8", STR: "#ff3548", INT: "#3388f5",
+  DEF: "#e7c900", RES: "#bf3bd4", SPD: "#2ce85c"
+};
+
+let statusSimulatorDigimon = null;
+let statusSimulatorCubePercent = 4;
+let statusSimulatorCubes = [];
+let statusSimulatorBaby = {};
+let statusSimulatorAccessories = {};
+let statusSimulatorDeck = {};
+
+function numeroStatusSimulator(valor) {
+  const numero = Number(String(valor ?? 0).replace(/\./g, "").replace(",", "."));
+  return Number.isFinite(numero) ? Math.max(0, numero) : 0;
+}
+
+function formatarStatusSimulator(valor) {
+  return Math.round(Number(valor) || 0).toLocaleString("pt-BR");
+}
+
+function resetarValoresStatusSimulator() {
+  STATUS_SIMULATOR_STATS.forEach(function(stat) {
+    statusSimulatorBaby[stat] = 0;
+    statusSimulatorDeck[stat] = 0;
+    statusSimulatorAccessories[stat] = 0;
+  });
+  statusSimulatorCubes = [];
+  statusSimulatorCubePercent = 4;
+}
+
+function inicializarStatusSimulator() {
+  const busca = document.getElementById("statusSimulatorSearch");
+  if (!busca || busca.dataset.statusSimulatorReady === "true") return;
+  busca.dataset.statusSimulatorReady = "true";
+  resetarValoresStatusSimulator();
+  busca.addEventListener("input", atualizarSugestoesStatusSimulator);
+  busca.addEventListener("focus", atualizarSugestoesStatusSimulator);
+  busca.addEventListener("keydown", function(evento) {
+    if (evento.key !== "Enter") return;
+    const termo = String(busca.value || "").trim().toLowerCase();
+    const indice = database.findIndex(function(item) {
+      return String(item.digimon || "").trim().toLowerCase() === termo;
+    });
+    if (indice >= 0) selecionarDigimonStatusSimulator(indice);
+  });
+  document.addEventListener("click", function(evento) {
+    if (!evento.target.closest(".status-simulator-searchbox")) fecharSugestoesStatusSimulator();
+  });
+  renderizarCamposStatusSimulator();
+  renderizarStatusSimulator();
+}
+
+function atualizarSugestoesStatusSimulator() {
+  const busca = document.getElementById("statusSimulatorSearch");
+  const lista = document.getElementById("statusSimulatorSuggestions");
+  if (!busca || !lista) return;
+  const termo = String(busca.value || "").trim().toLowerCase();
+  if (!termo) {
+    lista.innerHTML = "";
+    lista.classList.remove("ativo");
+    return;
+  }
+  const encontrados = database.map(function(item, indice) { return { item, indice }; }).filter(function(entrada) {
+    return String(entrada.item.digimon || "").toLowerCase().includes(termo);
+  }).slice(0, 8);
+  lista.innerHTML = encontrados.map(function(entrada) {
+    const item = entrada.item;
+    return `<button type="button" onclick="selecionarDigimonStatusSimulator(${entrada.indice})">
+      <span class="status-simulator-suggestion-icon">${item.icon ? `<img src="${escaparHtml(item.icon)}" alt="">` : "◆"}</span>
+      <span><strong>${escaparHtml(item.digimon)}</strong><small>${escaparHtml(item.type || "UNKNOWN")} // ${escaparHtml(item.stage || "-")}</small></span>
+    </button>`;
+  }).join("") || `<div class="status-simulator-no-suggestion">Nenhum Digimon encontrado.</div>`;
+  lista.classList.add("ativo");
+}
+
+function fecharSugestoesStatusSimulator() {
+  const lista = document.getElementById("statusSimulatorSuggestions");
+  if (lista) lista.classList.remove("ativo");
+}
+
+function selecionarDigimonStatusSimulator(indice) {
+  const item = database[Number(indice)];
+  if (!item) return;
+  statusSimulatorDigimon = item;
+  const busca = document.getElementById("statusSimulatorSearch");
+  if (busca) busca.value = item.digimon || "";
+  fecharSugestoesStatusSimulator();
+  renderizarStatusSimulator();
+}
+
+function renderizarCamposStatusSimulator() {
+  const baby = document.getElementById("statusSimulatorBabyFields");
+  const accessories = document.getElementById("statusSimulatorAccessoryFields");
+  const deck = document.getElementById("statusSimulatorDeckFields");
+  const cubeButtons = document.getElementById("statusSimulatorCubeButtons");
+  if (baby) baby.innerHTML = STATUS_SIMULATOR_STATS.map(function(stat) {
+    return `<label style="--stat-color:${STATUS_SIMULATOR_COLORS[stat]}"><span>${stat}</span><input type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyStatusSimulator('${stat}', this)"><small>%</small></label>`;
+  }).join("");
+  if (accessories) accessories.innerHTML = STATUS_SIMULATOR_TETRIS_STATS.map(function(stat) {
+    return criarCampoFixoStatusSimulator(stat, "accessory");
+  }).join("");
+  if (deck) deck.innerHTML = STATUS_SIMULATOR_STATS.map(function(stat) {
+    return criarCampoFixoStatusSimulator(stat, "deck");
+  }).join("");
+  if (cubeButtons) cubeButtons.innerHTML = STATUS_SIMULATOR_TETRIS_STATS.map(function(stat) {
+    return `<button type="button" style="--cube-color:${STATUS_SIMULATOR_COLORS[stat]}" onclick="adicionarCuboStatus('${stat}')"><strong>${stat}</strong><small>+${statusSimulatorCubePercent}%</small></button>`;
+  }).join("");
+}
+
+function criarCampoFixoStatusSimulator(stat, grupo) {
+  return `<label style="--stat-color:${STATUS_SIMULATOR_COLORS[stat]}"><span>${stat}</span><input type="number" min="0" step="1" value="0" inputmode="numeric" oninput="alterarValorFixoStatusSimulator('${grupo}', '${stat}', this)"></label>`;
+}
+
+function alterarBabyStatusSimulator(stat, input) {
+  let valor = Math.round(Math.min(14, numeroStatusSimulator(input.value)));
+  const totalOutros = STATUS_SIMULATOR_STATS.reduce(function(total, nome) {
+    return total + (nome === stat ? 0 : (Number(statusSimulatorBaby[nome]) || 0));
+  }, 0);
+  valor = Math.min(valor, Math.max(0, 28 - totalOutros));
+  statusSimulatorBaby[stat] = valor;
+  input.value = valor;
+  renderizarStatusSimulator();
+}
+
+function alterarValorFixoStatusSimulator(grupo, stat, input) {
+  const valor = Math.round(numeroStatusSimulator(input.value));
+  input.value = valor;
+  if (grupo === "deck") statusSimulatorDeck[stat] = valor;
+  else statusSimulatorAccessories[stat] = valor;
+  renderizarStatusSimulator();
+}
+
+function alterarModoCuboStatus(percentual) {
+  const novo = Number(percentual) === 5 ? 5 : 4;
+  if (novo !== statusSimulatorCubePercent && statusSimulatorCubes.length) {
+    const confirmou = window.confirm("Trocar o valor dos cubos limpará o Tetris atual. Deseja continuar?");
+    if (!confirmou) return;
+    statusSimulatorCubes = [];
+  }
+  statusSimulatorCubePercent = novo;
+  renderizarCamposCubosStatusSimulator();
+  renderizarStatusSimulator();
+}
+
+function adicionarCuboStatus(stat) {
+  if (!STATUS_SIMULATOR_TETRIS_STATS.includes(stat) || statusSimulatorCubes.length >= 16) return;
+  statusSimulatorCubes.push(stat);
+  renderizarStatusSimulator();
+}
+
+function removerCuboStatus(indice) {
+  statusSimulatorCubes.splice(Number(indice), 1);
+  renderizarStatusSimulator();
+}
+
+function removerUltimoCuboStatus() {
+  statusSimulatorCubes.pop();
+  renderizarStatusSimulator();
+}
+
+function resetarTetrisStatus() {
+  statusSimulatorCubes = [];
+  renderizarStatusSimulator();
+}
+
+function renderizarCamposCubosStatusSimulator() {
+  const botao4 = document.getElementById("statusCube4");
+  const botao5 = document.getElementById("statusCube5");
+  if (botao4) botao4.classList.toggle("ativo", statusSimulatorCubePercent === 4);
+  if (botao5) botao5.classList.toggle("ativo", statusSimulatorCubePercent === 5);
+  const cubeButtons = document.getElementById("statusSimulatorCubeButtons");
+  if (cubeButtons) cubeButtons.querySelectorAll("small").forEach(function(item) {
+    item.textContent = `+${statusSimulatorCubePercent}%`;
+  });
+}
+
+function percentuaisTetrisStatusSimulator() {
+  const totais = {};
+  STATUS_SIMULATOR_STATS.forEach(function(stat) { totais[stat] = 0; });
+  statusSimulatorCubes.forEach(function(stat) { totais[stat] += statusSimulatorCubePercent; });
+  return totais;
+}
+
+function calcularLinhaStatusSimulator(stat) {
+  const base = statusSimulatorDigimon ? numeroStatusSimulator(statusSimulatorDigimon[stat.toLowerCase()]) : 0;
+  const tetris = percentuaisTetrisStatusSimulator();
+  const babyPercent = Number(statusSimulatorBaby[stat]) || 0;
+  const tetrisPercent = Number(tetris[stat]) || 0;
+  const babyGain = Math.floor(base * babyPercent / 100);
+  const tetrisGain = Math.floor(base * tetrisPercent / 100);
+  const accessory = Number(statusSimulatorAccessories[stat]) || 0;
+  const deck = Number(statusSimulatorDeck[stat]) || 0;
+  return { stat, base, babyPercent, babyGain, tetrisPercent, tetrisGain, accessory, deck, final: base + babyGain + tetrisGain + accessory + deck };
+}
+
+function renderizarStatusSimulator() {
+  const babyTotal = STATUS_SIMULATOR_STATS.reduce(function(total, stat) { return total + (Number(statusSimulatorBaby[stat]) || 0); }, 0);
+  const babyTotalEl = document.getElementById("statusSimulatorBabyTotal");
+  const babyTrack = document.getElementById("statusSimulatorBabyTrack");
+  if (babyTotalEl) babyTotalEl.textContent = `${babyTotal}% / 28%`;
+  if (babyTrack) babyTrack.style.width = `${babyTotal / 28 * 100}%`;
+  renderizarCamposCubosStatusSimulator();
+  renderizarTetrisStatusSimulator();
+  renderizarCardStatusSimulator();
+  renderizarResultadoStatusSimulator();
+}
+
+function renderizarTetrisStatusSimulator() {
+  const board = document.getElementById("statusSimulatorTetris");
+  const counter = document.getElementById("statusSimulatorCubeCount");
+  if (counter) counter.textContent = `${statusSimulatorCubes.length} / 16 ESPAÇOS`;
+  if (!board) return;
+  board.innerHTML = Array.from({ length: 16 }, function(_, indice) {
+    const stat = statusSimulatorCubes[indice];
+    if (!stat) return `<div class="status-simulator-cube-slot"><span>${String(indice + 1).padStart(2, "0")}</span></div>`;
+    return `<button type="button" class="status-simulator-cube is-filled" style="--cube-color:${STATUS_SIMULATOR_COLORS[stat]}" onclick="removerCuboStatus(${indice})" title="Clique para remover"><strong>${stat}</strong><small>${statusSimulatorCubePercent}%</small></button>`;
+  }).join("");
+}
+
+function renderizarCardStatusSimulator() {
+  const card = document.getElementById("statusSimulatorDigiCard");
+  if (!card) return;
+  if (!statusSimulatorDigimon) {
+    card.innerHTML = `<div class="status-simulator-empty-card"><img src="icon_status_simulator.png" alt=""><strong>SELECIONE UM DIGIMON</strong><span>Os status base aparecerão aqui.</span></div>`;
+    return;
+  }
+  const digi = statusSimulatorDigimon;
+  const linhas = STATUS_SIMULATOR_STATS.map(calcularLinhaStatusSimulator);
+  card.innerHTML = `
+    <div class="status-simulator-digi-image">${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="${escaparHtml(digi.digimon)}">` : "◆"}</div>
+    <h3>${escaparHtml(digi.digimon)}</h3>
+    <div class="status-simulator-digi-tags"><span>${escaparHtml(digi.stage || "-")}</span><span>${escaparHtml(normalizarType(digi.type) || "UNKNOWN")}</span></div>
+    <div class="status-simulator-card-stats">${linhas.map(function(linha) {
+      return `<div style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}"><span>${linha.stat}</span><strong>${formatarStatusSimulator(linha.final)}</strong><small>BASE ${formatarStatusSimulator(linha.base)}${linha.final > linha.base ? ` // +${formatarStatusSimulator(linha.final - linha.base)}` : ""}</small></div>`;
+    }).join("")}</div>`;
+}
+
+function renderizarResultadoStatusSimulator() {
+  const tabela = document.getElementById("statusSimulatorResultTable");
+  if (!tabela) return;
+  if (!statusSimulatorDigimon) {
+    tabela.innerHTML = `<div class="status-simulator-result-empty">Selecione um Digimon para calcular o resultado final.</div>`;
+    return;
+  }
+  const linhas = STATUS_SIMULATOR_STATS.map(calcularLinhaStatusSimulator);
+  tabela.innerHTML = `
+    <div class="status-simulator-result-row status-simulator-result-head"><span>STATUS</span><span>BASE</span><span>BABY</span><span>TETRIS</span><span>ACESSÓRIO</span><span>DECK</span><span>FINAL</span></div>
+    ${linhas.map(function(linha) {
+      return `<div class="status-simulator-result-row" style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}">
+        <strong>${linha.stat}</strong><span>${formatarStatusSimulator(linha.base)}</span>
+        <span>+${formatarStatusSimulator(linha.babyGain)} <small>(${linha.babyPercent}%)</small></span>
+        <span>+${formatarStatusSimulator(linha.tetrisGain)} <small>(${linha.tetrisPercent}%)</small></span>
+        <span>+${formatarStatusSimulator(linha.accessory)}</span><span>+${formatarStatusSimulator(linha.deck)}</span>
+        <b>${formatarStatusSimulator(linha.final)}</b>
+      </div>`;
+    }).join("")}`;
+}
+
+function limparStatusSimulator() {
+  statusSimulatorDigimon = null;
+  resetarValoresStatusSimulator();
+  const busca = document.getElementById("statusSimulatorSearch");
+  if (busca) busca.value = "";
+  document.querySelectorAll("#statusSimulatorBabyFields input, #statusSimulatorAccessoryFields input, #statusSimulatorDeckFields input").forEach(function(input) { input.value = 0; });
+  fecharSugestoesStatusSimulator();
+  renderizarStatusSimulator();
+}
 
 /* =====================================================
    TEAM BUILDER
@@ -6523,6 +6803,7 @@ function carregarDatabase() {
         criarElementos();
         renderizarComparacao();
         inicializarCalculadora();
+        renderizarStatusSimulator();
 
       }
     )
@@ -6900,6 +7181,7 @@ document.addEventListener(
     montarFiltrosAvancadosDigidex();
     inicializarFechamentoFiltrosDigidex();
     inicializarDigivolution();
+    inicializarStatusSimulator();
     abrirPaginaPelaUrl();
 
     carregarDigivolutions();

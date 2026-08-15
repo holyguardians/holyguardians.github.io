@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-home-footer-v16">
+  <link rel="stylesheet" href="styles.css?v=20260814-status-simulator-v1">
 </head>
 <body>
 
@@ -73,6 +73,12 @@
       onclick="mostrarPagina('builderPagina', this)">
       <img id="navIconBuilder" alt="">
       <span>Team Builder</span>
+    </button>
+
+    <button id="btnStatusSimulator" class="nav-button"
+      onclick="mostrarPagina('statusSimulatorPagina', this)">
+      <img src="icon_status_simulator.png" alt="">
+      <span>Status Simulator</span>
     </button>
 
     <button id="btnElementos" class="nav-button"
@@ -1175,6 +1181,75 @@
 </section>
 
 <!-- =====================================================
+     STATUS SIMULATOR
+===================================================== -->
+
+<section id="statusSimulatorPagina" class="pagina">
+  <div class="internal-wrap status-simulator-wrap">
+    <header class="status-simulator-header tech-panel">
+      <div>
+        <div class="status-simulator-kicker">BUILD LAB // DATABASE NOVA</div>
+        <h2 class="page-title">STATUS SIMULATOR</h2>
+        <p class="page-subtitle">Combine Baby Correction, Tetris, acessórios e deck para visualizar os status finais do Digimon.</p>
+      </div>
+      <img src="icon_status_simulator.png" alt="Status Simulator" class="status-simulator-hero-icon">
+    </header>
+
+    <div class="status-simulator-search tech-panel">
+      <label for="statusSimulatorSearch">SELECIONE O DIGIMON</label>
+      <div class="status-simulator-searchbox">
+        <input id="statusSimulatorSearch" type="text" placeholder="Digite o nome do Digimon..." autocomplete="off">
+        <button type="button" onclick="limparStatusSimulator()">LIMPAR</button>
+        <div id="statusSimulatorSuggestions" class="status-simulator-suggestions"></div>
+      </div>
+    </div>
+
+    <div class="status-simulator-main">
+      <aside id="statusSimulatorDigiCard" class="status-simulator-digi-card tech-panel"></aside>
+
+      <div class="status-simulator-controls">
+        <section class="status-simulator-panel tech-panel">
+          <div class="status-simulator-panel-title"><span>01</span><div><strong>BABY CORRECTION</strong><small>Máximo de 14% por status e 28% no total.</small></div></div>
+          <div id="statusSimulatorBabyFields" class="status-simulator-baby-grid"></div>
+          <div class="status-simulator-meter-line"><span>TOTAL UTILIZADO</span><strong id="statusSimulatorBabyTotal">0% / 28%</strong></div>
+          <div class="status-simulator-meter"><span id="statusSimulatorBabyTrack"></span></div>
+        </section>
+
+        <section class="status-simulator-panel status-simulator-tetris-panel tech-panel">
+          <div class="status-simulator-panel-title"><span>02</span><div><strong>TETRIS</strong><small>Escolha o valor e preencha até 16 espaços.</small></div></div>
+          <div class="status-simulator-cube-mode" role="group" aria-label="Valor dos cubos">
+            <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">CUBOS 4% <small>MÁX. 64%</small></button>
+            <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">CUBOS 5% <small>MÁX. 80%</small></button>
+          </div>
+          <div id="statusSimulatorTetris" class="status-simulator-tetris"></div>
+          <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
+          <div class="status-simulator-tetris-actions">
+            <span id="statusSimulatorCubeCount">0 / 16 ESPAÇOS</span>
+            <button type="button" onclick="removerUltimoCuboStatus()">DESFAZER</button>
+            <button type="button" onclick="resetarTetrisStatus()">RESET</button>
+          </div>
+        </section>
+
+        <section class="status-simulator-panel tech-panel">
+          <div class="status-simulator-panel-title"><span>03</span><div><strong>ACESSÓRIOS</strong><small>Informe os valores fixos presentes nos seus equipamentos.</small></div></div>
+          <div id="statusSimulatorAccessoryFields" class="status-simulator-flat-grid"></div>
+        </section>
+
+        <section class="status-simulator-panel tech-panel">
+          <div class="status-simulator-panel-title"><span>04</span><div><strong>STATUS OBTIDOS POR DECK</strong><small>Informe os bônus fixos concedidos pelo deck.</small></div></div>
+          <div id="statusSimulatorDeckFields" class="status-simulator-flat-grid status-simulator-flat-grid-all"></div>
+        </section>
+      </div>
+    </div>
+
+    <section class="status-simulator-result tech-panel">
+      <div class="status-simulator-panel-title"><span>05</span><div><strong>RESULTADO FINAL</strong><small>Baby e Tetris calculados sobre a base; acessórios e deck adicionados depois.</small></div></div>
+      <div id="statusSimulatorResultTable" class="status-simulator-result-table"></div>
+    </section>
+  </div>
+</section>
+
+<!-- =====================================================
      ELEMENTOS
 ===================================================== -->
 
@@ -1604,6 +1679,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-comunidade-api-v14"></script>
+<script src="scripts.js?v=20260814-status-simulator-v1"></script>
 </body>
 </html>

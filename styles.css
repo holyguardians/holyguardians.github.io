@@ -11441,6 +11441,213 @@ body {
 }
 
 /* =====================================================
+   STATUS SIMULATOR
+===================================================== */
+
+.status-simulator-wrap { padding-bottom: 80px; }
+.status-simulator-wrap .tech-panel {
+  position: relative;
+  border: 1px solid rgba(65, 190, 255, .38);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(6, 24, 49, .97), rgba(5, 10, 27, .98));
+  box-shadow: inset 0 0 25px rgba(39, 176, 255, .045), 0 15px 35px rgba(0, 0, 0, .24);
+}
+.status-simulator-wrap .tech-panel::before,
+.status-simulator-wrap .tech-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  width: 25px;
+  height: 25px;
+  pointer-events: none;
+}
+.status-simulator-wrap .tech-panel::before {
+  top: 5px; left: 5px;
+  border-top: 2px solid #55e8ff;
+  border-left: 2px solid #55e8ff;
+  filter: drop-shadow(0 0 5px rgba(72, 224, 255, .72));
+}
+.status-simulator-wrap .tech-panel::after {
+  right: 5px; bottom: 5px;
+  border-right: 2px solid #8e5bff;
+  border-bottom: 2px solid #8e5bff;
+  filter: drop-shadow(0 0 5px rgba(130, 80, 255, .64));
+}
+.status-simulator-header {
+  min-height: 142px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 14px;
+  padding: 25px 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 50%, rgba(22, 151, 255, .20), transparent 24%),
+    linear-gradient(135deg, rgba(6, 30, 62, .98), rgba(10, 7, 33, .98)) !important;
+}
+.status-simulator-header .page-title { margin-bottom: 5px; }
+.status-simulator-header .page-subtitle { margin: 0; }
+.status-simulator-kicker { margin-bottom: 7px; color: #55e8ff; font-size: 9px; font-weight: 900; letter-spacing: .18em; }
+.status-simulator-hero-icon { width: 116px; height: 116px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(42, 192, 255, .47)); }
+
+.status-simulator-search { z-index: 20; display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center; gap: 16px; margin-bottom: 14px; padding: 16px 20px; }
+.status-simulator-search > label { color: #75dfff; font-size: 9px; font-weight: 900; letter-spacing: .12em; }
+.status-simulator-searchbox { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.status-simulator-searchbox > input,
+.status-simulator-flat-grid input,
+.status-simulator-baby-grid input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(65, 162, 222, .58);
+  border-radius: 8px;
+  outline: 0;
+  background: #061329;
+  color: #fff;
+  font-family: inherit;
+  transition: .2s ease;
+}
+.status-simulator-searchbox > input { min-height: 46px; padding: 0 14px; }
+.status-simulator-searchbox > input:focus,
+.status-simulator-flat-grid input:focus,
+.status-simulator-baby-grid input:focus { border-color: #52e6ff; box-shadow: 0 0 12px rgba(49, 211, 255, .18); }
+.status-simulator-searchbox > button,
+.status-simulator-tetris-actions button {
+  border: 1px solid rgba(74, 190, 239, .55);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #0d5d87, #073c60);
+  color: #dffaff;
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.status-simulator-searchbox > button { padding: 0 17px; }
+.status-simulator-suggestions { position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; left: 0; display: none; max-height: 330px; overflow: auto; padding: 6px; border: 1px solid rgba(75, 198, 255, .52); border-radius: 10px; background: rgba(3, 13, 31, .99); box-shadow: 0 20px 45px rgba(0,0,0,.55); }
+.status-simulator-suggestions.ativo { display: grid; gap: 4px; }
+.status-simulator-suggestions button { display: flex; align-items: center; gap: 9px; padding: 7px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #e7f8ff; text-align: left; font-family: inherit; cursor: pointer; }
+.status-simulator-suggestions button:hover { border-color: rgba(73, 213, 255, .42); background: rgba(35, 135, 194, .16); }
+.status-simulator-suggestion-icon { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(68, 211, 255, .4); border-radius: 7px; background: #071124; color: #53e3ff; }
+.status-simulator-suggestion-icon img { width: 100%; height: 100%; object-fit: contain; }
+.status-simulator-suggestions strong { display: block; font-size: 10px; }
+.status-simulator-suggestions small { display: block; margin-top: 3px; color: #7297b2; font-size: 7px; }
+.status-simulator-no-suggestion { padding: 16px; color: #7297b2; font-size: 9px; text-align: center; }
+
+.status-simulator-main { display: grid; grid-template-columns: minmax(270px, 330px) minmax(0, 1fr); gap: 14px; align-items: start; }
+.status-simulator-digi-card { position: sticky !important; top: 82px; min-height: 610px; padding: 18px; }
+.status-simulator-empty-card { min-height: 570px; display: grid; place-items: center; align-content: center; gap: 9px; color: #7897ad; text-align: center; }
+.status-simulator-empty-card img { width: 145px; height: 145px; object-fit: contain; opacity: .72; filter: drop-shadow(0 0 16px rgba(48, 196, 255, .30)); }
+.status-simulator-empty-card strong { color: #dff8ff; font-size: 12px; }
+.status-simulator-empty-card span { font-size: 8px; }
+.status-simulator-digi-image {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: grid;
+  place-items: center;
+  margin: 2px auto 13px;
+  overflow: hidden;
+  border: 1px solid rgba(74, 221, 255, .54);
+  border-radius: 16px;
+  background: radial-gradient(circle, rgba(28, 123, 187, .18), #030a19 72%);
+  box-shadow: inset 0 0 20px rgba(46, 201, 255, .08), 0 0 18px rgba(35, 181, 255, .10);
+}
+.status-simulator-digi-image::after { content: ""; position: absolute; inset: 6px; pointer-events: none; background: linear-gradient(#5eeaff,#5eeaff) left top/28px 2px no-repeat, linear-gradient(#5eeaff,#5eeaff) left top/2px 28px no-repeat, linear-gradient(#5eeaff,#5eeaff) right top/28px 2px no-repeat, linear-gradient(#5eeaff,#5eeaff) right top/2px 28px no-repeat, linear-gradient(#8d64ff,#8d64ff) left bottom/28px 2px no-repeat, linear-gradient(#8d64ff,#8d64ff) left bottom/2px 28px no-repeat, linear-gradient(#8d64ff,#8d64ff) right bottom/28px 2px no-repeat, linear-gradient(#8d64ff,#8d64ff) right bottom/2px 28px no-repeat; filter: drop-shadow(0 0 5px rgba(76, 220, 255, .6)); }
+.status-simulator-digi-image img { width: 100%; height: 100%; object-fit: contain; }
+.status-simulator-digi-card h3 { margin: 0; color: #fff; font-size: 18px; text-align: center; overflow-wrap: anywhere; }
+.status-simulator-digi-tags { display: flex; justify-content: center; gap: 6px; margin: 7px 0 13px; }
+.status-simulator-digi-tags span { padding: 4px 8px; border: 1px solid rgba(71, 194, 244, .38); border-radius: 5px; color: #77dcff; background: rgba(20, 98, 145, .14); font-size: 7px; font-weight: 900; }
+.status-simulator-card-stats { display: grid; gap: 5px; }
+.status-simulator-card-stats > div { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 7px; padding: 7px 8px; border-left: 2px solid var(--stat-color); border-radius: 5px; background: rgba(4, 17, 36, .78); }
+.status-simulator-card-stats span { color: var(--stat-color); font-size: 8px; font-weight: 900; }
+.status-simulator-card-stats strong { color: #fff; font-size: 14px; }
+.status-simulator-card-stats small { color: #6488a2; font-size: 6px; font-weight: 800; text-align: right; }
+
+.status-simulator-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.status-simulator-panel { min-width: 0; min-height: 280px; padding: 17px; }
+.status-simulator-tetris-panel { grid-row: span 2; min-height: 574px; }
+.status-simulator-panel-title { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+.status-simulator-panel-title > span { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border: 1px solid rgba(67, 210, 255, .55); border-radius: 7px; color: #55e5ff; background: rgba(22, 107, 159, .18); font-size: 9px; font-weight: 900; }
+.status-simulator-panel-title strong { display: block; color: #eefaff; font-size: 10px; letter-spacing: .08em; }
+.status-simulator-panel-title small { display: block; margin-top: 3px; color: #6d90aa; font-size: 7px; line-height: 1.4; }
+.status-simulator-baby-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.status-simulator-baby-grid label,
+.status-simulator-flat-grid label { display: grid; grid-template-columns: 36px 1fr 12px; align-items: center; gap: 5px; padding-left: 6px; border-left: 2px solid var(--stat-color); color: var(--stat-color); font-size: 8px; font-weight: 900; }
+.status-simulator-baby-grid input,
+.status-simulator-flat-grid input { height: 34px; padding: 0 8px; }
+.status-simulator-baby-grid small { color: #6f91a9; font-size: 7px; }
+.status-simulator-meter-line { display: flex; justify-content: space-between; margin-top: 12px; color: #6e91aa; font-size: 7px; font-weight: 900; }
+.status-simulator-meter-line strong { color: #5de8ff; }
+.status-simulator-meter { height: 6px; margin-top: 6px; overflow: hidden; border-radius: 5px; background: #020714; }
+.status-simulator-meter span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #277dff, #55edff); box-shadow: 0 0 8px #44dfff; transition: width .2s ease; }
+.status-simulator-flat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.status-simulator-flat-grid label { grid-template-columns: 38px 1fr; }
+.status-simulator-flat-grid-all { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.status-simulator-cube-mode { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-bottom: 10px; }
+.status-simulator-cube-mode button { min-height: 43px; border: 1px solid rgba(71, 143, 201, .42); border-radius: 7px; background: #08162b; color: #7594aa; font-family: inherit; font-size: 8px; font-weight: 900; cursor: pointer; }
+.status-simulator-cube-mode button small { display: block; margin-top: 3px; font-size: 6px; }
+.status-simulator-cube-mode button.ativo { border-color: #57e5ff; color: #fff; background: linear-gradient(180deg, rgba(21, 113, 167, .72), rgba(8, 55, 91, .86)); box-shadow: 0 0 12px rgba(49, 208, 255, .16); }
+.status-simulator-tetris { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 7px; border: 1px solid rgba(65, 153, 215, .36); border-radius: 9px; background: #020918; }
+.status-simulator-cube-slot,
+.status-simulator-cube { aspect-ratio: 1; min-width: 0; display: grid; place-items: center; align-content: center; border-radius: 5px; }
+.status-simulator-cube-slot { border: 1px dashed rgba(72, 125, 166, .30); color: #25445f; background: rgba(8, 25, 47, .48); font-size: 7px; }
+.status-simulator-cube { gap: 2px; border: 1px solid color-mix(in srgb, var(--cube-color), white 30%); background: linear-gradient(145deg, color-mix(in srgb, var(--cube-color), white 13%), color-mix(in srgb, var(--cube-color), black 25%)); color: #fff; font-family: inherit; cursor: pointer; text-shadow: 0 1px 2px #000; box-shadow: inset 3px 3px 0 rgba(255,255,255,.14), inset -3px -3px 0 rgba(0,0,0,.22); }
+.status-simulator-cube strong { font-size: 10px; }
+.status-simulator-cube small { font-size: 8px; font-weight: 900; }
+.status-simulator-cube-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 9px; }
+.status-simulator-cube-buttons button { min-width: 0; min-height: 47px; border: 1px solid color-mix(in srgb, var(--cube-color), white 30%); border-radius: 6px; background: linear-gradient(145deg, color-mix(in srgb, var(--cube-color), white 12%), color-mix(in srgb, var(--cube-color), black 28%)); color: #fff; font-family: inherit; cursor: pointer; text-shadow: 0 1px 2px #000; }
+.status-simulator-cube-buttons strong { display: block; font-size: 8px; }
+.status-simulator-cube-buttons small { display: block; margin-top: 2px; font-size: 6px; }
+.status-simulator-tetris-actions { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px; margin-top: 8px; }
+.status-simulator-tetris-actions span { color: #6d93ae; font-size: 7px; font-weight: 900; }
+.status-simulator-tetris-actions button { min-height: 32px; padding: 0 10px; }
+
+.status-simulator-result { margin-top: 14px; padding: 18px; }
+.status-simulator-result-table { overflow-x: auto; }
+.status-simulator-result-row { min-width: 780px; display: grid; grid-template-columns: .7fr repeat(6, 1fr); align-items: center; border-top: 1px solid rgba(59, 112, 158, .22); }
+.status-simulator-result-row > * { min-width: 0; padding: 10px 8px; color: #b9d0df; font-size: 9px; text-align: right; }
+.status-simulator-result-row > :first-child { color: var(--stat-color); text-align: left; }
+.status-simulator-result-row small { color: #587c96; font-size: 6px; }
+.status-simulator-result-row b { color: #63efa4; font-size: 13px; }
+.status-simulator-result-head { border: 0; background: rgba(22, 85, 130, .13); }
+.status-simulator-result-head span { color: #6ea6c8; font-size: 7px; font-weight: 900; }
+.status-simulator-result-empty { padding: 32px; border: 1px dashed rgba(67, 144, 201, .31); border-radius: 9px; color: #6e91aa; font-size: 9px; text-align: center; }
+
+@media (min-width: 1051px) {
+  .nav-menu { gap: clamp(2px, .25vw, 6px) !important; }
+  .nav-button { padding-right: clamp(7px, .48vw, 11px) !important; padding-left: clamp(7px, .48vw, 11px) !important; font-size: clamp(9px, .59vw, 12px) !important; }
+}
+@media (max-width: 1050px) {
+  .status-simulator-main { grid-template-columns: 1fr; }
+  .status-simulator-digi-card { position: relative !important; top: auto; min-height: auto; }
+  .status-simulator-empty-card { min-height: 260px; }
+  .status-simulator-digi-card { display: grid; grid-template-columns: 220px 1fr; column-gap: 18px; }
+  .status-simulator-digi-image { grid-row: 1 / span 3; }
+  .status-simulator-card-stats { grid-column: 2; }
+}
+@media (max-width: 760px) {
+  .status-simulator-header { min-height: 120px; padding: 20px; }
+  .status-simulator-hero-icon { width: 82px; height: 82px; }
+  .status-simulator-search { grid-template-columns: 1fr; gap: 7px; }
+  .status-simulator-controls { grid-template-columns: 1fr; }
+  .status-simulator-tetris-panel { grid-row: auto; }
+  .status-simulator-digi-card { display: block; }
+  .status-simulator-digi-image { width: 180px; height: 180px; }
+  .status-simulator-flat-grid-all { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .status-simulator-header .page-subtitle { display: block; }
+  .status-simulator-hero-icon { width: 64px; height: 64px; }
+  .status-simulator-searchbox { grid-template-columns: 1fr; }
+  .status-simulator-searchbox > button { min-height: 38px; }
+  .status-simulator-baby-grid,
+  .status-simulator-flat-grid,
+  .status-simulator-flat-grid-all { grid-template-columns: 1fr; }
+  .status-simulator-cube-buttons { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* =====================================================
    HOME V8 — PAINÉIS TECNOLÓGICOS, HISTÓRIA E OFDS
 ===================================================== */
 
