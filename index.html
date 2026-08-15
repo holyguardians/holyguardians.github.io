@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-status-simulator-v2">
+  <link rel="stylesheet" href="styles.css?v=20260815-status-simulator-v3">
 </head>
 <body>
 
@@ -1220,6 +1220,15 @@
             <aside class="status-simulator-cube-palette">
               <span>ADICIONAR CUBO</span>
               <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
+              <div class="status-simulator-mega-potential">
+                <span>MEGA POTENTIAL</span>
+                <div class="status-simulator-mega-buttons">
+                  <button type="button" class="mp4" onclick="alterarMegaPotentialStatus(4)" title="Melhorar até 4 cubos em +1%"><strong>MP</strong><b>4</b></button>
+                  <button type="button" class="mp5" onclick="alterarMegaPotentialStatus(5)" title="Melhorar até 5 cubos em +1%"><strong>MP</strong><b>5</b></button>
+                  <button type="button" class="mp6" onclick="alterarMegaPotentialStatus(6)" title="Melhorar até 6 cubos em +1%"><strong>MP</strong><b>6</b></button>
+                </div>
+                <small id="statusSimulatorMegaHint">Escolha 4, 5 ou 6 e clique nos cubos.</small>
+              </div>
             </aside>
           </div>
           <div class="status-simulator-tetris-actions">
@@ -1699,6 +1708,6 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260814-status-simulator-v2"></script>
+<script src="scripts.js?v=20260815-status-simulator-v3"></script>
 </body>
 </html>

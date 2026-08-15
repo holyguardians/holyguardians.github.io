@@ -2385,6 +2385,7 @@ const STATUS_SIMULATOR_COLORS = {
 let statusSimulatorDigimon = null;
 let statusSimulatorCubePercent = 4;
 let statusSimulatorCubes = [];
+let statusSimulatorMegaPotential = 0;
 let statusSimulatorBaby = {};
 let statusSimulatorAccessories = {};
 let statusSimulatorClothing = {};
@@ -2408,6 +2409,7 @@ function resetarValoresStatusSimulator() {
     statusSimulatorClothing[stat] = 0;
   });
   statusSimulatorCubes = [];
+  statusSimulatorMegaPotential = 0;
   statusSimulatorCubePercent = 4;
   statusSimulatorStep = 0;
 }
@@ -2533,7 +2535,30 @@ function adicionarCuboStatus(stat) {
 }
 
 function removerCuboStatus(indice) {
+  const cube = statusSimulatorCubes[Number(indice)];
+  if (statusSimulatorMegaPotential && cube) {
+    const selecionados = statusSimulatorCubes.filter(function(item) { return item.mega; }).length;
+    if (cube.mega) cube.mega = false;
+    else if (selecionados < statusSimulatorMegaPotential) cube.mega = true;
+    renderizarStatusSimulator();
+    return;
+  }
   statusSimulatorCubes.splice(Number(indice), 1);
+  renderizarStatusSimulator();
+}
+
+function alterarMegaPotentialStatus(nivel) {
+  const novo = [4, 5, 6].includes(Number(nivel)) ? Number(nivel) : 0;
+  statusSimulatorMegaPotential = statusSimulatorMegaPotential === novo ? 0 : novo;
+  if (!statusSimulatorMegaPotential) {
+    statusSimulatorCubes.forEach(function(cube) { cube.mega = false; });
+  } else {
+    let mantidos = 0;
+    statusSimulatorCubes.forEach(function(cube) {
+      if (cube.mega && mantidos < statusSimulatorMegaPotential) mantidos += 1;
+      else if (cube.mega) cube.mega = false;
+    });
+  }
   renderizarStatusSimulator();
 }
 
@@ -2544,6 +2569,7 @@ function removerUltimoCuboStatus() {
 
 function resetarTetrisStatus() {
   statusSimulatorCubes = [];
+  statusSimulatorMegaPotential = 0;
   renderizarStatusSimulator();
 }
 
@@ -2561,7 +2587,7 @@ function renderizarCamposCubosStatusSimulator() {
 function percentuaisTetrisStatusSimulator() {
   const totais = {};
   STATUS_SIMULATOR_STATS.forEach(function(stat) { totais[stat] = 0; });
-  statusSimulatorCubes.forEach(function(cube) { totais[cube.stat] += cube.percent; });
+  statusSimulatorCubes.forEach(function(cube) { totais[cube.stat] += cube.percent + (cube.mega ? 1 : 0); });
   return totais;
 }
 
@@ -2599,8 +2625,14 @@ function renderizarTetrisStatusSimulator() {
   board.innerHTML = Array.from({ length: 16 }, function(_, indice) {
     const cube = statusSimulatorCubes[indice];
     if (!cube) return `<div class="status-simulator-cube-slot"><span>${String(indice + 1).padStart(2, "0")}</span></div>`;
-    return `<button type="button" class="status-simulator-cube is-filled" style="--cube-color:${STATUS_SIMULATOR_COLORS[cube.stat]}" onclick="removerCuboStatus(${indice})" title="Clique para remover"><strong>${cube.stat}</strong><small>${cube.percent}%</small></button>`;
+    return `<button type="button" class="status-simulator-cube is-filled${cube.mega ? " is-mega" : ""}" style="--cube-color:${STATUS_SIMULATOR_COLORS[cube.stat]}" onclick="removerCuboStatus(${indice})" title="${statusSimulatorMegaPotential ? "Clique para aplicar/remover +1%" : "Clique para remover"}"><strong>${cube.stat}</strong><small>${cube.percent + (cube.mega ? 1 : 0)}%</small>${cube.mega ? `<em>+1%</em>` : ""}</button>`;
   }).join("");
+  const selecionados = statusSimulatorCubes.filter(function(cube) { return cube.mega; }).length;
+  document.querySelectorAll(".status-simulator-mega-buttons button").forEach(function(botao) {
+    botao.classList.toggle("ativo", botao.classList.contains(`mp${statusSimulatorMegaPotential}`));
+  });
+  const hint = document.getElementById("statusSimulatorMegaHint");
+  if (hint) hint.textContent = statusSimulatorMegaPotential ? `${selecionados} / ${statusSimulatorMegaPotential} MELHORADOS · CLIQUE NO MP PARA SAIR` : "Escolha 4, 5 ou 6 e clique nos cubos.";
 }
 
 function renderizarCardStatusSimulator() {
@@ -2612,12 +2644,15 @@ function renderizarCardStatusSimulator() {
   }
   const digi = statusSimulatorDigimon;
   const linhas = STATUS_SIMULATOR_STATS.map(calcularLinhaStatusSimulator);
+  const tipo = normalizarType(digi.type) || "UNKNOWN";
+  const typeIcon = { VACCINE: "type_icons/type_vaccine.png", VIRUS: "type_icons/type_virus.png", DATA: "type_icons/type_data.png", FREE: "type_icons/type_free.png", UNKNOWN: "type_icons/type_unknown.png" }[tipo];
   card.innerHTML = `
     <div class="status-simulator-digi-image">${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="${escaparHtml(digi.digimon)}">` : "◆"}</div>
     <h3>${escaparHtml(digi.digimon)}</h3>
-    <div class="status-simulator-digi-tags"><span>${escaparHtml(digi.stage || "-")}</span><span>${escaparHtml(normalizarType(digi.type) || "UNKNOWN")}</span></div>
+    <div class="status-simulator-digi-tags"><span>${escaparHtml(digi.stage || "-")}</span><span class="status-simulator-type-tag">${typeIcon ? `<img src="${typeIcon}" alt="${escaparHtml(tipo)}">` : ""}${escaparHtml(tipo)}</span></div>
     <div class="status-simulator-card-stats">${linhas.map(function(linha) {
-      return `<div style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}"><span>${linha.stat}</span><strong>${formatarStatusSimulator(linha.final)}</strong><small>BASE ${formatarStatusSimulator(linha.base)}${linha.final > linha.base ? ` // +${formatarStatusSimulator(linha.final - linha.base)}` : ""}</small></div>`;
+      const bonus = linha.final - linha.base;
+      return `<div style="--stat-color:${STATUS_SIMULATOR_COLORS[linha.stat]}"><span>${linha.stat}</span><div class="status-simulator-stat-value"><strong>${formatarStatusSimulator(linha.final)}</strong>${bonus > 0 ? `<b>(+${formatarStatusSimulator(bonus)})</b>` : ""}</div><small>BASE ${formatarStatusSimulator(linha.base)}</small></div>`;
     }).join("")}</div>`;
 }
 
