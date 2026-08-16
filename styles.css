@@ -13758,3 +13758,13 @@ body.modal-open { overflow: hidden; }
   #builderPagina .builder-actions{display:grid;grid-template-columns:1fr;width:100%}
   #builderPagina .builder-action-btn{width:100%}
 }
+
+#builderPagina.builder-exporting .analysis-icon img{width:24px;height:24px;object-fit:contain;transform:none !important;}
+#builderPagina.builder-exporting .analysis-icon.small img{width:20px;height:20px;}
+#builderPagina.builder-exporting .field .field-icon-wrap{min-width:34px;min-height:34px;padding:2px;}
+#builderPagina.builder-exporting .field .field-icon-img{width:28px;height:28px;object-fit:contain;transform:none !important;}
+#builderPagina.builder-exporting .skill-efeito{gap:4px;}
+#builderPagina.builder-exporting .efeito-buff,
+#builderPagina.builder-exporting .efeito-remove{font-size:8px;line-height:1.1;padding:3px 5px;white-space:nowrap;}
+#builderPagina.builder-exporting .skill-efeito .element-icon-wrap{width:16px;height:16px;min-width:16px;min-height:16px;}
+#builderPagina.builder-exporting .skill-efeito .element-icon-img{width:14px;height:14px;object-fit:contain;}

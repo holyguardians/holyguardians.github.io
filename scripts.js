@@ -854,7 +854,7 @@ function builderCandidatosLocalExport(img) {
   const classe = String(img.className || "");
   const alt = String(img.getAttribute("alt") || "").trim().toUpperCase();
 
-  if (classe.indexOf("field-icon-img") !== -1 && alt) {
+  if ((classe.indexOf("field-icon-img") !== -1 || (img.closest && img.closest(".analysis-icon"))) && alt) {
     return ["FIELD ICONS/" + alt + ".png"];
   }
 
@@ -4231,7 +4231,7 @@ function builderDigimonsSelecionados() {
 
 function builderFieldIcon(field) {
   const src = pegarImagemField(field);
-  return src ? `<img src="${src}" alt="${field}" onload="normalizarIconeField(this)">` : `<b>${field}</b>`;
+  return src ? `<img src="${src}" alt="${field}" class="field-icon-img" onload="normalizarIconeField(this)">` : `<b>${field}</b>`;
 }
 
 function atualizarPainelBuilder() {
