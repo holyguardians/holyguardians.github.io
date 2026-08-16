@@ -8130,7 +8130,10 @@ function pvpSelecionarStage(stage,level){
 
 function pvpMostrarView(nome){
   document.querySelectorAll("#pvpPagina .pvp-view").forEach(function(v){v.classList.remove("ativa")});
-  const alvo=document.getElementById(nome==="match"?"pvpMatchView":"pvpBuildView");
+  let id="pvpBuildView";
+  if(nome==="match")id="pvpMatchView";
+  if(nome==="individual")id="pvpIndividualView";
+  const alvo=document.getElementById(id);
   if(alvo)alvo.classList.add("ativa")
 }
 function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build");pvpCriarSlots();pvpCarregarDatabase()}
@@ -8176,7 +8179,7 @@ function pvpCriarSlots(){
 function pvpLimparSlot(slot){
   if(!slot)return;
   slot.dataset.did="";slot.dataset.digimon="";slot._hgPvpBuild=null;
-  pvpAtualizarSlotVisual(slot,null);pvpSalvarEstadoLocal()
+  pvpAtualizarSlotVisual(slot,null);pvpSalvarEstadoLocal();pvpAtualizarBotaoEtapa2()
 }
 
 function pvpAtualizarTodosSlots(){
@@ -8258,7 +8261,7 @@ function pvpEscolherDigimon(did){
   const slot=document.querySelector('#pvpSlots .pvp-slot[data-slot="'+pvpPickerSlot+'"]');
   if(!digi||!slot)return;
   slot.dataset.did=String(digi.did);slot.dataset.digimon=digi.name;
-  pvpAtualizarSlotVisual(slot,digi);pvpSalvarEstadoLocal();pvpFecharPicker()
+  pvpAtualizarSlotVisual(slot,digi);pvpSalvarEstadoLocal();pvpAtualizarBotaoEtapa2();pvpFecharPicker()
 }
 
 function pvpLerEstado(){
@@ -8324,3 +8327,291 @@ document.addEventListener("click",function(event){
 });
 document.addEventListener("keydown",function(event){if(event.key==="Escape"){fecharPvpNavMenu();pvpFecharStageMenu();pvpFecharPicker()}});
 document.addEventListener("DOMContentLoaded",function(){pvpCriarSlots();pvpCarregarDatabase()});
+
+
+/* =====================================================
+   PVP — INDIVIDUAL BUILD V3
+===================================================== */
+
+const PVP_BUILD_STATS = ["HP","SP","STR","INT","DEF","RES","SPD"];
+let pvpBuildIndex = 0;
+
+function pvpSlotsPreenchidos(){
+  return Array.from(document.querySelectorAll("#pvpSlots .pvp-slot"))
+    .filter(function(slot){return !!slot.dataset.did});
+}
+
+function pvpAtualizarBotaoEtapa2(){
+  const btn=document.getElementById("pvpGoBuildBtn");
+  if(!btn)return;
+  const total=pvpSlotsPreenchidos().length;
+  btn.disabled=total!==8;
+  btn.classList.toggle("ready",total===8);
+  const text=btn.querySelector("span");
+  if(text)text.textContent=total===8?"CONFIGURE BUILDS":"SELECT "+(8-total)+" MORE";
+}
+
+function pvpGetSlotBuild(slot){
+  if(!slot._hgPvpBuild){
+    slot._hgPvpBuild={
+      baby:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+      tetris:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+      buff:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+      complete:false
+    };
+  }
+  return slot._hgPvpBuild;
+}
+
+function pvpIrParaBuildIndividual(){
+  if(pvpSlotsPreenchidos().length!==8)return;
+  pvpBuildIndex=0;
+  pvpMostrarView("individual");
+  pvpRenderBuildTabs();
+  pvpRenderBuildAtual();
+}
+
+function pvpVoltarSelecao(){
+  pvpMostrarView("build");
+  pvpAtualizarBotaoEtapa2();
+}
+
+function pvpBuildSlots(){
+  return Array.from(document.querySelectorAll("#pvpSlots .pvp-slot"));
+}
+
+function pvpBuildAtualSlot(){
+  return pvpBuildSlots()[pvpBuildIndex]||null;
+}
+
+function pvpRenderBuildTabs(){
+  const wrap=document.getElementById("pvpBuildTabs");
+  if(!wrap)return;
+  wrap.innerHTML="";
+  pvpBuildSlots().forEach(function(slot,index){
+    const did=Number(slot.dataset.did||0);
+    const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+    const build=pvpGetSlotBuild(slot);
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="pvp-build-tab"+(index===pvpBuildIndex?" ativo":"")+(build.complete?" completo":"");
+    btn.innerHTML=
+      '<span class="pvp-build-tab-icon tech-icon-frame"><img src="'+(digi?digi.icon:"")+'" alt=""></span>'+
+      '<span class="pvp-build-tab-copy"><strong>'+(digi?pvpEscapeHtml(digi.name):"EMPTY")+'</strong><small>SLOT '+String(index+1).padStart(2,"0")+'</small></span>'+
+      '<span class="pvp-build-tab-check">'+(build.complete?"✓":"")+'</span>';
+    btn.onclick=function(){pvpBuildIndex=index;pvpRenderBuildTabs();pvpRenderBuildAtual()};
+    wrap.appendChild(btn)
+  })
+}
+
+function pvpRenderBuildAtual(){
+  const slot=pvpBuildAtualSlot();
+  if(!slot)return;
+  const did=Number(slot.dataset.did||0);
+  const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+  const build=pvpGetSlotBuild(slot);
+
+  const img=document.getElementById("pvpBuildCurrentImg");
+  const name=document.getElementById("pvpBuildCurrentName");
+  const meta=document.getElementById("pvpBuildCurrentMeta");
+  const sl=document.getElementById("pvpBuildCurrentSlot");
+  const progress=document.getElementById("pvpBuildProgress");
+  if(img&&digi){img.src=digi.icon;img.alt=digi.name}
+  if(name)name.textContent=digi?digi.name:"DIGIMON";
+  if(meta&&digi)meta.textContent=digi.stage.toUpperCase()+" · LV. "+digi.level+" · "+(digi.attribute||"UNKNOWN");
+  if(sl)sl.textContent="SLOT "+String(pvpBuildIndex+1).padStart(2,"0");
+  if(progress)progress.textContent=(pvpBuildIndex+1)+" / 8";
+
+  pvpRenderBabyGrid(build);
+  pvpRenderTetrisGrid(build);
+  pvpRenderBuffGrid(build);
+  pvpRenderSummary(build,digi);
+  pvpAtualizarFinalActions();
+}
+
+function pvpRenderBabyGrid(build){
+  const grid=document.getElementById("pvpBabyGrid");
+  if(!grid)return;
+  grid.innerHTML="";
+  PVP_BUILD_STATS.forEach(function(stat){
+    const row=document.createElement("label");
+    row.className="pvp-stat-input";
+    row.innerHTML='<span>'+stat+'</span><input type="number" min="0" max="14" step="1" value="'+(build.baby[stat]||0)+'"><em>%</em>';
+    const input=row.querySelector("input");
+    input.oninput=function(){
+      let v=Math.max(0,Math.min(14,Number(input.value)||0));
+      const others=PVP_BUILD_STATS.reduce(function(sum,s){return sum+(s===stat?0:(Number(build.baby[s])||0))},0);
+      if(others+v>28)v=Math.max(0,28-others);
+      input.value=v;
+      build.baby[stat]=v;
+      build.complete=false;
+      pvpAtualizarBuildCalculado()
+    };
+    grid.appendChild(row)
+  });
+  pvpAtualizarBabyTotal(build)
+}
+
+function pvpAtualizarBabyTotal(build){
+  const total=PVP_BUILD_STATS.reduce(function(sum,s){return sum+(Number(build.baby[s])||0)},0);
+  const el=document.getElementById("pvpBabyTotal");
+  if(el)el.textContent="TOTAL: "+total+"% / 28%"
+}
+
+function pvpRenderTetrisGrid(build){
+  const grid=document.getElementById("pvpTetrisGrid");
+  if(!grid)return;
+  grid.innerHTML="";
+  PVP_BUILD_STATS.forEach(function(stat){
+    const row=document.createElement("div");
+    row.className="pvp-tetris-stat";
+    row.innerHTML='<span>'+stat+'</span><div class="pvp-tetris-cubes"></div><small>0%</small>';
+    const cubes=row.querySelector(".pvp-tetris-cubes");
+    const total=row.querySelector("small");
+    for(let i=1;i<=6;i++){
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="pvp-cube-btn"+(i<=(build.tetris[stat]||0)?" ativo":"");
+      b.textContent="3%";
+      b.onclick=function(){
+        build.tetris[stat]=(build.tetris[stat]===i?i-1:i);
+        build.complete=false;
+        pvpRenderTetrisGrid(build);
+        pvpAtualizarBuildCalculado()
+      };
+      cubes.appendChild(b)
+    }
+    total.textContent=((build.tetris[stat]||0)*3)+"%";
+    grid.appendChild(row)
+  })
+}
+
+function pvpRenderBuffGrid(build){
+  const grid=document.getElementById("pvpBuffGrid");
+  if(!grid)return;
+  grid.innerHTML="";
+  PVP_BUILD_STATS.forEach(function(stat){
+    const row=document.createElement("label");
+    row.className="pvp-stat-input";
+    row.innerHTML='<span>'+stat+'</span><input type="number" min="0" step="1" value="'+(build.buff[stat]||0)+'"><em>+</em>';
+    const input=row.querySelector("input");
+    input.oninput=function(){
+      build.buff[stat]=Math.max(0,Number(input.value)||0);
+      build.complete=false;
+      pvpAtualizarBuildCalculado()
+    };
+    grid.appendChild(row)
+  })
+}
+
+function pvpGetBaseStat(digi,stat){
+  if(!digi)return 0;
+  const key="base"+stat;
+  return Number(digi[key]||0)
+}
+
+function pvpRenderSummary(build,digi){
+  const wrap=document.getElementById("pvpSummaryStats");
+  if(!wrap)return;
+  wrap.innerHTML="";
+  PVP_BUILD_STATS.forEach(function(stat){
+    const base=pvpGetBaseStat(digi,stat);
+    const babyPct=Number(build.baby[stat]||0);
+    const tetrisPct=(Number(build.tetris[stat]||0))*3;
+    const buff=Number(build.buff[stat]||0);
+    const babyBonus=Math.round(base*(babyPct/100));
+    const tetrisBonus=Math.round(base*(tetrisPct/100));
+    const final=base+babyBonus+tetrisBonus+buff;
+
+    const row=document.createElement("div");
+    row.className="pvp-summary-row";
+    row.innerHTML=
+      '<div><strong>'+stat+'</strong><small>Base '+base+'</small></div>'+
+      '<div class="pvp-summary-bonuses"><span>+'+babyBonus+' Baby</span><span>+'+tetrisBonus+' Tetris</span><span>+'+buff+' Deck</span></div>'+
+      '<b>'+final+'</b>';
+    wrap.appendChild(row)
+  });
+
+  const done=document.getElementById("pvpMarkDoneBtn");
+  if(done){
+    done.classList.toggle("done",!!build.complete);
+    done.textContent=build.complete?"✓ BUILD CONCLUÍDO":"✓ MARCAR BUILD COMO CONCLUÍDO"
+  }
+}
+
+function pvpAtualizarBuildCalculado(){
+  const slot=pvpBuildAtualSlot();
+  if(!slot)return;
+  const build=pvpGetSlotBuild(slot);
+  const did=Number(slot.dataset.did||0);
+  const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+  pvpAtualizarBabyTotal(build);
+  pvpRenderSummary(build,digi);
+  pvpRenderBuildTabs();
+  pvpSalvarEstadoLocal();
+  pvpAtualizarFinalActions()
+}
+
+function pvpConcluirBuildAtual(){
+  const slot=pvpBuildAtualSlot();
+  if(!slot)return;
+  const build=pvpGetSlotBuild(slot);
+  build.complete=!build.complete;
+  pvpRenderBuildTabs();
+  pvpRenderBuildAtual();
+  pvpSalvarEstadoLocal()
+}
+
+function pvpBuildAnterior(){
+  pvpBuildIndex=Math.max(0,pvpBuildIndex-1);
+  pvpRenderBuildTabs();pvpRenderBuildAtual()
+}
+function pvpBuildProximo(){
+  pvpBuildIndex=Math.min(7,pvpBuildIndex+1);
+  pvpRenderBuildTabs();pvpRenderBuildAtual()
+}
+
+function pvpLimparBuildAtual(){
+  const slot=pvpBuildAtualSlot();
+  if(!slot)return;
+  if(!confirm("Limpar Baby Correction, Tetris e Buff Deck deste Digimon?"))return;
+  slot._hgPvpBuild=null;
+  pvpRenderBuildTabs();pvpRenderBuildAtual();pvpSalvarEstadoLocal()
+}
+
+function pvpLimparTimeCompleto(){
+  if(!confirm("Limpar todo o time PvP? Isso remove os 8 Digimons e todos os builds."))return;
+  pvpBuildSlots().forEach(function(slot){pvpLimparSlot(slot);slot._hgPvpBuild=null});
+  localStorage.removeItem(PVP_STORAGE_KEY);
+  pvpBuildIndex=0;
+  pvpMostrarView("build");
+  pvpAtualizarBotaoEtapa2()
+}
+
+function pvpTodosBuildsConcluidos(){
+  const slots=pvpBuildSlots();
+  return slots.length===8&&slots.every(function(slot){return !!slot.dataset.did&&!!pvpGetSlotBuild(slot).complete})
+}
+
+function pvpAtualizarFinalActions(){
+  const box=document.getElementById("pvpFinalActions");
+  if(box)box.classList.toggle("visivel",pvpTodosBuildsConcluidos())
+}
+
+function pvpSalvarTime(){
+  pvpSalvarEstadoLocal();
+  alert("Time PvP salvo neste navegador.")
+}
+
+const _pvpAplicarEstadoOriginal=pvpAplicarEstado;
+pvpAplicarEstado=function(pacote){
+  _pvpAplicarEstadoOriginal(pacote);
+  pvpAtualizarBotaoEtapa2()
+};
+
+const _pvpRestaurarEstadoOriginal=pvpRestaurarEstadoLocal;
+pvpRestaurarEstadoLocal=function(){
+  _pvpRestaurarEstadoOriginal();
+  pvpAtualizarBotaoEtapa2()
+};
+

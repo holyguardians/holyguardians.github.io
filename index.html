@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v2">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v3">
 </head>
 <body>
 
@@ -97,8 +97,7 @@
       <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
         <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
         <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
-        <button type="button" role="menuitem" onclick="exportarTimePvp()">EXPORT TEAM</button>
-        <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+                <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
       </div>
     </div>
 
@@ -1459,9 +1458,10 @@
           <span>Selecione a Stage do desafio e escolha os 8 Digimons. A configuração individual de status entra na próxima etapa.</span>
         </div>
         <div class="pvp-toolbar-actions">
-          <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">⇩ EXPORT TEAM</button>
-          <button type="button" class="pvp-action-btn" onclick="abrirImportacaoTimePvp()">⇧ IMPORT TEAM</button>
-          <input id="pvpImportFile" type="file" accept="application/json,.json" hidden onchange="importarTimePvp(this.files && this.files[0])">
+          <button id="pvpGoBuildBtn" type="button" class="pvp-next-stage-btn" onclick="pvpIrParaBuildIndividual()" disabled>
+            <span>CONFIGURE BUILDS</span>
+            <span class="pvp-next-stage-arrow">→</span>
+          </button>
         </div>
       </div>
       <div id="pvpSlots" class="pvp-grid" aria-label="PvP Team Slots"></div>
@@ -1481,6 +1481,91 @@
           <div id="pvpPickerCount" class="pvp-picker-count"></div>
         </div>
         <div id="pvpPickerGrid" class="pvp-picker-grid"></div>
+      </div>
+    </div>
+
+
+    <div id="pvpIndividualView" class="pvp-view">
+      <div class="pvp-build-head tech-corners">
+        <div>
+          <div class="pvp-kicker">PVP TEAM // INDIVIDUAL BUILD</div>
+          <h2 class="page-title">CONFIGURE DIGIMONS</h2>
+          <p class="page-subtitle">Configure Baby Correction, Tetris 3% e Buff Deck para cada um dos 8 Digimons.</p>
+        </div>
+
+        <div class="pvp-build-top-actions">
+          <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpVoltarSelecao()">← VOLTAR</button>
+          <button type="button" class="pvp-action-btn pvp-action-warning" onclick="pvpLimparBuildAtual()">LIMPAR BUILD</button>
+          <button type="button" class="pvp-action-btn pvp-action-danger" onclick="pvpLimparTimeCompleto()">LIMPAR TIME</button>
+        </div>
+      </div>
+
+      <div id="pvpBuildTabs" class="pvp-build-tabs"></div>
+
+      <div class="pvp-build-layout">
+        <section class="pvp-build-config tech-corners">
+          <div class="pvp-build-current">
+            <div class="pvp-current-icon tech-icon-frame">
+              <img id="pvpBuildCurrentImg" alt="">
+            </div>
+            <div>
+              <div id="pvpBuildCurrentSlot" class="pvp-current-slot">SLOT 01</div>
+              <h3 id="pvpBuildCurrentName">DIGIMON</h3>
+              <div id="pvpBuildCurrentMeta" class="pvp-current-meta"></div>
+            </div>
+          </div>
+
+          <div class="pvp-build-section">
+            <div class="pvp-build-section-title">
+              <span>BABY CORRECTION</span>
+              <small>Máximo 14% por atributo · 28% total</small>
+            </div>
+            <div id="pvpBabyGrid" class="pvp-stat-input-grid"></div>
+            <div id="pvpBabyTotal" class="pvp-total-line">TOTAL: 0%</div>
+          </div>
+
+          <div class="pvp-build-section">
+            <div class="pvp-build-section-title">
+              <span>TETRIS</span>
+              <small>Somente cubos de 3%</small>
+            </div>
+            <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
+          </div>
+
+          <div class="pvp-build-section">
+            <div class="pvp-build-section-title">
+              <span>BUFF DECK</span>
+              <small>Informe o bônus em valor absoluto por status</small>
+            </div>
+            <div id="pvpBuffGrid" class="pvp-stat-input-grid"></div>
+          </div>
+
+          <div class="pvp-build-nav">
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpBuildAnterior()">← ANTERIOR</button>
+            <div id="pvpBuildProgress" class="pvp-build-progress">1 / 8</div>
+            <button type="button" class="pvp-action-btn" onclick="pvpBuildProximo()">PRÓXIMO →</button>
+          </div>
+        </section>
+
+        <aside class="pvp-build-summary tech-corners">
+          <div class="pvp-build-section-title">
+            <span>STATUS SUMMARY</span>
+            <small>Base + bônus configurados</small>
+          </div>
+          <div id="pvpSummaryStats" class="pvp-summary-stats"></div>
+          <button id="pvpMarkDoneBtn" type="button" class="pvp-complete-btn" onclick="pvpConcluirBuildAtual()">✓ MARCAR BUILD COMO CONCLUÍDO</button>
+        </aside>
+      </div>
+
+      <div id="pvpFinalActions" class="pvp-final-actions tech-corners">
+        <div>
+          <strong>TEAM READY</strong>
+          <span>Os 8 Digimons estão configurados.</span>
+        </div>
+        <div class="pvp-final-buttons">
+          <button type="button" class="pvp-action-btn" onclick="pvpSalvarTime()">SAVE TEAM</button>
+          <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">EXPORT TEAM</button>
+        </div>
       </div>
     </div>
 
@@ -1838,6 +1923,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260816-pvp-builder-v2"></script>
+<script src="script.js?v=20260816-pvp-builder-v3"></script>
 </body>
 </html>
