@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-team-analysis-v2">
+  <link rel="stylesheet" href="styles.css?v=20260816-team-save-v1">
 </head>
 <body>
 
@@ -1173,8 +1173,26 @@
 
 <section id="builderPagina" class="pagina">
   <div class="internal-wrap">
-    <h2 class="page-title">TEAM BUILDER</h2>
-    <p class="page-subtitle">Selecione até 8 Digimons e monte seu time para o Guild Boss.</p>
+    <div class="builder-topline">
+      <div class="builder-heading">
+        <h2 class="page-title">TEAM BUILDER</h2>
+        <p class="page-subtitle">Selecione até 8 Digimons e monte seu time para o Guild Boss.</p>
+      </div>
+
+      <div class="builder-actions" data-html2canvas-ignore="true">
+        <button id="builderSaveImageBtn" class="builder-action-btn builder-action-image" type="button" onclick="salvarImagemDoTime()">
+          <span>▣</span> SALVAR IMAGEM DO TIME
+        </button>
+        <button id="builderExportBtn" class="builder-action-btn" type="button" onclick="exportarTimeBuilder()">
+          <span>⇩</span> EXPORTAR TIME
+        </button>
+        <button id="builderImportBtn" class="builder-action-btn" type="button" onclick="abrirImportacaoTimeBuilder()">
+          <span>⇧</span> IMPORTAR TIME
+        </button>
+        <input id="builderImportFile" type="file" accept="application/json,.json" hidden onchange="importarTimeBuilder(this.files && this.files[0])">
+      </div>
+    </div>
+
     <div class="builder-workspace">
       <div id="slots" class="builder-grid"></div>
       <aside id="builderAnalysis" class="builder-analysis" aria-live="polite">
@@ -1728,6 +1746,7 @@
   Carregando Holy Guardians...
 </div>
 
-<script src="scripts.js?v=20260816-team-analysis-v2"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="scripts.js?v=20260816-team-save-v1"></script>
 </body>
 </html>

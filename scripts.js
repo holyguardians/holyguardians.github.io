@@ -540,6 +540,286 @@ function montarFiltrosAvancadosDigidex() {
 
 }
 
+/* =====================================================
+   TEAM BUILDER — SALVAR IMAGEM / EXPORTAR / IMPORTAR
+===================================================== */
+
+function builderSlotsSelecionados() {
+  return Array.from(document.querySelectorAll("#builderPagina .slot")).map(function(slot, index) {
+    const info = slot.querySelector(".selected-info");
+    const d = info && info._hgDigimon ? info._hgDigimon : null;
+    const selects = info ? Array.from(info.querySelectorAll(".skill select")) : [];
+
+    return {
+      slot: index + 1,
+      digimon: d ? String(d.digimon || "").trim() : "",
+      skills: selects.map(function(select) {
+        return normalizarElemento(select.value);
+      })
+    };
+  });
+}
+
+function builderTimeCompleto() {
+  const slots = builderSlotsSelecionados();
+  return slots.length === 8 && slots.every(function(slot) { return !!slot.digimon; });
+}
+
+function atualizarEstadoAcoesBuilder(qtdSelecionados) {
+  const save = document.getElementById("builderSaveImageBtn");
+  const exp = document.getElementById("builderExportBtn");
+  const qtd = typeof qtdSelecionados === "number" ? qtdSelecionados : builderDigimonsSelecionados().length;
+
+  if (save) {
+    save.disabled = !builderTimeCompleto();
+    save.title = save.disabled
+      ? "Preencha os 8 slots para salvar a imagem do time."
+      : "Salvar o time completo em PNG.";
+  }
+
+  if (exp) {
+    exp.disabled = qtd === 0;
+    exp.title = exp.disabled
+      ? "Selecione pelo menos 1 Digimon para exportar o time."
+      : "Salvar este time em JSON para importar depois.";
+  }
+}
+
+function builderBaixarBlob(blob, nomeArquivo) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function builderDataArquivo() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+  return ano + "-" + mes + "-" + dia;
+}
+
+function exportarTimeBuilder() {
+  const slots = builderSlotsSelecionados();
+  const preenchidos = slots.filter(function(slot) { return !!slot.digimon; });
+
+  if (!preenchidos.length) {
+    alert("Selecione pelo menos 1 Digimon antes de exportar o time.");
+    return;
+  }
+
+  const pacote = {
+    format: "holy-guardians-team",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    slots: slots.map(function(slot) {
+      return {
+        slot: slot.slot,
+        digimon: slot.digimon || null,
+        skill1: slot.skills[0] || null,
+        skill2: slot.skills[1] || null,
+        skill3: slot.skills[2] || null
+      };
+    })
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(pacote, null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
+
+  builderBaixarBlob(blob, "holy_guardians_team_" + builderDataArquivo() + ".json");
+}
+
+function abrirImportacaoTimeBuilder() {
+  const input = document.getElementById("builderImportFile");
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+function builderLimparSlot(numeroSlot) {
+  const slots = document.querySelectorAll("#builderPagina .slot");
+  const slot = slots[numeroSlot - 1];
+  if (!slot) return;
+
+  const input = slot.querySelector(".team-search");
+  const status = slot.querySelector(".team-search-status");
+  const suggestions = slot.querySelector(".team-suggestions");
+  const info = document.getElementById("info" + numeroSlot);
+
+  if (input) input.value = "";
+  if (status) status.textContent = "";
+  if (suggestions) {
+    suggestions.innerHTML = "";
+    suggestions.style.display = "none";
+  }
+  if (info) {
+    info.innerHTML = "";
+    info._hgDigimon = null;
+  }
+}
+
+function builderEncontrarDigimon(nome) {
+  const alvo = String(nome || "").trim().toLowerCase();
+  if (!alvo) return null;
+  return database.find(function(d) {
+    return String(d.digimon || "").trim().toLowerCase() === alvo;
+  }) || null;
+}
+
+function builderAplicarSkillImportada(select, valor) {
+  if (!select || !valor) return;
+  const alvo = normalizarElemento(valor);
+  const option = Array.from(select.options).find(function(op) {
+    return normalizarElemento(op.value) === alvo;
+  });
+  if (!option) return;
+  select.value = option.value;
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+async function importarTimeBuilder(file) {
+  if (!file) return;
+
+  try {
+    const texto = await file.text();
+    const pacote = JSON.parse(texto);
+
+    if (!pacote || pacote.format !== "holy-guardians-team" || !Array.isArray(pacote.slots)) {
+      throw new Error("Este arquivo não é um time exportado pelo Team Builder da Holy Guardians.");
+    }
+
+    if (!database || !database.length) {
+      throw new Error("A DATABASE ainda não terminou de carregar. Aguarde alguns segundos e tente novamente.");
+    }
+
+    const avisos = [];
+
+    for (let i = 1; i <= 8; i++) {
+      const salvo = pacote.slots.find(function(item) { return Number(item.slot) === i; }) || pacote.slots[i - 1] || null;
+
+      if (!salvo || !salvo.digimon) {
+        builderLimparSlot(i);
+        continue;
+      }
+
+      const d = builderEncontrarDigimon(salvo.digimon);
+      if (!d) {
+        builderLimparSlot(i);
+        avisos.push("Slot " + i + ": " + salvo.digimon + " não foi encontrado na DATABASE atual.");
+        continue;
+      }
+
+      const slots = document.querySelectorAll("#builderPagina .slot");
+      const slot = slots[i - 1];
+      const input = slot ? slot.querySelector(".team-search") : null;
+      const status = slot ? slot.querySelector(".team-search-status") : null;
+      const suggestions = slot ? slot.querySelector(".team-suggestions") : null;
+
+      if (input) input.value = d.digimon;
+      if (status) status.textContent = "✓ " + d.digimon;
+      if (suggestions) {
+        suggestions.innerHTML = "";
+        suggestions.style.display = "none";
+      }
+
+      mostrarDadosDoSlot(i, d);
+
+      const info = document.getElementById("info" + i);
+      const selects = info ? Array.from(info.querySelectorAll(".skill select")) : [];
+      builderAplicarSkillImportada(selects[0], salvo.skill1);
+      builderAplicarSkillImportada(selects[1], salvo.skill2);
+      builderAplicarSkillImportada(selects[2], salvo.skill3);
+    }
+
+    atualizarPainelBuilder();
+
+    if (avisos.length) {
+      alert("Time importado com avisos:\n\n" + avisos.join("\n"));
+    }
+  } catch (erro) {
+    alert("Não foi possível importar o time.\n\n" + (erro && erro.message ? erro.message : erro));
+  }
+}
+
+function builderEsperarImagens(container) {
+  const imagens = Array.from(container.querySelectorAll("img"));
+  return Promise.all(imagens.map(function(img) {
+    if (img.complete) return Promise.resolve();
+    return new Promise(function(resolve) {
+      img.addEventListener("load", resolve, { once: true });
+      img.addEventListener("error", resolve, { once: true });
+      setTimeout(resolve, 3500);
+    });
+  }));
+}
+
+async function salvarImagemDoTime() {
+  if (!builderTimeCompleto()) {
+    alert("Complete os 8 slots antes de salvar a imagem do time.");
+    return;
+  }
+
+  if (typeof html2canvas !== "function") {
+    alert("O gerador de imagem ainda não carregou. Atualize a página e tente novamente.");
+    return;
+  }
+
+  const area = document.querySelector("#builderPagina .internal-wrap");
+  const pagina = document.getElementById("builderPagina");
+  const botao = document.getElementById("builderSaveImageBtn");
+  if (!area || !pagina) return;
+
+  const textoOriginal = botao ? botao.innerHTML : "";
+
+  try {
+    if (botao) {
+      botao.disabled = true;
+      botao.innerHTML = "<span>◌</span> GERANDO PNG...";
+    }
+
+    pagina.classList.add("builder-exporting");
+    await builderEsperarImagens(area);
+    await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
+
+    const canvas = await html2canvas(area, {
+      backgroundColor: "#030914",
+      scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      windowWidth: Math.max(document.documentElement.clientWidth, area.scrollWidth + 40),
+      windowHeight: Math.max(document.documentElement.clientHeight, area.scrollHeight + 40),
+      ignoreElements: function(element) {
+        return element.hasAttribute && element.hasAttribute("data-html2canvas-ignore");
+      }
+    });
+
+    const blob = await new Promise(function(resolve) {
+      canvas.toBlob(resolve, "image/png", 1);
+    });
+
+    if (!blob) throw new Error("Não foi possível montar o arquivo PNG.");
+    builderBaixarBlob(blob, "holy_guardians_team_" + builderDataArquivo() + ".png");
+  } catch (erro) {
+    console.error("Erro ao salvar imagem do time:", erro);
+    alert("Não foi possível gerar a imagem do time. Tente novamente após todos os ícones terminarem de carregar.");
+  } finally {
+    pagina.classList.remove("builder-exporting");
+    if (botao) botao.innerHTML = textoOriginal;
+    atualizarEstadoAcoesBuilder();
+  }
+}
+
+
 
 /* =====================================================
    ELEMENTOS
@@ -3825,6 +4105,8 @@ function atualizarPainelBuilder() {
     const label = Math.round(pct * 10) / 10;
     return `<div class="coverage-row"><span class="coverage-icon">${renderizarIconeElemento(el)}</span><strong>${el}</strong><div class="analysis-meter"><i style="width:${pct}%"></i></div><b>${String(label).replace(".", ",")}%</b></div>`;
   }).join("") : `<div class="analysis-empty">Selecione Digimons para analisar os elementos das skills.</div>`;
+
+  atualizarEstadoAcoesBuilder(digis.length);
 }
 
 
