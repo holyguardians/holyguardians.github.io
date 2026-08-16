@@ -2935,7 +2935,9 @@ function criarSlots() {
 
   }
 
+  atualizarPainelBuilder();
 }
+
 
 
 /* =====================================================
@@ -2980,13 +2982,10 @@ function atualizarSugestoes(
 
 
     if (info) {
-
-      info.innerHTML =
-        "";
-
+      info.innerHTML = "";
+      info._hgDigimon = null;
     }
-
-
+    atualizarPainelBuilder();
     return;
 
   }
@@ -3445,7 +3444,10 @@ function criarSkillSelect(
 
   selectSkill.addEventListener(
     "change",
-    atualizarEfeito
+    function() {
+      atualizarEfeito();
+      atualizarPainelBuilder();
+    }
   );
 
 
@@ -3500,9 +3502,8 @@ function mostrarDadosDoSlot(
   }
 
 
-  info.innerHTML =
-    "";
-
+  info.innerHTML = "";
+  info._hgDigimon = d;
 
   const imagemBox =
     document.createElement(
@@ -3731,7 +3732,101 @@ function mostrarDadosDoSlot(
     )
   );
 
+  atualizarPainelBuilder();
 }
+
+/* =====================================================
+   TEAM BUILDER — ANALISE DO TIME
+===================================================== */
+
+const BUILDER_SYNERGY = {
+  DR:  { stat: "RES",   two: "4%",  three: "6%" },
+  NSP: { stat: "CRIT",  two: "7%",  three: "12%" },
+  WG:  { stat: "HP",    two: "8%",  three: "15%" },
+  DS:  { stat: "SPD",   two: "4%",  three: "6%" },
+  VB:  { stat: "SP",    two: "8%",  three: "15%" },
+  NSO: { stat: "INT",   two: "3%",  three: "5%" },
+  ME:  { stat: "DEF",   two: "6%",  three: "10%" },
+  JT:  { stat: "STR",   two: "5%",  three: "8%" },
+  DA:  { stat: "EVA",   two: "2%",  three: "4%" },
+  UK:  { stat: "CHAIN", two: "10%", three: "15%" }
+};
+
+function builderTemEfeito(valor) {
+  const v = String(valor == null ? "" : valor).trim().toUpperCase();
+  return !["", "-", "NO", "NÃO", "NAO", "FALSE", "0", "NONE", "N/A"].includes(v);
+}
+
+function builderDigimonsSelecionados() {
+  return Array.from(document.querySelectorAll("#builderPagina .selected-info"))
+    .map(function(info) { return info._hgDigimon || null; })
+    .filter(Boolean);
+}
+
+function builderFieldIcon(field) {
+  const src = pegarImagemField(field);
+  return src ? `<img src="${src}" alt="${field}" onload="normalizarIconeField(this)">` : `<b>${field}</b>`;
+}
+
+function atualizarPainelBuilder() {
+  const synergyEl = document.getElementById("builderSynergyActive");
+  const refEl = document.getElementById("builderSynergyReference");
+  const utilityEl = document.getElementById("builderUtility");
+  const coverageEl = document.getElementById("builderElementCoverage");
+  if (!synergyEl || !refEl || !utilityEl || !coverageEl) return;
+
+  const digis = builderDigimonsSelecionados();
+  const fieldNames = {};
+
+  digis.forEach(function(d) {
+    const nome = String(d.digimon || "").trim().toLowerCase();
+    separarFields(d.field).forEach(function(field) {
+      field = String(field).toUpperCase();
+      if (!BUILDER_SYNERGY[field]) return;
+      if (!fieldNames[field]) fieldNames[field] = new Set();
+      if (nome) fieldNames[field].add(nome);
+    });
+  });
+
+  const ativos = Object.keys(BUILDER_SYNERGY).map(function(field) {
+    const qtd = Math.min(3, fieldNames[field] ? fieldNames[field].size : 0);
+    if (qtd < 2) return "";
+    const cfg = BUILDER_SYNERGY[field];
+    const bonus = qtd >= 3 ? cfg.three : cfg.two;
+    return `<div class="synergy-active-row"><span class="analysis-icon">${builderFieldIcon(field)}</span><strong>${field} ×${qtd}</strong><span class="analysis-arrow">→</span><em>${cfg.stat} +${bonus}</em></div>`;
+  }).filter(Boolean);
+
+  synergyEl.innerHTML = ativos.length ? ativos.join("") : `<div class="analysis-empty">Nenhuma synergy ativa. São necessários 2 Digimons diferentes com o mesmo Field.</div>`;
+
+  refEl.innerHTML = `<div class="synergy-reference-title">SYNERGY LIST</div>` + Object.keys(BUILDER_SYNERGY).map(function(field) {
+    const cfg = BUILDER_SYNERGY[field];
+    return `<div class="synergy-ref-row"><span class="analysis-icon small">${builderFieldIcon(field)}</span><b>${field}</b><span>×2 ${cfg.stat} +${cfg.two}</span><span>×3 ${cfg.stat} +${cfg.three}</span></div>`;
+  }).join("");
+
+  const utility = [
+    ["CC", digis.filter(function(d){ return builderTemEfeito(d.cc); }).length],
+    ["DOT", digis.filter(function(d){ return builderTemEfeito(d.dot); }).length],
+    ["DEF BREAK", digis.filter(function(d){ return builderTemEfeito(d.defBreak); }).length]
+  ];
+  utilityEl.innerHTML = utility.map(function(item) {
+    const pct = digis.length ? (item[1] / digis.length) * 100 : 0;
+    return `<div class="utility-row"><div><strong>${item[0]}</strong><span>${item[1]} / ${digis.length || 0}</span></div><div class="analysis-meter"><i style="width:${pct}%"></i></div></div>`;
+  }).join("");
+
+  const counts = {}; let total = 0;
+  document.querySelectorAll("#builderPagina .selected-info .skill select").forEach(function(select) {
+    const el = normalizarElemento(select.value);
+    if (!el) return;
+    counts[el] = (counts[el] || 0) + 1; total++;
+  });
+  const ordered = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a] || a.localeCompare(b); });
+  coverageEl.innerHTML = ordered.length ? ordered.map(function(el) {
+    const pct = total ? counts[el] * 100 / total : 0;
+    const label = Math.round(pct * 10) / 10;
+    return `<div class="coverage-row"><span class="coverage-icon">${renderizarIconeElemento(el)}</span><strong>${el}</strong><div class="analysis-meter"><i style="width:${pct}%"></i></div><b>${String(label).replace(".", ",")}%</b></div>`;
+  }).join("") : `<div class="analysis-empty">Selecione Digimons para analisar os elementos das skills.</div>`;
+}
+
 
 
 /* =====================================================
