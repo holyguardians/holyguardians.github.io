@@ -748,16 +748,82 @@ async function importarTimeBuilder(file) {
   }
 }
 
+const builderExportImageCache = new Map();
+
+function builderResolverSrcImagem(img) {
+  if (!img) return "";
+  return String(img.currentSrc || img.src || img.getAttribute("src") || "").trim();
+}
+
+function builderBlobParaDataUrl(blob) {
+  return new Promise(function(resolve, reject) {
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      resolve(reader.result || "");
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function builderObterDataUrlImagem(src) {
+  const chave = String(src || "").trim();
+  if (!chave) return Promise.resolve("");
+  if (chave.indexOf("data:") === 0) return Promise.resolve(chave);
+
+  if (!builderExportImageCache.has(chave)) {
+    const promessa = fetch(chave, { mode: "cors", cache: "force-cache" })
+      .then(function(resposta) {
+        if (!resposta.ok) {
+          throw new Error("Falha ao carregar imagem para exportação.");
+        }
+        return resposta.blob();
+      })
+      .then(builderBlobParaDataUrl)
+      .catch(function() {
+        return "";
+      });
+
+    builderExportImageCache.set(chave, promessa);
+  }
+
+  return builderExportImageCache.get(chave);
+}
+
 function builderEsperarImagens(container) {
   const imagens = Array.from(container.querySelectorAll("img"));
   return Promise.all(imagens.map(function(img) {
-    if (img.complete) return Promise.resolve();
+    const src = builderResolverSrcImagem(img);
+    if (src) {
+      img.setAttribute("data-export-src", src);
+    }
+
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
     return new Promise(function(resolve) {
       img.addEventListener("load", resolve, { once: true });
       img.addEventListener("error", resolve, { once: true });
       setTimeout(resolve, 3500);
     });
   }));
+}
+
+async function builderPrepararImagensExportacao(container) {
+  const imagens = Array.from(container.querySelectorAll("img"));
+  const pares = await Promise.all(imagens.map(async function(img) {
+    const src = builderResolverSrcImagem(img);
+    if (!src) return null;
+    img.setAttribute("data-export-src", src);
+    const dataUrl = await builderObterDataUrlImagem(src);
+    return [src, dataUrl];
+  }));
+
+  const mapa = {};
+  pares.forEach(function(par) {
+    if (par && par[0] && par[1]) {
+      mapa[par[0]] = par[1];
+    }
+  });
+  return mapa;
 }
 
 async function salvarImagemDoTime() {
@@ -786,20 +852,35 @@ async function salvarImagemDoTime() {
 
     pagina.classList.add("builder-exporting");
     await builderEsperarImagens(area);
+    const imagensInline = await builderPrepararImagensExportacao(area);
     await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
 
     const canvas = await html2canvas(area, {
       backgroundColor: "#030914",
-      scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
+      scale: 1.3,
       useCORS: true,
       allowTaint: false,
       logging: false,
+      imageTimeout: 0,
       scrollX: 0,
       scrollY: -window.scrollY,
       windowWidth: Math.max(document.documentElement.clientWidth, area.scrollWidth + 40),
       windowHeight: Math.max(document.documentElement.clientHeight, area.scrollHeight + 40),
       ignoreElements: function(element) {
         return element.hasAttribute && element.hasAttribute("data-html2canvas-ignore");
+      },
+      onclone: function(clonedDoc) {
+        const clonedArea = clonedDoc.querySelector("#builderPagina .internal-wrap");
+        if (!clonedArea) return;
+
+        clonedArea.querySelectorAll("img").forEach(function(img) {
+          const originalSrc = String(img.getAttribute("data-export-src") || img.currentSrc || img.src || "").trim();
+          if (originalSrc && imagensInline[originalSrc]) {
+            img.src = imagensInline[originalSrc];
+          }
+          img.removeAttribute("loading");
+          img.decoding = "sync";
+        });
       }
     });
 
@@ -4353,6 +4434,19 @@ function carregarImagensSite() {
             headerLogoGlow.src =
               logo;
           }
+        }
+
+        const builderExportLogoImg =
+          document.getElementById(
+            "builderExportLogoImg"
+          );
+
+        if (
+          builderExportLogoImg &&
+          logo
+        ) {
+          builderExportLogoImg.src =
+            logo;
         }
 
         aplicarAssetsHome();
