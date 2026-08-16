@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-png-export-v6">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-menu-v1">
 </head>
 <body>
 
@@ -85,6 +85,22 @@
       <img id="navIconElementos" alt="">
       <span>Elementos</span>
     </button>
+
+    <div class="nav-dropdown pvp-nav-dropdown" id="pvpNavDropdown">
+      <button id="btnPvp" class="nav-button nav-button-dropdown" type="button"
+        onclick="togglePvpNavMenu(event)">
+        <img id="navIconPvp" alt="">
+        <span>PvP</span>
+        <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+      </button>
+
+      <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
+        <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
+        <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
+        <button type="button" role="menuitem" onclick="exportarTimePvp()">EXPORT TEAM</button>
+        <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+      </div>
+    </div>
 
     <button id="btnCalculadora" class="nav-button"
       onclick="mostrarPagina('calculadoraPagina', this)">
@@ -1408,6 +1424,54 @@
 </section>
 
 <!-- =====================================================
+     PVP
+===================================================== -->
+
+<section id="pvpPagina" class="pagina">
+  <div class="internal-wrap pvp-wrap">
+    <div id="pvpBuildView" class="pvp-view ativa">
+      <div class="pvp-topline">
+        <div>
+          <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE SYSTEM</div>
+          <h2 class="page-title">PVP TEAM BUILDER</h2>
+          <p class="page-subtitle">Monte um time de 8 Digimons para PvP. Cada desafio utilizará uma única Stage para os dois jogadores.</p>
+        </div>
+        <div class="pvp-stage-panel">
+          <label for="pvpStageSelect">CHALLENGE STAGE</label>
+          <select id="pvpStageSelect" onchange="pvpSalvarEstadoLocal()">
+            <option value="Rookie">ROOKIE · LV. 15</option>
+            <option value="Champion">CHAMPION · LV. 60</option>
+            <option value="Ultimate">ULTIMATE · LV. 90</option>
+            <option value="Mega" selected>MEGA · LV. 100</option>
+          </select>
+          <small>Skills 1, 2 e 3 sempre no Lv. 10.</small>
+        </div>
+      </div>
+      <div class="pvp-toolbar">
+        <div class="pvp-toolbar-note">
+          <strong>BUILD PVP TEAM</strong>
+          <span>Estrutura inicial pronta. Na próxima etapa ligamos estes 8 slots à DATABASE PvP e ao simulador individual.</span>
+        </div>
+        <div class="pvp-toolbar-actions">
+          <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">⇩ EXPORT TEAM</button>
+          <button type="button" class="pvp-action-btn" onclick="abrirImportacaoTimePvp()">⇧ IMPORT TEAM</button>
+          <input id="pvpImportFile" type="file" accept="application/json,.json" hidden onchange="importarTimePvp(this.files && this.files[0])">
+        </div>
+      </div>
+      <div id="pvpSlots" class="pvp-grid" aria-label="PvP Team Slots"></div>
+    </div>
+    <div id="pvpMatchView" class="pvp-view">
+      <div class="pvp-match-placeholder">
+        <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE ROOM</div>
+        <h2 class="page-title">MATCH</h2>
+        <p class="page-subtitle">A estrutura da Match Room fica reservada aqui. Vamos definir sala, código/link, Ready e batalha depois que o Build PvP estiver fechado.</p>
+        <button type="button" class="pvp-action-btn" onclick="abrirPvpBuild()">← VOLTAR AO BUILD PVP TEAM</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
      CALCULADORA
 ===================================================== -->
 
@@ -1750,6 +1814,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="scripts.js?v=20260816-png-export-v6"></script>
+<script src="scripts.js?v=20260816-pvp-menu-v1"></script>
 </body>
 </html>

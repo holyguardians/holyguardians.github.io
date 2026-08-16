@@ -1425,6 +1425,7 @@ function mostrarPagina(
       builderPagina: "team-builder",
       statusSimulatorPagina: "status-simulator",
       elementosPagina: "elementos",
+      pvpPagina: "pvp",
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
@@ -1495,6 +1496,10 @@ function abrirPaginaPelaUrl() {
     elementos: {
       pagina: "elementosPagina",
       botao: "btnElementos"
+    },
+    pvp: {
+      pagina: "pvpPagina",
+      botao: "btnPvp"
     },
     calculadora: {
       pagina: "calculadoraPagina",
@@ -1798,6 +1803,12 @@ function aplicarAssetsHome() {
 
   definirImagem(
     "navIconBuilder",
+    "icon_builder"
+  );
+
+
+  definirImagem(
+    "navIconPvp",
     "icon_builder"
   );
 
@@ -8081,3 +8092,24 @@ document.addEventListener(
 
   }
 );
+
+/* =====================================================
+   PVP — MENU / BUILD / IMPORT / EXPORT / MATCH
+===================================================== */
+const PVP_STORAGE_KEY = "holy_guardians_pvp_team_v1";
+function fecharPvpNavMenu(){const d=document.getElementById("pvpNavDropdown");if(d)d.classList.remove("aberto")}
+function togglePvpNavMenu(event){if(event){event.preventDefault();event.stopPropagation()}const d=document.getElementById("pvpNavDropdown");if(d)d.classList.toggle("aberto")}
+function pvpMostrarView(nome){document.querySelectorAll("#pvpPagina .pvp-view").forEach(v=>v.classList.remove("ativa"));const a=document.getElementById(nome==="match"?"pvpMatchView":"pvpBuildView");if(a)a.classList.add("ativa")}
+function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build")}
+function abrirPvpMatch(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("match")}
+function pvpCriarSlots(){const c=document.getElementById("pvpSlots");if(!c||c.dataset.ready==="1")return;c.innerHTML="";for(let i=1;i<=8;i++){const s=document.createElement("article");s.className="pvp-slot";s.dataset.slot=String(i);s.dataset.digimon="";s.innerHTML='<div class="pvp-slot-number">SLOT '+String(i).padStart(2,"0")+'</div><div class="pvp-slot-portrait"><span class="pvp-slot-plus">+</span></div><div class="pvp-slot-name">EMPTY SLOT</div><div class="pvp-slot-meta">Aguardando integração com a DATABASE PvP</div>';c.appendChild(s)}c.dataset.ready="1";pvpRestaurarEstadoLocal()}
+function pvpLerEstado(){const st=document.getElementById("pvpStageSelect");return{format:"holy-guardians-pvp-team",version:1,stage:st?st.value:"Mega",slots:Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map((s,i)=>({slot:i+1,digimon:s.dataset.digimon||null,build:s._hgPvpBuild||null}))}}
+function pvpAplicarEstado(p){if(!p||p.format!=="holy-guardians-pvp-team"||!Array.isArray(p.slots))throw new Error("Este arquivo não é um time PvP exportado pela Holy Guardians.");pvpCriarSlots();const st=document.getElementById("pvpStageSelect");if(st&&["Rookie","Champion","Ultimate","Mega"].includes(p.stage))st.value=p.stage;document.querySelectorAll("#pvpSlots .pvp-slot").forEach((s,i)=>{const x=p.slots.find(it=>Number(it.slot)===i+1)||p.slots[i]||null;s.dataset.digimon=x&&x.digimon?String(x.digimon):"";s._hgPvpBuild=x&&x.build?x.build:null;const n=s.querySelector(".pvp-slot-name"),m=s.querySelector(".pvp-slot-meta");if(n)n.textContent=s.dataset.digimon||"EMPTY SLOT";if(m)m.textContent=s.dataset.digimon?"Build importado — configuração individual será ligada na próxima etapa.":"Aguardando integração com a DATABASE PvP"});pvpSalvarEstadoLocal()}
+function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(pvpLerEstado()))}catch(e){}}
+function pvpRestaurarEstadoLocal(){try{const x=localStorage.getItem(PVP_STORAGE_KEY);if(x)pvpAplicarEstado(JSON.parse(x))}catch(e){}}
+function abrirImportacaoTimePvp(){fecharPvpNavMenu();abrirPvpBuild();const i=document.getElementById("pvpImportFile");if(i){i.value="";i.click()}}
+async function importarTimePvp(file){if(!file)return;try{pvpAplicarEstado(JSON.parse(await file.text()));abrirPvpBuild()}catch(e){alert("Não foi possível importar o time PvP.\n\n"+(e&&e.message?e.message:e))}}
+function exportarTimePvp(){fecharPvpNavMenu();pvpCriarSlots();const p=pvpLerEstado();p.exportedAt=new Date().toISOString();builderBaixarBlob(new Blob([JSON.stringify(p,null,2)],{type:"application/json;charset=utf-8"}),"holy_guardians_pvp_team_"+builderDataArquivo()+".json")}
+document.addEventListener("click",e=>{const d=document.getElementById("pvpNavDropdown");if(d&&!d.contains(e.target))fecharPvpNavMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")fecharPvpNavMenu()});
+document.addEventListener("DOMContentLoaded",pvpCriarSlots);
