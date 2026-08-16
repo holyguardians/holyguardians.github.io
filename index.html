@@ -1175,7 +1175,24 @@
   <div class="internal-wrap">
     <h2 class="page-title">TEAM BUILDER</h2>
     <p class="page-subtitle">Selecione até 8 Digimons e monte seu time para o Guild Boss.</p>
-    <div id="slots" class="builder-grid"></div>
+    <div class="builder-workspace">
+      <div id="slots" class="builder-grid"></div>
+      <aside id="builderAnalysis" class="builder-analysis" aria-live="polite">
+        <section class="builder-analysis-box synergy-box">
+          <div class="builder-analysis-title"><span>FIELD SYNERGY</span><small>2 / 3 DIGIMONS DIFERENTES</small></div>
+          <div id="builderSynergyActive" class="builder-analysis-content"></div>
+          <div id="builderSynergyReference" class="synergy-reference"></div>
+        </section>
+        <section class="builder-analysis-box utility-box">
+          <div class="builder-analysis-title"><span>TEAM UTILITY</span><small>EFEITOS PRESENTES NO TIME</small></div>
+          <div id="builderUtility" class="builder-analysis-content"></div>
+        </section>
+        <section class="builder-analysis-box coverage-box">
+          <div class="builder-analysis-title"><span>ELEMENT COVERAGE</span><small>SKILLS ATUALMENTE SELECIONADAS</small></div>
+          <div id="builderElementCoverage" class="builder-analysis-content"></div>
+        </section>
+      </aside>
+    </div>
   </div>
 </section>
 
