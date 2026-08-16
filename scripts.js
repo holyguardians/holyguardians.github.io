@@ -101,11 +101,6 @@ const TYPE_ICONS = {
   FREE: "type_icons/type_free.png"
 };
 
-const HG_LOGO_LOCAL = "holyguardians_logo.png";
-const HG_FIELD_ICONS_DIR = "FIELD%20ICONS";
-const HG_ELEMENT_ICONS_DIR = "ELEMENTOS%20ICONS";
-const HG_DIGIMON_ICONS_DIR = "digivolution_assets/digimons";
-
 
 /* =====================================================
    DIGIDEX — VIEW / FILTROS AVANÇADOS
@@ -753,82 +748,75 @@ async function importarTimeBuilder(file) {
   }
 }
 
-const builderExportImageCache = new Map();
-
-function builderResolverSrcImagem(img) {
-  if (!img) return "";
-  return String(img.getAttribute("data-export-src") || img.currentSrc || img.src || img.getAttribute("src") || "").trim();
-}
-
-function builderBlobParaDataUrl(blob) {
-  return new Promise(function(resolve, reject) {
-    const reader = new FileReader();
-    reader.onloadend = function() {
-      resolve(reader.result || "");
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-function builderObterDataUrlImagem(src) {
-  const chave = String(src || "").trim();
-  if (!chave) return Promise.resolve("");
-  if (chave.indexOf("data:") === 0) return Promise.resolve(chave);
-
-  if (!builderExportImageCache.has(chave)) {
-    const promessa = fetch(chave, { mode: "cors", cache: "force-cache" })
-      .then(function(resposta) {
-        if (!resposta.ok) {
-          throw new Error("Falha ao carregar imagem para exportação.");
-        }
-        return resposta.blob();
-      })
-      .then(builderBlobParaDataUrl)
-      .catch(function() {
-        return "";
-      });
-
-    builderExportImageCache.set(chave, promessa);
-  }
-
-  return builderExportImageCache.get(chave);
-}
-
 function builderEsperarImagens(container) {
   const imagens = Array.from(container.querySelectorAll("img"));
   return Promise.all(imagens.map(function(img) {
-    const src = builderResolverSrcImagem(img);
-    if (src) {
-      img.setAttribute("data-export-src", src);
-    }
-
     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
     return new Promise(function(resolve) {
       img.addEventListener("load", resolve, { once: true });
       img.addEventListener("error", resolve, { once: true });
-      setTimeout(resolve, 3500);
+      setTimeout(resolve, 2500);
     });
   }));
 }
 
-async function builderPrepararImagensExportacao(container) {
-  const imagens = Array.from(container.querySelectorAll("img"));
-  const pares = await Promise.all(imagens.map(async function(img) {
-    const src = builderResolverSrcImagem(img);
-    if (!src) return null;
-    img.setAttribute("data-export-src", src);
-    const dataUrl = await builderObterDataUrlImagem(src);
-    return [src, dataUrl];
-  }));
+function builderBasenameUrl(src) {
+  const valor = String(src || "").trim();
+  if (!valor) return "";
+  try {
+    const url = new URL(valor, window.location.href);
+    const partes = url.pathname.split("/").filter(Boolean);
+    return partes.length ? decodeURIComponent(partes[partes.length - 1]) : "";
+  } catch (erro) {
+    return valor.split("?")[0].split("#")[0].split("/").pop() || "";
+  }
+}
 
-  const mapa = {};
-  pares.forEach(function(par) {
-    if (par && par[0] && par[1]) {
-      mapa[par[0]] = par[1];
+function builderCaminhoLocalExport(img) {
+  if (!img) return "";
+
+  if (img.id === "builderExportLogoImg") {
+    return "holyguardians_logo.png";
+  }
+
+  const classe = String(img.className || "");
+  const alt = String(img.getAttribute("alt") || "").trim().toUpperCase();
+
+  if (classe.indexOf("field-icon-img") !== -1 && alt) {
+    return "FIELD ICONS/" + alt + ".png";
+  }
+
+  if (classe.indexOf("element-icon-img") !== -1 && alt) {
+    return "ELEMENTOS ICONS/" + alt + ".png";
+  }
+
+  if (img.closest && img.closest(".team-image-box")) {
+    const arquivo = builderBasenameUrl(img.currentSrc || img.src || img.getAttribute("src") || "");
+    if (arquivo) {
+      return "digivolution_assets/digimons/" + arquivo;
     }
+  }
+
+  return "";
+}
+
+function builderPrecarregarAssetsExport(container) {
+  const caminhos = new Set();
+  Array.from(container.querySelectorAll("img")).forEach(function(img) {
+    const local = builderCaminhoLocalExport(img);
+    if (local) caminhos.add(local);
   });
-  return mapa;
+
+  return Promise.all(Array.from(caminhos).map(function(src) {
+    return new Promise(function(resolve) {
+      const preload = new Image();
+      preload.onload = resolve;
+      preload.onerror = resolve;
+      preload.src = src;
+      if (preload.complete) resolve();
+      setTimeout(resolve, 2200);
+    });
+  }));
 }
 
 async function salvarImagemDoTime() {
@@ -857,16 +845,18 @@ async function salvarImagemDoTime() {
 
     pagina.classList.add("builder-exporting");
     await builderEsperarImagens(area);
-    const imagensInline = await builderPrepararImagensExportacao(area);
-    await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
+    await builderPrecarregarAssetsExport(area);
+    await new Promise(function(resolve) {
+      requestAnimationFrame(function() { requestAnimationFrame(resolve); });
+    });
 
     const canvas = await html2canvas(area, {
       backgroundColor: "#030914",
-      scale: 1.3,
+      scale: 1.25,
       useCORS: true,
       allowTaint: false,
       logging: false,
-      imageTimeout: 0,
+      imageTimeout: 8000,
       scrollX: 0,
       scrollY: -window.scrollY,
       windowWidth: Math.max(document.documentElement.clientWidth, area.scrollWidth + 40),
@@ -879,11 +869,10 @@ async function salvarImagemDoTime() {
         if (!clonedArea) return;
 
         clonedArea.querySelectorAll("img").forEach(function(img) {
-          const originalSrc = String(img.getAttribute("data-export-src") || img.currentSrc || img.src || "").trim();
-          if (!originalSrc) return;
-          img.src = imagensInline[originalSrc] || originalSrc;
+          const local = builderCaminhoLocalExport(img);
+          if (local) img.src = local;
           img.removeAttribute("loading");
-          img.decoding = "sync";
+          try { img.decoding = "sync"; } catch (erro) {}
         });
       }
     });
@@ -896,7 +885,7 @@ async function salvarImagemDoTime() {
     builderBaixarBlob(blob, "holy_guardians_team_" + builderDataArquivo() + ".png");
   } catch (erro) {
     console.error("Erro ao salvar imagem do time:", erro);
-    alert("Não foi possível gerar a imagem do time. Tente novamente após todos os ícones terminarem de carregar.");
+    alert("Não foi possível gerar a imagem do time. Atualize a página e tente novamente.");
   } finally {
     pagina.classList.remove("builder-exporting");
     if (botao) botao.innerHTML = textoOriginal;
@@ -1460,53 +1449,6 @@ function pegarImagem(nome) {
 
 }
 
-function hgMesmoDominioOuRelativo(src) {
-  const valor = String(src || "").trim();
-  if (!valor) return false;
-  if (/^(data:|blob:)/i.test(valor)) return true;
-  if (!/^https?:/i.test(valor)) return true;
-  try {
-    return new URL(valor, window.location.href).origin === window.location.origin;
-  } catch (erro) {
-    return false;
-  }
-}
-
-function hgBasenameAsset(src) {
-  const valor = String(src || "").trim();
-  if (!valor) return "";
-  try {
-    const url = new URL(valor, window.location.href);
-    const partes = url.pathname.split("/").filter(Boolean);
-    return partes.length ? partes[partes.length - 1] : "";
-  } catch (erro) {
-    const limpo = valor.split("?")[0].split("#")[0];
-    const partes = limpo.split("/").filter(Boolean);
-    return partes.length ? partes[partes.length - 1] : "";
-  }
-}
-
-function hgMontarCaminhoAssetLocal(pasta, arquivo) {
-  const nome = String(arquivo || "").trim();
-  if (!nome) return "";
-  return String(pasta || "").replace(/\/$/, "") + "/" + nome;
-}
-
-function hgResolverIconeDigimonLocal(srcOriginal, digimonNome) {
-  if (hgMesmoDominioOuRelativo(srcOriginal)) {
-    return srcOriginal;
-  }
-
-  const basename = hgBasenameAsset(srcOriginal);
-  if (basename) {
-    return hgMontarCaminhoAssetLocal(HG_DIGIMON_ICONS_DIR, basename);
-  }
-
-  const chave = normalizarChaveDigivolution(digimonNome || "");
-  if (!chave) return srcOriginal || "";
-  return hgMontarCaminhoAssetLocal(HG_DIGIMON_ICONS_DIR, chave + ".png");
-}
-
 
 function definirImagem(
   id,
@@ -1965,19 +1907,6 @@ function pegarImagemField(codigo) {
     return "";
   }
 
-  const candidatosLocais = [
-    field + ".png",
-    field + ".webp",
-    "field_" + field + ".png",
-    "field_" + field + ".webp",
-    "icon_" + field + ".png",
-    "icon_" + field + ".webp"
-  ];
-
-  if (document && document.body && document.body.classList) {
-    return hgMontarCaminhoAssetLocal(HG_FIELD_ICONS_DIR, candidatosLocais[0]);
-  }
-
   const candidatos = [
     field,
     "field_" + field,
@@ -2000,7 +1929,7 @@ function pegarImagemField(codigo) {
 
   }
 
-  return hgMontarCaminhoAssetLocal(HG_FIELD_ICONS_DIR, candidatosLocais[0]);
+  return "";
 
 }
 
@@ -2020,11 +1949,6 @@ function pegarImagemElemento(codigo) {
 
   if (!elemento) {
     return "";
-  }
-
-  const caminhoLocal = hgMontarCaminhoAssetLocal(HG_ELEMENT_ICONS_DIR, elemento + ".png");
-  if (document && document.body && document.body.classList) {
-    return caminhoLocal;
   }
 
   const candidatos = [
@@ -2050,6 +1974,11 @@ function pegarImagemElemento(codigo) {
       return srcDireto;
     }
 
+    /*
+     * Segurança extra:
+     * procura também diretamente nas chaves retornadas pelo Drive,
+     * caso o Code.gs tenha mantido ".png" no nome.
+     */
     const chaveEncontrada =
       Object.keys(
         imagensSite || {}
@@ -2072,7 +2001,7 @@ function pegarImagemElemento(codigo) {
 
   }
 
-  return caminhoLocal;
+  return "";
 
 }
 
@@ -3955,19 +3884,6 @@ function mostrarDadosDoSlot(
     imagem.alt =
       d.digimon;
 
-    const exportSrc =
-      hgResolverIconeDigimonLocal(
-        d.icon,
-        d.digimon
-      );
-
-    if (exportSrc) {
-      imagem.setAttribute(
-        "data-export-src",
-        exportSrc
-      );
-    }
-
 
     imagemBox.appendChild(
       imagem
@@ -4511,18 +4427,6 @@ function carregarImagensSite() {
             headerLogoGlow.src =
               logo;
           }
-        }
-
-        const builderExportLogoImg =
-          document.getElementById(
-            "builderExportLogoImg"
-          );
-
-        if (builderExportLogoImg) {
-          builderExportLogoImg.src =
-            HG_LOGO_LOCAL ||
-            logo ||
-            "";
         }
 
         aplicarAssetsHome();
