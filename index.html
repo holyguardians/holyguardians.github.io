@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-pvp-menu-v1">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v2">
 </head>
 <body>
 
@@ -1436,21 +1436,27 @@
           <h2 class="page-title">PVP TEAM BUILDER</h2>
           <p class="page-subtitle">Monte um time de 8 Digimons para PvP. Cada desafio utilizará uma única Stage para os dois jogadores.</p>
         </div>
-        <div class="pvp-stage-panel">
-          <label for="pvpStageSelect">CHALLENGE STAGE</label>
-          <select id="pvpStageSelect" onchange="pvpSalvarEstadoLocal()">
-            <option value="Rookie">ROOKIE · LV. 15</option>
-            <option value="Champion">CHAMPION · LV. 60</option>
-            <option value="Ultimate">ULTIMATE · LV. 90</option>
-            <option value="Mega" selected>MEGA · LV. 100</option>
-          </select>
+        <div class="pvp-stage-panel tech-corners">
+          <label>CHALLENGE STAGE</label>
+          <div class="pvp-stage-select" id="pvpStageSelect">
+            <button type="button" class="pvp-stage-trigger" onclick="pvpToggleStageMenu(event)">
+              <span id="pvpStageLabel">MEGA · LV. 100</span>
+              <span class="pvp-stage-arrow">⌄</span>
+            </button>
+            <div class="pvp-stage-options" id="pvpStageOptions">
+              <button type="button" onclick="pvpSelecionarStage('Rookie',15)">ROOKIE · LV. 15</button>
+              <button type="button" onclick="pvpSelecionarStage('Champion',60)">CHAMPION · LV. 60</button>
+              <button type="button" onclick="pvpSelecionarStage('Ultimate',90)">ULTIMATE · LV. 90</button>
+              <button type="button" onclick="pvpSelecionarStage('Mega',100)">MEGA · LV. 100</button>
+            </div>
+          </div>
           <small>Skills 1, 2 e 3 sempre no Lv. 10.</small>
         </div>
       </div>
-      <div class="pvp-toolbar">
+      <div class="pvp-toolbar tech-corners">
         <div class="pvp-toolbar-note">
           <strong>BUILD PVP TEAM</strong>
-          <span>Estrutura inicial pronta. Na próxima etapa ligamos estes 8 slots à DATABASE PvP e ao simulador individual.</span>
+          <span>Selecione a Stage do desafio e escolha os 8 Digimons. A configuração individual de status entra na próxima etapa.</span>
         </div>
         <div class="pvp-toolbar-actions">
           <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">⇩ EXPORT TEAM</button>
@@ -1460,6 +1466,24 @@
       </div>
       <div id="pvpSlots" class="pvp-grid" aria-label="PvP Team Slots"></div>
     </div>
+
+    <div id="pvpPickerOverlay" class="pvp-picker-overlay" aria-hidden="true">
+      <div class="pvp-picker-modal tech-corners" role="dialog" aria-modal="true" aria-labelledby="pvpPickerTitle">
+        <div class="pvp-picker-head">
+          <div>
+            <div class="pvp-kicker">PVP DATABASE</div>
+            <h3 id="pvpPickerTitle">SELECT DIGIMON</h3>
+          </div>
+          <button type="button" class="pvp-picker-close" onclick="pvpFecharPicker()" aria-label="Fechar">×</button>
+        </div>
+        <div class="pvp-picker-search-wrap">
+          <input id="pvpPickerSearch" class="pvp-picker-search" type="search" placeholder="Search Digimon..." autocomplete="off" oninput="pvpRenderPicker()">
+          <div id="pvpPickerCount" class="pvp-picker-count"></div>
+        </div>
+        <div id="pvpPickerGrid" class="pvp-picker-grid"></div>
+      </div>
+    </div>
+
     <div id="pvpMatchView" class="pvp-view">
       <div class="pvp-match-placeholder">
         <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE ROOM</div>
@@ -1814,6 +1838,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260816-pvp-menu-v1"></script>
+<script src="script.js?v=20260816-pvp-builder-v2"></script>
 </body>
 </html>

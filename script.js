@@ -8094,22 +8094,233 @@ document.addEventListener(
 );
 
 /* =====================================================
-   PVP — MENU / BUILD / IMPORT / EXPORT / MATCH
+   PVP — MENU / BUILD / IMPORT / EXPORT / MATCH V2
 ===================================================== */
-const PVP_STORAGE_KEY = "holy_guardians_pvp_team_v1";
+
+const PVP_STORAGE_KEY = "holy_guardians_pvp_team_v2";
+const PVP_DATA_URL = "pvp-data.json";
+
+let pvpDatabase = [];
+let pvpStageAtual = "Mega";
+let pvpPickerSlot = null;
+let pvpDadosCarregando = null;
+
+const PVP_STAGE_LEVEL = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
+
 function fecharPvpNavMenu(){const d=document.getElementById("pvpNavDropdown");if(d)d.classList.remove("aberto")}
 function togglePvpNavMenu(event){if(event){event.preventDefault();event.stopPropagation()}const d=document.getElementById("pvpNavDropdown");if(d)d.classList.toggle("aberto")}
-function pvpMostrarView(nome){document.querySelectorAll("#pvpPagina .pvp-view").forEach(v=>v.classList.remove("ativa"));const a=document.getElementById(nome==="match"?"pvpMatchView":"pvpBuildView");if(a)a.classList.add("ativa")}
-function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build")}
+function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}
+function pvpFecharStageMenu(){const el=document.getElementById("pvpStageSelect");if(el)el.classList.remove("aberto")}
+function pvpStageTexto(stage){return String(stage||"Mega").toUpperCase()+" · LV. "+(PVP_STAGE_LEVEL[stage]||100)}
+
+function pvpSelecionarStage(stage,level){
+  pvpStageAtual=stage;
+  const label=document.getElementById("pvpStageLabel");
+  if(label)label.textContent=String(stage).toUpperCase()+" · LV. "+level;
+  pvpFecharStageMenu();
+
+  document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot){
+    const did=Number(slot.dataset.did||0);
+    if(!did)return;
+    const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+    if(digi&&digi.stage!==stage)pvpLimparSlot(slot);
+  });
+  pvpSalvarEstadoLocal();
+}
+
+function pvpMostrarView(nome){
+  document.querySelectorAll("#pvpPagina .pvp-view").forEach(function(v){v.classList.remove("ativa")});
+  const alvo=document.getElementById(nome==="match"?"pvpMatchView":"pvpBuildView");
+  if(alvo)alvo.classList.add("ativa")
+}
+function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build");pvpCriarSlots();pvpCarregarDatabase()}
 function abrirPvpMatch(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("match")}
-function pvpCriarSlots(){const c=document.getElementById("pvpSlots");if(!c||c.dataset.ready==="1")return;c.innerHTML="";for(let i=1;i<=8;i++){const s=document.createElement("article");s.className="pvp-slot";s.dataset.slot=String(i);s.dataset.digimon="";s.innerHTML='<div class="pvp-slot-number">SLOT '+String(i).padStart(2,"0")+'</div><div class="pvp-slot-portrait"><span class="pvp-slot-plus">+</span></div><div class="pvp-slot-name">EMPTY SLOT</div><div class="pvp-slot-meta">Aguardando integração com a DATABASE PvP</div>';c.appendChild(s)}c.dataset.ready="1";pvpRestaurarEstadoLocal()}
-function pvpLerEstado(){const st=document.getElementById("pvpStageSelect");return{format:"holy-guardians-pvp-team",version:1,stage:st?st.value:"Mega",slots:Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map((s,i)=>({slot:i+1,digimon:s.dataset.digimon||null,build:s._hgPvpBuild||null}))}}
-function pvpAplicarEstado(p){if(!p||p.format!=="holy-guardians-pvp-team"||!Array.isArray(p.slots))throw new Error("Este arquivo não é um time PvP exportado pela Holy Guardians.");pvpCriarSlots();const st=document.getElementById("pvpStageSelect");if(st&&["Rookie","Champion","Ultimate","Mega"].includes(p.stage))st.value=p.stage;document.querySelectorAll("#pvpSlots .pvp-slot").forEach((s,i)=>{const x=p.slots.find(it=>Number(it.slot)===i+1)||p.slots[i]||null;s.dataset.digimon=x&&x.digimon?String(x.digimon):"";s._hgPvpBuild=x&&x.build?x.build:null;const n=s.querySelector(".pvp-slot-name"),m=s.querySelector(".pvp-slot-meta");if(n)n.textContent=s.dataset.digimon||"EMPTY SLOT";if(m)m.textContent=s.dataset.digimon?"Build importado — configuração individual será ligada na próxima etapa.":"Aguardando integração com a DATABASE PvP"});pvpSalvarEstadoLocal()}
-function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(pvpLerEstado()))}catch(e){}}
-function pvpRestaurarEstadoLocal(){try{const x=localStorage.getItem(PVP_STORAGE_KEY);if(x)pvpAplicarEstado(JSON.parse(x))}catch(e){}}
-function abrirImportacaoTimePvp(){fecharPvpNavMenu();abrirPvpBuild();const i=document.getElementById("pvpImportFile");if(i){i.value="";i.click()}}
-async function importarTimePvp(file){if(!file)return;try{pvpAplicarEstado(JSON.parse(await file.text()));abrirPvpBuild()}catch(e){alert("Não foi possível importar o time PvP.\n\n"+(e&&e.message?e.message:e))}}
-function exportarTimePvp(){fecharPvpNavMenu();pvpCriarSlots();const p=pvpLerEstado();p.exportedAt=new Date().toISOString();builderBaixarBlob(new Blob([JSON.stringify(p,null,2)],{type:"application/json;charset=utf-8"}),"holy_guardians_pvp_team_"+builderDataArquivo()+".json")}
-document.addEventListener("click",e=>{const d=document.getElementById("pvpNavDropdown");if(d&&!d.contains(e.target))fecharPvpNavMenu()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")fecharPvpNavMenu()});
-document.addEventListener("DOMContentLoaded",pvpCriarSlots);
+
+async function pvpCarregarDatabase(){
+  if(pvpDatabase.length)return pvpDatabase;
+  if(pvpDadosCarregando)return pvpDadosCarregando;
+  pvpDadosCarregando=fetch(PVP_DATA_URL,{cache:"no-store"})
+    .then(function(resp){if(!resp.ok)throw new Error("HTTP "+resp.status);return resp.json()})
+    .then(function(data){pvpDatabase=Array.isArray(data)?data:[];pvpAtualizarTodosSlots();return pvpDatabase})
+    .catch(function(erro){console.error("[PvP] Falha ao carregar pvp-data.json",erro);alert("Não foi possível carregar a DATABASE PvP. Confirme que pvp-data.json está no GitHub ao lado do index.html.");return[]})
+    .finally(function(){pvpDadosCarregando=null});
+  return pvpDadosCarregando
+}
+
+function pvpCriarSlots(){
+  const container=document.getElementById("pvpSlots");
+  if(!container||container.dataset.ready==="1")return;
+  container.innerHTML="";
+  for(let i=1;i<=8;i++){
+    const slot=document.createElement("article");
+    slot.className="pvp-slot tech-corners";
+    slot.dataset.slot=String(i);slot.dataset.did="";slot.dataset.digimon="";
+    slot.tabIndex=0;slot.setAttribute("role","button");slot.setAttribute("aria-label","Selecionar Digimon para o slot "+i);
+    slot.onclick=function(event){if(event.target.closest(".pvp-slot-remove"))return;pvpAbrirPicker(i)};
+    slot.onkeydown=function(event){if(event.key==="Enter"||event.key===" "){event.preventDefault();pvpAbrirPicker(i)}};
+    slot.innerHTML=
+      '<div class="pvp-slot-number">SLOT '+String(i).padStart(2,"0")+'</div>'+
+      '<button type="button" class="pvp-slot-remove" title="Remover">×</button>'+
+      '<div class="pvp-slot-portrait tech-icon-frame"><img class="pvp-slot-img" alt="" hidden><span class="pvp-slot-plus">+</span></div>'+
+      '<div class="pvp-slot-name">SELECT DIGIMON</div>'+
+      '<div class="pvp-slot-meta">Clique para escolher um Digimon</div>'+
+      '<div class="pvp-slot-tags"></div>';
+    const removeBtn=slot.querySelector(".pvp-slot-remove");
+    if(removeBtn)removeBtn.onclick=function(event){event.stopPropagation();pvpLimparSlot(slot)};
+    container.appendChild(slot)
+  }
+  container.dataset.ready="1";
+  pvpRestaurarEstadoLocal()
+}
+
+function pvpLimparSlot(slot){
+  if(!slot)return;
+  slot.dataset.did="";slot.dataset.digimon="";slot._hgPvpBuild=null;
+  pvpAtualizarSlotVisual(slot,null);pvpSalvarEstadoLocal()
+}
+
+function pvpAtualizarTodosSlots(){
+  document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot){
+    const did=Number(slot.dataset.did||0);
+    const digi=did?pvpDatabase.find(function(item){return Number(item.did)===did}):null;
+    pvpAtualizarSlotVisual(slot,digi||null)
+  })
+}
+
+function pvpAtualizarSlotVisual(slot,digi){
+  if(!slot)return;
+  const img=slot.querySelector(".pvp-slot-img"),plus=slot.querySelector(".pvp-slot-plus"),
+        nome=slot.querySelector(".pvp-slot-name"),meta=slot.querySelector(".pvp-slot-meta"),
+        tags=slot.querySelector(".pvp-slot-tags"),remove=slot.querySelector(".pvp-slot-remove");
+
+  if(!digi){
+    slot.classList.remove("preenchido");
+    if(img){img.hidden=true;img.removeAttribute("src");img.alt=""}
+    if(plus){plus.hidden=false;plus.textContent="+"}
+    if(nome)nome.textContent="SELECT DIGIMON";
+    if(meta)meta.textContent="Clique para escolher um Digimon";
+    if(tags)tags.innerHTML="";
+    if(remove)remove.style.display="none";
+    return
+  }
+
+  slot.classList.add("preenchido");slot.dataset.did=String(digi.did);slot.dataset.digimon=digi.name;
+  if(img){
+    img.hidden=false;img.src=digi.icon;img.alt=digi.name;
+    img.onerror=function(){this.hidden=true;if(plus){plus.hidden=false;plus.textContent="?"}}
+  }
+  if(plus)plus.hidden=true;
+  if(nome)nome.textContent=digi.name;
+  if(meta)meta.textContent=digi.stage.toUpperCase()+" · LV. "+digi.level;
+  if(tags)tags.innerHTML='<span>'+pvpEscapeHtml(digi.attribute||"UNKNOWN")+'</span>'+(digi.fields?'<span>'+pvpEscapeHtml(String(digi.fields).replace(/,\s*/g," · "))+'</span>':"");
+  if(remove)remove.style.display="grid"
+}
+
+async function pvpAbrirPicker(slotNumero){
+  await pvpCarregarDatabase();
+  pvpPickerSlot=Number(slotNumero);
+  const overlay=document.getElementById("pvpPickerOverlay"),input=document.getElementById("pvpPickerSearch");
+  if(!overlay)return;
+  overlay.classList.add("aberto");overlay.setAttribute("aria-hidden","false");document.body.classList.add("pvp-modal-open");
+  if(input){input.value="";setTimeout(function(){input.focus()},20)}
+  pvpRenderPicker()
+}
+function pvpFecharPicker(){
+  const overlay=document.getElementById("pvpPickerOverlay");
+  if(overlay){overlay.classList.remove("aberto");overlay.setAttribute("aria-hidden","true")}
+  document.body.classList.remove("pvp-modal-open");pvpPickerSlot=null
+}
+
+function pvpRenderPicker(){
+  const grid=document.getElementById("pvpPickerGrid"),input=document.getElementById("pvpPickerSearch"),count=document.getElementById("pvpPickerCount");
+  if(!grid)return;
+  const termo=(input?input.value:"").trim().toLowerCase();
+  const escolhidos=new Set(Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map(function(slot){return Number(slot.dataset.did||0)}).filter(Boolean));
+  const lista=pvpDatabase.filter(function(digi){return digi.stage===pvpStageAtual&&(!termo||String(digi.name).toLowerCase().includes(termo))})
+    .sort(function(a,b){return String(a.name).localeCompare(String(b.name),"en",{sensitivity:"base"})});
+  if(count)count.textContent=lista.length+" DIGIMONS · "+pvpStageTexto(pvpStageAtual);
+  grid.innerHTML="";
+  lista.forEach(function(digi){
+    const btn=document.createElement("button"),repetido=escolhidos.has(Number(digi.did));
+    btn.type="button";btn.className="pvp-picker-card tech-corners"+(repetido?" ja-usado":"");btn.disabled=repetido;
+    btn.innerHTML='<span class="pvp-picker-icon tech-icon-frame"><img src="'+digi.icon+'" alt="'+pvpEscapeHtml(digi.name)+'"></span>'+
+      '<span class="pvp-picker-copy"><strong>'+pvpEscapeHtml(digi.name)+'</strong><small>'+pvpEscapeHtml(digi.attribute||"UNKNOWN")+' · LV. '+digi.level+'</small></span>'+
+      (repetido?'<em>IN TEAM</em>':'');
+    btn.onclick=function(){pvpEscolherDigimon(digi.did)};grid.appendChild(btn)
+  });
+  if(!lista.length)grid.innerHTML='<div class="pvp-picker-empty">Nenhum Digimon encontrado nessa Stage.</div>'
+}
+
+function pvpEscapeHtml(texto){return String(texto||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+function pvpEscolherDigimon(did){
+  const digi=pvpDatabase.find(function(item){return Number(item.did)===Number(did)});
+  const slot=document.querySelector('#pvpSlots .pvp-slot[data-slot="'+pvpPickerSlot+'"]');
+  if(!digi||!slot)return;
+  slot.dataset.did=String(digi.did);slot.dataset.digimon=digi.name;
+  pvpAtualizarSlotVisual(slot,digi);pvpSalvarEstadoLocal();pvpFecharPicker()
+}
+
+function pvpLerEstado(){
+  const slots=Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map(function(slot,index){
+    return{slot:index+1,did:slot.dataset.did?Number(slot.dataset.did):null,digimon:slot.dataset.digimon||null,build:slot._hgPvpBuild||null}
+  });
+  return{format:"holy-guardians-pvp-team",version:2,stage:pvpStageAtual,level:PVP_STAGE_LEVEL[pvpStageAtual]||100,slots:slots}
+}
+
+function pvpAplicarEstado(pacote){
+  if(!pacote||pacote.format!=="holy-guardians-pvp-team"||!Array.isArray(pacote.slots))throw new Error("Este arquivo não é um time PvP exportado pela Holy Guardians.");
+  pvpCriarSlots();
+  const stagesValidas=["Rookie","Champion","Ultimate","Mega"],stage=stagesValidas.includes(pacote.stage)?pacote.stage:"Mega";
+  pvpSelecionarStage(stage,PVP_STAGE_LEVEL[stage]);
+  document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
+    const salvo=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index]||null;
+    slot.dataset.did=salvo&&salvo.did?String(salvo.did):"";slot.dataset.digimon=salvo&&salvo.digimon?String(salvo.digimon):"";
+    slot._hgPvpBuild=salvo&&salvo.build?salvo.build:null
+  });
+  pvpAtualizarTodosSlots();pvpSalvarEstadoLocal()
+}
+
+function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(pvpLerEstado()))}catch(erro){}}
+
+function pvpRestaurarEstadoLocal(){
+  try{
+    const salvo=localStorage.getItem(PVP_STORAGE_KEY);
+    if(!salvo){pvpSelecionarStage("Mega",100);return}
+    const pacote=JSON.parse(salvo);
+    if(pacote&&pacote.stage&&PVP_STAGE_LEVEL[pacote.stage]){
+      pvpStageAtual=pacote.stage;const label=document.getElementById("pvpStageLabel");if(label)label.textContent=pvpStageTexto(pvpStageAtual)
+    }
+    if(pacote&&Array.isArray(pacote.slots)){
+      document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
+        const s=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index];
+        if(!s)return;slot.dataset.did=s.did?String(s.did):"";slot.dataset.digimon=s.digimon||"";slot._hgPvpBuild=s.build||null
+      })
+    }
+    pvpAtualizarTodosSlots()
+  }catch(erro){pvpSelecionarStage("Mega",100)}
+}
+
+function abrirImportacaoTimePvp(){
+  fecharPvpNavMenu();abrirPvpBuild();
+  const input=document.getElementById("pvpImportFile");if(!input)return;input.value="";input.click()
+}
+async function importarTimePvp(file){
+  if(!file)return;
+  try{await pvpCarregarDatabase();const texto=await file.text();pvpAplicarEstado(JSON.parse(texto));abrirPvpBuild()}
+  catch(erro){alert("Não foi possível importar o time PvP.\n\n"+(erro&&erro.message?erro.message:erro))}
+}
+function exportarTimePvp(){
+  fecharPvpNavMenu();pvpCriarSlots();
+  const pacote=pvpLerEstado();pacote.exportedAt=new Date().toISOString();
+  const blob=new Blob([JSON.stringify(pacote,null,2)],{type:"application/json;charset=utf-8"});
+  builderBaixarBlob(blob,"holy_guardians_pvp_team_"+builderDataArquivo()+".json")
+}
+
+document.addEventListener("click",function(event){
+  const dropdown=document.getElementById("pvpNavDropdown");if(dropdown&&!dropdown.contains(event.target))fecharPvpNavMenu();
+  const stage=document.getElementById("pvpStageSelect");if(stage&&!stage.contains(event.target))pvpFecharStageMenu();
+  const overlay=document.getElementById("pvpPickerOverlay");if(overlay&&event.target===overlay)pvpFecharPicker()
+});
+document.addEventListener("keydown",function(event){if(event.key==="Escape"){fecharPvpNavMenu();pvpFecharStageMenu();pvpFecharPicker()}});
+document.addEventListener("DOMContentLoaded",function(){pvpCriarSlots();pvpCarregarDatabase()});
