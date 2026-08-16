@@ -748,15 +748,37 @@ async function importarTimeBuilder(file) {
   }
 }
 
+function builderEsperarImagem(img, timeoutMs) {
+  return new Promise(function(resolve) {
+    if (!img) {
+      resolve(false);
+      return;
+    }
+
+    if (img.complete && img.naturalWidth > 0) {
+      resolve(true);
+      return;
+    }
+
+    let finalizado = false;
+    const concluir = function(ok) {
+      if (finalizado) return;
+      finalizado = true;
+      resolve(!!ok);
+    };
+
+    img.addEventListener("load", function() { concluir(true); }, { once: true });
+    img.addEventListener("error", function() { concluir(false); }, { once: true });
+    setTimeout(function() {
+      concluir(img.complete && img.naturalWidth > 0);
+    }, timeoutMs || 1800);
+  });
+}
+
 function builderEsperarImagens(container) {
   const imagens = Array.from(container.querySelectorAll("img"));
   return Promise.all(imagens.map(function(img) {
-    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-    return new Promise(function(resolve) {
-      img.addEventListener("load", resolve, { once: true });
-      img.addEventListener("error", resolve, { once: true });
-      setTimeout(resolve, 2500);
-    });
+    return builderEsperarImagem(img, 1800);
   }));
 }
 
@@ -772,51 +794,144 @@ function builderBasenameUrl(src) {
   }
 }
 
-function builderCaminhoLocalExport(img) {
-  if (!img) return "";
+function builderSlugDigimonExport(nome) {
+  return String(nome || "")
+    .replace(/^\[MUTANT\]\s*/i, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[’']/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+}
+
+function builderCandidatosDigimonExport(img) {
+  const candidatos = [];
+  const adicionar = function(valor) {
+    valor = String(valor || "").trim();
+    if (valor && candidatos.indexOf(valor) === -1) candidatos.push(valor);
+  };
+
+  const alt = String(img && img.getAttribute("alt") || "").trim();
+  const slug = builderSlugDigimonExport(alt);
+  const srcAtual = String(img && (img.currentSrc || img.src || img.getAttribute("src")) || "").trim();
+  const basename = builderBasenameUrl(srcAtual);
+
+  if (/\.(?:png|webp|jpe?g)$/i.test(basename) && !/^(?:uc|view|download)$/i.test(basename)) {
+    adicionar("digivolution_assets/digimons/" + basename);
+  }
+
+  if (slug) {
+    adicionar("digivolution_assets/digimons/" + slug + ".webp");
+    adicionar("digivolution_assets/digimons/" + slug.replace(/-mode$/i, "mode") + ".webp");
+  }
+
+  /* Variações de grafia que aparecem no banco/jogo. */
+  const aliases = {
+    "milleniumon": ["millenniummon.webp", "millenniumon.webp", "milleniumon.webp"],
+    "millenniummon": ["millenniummon.webp", "millenniumon.webp", "milleniumon.webp"],
+    "beelzemon-blastmode": ["beelzemon-blastmode.webp"],
+    "belphemon-sleepmode": ["belphemon-sleepmode.webp"],
+    "belphemon-ragemode": ["belphemon-ragemode.webp"]
+  };
+
+  (aliases[slug] || []).forEach(function(nomeArquivo) {
+    adicionar("digivolution_assets/digimons/" + nomeArquivo);
+  });
+
+  return candidatos;
+}
+
+function builderCandidatosLocalExport(img) {
+  if (!img) return [];
 
   if (img.id === "builderExportLogoImg") {
-    return "holyguardians_logo.png";
+    return ["holyguardians_logo.png"];
   }
 
   const classe = String(img.className || "");
   const alt = String(img.getAttribute("alt") || "").trim().toUpperCase();
 
   if (classe.indexOf("field-icon-img") !== -1 && alt) {
-    return "FIELD ICONS/" + alt + ".png";
+    return ["FIELD ICONS/" + alt + ".png"];
   }
 
   if (classe.indexOf("element-icon-img") !== -1 && alt) {
-    return "ELEMENTOS ICONS/" + alt + ".png";
+    return ["ELEMENTOS ICONS/" + alt + ".png"];
   }
 
   if (img.closest && img.closest(".team-image-box")) {
-    const arquivo = builderBasenameUrl(img.currentSrc || img.src || img.getAttribute("src") || "");
-    if (arquivo) {
-      return "digivolution_assets/digimons/" + arquivo;
-    }
+    return builderCandidatosDigimonExport(img);
   }
 
+  return [];
+}
+
+function builderTestarImagemLocal(src) {
+  return new Promise(function(resolve) {
+    const teste = new Image();
+    let finalizado = false;
+
+    const concluir = function(ok) {
+      if (finalizado) return;
+      finalizado = true;
+      resolve(ok ? src : "");
+    };
+
+    teste.onload = function() { concluir(true); };
+    teste.onerror = function() { concluir(false); };
+    teste.src = src;
+
+    if (teste.complete && teste.naturalWidth > 0) concluir(true);
+    setTimeout(function() {
+      concluir(teste.complete && teste.naturalWidth > 0);
+    }, 1400);
+  });
+}
+
+async function builderEscolherImagemLocal(img) {
+  const candidatos = builderCandidatosLocalExport(img);
+  for (let i = 0; i < candidatos.length; i++) {
+    const valido = await builderTestarImagemLocal(candidatos[i]);
+    if (valido) return valido;
+  }
   return "";
 }
 
-function builderPrecarregarAssetsExport(container) {
-  const caminhos = new Set();
-  Array.from(container.querySelectorAll("img")).forEach(function(img) {
-    const local = builderCaminhoLocalExport(img);
-    if (local) caminhos.add(local);
-  });
+async function builderTrocarImagensParaExport(container) {
+  const imagens = Array.from(container.querySelectorAll("img"));
+  const restaurar = [];
 
-  return Promise.all(Array.from(caminhos).map(function(src) {
-    return new Promise(function(resolve) {
-      const preload = new Image();
-      preload.onload = resolve;
-      preload.onerror = resolve;
-      preload.src = src;
-      if (preload.complete) resolve();
-      setTimeout(resolve, 2200);
+  await Promise.all(imagens.map(async function(img) {
+    const candidatos = builderCandidatosLocalExport(img);
+    if (!candidatos.length) return;
+
+    const local = await builderEscolherImagemLocal(img);
+    if (!local) return;
+
+    restaurar.push({
+      img: img,
+      src: img.getAttribute("src") || "",
+      loading: img.getAttribute("loading")
     });
+
+    img.removeAttribute("loading");
+    img.src = local;
+    await builderEsperarImagem(img, 1600);
   }));
+
+  return function restaurarImagens() {
+    restaurar.forEach(function(item) {
+      item.img.src = item.src;
+      if (item.loading == null) {
+        item.img.removeAttribute("loading");
+      } else {
+        item.img.setAttribute("loading", item.loading);
+      }
+    });
+  };
 }
 
 async function salvarImagemDoTime() {
@@ -836,6 +951,7 @@ async function salvarImagemDoTime() {
   if (!area || !pagina) return;
 
   const textoOriginal = botao ? botao.innerHTML : "";
+  let restaurarImagens = function() {};
 
   try {
     if (botao) {
@@ -844,8 +960,14 @@ async function salvarImagemDoTime() {
     }
 
     pagina.classList.add("builder-exporting");
+
+    /*
+     * A troca acontece NO DOM real antes do html2canvas.
+     * Assim o html2canvas recebe somente imagens já carregadas da própria
+     * GitHub Pages, em vez de tentar carregar imagens novas dentro do clone.
+     */
+    restaurarImagens = await builderTrocarImagensParaExport(area);
     await builderEsperarImagens(area);
-    await builderPrecarregarAssetsExport(area);
     await new Promise(function(resolve) {
       requestAnimationFrame(function() { requestAnimationFrame(resolve); });
     });
@@ -856,24 +978,13 @@ async function salvarImagemDoTime() {
       useCORS: true,
       allowTaint: false,
       logging: false,
-      imageTimeout: 8000,
+      imageTimeout: 5000,
       scrollX: 0,
       scrollY: -window.scrollY,
       windowWidth: Math.max(document.documentElement.clientWidth, area.scrollWidth + 40),
       windowHeight: Math.max(document.documentElement.clientHeight, area.scrollHeight + 40),
       ignoreElements: function(element) {
         return element.hasAttribute && element.hasAttribute("data-html2canvas-ignore");
-      },
-      onclone: function(clonedDoc) {
-        const clonedArea = clonedDoc.querySelector("#builderPagina .internal-wrap");
-        if (!clonedArea) return;
-
-        clonedArea.querySelectorAll("img").forEach(function(img) {
-          const local = builderCaminhoLocalExport(img);
-          if (local) img.src = local;
-          img.removeAttribute("loading");
-          try { img.decoding = "sync"; } catch (erro) {}
-        });
       }
     });
 
@@ -887,6 +998,7 @@ async function salvarImagemDoTime() {
     console.error("Erro ao salvar imagem do time:", erro);
     alert("Não foi possível gerar a imagem do time. Atualize a página e tente novamente.");
   } finally {
+    try { restaurarImagens(); } catch (erro) {}
     pagina.classList.remove("builder-exporting");
     if (botao) botao.innerHTML = textoOriginal;
     atualizarEstadoAcoesBuilder();
