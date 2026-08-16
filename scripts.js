@@ -101,6 +101,11 @@ const TYPE_ICONS = {
   FREE: "type_icons/type_free.png"
 };
 
+const HG_LOGO_LOCAL = "holyguardians_logo.png";
+const HG_FIELD_ICONS_DIR = "FIELD%20ICONS";
+const HG_ELEMENT_ICONS_DIR = "ELEMENTOS%20ICONS";
+const HG_DIGIMON_ICONS_DIR = "digivolution_assets/digimons";
+
 
 /* =====================================================
    DIGIDEX — VIEW / FILTROS AVANÇADOS
@@ -752,7 +757,7 @@ const builderExportImageCache = new Map();
 
 function builderResolverSrcImagem(img) {
   if (!img) return "";
-  return String(img.currentSrc || img.src || img.getAttribute("src") || "").trim();
+  return String(img.getAttribute("data-export-src") || img.currentSrc || img.src || img.getAttribute("src") || "").trim();
 }
 
 function builderBlobParaDataUrl(blob) {
@@ -875,9 +880,8 @@ async function salvarImagemDoTime() {
 
         clonedArea.querySelectorAll("img").forEach(function(img) {
           const originalSrc = String(img.getAttribute("data-export-src") || img.currentSrc || img.src || "").trim();
-          if (originalSrc && imagensInline[originalSrc]) {
-            img.src = imagensInline[originalSrc];
-          }
+          if (!originalSrc) return;
+          img.src = imagensInline[originalSrc] || originalSrc;
           img.removeAttribute("loading");
           img.decoding = "sync";
         });
@@ -1456,6 +1460,53 @@ function pegarImagem(nome) {
 
 }
 
+function hgMesmoDominioOuRelativo(src) {
+  const valor = String(src || "").trim();
+  if (!valor) return false;
+  if (/^(data:|blob:)/i.test(valor)) return true;
+  if (!/^https?:/i.test(valor)) return true;
+  try {
+    return new URL(valor, window.location.href).origin === window.location.origin;
+  } catch (erro) {
+    return false;
+  }
+}
+
+function hgBasenameAsset(src) {
+  const valor = String(src || "").trim();
+  if (!valor) return "";
+  try {
+    const url = new URL(valor, window.location.href);
+    const partes = url.pathname.split("/").filter(Boolean);
+    return partes.length ? partes[partes.length - 1] : "";
+  } catch (erro) {
+    const limpo = valor.split("?")[0].split("#")[0];
+    const partes = limpo.split("/").filter(Boolean);
+    return partes.length ? partes[partes.length - 1] : "";
+  }
+}
+
+function hgMontarCaminhoAssetLocal(pasta, arquivo) {
+  const nome = String(arquivo || "").trim();
+  if (!nome) return "";
+  return String(pasta || "").replace(/\/$/, "") + "/" + nome;
+}
+
+function hgResolverIconeDigimonLocal(srcOriginal, digimonNome) {
+  if (hgMesmoDominioOuRelativo(srcOriginal)) {
+    return srcOriginal;
+  }
+
+  const basename = hgBasenameAsset(srcOriginal);
+  if (basename) {
+    return hgMontarCaminhoAssetLocal(HG_DIGIMON_ICONS_DIR, basename);
+  }
+
+  const chave = normalizarChaveDigivolution(digimonNome || "");
+  if (!chave) return srcOriginal || "";
+  return hgMontarCaminhoAssetLocal(HG_DIGIMON_ICONS_DIR, chave + ".png");
+}
+
 
 function definirImagem(
   id,
@@ -1914,6 +1965,19 @@ function pegarImagemField(codigo) {
     return "";
   }
 
+  const candidatosLocais = [
+    field + ".png",
+    field + ".webp",
+    "field_" + field + ".png",
+    "field_" + field + ".webp",
+    "icon_" + field + ".png",
+    "icon_" + field + ".webp"
+  ];
+
+  if (document && document.body && document.body.classList) {
+    return hgMontarCaminhoAssetLocal(HG_FIELD_ICONS_DIR, candidatosLocais[0]);
+  }
+
   const candidatos = [
     field,
     "field_" + field,
@@ -1936,7 +2000,7 @@ function pegarImagemField(codigo) {
 
   }
 
-  return "";
+  return hgMontarCaminhoAssetLocal(HG_FIELD_ICONS_DIR, candidatosLocais[0]);
 
 }
 
@@ -1956,6 +2020,11 @@ function pegarImagemElemento(codigo) {
 
   if (!elemento) {
     return "";
+  }
+
+  const caminhoLocal = hgMontarCaminhoAssetLocal(HG_ELEMENT_ICONS_DIR, elemento + ".png");
+  if (document && document.body && document.body.classList) {
+    return caminhoLocal;
   }
 
   const candidatos = [
@@ -1981,11 +2050,6 @@ function pegarImagemElemento(codigo) {
       return srcDireto;
     }
 
-    /*
-     * Segurança extra:
-     * procura também diretamente nas chaves retornadas pelo Drive,
-     * caso o Code.gs tenha mantido ".png" no nome.
-     */
     const chaveEncontrada =
       Object.keys(
         imagensSite || {}
@@ -2008,7 +2072,7 @@ function pegarImagemElemento(codigo) {
 
   }
 
-  return "";
+  return caminhoLocal;
 
 }
 
@@ -3891,6 +3955,19 @@ function mostrarDadosDoSlot(
     imagem.alt =
       d.digimon;
 
+    const exportSrc =
+      hgResolverIconeDigimonLocal(
+        d.icon,
+        d.digimon
+      );
+
+    if (exportSrc) {
+      imagem.setAttribute(
+        "data-export-src",
+        exportSrc
+      );
+    }
+
 
     imagemBox.appendChild(
       imagem
@@ -4441,12 +4518,11 @@ function carregarImagensSite() {
             "builderExportLogoImg"
           );
 
-        if (
-          builderExportLogoImg &&
-          logo
-        ) {
+        if (builderExportLogoImg) {
           builderExportLogoImg.src =
-            logo;
+            HG_LOGO_LOCAL ||
+            logo ||
+            "";
         }
 
         aplicarAssetsHome();
