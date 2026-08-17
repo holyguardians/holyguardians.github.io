@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260817-pvp-builder-v8-6">
+  <link rel="stylesheet" href="styles.css?v=20260817-challenge-alpha-v1">
 </head>
 <body>
 
@@ -1687,11 +1687,241 @@
     </div>
 
     <div id="pvpMatchView" class="pvp-view">
-      <div class="pvp-match-placeholder">
-        <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE ROOM</div>
-        <h2 class="page-title">MATCH</h2>
-        <p class="page-subtitle">A estrutura da Match Room fica reservada aqui. Vamos definir sala, código/link, Ready e batalha depois que o Build PvP estiver fechado.</p>
-        <button type="button" class="pvp-action-btn" onclick="abrirPvpBuild()">← VOLTAR AO BUILD PVP TEAM</button>
+      <div class="pvp-match-shell">
+        <div class="pvp-match-head tech-corners">
+          <div>
+            <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE ROOM ALPHA</div>
+            <h2 class="page-title">PVP MATCH</h2>
+            <p class="page-subtitle">Crie uma sala, desafie outro jogador e jogue usando a mesma Stage dos dois lados.</p>
+          </div>
+          <div class="pvp-match-head-actions">
+            <span id="pvpMatchConnectionBadge" class="pvp-match-connection-badge">OFFLINE</span>
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpMatchVoltarAoTime()">← EDITAR TIME</button>
+          </div>
+        </div>
+
+        <section id="pvpMatchLobby" class="pvp-match-screen ativa">
+          <div class="pvp-match-lobby-grid">
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>PLAYER PROFILE</small>
+                <strong>SEU NOME NO PVP</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>NICK</span>
+                <input id="pvpMatchNick" type="text" maxlength="16" autocomplete="off" placeholder="Ex.: Gostoso" oninput="pvpMatchSanitizarNick(this)">
+                <small>Somente letras e números · 3 a 16 caracteres.</small>
+              </label>
+
+              <div id="pvpMatchTeamCheck" class="pvp-match-team-check"></div>
+            </article>
+
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>CREATE CHALLENGE</small>
+                <strong>CRIAR SALA</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>BATTLE STAGE</span>
+                <select id="pvpMatchCreateStage" onchange="pvpMatchAtualizarStageLobby()">
+                  <option value="Rookie">ROOKIE · LV. 15</option>
+                  <option value="Champion">CHAMPION · LV. 60</option>
+                  <option value="Ultimate">ULTIMATE · LV. 90</option>
+                  <option value="Mega">MEGA · LV. 100</option>
+                </select>
+                <small>A Stage fica travada depois que a sala é criada.</small>
+              </label>
+
+              <button id="pvpMatchCreateBtn" type="button" class="pvp-action-btn pvp-action-success pvp-match-main-action" onclick="pvpMatchCriarSala()">CRIAR CHALLENGE ROOM</button>
+              <button type="button" class="pvp-action-btn pvp-action-secondary pvp-match-local-btn" onclick="pvpMatchIniciarTesteLocal()">TESTAR ALPHA LOCAL</button>
+            </article>
+
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>JOIN CHALLENGE</small>
+                <strong>ENTRAR EM SALA</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>ROOM ID</span>
+                <input id="pvpMatchJoinCode" type="text" maxlength="12" autocomplete="off" placeholder="HG7K3Q" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+                <small>Também funciona abrindo diretamente o link de convite.</small>
+              </label>
+
+              <button id="pvpMatchJoinBtn" type="button" class="pvp-action-btn pvp-match-main-action" onclick="pvpMatchEntrarSala()">ENTRAR NA SALA</button>
+            </article>
+          </div>
+
+          <div id="pvpMatchServerHint" class="pvp-match-server-hint tech-corners">
+            <div>
+              <strong>ONLINE SERVER // ALPHA</strong>
+              <span id="pvpMatchServerText">Servidor da Challenge Room ainda não configurado neste navegador.</span>
+            </div>
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpMatchConfigurarServidor()">CONFIGURAR</button>
+          </div>
+        </section>
+
+        <section id="pvpMatchWaiting" class="pvp-match-screen">
+          <div class="pvp-match-waiting tech-corners">
+            <div class="pvp-match-room-title">
+              <div>
+                <small>CHALLENGE ROOM</small>
+                <strong id="pvpMatchRoomCode">------</strong>
+              </div>
+              <div class="pvp-match-room-stage">
+                <span>STAGE LOCK</span>
+                <b id="pvpMatchRoomStage">MEGA</b>
+              </div>
+            </div>
+
+            <div class="pvp-match-versus">
+              <article id="pvpMatchHostCard" class="pvp-match-player-card">
+                <small>PLAYER 1</small>
+                <strong>AGUARDANDO...</strong>
+                <span>HOST</span>
+              </article>
+              <div class="pvp-match-vs-mark">VS</div>
+              <article id="pvpMatchGuestCard" class="pvp-match-player-card">
+                <small>PLAYER 2</small>
+                <strong>AGUARDANDO...</strong>
+                <span>CHALLENGER</span>
+              </article>
+            </div>
+
+            <div class="pvp-match-invite-line">
+              <input id="pvpMatchInviteLink" type="text" readonly>
+              <button type="button" class="pvp-action-btn" onclick="pvpMatchCopiarConvite()">COPIAR LINK</button>
+            </div>
+
+            <div id="pvpMatchWaitingMessage" class="pvp-match-waiting-message">Aguardando oponente...</div>
+
+            <div class="pvp-match-ready-actions">
+              <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpMatchSairSala()">SAIR DA SALA</button>
+              <button id="pvpMatchReadyBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchToggleReady()">READY</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="pvpMatchDraft" class="pvp-match-screen">
+          <div class="pvp-draft-head tech-corners">
+            <div>
+              <small id="pvpDraftPhaseLabel">DRAFT PHASE</small>
+              <strong id="pvpDraftInstruction">AGUARDANDO...</strong>
+            </div>
+            <div class="pvp-draft-stage-lock"><span>STAGE</span><b id="pvpDraftStage">MEGA</b></div>
+          </div>
+
+          <div class="pvp-draft-scoreboard">
+            <article class="pvp-draft-side p1">
+              <div class="pvp-draft-player-name" id="pvpDraftHostName">PLAYER 1</div>
+              <div id="pvpDraftHostPicks" class="pvp-draft-picks"></div>
+            </article>
+            <div class="pvp-draft-center-mark">PICK</div>
+            <article class="pvp-draft-side p2">
+              <div class="pvp-draft-player-name" id="pvpDraftGuestName">PLAYER 2</div>
+              <div id="pvpDraftGuestPicks" class="pvp-draft-picks"></div>
+            </article>
+          </div>
+
+          <div class="pvp-draft-roster tech-corners">
+            <div class="pvp-draft-roster-head">
+              <div>
+                <small>YOUR PVP TEAM</small>
+                <strong>SELECIONE O DIGIMON</strong>
+              </div>
+              <span>Passe o mouse para ver status e skills.</span>
+            </div>
+            <div id="pvpDraftRosterGrid" class="pvp-draft-roster-grid"></div>
+          </div>
+        </section>
+
+        <section id="pvpMatchBan" class="pvp-match-screen">
+          <div class="pvp-ban-shell tech-corners">
+            <div class="pvp-ban-head">
+              <small>BAN PHASE</small>
+              <strong id="pvpBanInstruction">Escolha 1 Digimon do adversário para banir.</strong>
+            </div>
+            <div id="pvpBanTargetGrid" class="pvp-ban-target-grid"></div>
+            <div id="pvpBanStatus" class="pvp-ban-status"></div>
+          </div>
+        </section>
+
+        <section id="pvpMatchFormation" class="pvp-match-screen">
+          <div class="pvp-formation-shell tech-corners">
+            <div class="pvp-formation-head">
+              <div>
+                <small>DEPLOY PHASE</small>
+                <strong>FRONT / BACK</strong>
+              </div>
+              <span>Defina a posição dos 3 Digimons que sobreviveram ao ban.</span>
+            </div>
+            <div id="pvpFormationGrid" class="pvp-formation-grid"></div>
+            <div class="pvp-formation-actions">
+              <span id="pvpFormationHint">É obrigatório manter pelo menos 1 Digimon na Front.</span>
+              <button id="pvpFormationConfirmBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchConfirmarFormacao()">CONFIRMAR FORMAÇÃO</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="pvpMatchBattle" class="pvp-match-screen">
+          <div id="pvpBattleHud" class="pvp-battle-hud">
+            <div id="pvpBattleTarget" class="pvp-battle-target tech-corners"></div>
+
+            <div class="pvp-battle-arena tech-corners">
+              <div class="pvp-arena-lines" aria-hidden="true"></div>
+              <div id="pvpBattleEnemyField" class="pvp-battle-field enemy"></div>
+              <div id="pvpBattleImpactLayer" class="pvp-battle-impact-layer" aria-hidden="true"></div>
+              <div id="pvpBattleOwnField" class="pvp-battle-field own"></div>
+            </div>
+
+            <aside class="pvp-turn-panel tech-corners">
+              <div class="pvp-turn-title">TURN</div>
+              <div id="pvpTurnQueue" class="pvp-turn-queue"></div>
+            </aside>
+
+            <div class="pvp-battle-bottom">
+              <section class="pvp-battle-log tech-corners">
+                <div class="pvp-battle-log-head"><span>BATTLE LOG</span><small id="pvpBattleRoundLabel">ROUND 1</small></div>
+                <div id="pvpBattleLogLines" class="pvp-battle-log-lines"></div>
+              </section>
+
+              <section id="pvpBattleSkills" class="pvp-battle-skills tech-corners"></section>
+
+              <aside class="pvp-battle-controls tech-corners">
+                <div class="pvp-gauge-block">
+                  <div class="pvp-gauge-label"><span>GAUGE</span><b id="pvpBattleGaugeText">100%</b></div>
+                  <div class="pvp-gauge-track"><i id="pvpBattleGaugeFill"></i></div>
+                </div>
+                <button id="pvpSubstitutionBtn" type="button" class="pvp-action-btn pvp-substitution-btn" onclick="pvpBattleAbrirSubstituicao()">SUBSTITUTION <span id="pvpSubstitutionCount">3/3</span></button>
+                <button id="pvpPassTurnBtn" type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpBattlePassarTurno()">PASS TURN</button>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <div id="pvpSubstitutionOverlay" class="pvp-sub-overlay" aria-hidden="true">
+          <div class="pvp-sub-modal tech-corners">
+            <div class="pvp-sub-head">
+              <div><small>SUBSTITUTION</small><strong>TROCAR DIGIMON</strong></div>
+              <button type="button" onclick="pvpBattleFecharSubstituicao()">×</button>
+            </div>
+            <div class="pvp-sub-section">
+              <span>DEPLOY DIGIMON</span>
+              <div id="pvpSubDeployGrid" class="pvp-sub-grid"></div>
+            </div>
+            <div class="pvp-sub-arrow">⇅</div>
+            <div class="pvp-sub-section">
+              <span>STANDBY DIGIMON</span>
+              <div id="pvpSubStandbyGrid" class="pvp-sub-grid"></div>
+            </div>
+            <div class="pvp-sub-foot">
+              <small>Remaining Substitution Count <b id="pvpSubModalCount">3/3</b> · Cost 1 Gauge</small>
+              <button id="pvpSubConfirmBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpBattleConfirmarSubstituicao()" disabled>SUBSTITUIR</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2040,6 +2270,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260817-pvp-builder-v8-6"></script>
+<script src="script.js?v=20260817-challenge-alpha-v1"></script>
 </body>
 </html>
