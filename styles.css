@@ -14432,15 +14432,11 @@ body.pvp-modal-open{overflow:hidden}
 
 
 /* =====================================================
-   PVP V7 — AUTO ADVANCE / REMOVE BOTTOM NAV
+   PVP V7.1 — FLOW + STEEL ICON + CRITICAL RESULTS
 ===================================================== */
 
 #pvpPagina .pvp-build-config{
   padding-bottom:16px !important;
-}
-
-#pvpPagina .pvp-build-section:last-of-type{
-  margin-bottom:0 !important;
 }
 
 #pvpPagina .pvp-build-tab.ativo{
@@ -14449,11 +14445,6 @@ body.pvp-modal-open{overflow:hidden}
     0 0 16px rgba(39,176,255,.14),
     inset 0 0 16px rgba(39,176,255,.05) !important;
 }
-
-
-/* =====================================================
-   PVP V7.1 — STEEL ICON FIX + CRITICAL CURVE
-===================================================== */
 
 #pvpPagina .pvp-crit-result{
   margin-top:12px;
@@ -14521,4 +14512,3 @@ body.pvp-modal-open{overflow:hidden}
   font-weight:900;
   letter-spacing:.04em;
 }
-

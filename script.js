@@ -8637,59 +8637,64 @@ function pvpGetBaseStat(digi,stat){
 
 
 function pvpCalcularCriticosComFormulaDoSimulator(build,digi){
-  if(typeof calcularCritRateStatusSimulator!=="function"){
-    return null;
-  }
+  if(typeof calcularCritRateStatusSimulator!=="function")return null;
 
-  const snapshotDigimon=statusSimulatorDigimon;
-  const snapshotBaby=JSON.parse(JSON.stringify(statusSimulatorBaby||{}));
-  const snapshotTetris=JSON.parse(JSON.stringify(statusSimulatorTetris||[]));
-  const snapshotFlat=JSON.parse(JSON.stringify(statusSimulatorFlat||{}));
+  const snapshot={
+    digimon:statusSimulatorDigimon,
+    baby:statusSimulatorBaby,
+    cubes:statusSimulatorCubes,
+    accessories:statusSimulatorAccessories,
+    clothing:statusSimulatorClothing,
+    deck:statusSimulatorDeck
+  };
 
   try{
-    const finalStats={};
-    PVP_BUILD_STATS.forEach(function(stat){
-      const base=pvpGetBaseStat(digi,stat);
-      const babyPct=Number(build.baby[stat]||0);
-      const tetrisPct=(Number(build.tetris[stat]||0))*3;
-      const deck=Number(build.buff[stat]||0);
-      const babyBonus=Math.round(base*(babyPct/100));
-      const tetrisBonus=Math.round(base*(tetrisPct/100));
-      finalStats[stat]=base+babyBonus+tetrisBonus+deck;
-    });
-
+    // Mantém o INT BASE real do Digimon.
     statusSimulatorDigimon={
       digimon:digi.name||"",
       stage:digi.stage||"",
       type:digi.attribute||"UNKNOWN",
-      HP:finalStats.HP,
-      SP:finalStats.SP,
-      STR:finalStats.STR,
-      INT:finalStats.INT,
-      DEF:finalStats.DEF,
-      RES:finalStats.RES,
-      SPD:finalStats.SPD
+      hp:pvpGetBaseStat(digi,"HP"),
+      sp:pvpGetBaseStat(digi,"SP"),
+      str:pvpGetBaseStat(digi,"STR"),
+      int:pvpGetBaseStat(digi,"INT"),
+      def:pvpGetBaseStat(digi,"DEF"),
+      res:pvpGetBaseStat(digi,"RES"),
+      spd:pvpGetBaseStat(digi,"SPD")
     };
 
-    // We feed the already-calculated PvP final values as the simulator "base"
-    // and neutralize simulator modifiers to reuse only the critical curve.
     statusSimulatorBaby={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
-    statusSimulatorTetris=[];
-    statusSimulatorFlat={
-      accessory:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
-      clothing:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
-      deck:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0}
-    };
+    PVP_BUILD_STATS.forEach(function(stat){
+      statusSimulatorBaby[stat]=Number(build.baby[stat]||0);
+    });
+
+    // O PvP usa somente cubos de 3%.
+    statusSimulatorCubes=[];
+    PVP_TETRIS_STATS.forEach(function(stat){
+      const qtd=Math.max(0,Number(build.tetris[stat]||0));
+      for(let i=0;i<qtd;i++){
+        statusSimulatorCubes.push({stat:stat,percent:3,mega:false});
+      }
+    });
+
+    statusSimulatorAccessories={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
+    statusSimulatorClothing={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
+    statusSimulatorDeck={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
+    PVP_BUILD_STATS.forEach(function(stat){
+      statusSimulatorDeck[stat]=Number(build.buff[stat]||0);
+    });
 
     return calcularCritRateStatusSimulator();
   }catch(erro){
-    console.error("[PvP] Falha ao calcular críticos com fórmula do Status Simulator",erro);
+    console.error("[PvP] Erro ao calcular críticos:",erro);
     return null;
   }finally{
-    statusSimulatorDigimon=snapshotDigimon;
-    statusSimulatorBaby=snapshotBaby;
-    statusSimulatorTetris=snapshotTetris;
-    statusSimulatorFlat=snapshotFlat;
+    statusSimulatorDigimon=snapshot.digimon;
+    statusSimulatorBaby=snapshot.baby;
+    statusSimulatorCubes=snapshot.cubes;
+    statusSimulatorAccessories=snapshot.accessories;
+    statusSimulatorClothing=snapshot.clothing;
+    statusSimulatorDeck=snapshot.deck;
   }
 }
 
@@ -8778,7 +8783,7 @@ function pvpConcluirBuildAtual(){
   pvpSalvarEstadoLocal();
   pvpAtualizarFinalActions();
 
-  // Ao concluir, avança automaticamente para o próximo Digimon não concluído.
+  // Ao concluir, vai para o próximo Digimon ainda pendente.
   if(!estavaConcluido && build.complete){
     const slots=pvpBuildSlots();
     const total=slots.length;
@@ -8797,6 +8802,7 @@ function pvpConcluirBuildAtual(){
       pvpBuildIndex=destino;
       pvpRenderBuildTabs();
       pvpRenderBuildAtual();
+
       const painel=document.querySelector("#pvpIndividualView .pvp-build-current");
       if(painel){
         painel.scrollIntoView({behavior:"smooth",block:"start"});
