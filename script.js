@@ -8109,6 +8109,48 @@ const PVP_STAGE_LEVEL = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
 
 const PVP_TETRIS_STATS = ["STR","INT","DEF","RES","SPD"];
 
+const PVP_ELEMENTS = ["DARKNESS","PHYSICAL","FIRE","WIND","WATER","ICE","THUNDER","EARTH","WOOD","STEEL","LIGHT"];
+
+function pvpNovoMapaElementos(){
+  const obj={};
+  PVP_ELEMENTS.forEach(function(e){obj[e]=0});
+  return obj;
+}
+
+function pvpNormalizarBuildSchema(build){
+  const vazioStats={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
+
+  if(!build||typeof build!=="object")build={};
+  build.baby=Object.assign({},vazioStats,build.baby||{});
+  build.tetris=Object.assign({},vazioStats,build.tetris||{});
+  build.buff=Object.assign({},vazioStats,build.buff||{});
+  build.attrBoost=Object.assign(pvpNovoMapaElementos(),build.attrBoost||{});
+  build.attrReduce=Object.assign(pvpNovoMapaElementos(),build.attrReduce||{});
+  build.skillElements=Object.assign({},build.skillElements||{});
+  build.burstSkill=Number(build.burstSkill)||1;
+  if(build.burstSkill<1||build.burstSkill>3)build.burstSkill=1;
+  build.step=Math.max(0,Math.min(3,Number(build.step)||0));
+  build.complete=!!build.complete;
+  return build;
+}
+
+function pvpValorPercentualInput(valor){
+  let txt=String(valor??"").replace(",",".").replace(/[^0-9.]/g,"");
+  const partes=txt.split(".");
+  if(partes.length>2)txt=partes.shift()+"."+partes.join("");
+  const n=Math.max(0,Math.min(999.99,Number(txt)||0));
+  return Math.round(n*100)/100;
+}
+
+function pvpSomarMapaElementos(mapa){
+  return PVP_ELEMENTS.reduce(function(total,e){return total+(Number(mapa&&mapa[e])||0)},0);
+}
+
+function pvpFormatPct(valor){
+  return Number(valor||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
+}
+
+
 function pvpTypeIconHtml(type){
   const tipo=normalizarType(type)||"UNKNOWN";
   const src=TYPE_ICONS[tipo]||"";
@@ -8488,12 +8530,9 @@ function pvpAtualizarBotaoEtapa2(){
 
 function pvpGetSlotBuild(slot){
   if(!slot._hgPvpBuild){
-    slot._hgPvpBuild={
-      baby:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
-      tetris:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
-      buff:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
-      complete:false
-    };
+    slot._hgPvpBuild=pvpNormalizarBuildSchema({});
+  }else{
+    slot._hgPvpBuild=pvpNormalizarBuildSchema(slot._hgPvpBuild);
   }
   return slot._hgPvpBuild;
 }
@@ -8550,17 +8589,19 @@ function pvpRenderBuildAtual(){
   const name=document.getElementById("pvpBuildCurrentName");
   const meta=document.getElementById("pvpBuildCurrentMeta");
   const sl=document.getElementById("pvpBuildCurrentSlot");
-  const progress=document.getElementById("pvpBuildProgress");
+
   if(img&&digi){img.src=digi.icon;img.alt=digi.name}
   if(name)name.textContent=digi?digi.name:"DIGIMON";
   if(meta&&digi)meta.innerHTML=`<span class="pvp-current-stage">${digi.stage.toUpperCase()} · LV. ${digi.level}</span>${pvpMetaIconsHtml(digi)}`;
   if(sl)sl.textContent="SLOT "+String(pvpBuildIndex+1).padStart(2,"0");
-  if(progress)progress.textContent=(pvpBuildIndex+1)+" / 8";
 
   pvpRenderBabyGrid(build);
-  pvpRenderTetrisGrid(build);
   pvpRenderBuffGrid(build);
+  pvpRenderElementDeck(build);
+  pvpRenderSkills(build,digi);
+  pvpRenderTetrisGrid(build);
   pvpRenderSummary(build,digi);
+  pvpSetBuildStep(build.step);
   pvpAtualizarFinalActions();
 }
 
@@ -8587,7 +8628,8 @@ function pvpRenderBabyGrid(build){
     };
     grid.appendChild(row)
   });
-  pvpAtualizarBabyTotal(build)
+  pvpAtualizarBabyTotal(build);
+  pvpAtualizarResumosWizard(build)
 }
 
 function pvpAtualizarBabyTotal(build){
@@ -8705,6 +8747,301 @@ function pvpRenderBuffGrid(build){
   })
 }
 
+
+function pvpRenderElementDeck(build){
+  const grid=document.getElementById("pvpElementDeckGrid");
+  if(!grid)return;
+
+  grid.innerHTML=PVP_ELEMENTS.map(function(element){
+    const boost=Number(build.attrBoost[element]||0);
+    const reduce=Number(build.attrReduce[element]||0);
+
+    return `<div class="pvp-element-deck-row">
+      <div class="pvp-element-deck-name">
+        ${pvpElementIconHtml(element)}
+        <strong>${element}</strong>
+      </div>
+      <label>
+        <span>${element} DMG</span>
+        <div class="pvp-element-percent-field">
+          <input type="text" inputmode="decimal" maxlength="6" data-kind="boost" data-element="${element}" value="${boost}">
+          <em>%</em>
+        </div>
+      </label>
+      <label>
+        <span>${element} DMG REDUCE</span>
+        <div class="pvp-element-percent-field">
+          <input type="text" inputmode="decimal" maxlength="6" data-kind="reduce" data-element="${element}" value="${reduce}">
+          <em>%</em>
+        </div>
+      </label>
+    </div>`;
+  }).join("");
+
+  grid.querySelectorAll("input").forEach(function(input){
+    input.oninput=function(){
+      const element=input.dataset.element;
+      const kind=input.dataset.kind;
+      let raw=String(input.value||"").replace(",",".").replace(/[^0-9.]/g,"");
+      const firstDot=raw.indexOf(".");
+      if(firstDot>=0){
+        raw=raw.slice(0,firstDot+1)+raw.slice(firstDot+1).replace(/\./g,"");
+        const pair=raw.split(".");
+        raw=pair[0].slice(0,3)+(pair.length>1?"."+pair[1].slice(0,2):"");
+      }else{
+        raw=raw.slice(0,3);
+      }
+      input.value=raw;
+      const value=pvpValorPercentualInput(raw);
+      if(kind==="boost")build.attrBoost[element]=value;
+      else build.attrReduce[element]=value;
+      build.complete=false;
+      pvpAtualizarBuildCalculado()
+    };
+    input.onblur=function(){
+      const kind=input.dataset.kind;
+      const element=input.dataset.element;
+      const value=kind==="boost"?build.attrBoost[element]:build.attrReduce[element];
+      input.value=Number(value||0);
+    };
+  });
+}
+
+function pvpSkillElementosDisponiveis(skill){
+  const lista=Array.isArray(skill&&skill.conversions)?skill.conversions.slice():[];
+  if(skill&&skill.attribute&&!lista.includes(skill.attribute))lista.unshift(skill.attribute);
+  return lista.filter(function(e){return PVP_ELEMENTS.includes(e)});
+}
+
+function pvpSkillElementoSelecionado(build,skill){
+  const key="F"+skill.slot;
+  const disponiveis=pvpSkillElementosDisponiveis(skill);
+  let atual=build.skillElements[key];
+  if(!disponiveis.includes(atual))atual=disponiveis[0]||skill.attribute||"";
+  build.skillElements[key]=atual;
+  return atual;
+}
+
+function pvpSkillDamage(skill,element,boostPct,multiplicador){
+  const mult=Number(multiplicador)||1;
+  const hits=Number(skill&&skill.hits)||1;
+  const perHit=Number(skill&&skill.perHit);
+  const baseTotal=Number(skill&&skill.baseTotal);
+
+  if(!Number.isFinite(perHit)||!Number.isFinite(baseTotal)){
+    return{available:false,hits:hits,perHit:0,baseTotal:0,bonusPorHit:0,bonusTotal:0,total:0};
+  }
+
+  // Mesma matemática da Calculadora, isolada no PvP.
+  // A Calculadora existente permanece intocada.
+  const fator=Math.max(0,Number(boostPct)||0)/100;
+  const aplica=pvpSkillElementosDisponiveis(skill).includes(element);
+  const bonusNormalPorHit=aplica?perHit*fator:0;
+
+  const finalPerHit=perHit*mult;
+  const finalBaseTotal=baseTotal*mult;
+  const finalBonusPorHit=bonusNormalPorHit*mult;
+  const finalBonusTotal=finalBonusPorHit*hits;
+
+  return{
+    available:true,
+    applies:aplica,
+    hits:hits,
+    perHit:finalPerHit,
+    baseTotal:finalBaseTotal,
+    bonusPorHit:finalBonusPorHit,
+    bonusTotal:finalBonusTotal,
+    total:finalBaseTotal+finalBonusTotal
+  };
+}
+
+function pvpSkillDetalhesHtml(skill){
+  const extras=[];
+  if(skill.effectRaw)extras.push(`<div><strong>EFFECT</strong><span>${pvpEscapeHtml(skill.effectRaw).replace(/\n/g,"<br>")}</span></div>`);
+  if(skill.attributeEffects)extras.push(`<div><strong>ATTRIBUTE EFFECTS</strong><span>${pvpEscapeHtml(skill.attributeEffects)}</span></div>`);
+  if(skill.cc==="YES")extras.push(`<div><strong>CC</strong><span>${pvpEscapeHtml(skill.ccType||"YES")}</span></div>`);
+  if(skill.dot==="YES")extras.push(`<div><strong>DOT</strong><span>YES</span></div>`);
+  if(skill.defBreak==="YES")extras.push(`<div><strong>DEF BREAK</strong><span>YES</span></div>`);
+
+  return `<div class="pvp-skill-hover">
+    <div class="pvp-skill-hover-top">
+      ${skill.icon?`<img src="${skill.icon}" alt="${pvpEscapeHtml(skill.name)}">`:""}
+      <div><small>Lv. 10</small><strong>${pvpEscapeHtml(skill.name)}</strong></div>
+      <em>ACTIVE SKILL</em>
+    </div>
+    <div class="pvp-skill-hover-info">
+      <div><strong>Skill Type</strong><span>${pvpEscapeHtml(skill.skillType||"-")}</span></div>
+      <div><strong>Number of Attacks</strong><span>${skill.hits||1}</span></div>
+      <div><strong>Damage</strong><span>${pvpEscapeHtml(skill.damageText||"-")}</span></div>
+      <div><strong>Applies to</strong><span>${pvpEscapeHtml(skill.appliesTo||"-")}</span></div>
+      <div><strong>Scope</strong><span>${pvpEscapeHtml(skill.scope||"-")}</span></div>
+    </div>
+    ${skill.description?`<p>${pvpEscapeHtml(skill.description)}</p>`:""}
+    ${extras.join("")}
+  </div>`;
+}
+
+function pvpRenderSkills(build,digi){
+  const grid=document.getElementById("pvpSkillsGrid");
+  const burst=document.getElementById("pvpBurstSkillPanel");
+  if(!grid||!burst)return;
+
+  const skills=Array.isArray(digi&&digi.skills)?digi.skills.slice(0,3):[];
+
+  grid.innerHTML=skills.map(function(skill){
+    const selected=pvpSkillElementoSelecionado(build,skill);
+    const boost=Number(build.attrBoost[selected]||0);
+    const damage=pvpSkillDamage(skill,selected,boost,1);
+
+    const choices=pvpSkillElementosDisponiveis(skill).map(function(element){
+      return `<button type="button" class="pvp-skill-element-choice ${element===selected?"ativo":""}" data-slot="${skill.slot}" data-element="${element}" title="${element}">
+        ${pvpElementIconHtml(element)}
+      </button>`;
+    }).join("");
+
+    return `<article class="pvp-skill-card tech-corners" data-skill-slot="${skill.slot}">
+      <div class="pvp-skill-main">
+        <div class="pvp-skill-icons">
+          <div class="pvp-skill-icon tech-icon-frame">
+            ${skill.icon?`<img src="${skill.icon}" alt="${pvpEscapeHtml(skill.name)}">`:"<span>?</span>"}
+          </div>
+          ${pvpElementIconHtml(selected)}
+        </div>
+        <div class="pvp-skill-copy">
+          <small>F${skill.slot} · LV.10</small>
+          <strong>${pvpEscapeHtml(skill.name)}</strong>
+          <em>MASTERED</em>
+        </div>
+        <div class="pvp-skill-damage">
+          <small>BASE LV.10</small>
+          <strong>${damage.available?calcFormatar(damage.baseTotal)+"%":"-"}</strong>
+          <span>+${damage.available?calcFormatar(damage.bonusTotal):"0"}% ${selected}</span>
+          <b>${damage.available?calcFormatar(damage.total)+"%":"-"}</b>
+        </div>
+      </div>
+
+      <div class="pvp-skill-element-select">
+        <span>CONVERTIBLE ATTRIBUTES</span>
+        <div>${choices}</div>
+      </div>
+
+      ${pvpSkillDetalhesHtml(skill)}
+    </article>`;
+  }).join("");
+
+  if(!skills.length){
+    grid.innerHTML='<div class="pvp-skills-empty">Nenhuma Skill disponível na base para este Digimon.</div>';
+  }
+
+  grid.querySelectorAll(".pvp-skill-element-choice").forEach(function(btn){
+    btn.onclick=function(event){
+      event.stopPropagation();
+      const key="F"+btn.dataset.slot;
+      build.skillElements[key]=btn.dataset.element;
+      build.complete=false;
+      pvpRenderSkills(build,digi);
+      pvpAtualizarBuildCalculado();
+    };
+  });
+
+  const burstSkill=skills.find(function(s){return Number(s.slot)===Number(build.burstSkill)})||skills[0]||null;
+  if(burstSkill)build.burstSkill=burstSkill.slot;
+
+  const burstButtons=skills.map(function(skill){
+    return `<button type="button" class="${Number(skill.slot)===Number(build.burstSkill)?"ativo":""}" data-burst-slot="${skill.slot}">
+      F${skill.slot}
+    </button>`;
+  }).join("");
+
+  if(!burstSkill){
+    burst.innerHTML='<div class="pvp-skills-empty">Burst indisponível.</div>';
+    return;
+  }
+
+  const burstElement=pvpSkillElementoSelecionado(build,burstSkill);
+  const burstBoost=Number(build.attrBoost[burstElement]||0);
+  const burstDamage=pvpSkillDamage(burstSkill,burstElement,burstBoost,3);
+
+  burst.innerHTML=`<article class="pvp-burst-card tech-corners">
+    <div class="pvp-burst-head">
+      <div>
+        <small>F4 // BURST SKILL</small>
+        <strong>${pvpEscapeHtml(burstSkill.name)}</strong>
+        <em>MASTERED · ×3</em>
+      </div>
+      <div class="pvp-burst-source"><span>BASE SKILL</span>${burstButtons}</div>
+    </div>
+
+    <div class="pvp-burst-content">
+      <div class="pvp-skill-icon tech-icon-frame">
+        ${burstSkill.icon?`<img src="${burstSkill.icon}" alt="${pvpEscapeHtml(burstSkill.name)}">`:""}
+      </div>
+      ${pvpElementIconHtml(burstElement)}
+      <div class="pvp-burst-values">
+        <span>BASE BURST <strong>${burstDamage.available?calcFormatar(burstDamage.baseTotal)+"%":"-"}</strong></span>
+        <span>${burstElement} BONUS <strong>+${burstDamage.available?calcFormatar(burstDamage.bonusTotal):"0"}%</strong></span>
+        <b>TOTAL ${burstDamage.available?calcFormatar(burstDamage.total)+"%":"-"}</b>
+      </div>
+    </div>
+  </article>`;
+
+  burst.querySelectorAll("[data-burst-slot]").forEach(function(btn){
+    btn.onclick=function(){
+      build.burstSkill=Number(btn.dataset.burstSlot)||1;
+      build.complete=false;
+      pvpRenderSkills(build,digi);
+      pvpAtualizarBuildCalculado();
+    };
+  });
+}
+
+function pvpSetBuildStep(step){
+  const slot=pvpBuildAtualSlot();
+  if(!slot)return;
+  const build=pvpGetSlotBuild(slot);
+  build.step=Math.max(0,Math.min(3,Number(step)||0));
+
+  document.querySelectorAll("#pvpIndividualView .pvp-wizard-step").forEach(function(section){
+    const active=Number(section.dataset.pvpStep)===build.step;
+    section.classList.toggle("ativo",active);
+    section.classList.toggle("minimizado",!active);
+  });
+
+  pvpAtualizarResumosWizard(build);
+  pvpSalvarEstadoLocal();
+}
+
+function pvpAtualizarResumosWizard(build){
+  if(!build)return;
+
+  const babyTotal=PVP_BUILD_STATS.reduce(function(total,s){return total+(Number(build.baby[s])||0)},0);
+  const cubes=pvpTetrisCubeList(build).length;
+  const boost=pvpSomarMapaElementos(build.attrBoost);
+  const reduce=pvpSomarMapaElementos(build.attrReduce);
+
+  const babyEl=document.getElementById("pvpBabyStepSummary");
+  const deckEl=document.getElementById("pvpDeckStepSummary");
+  const skillsEl=document.getElementById("pvpSkillsStepSummary");
+  const tetrisEl=document.getElementById("pvpTetrisStepSummary");
+
+  if(babyEl)babyEl.textContent=babyTotal+" / 28%";
+  if(deckEl)deckEl.textContent="ATTRBOOST "+pvpFormatPct(boost)+" · REDUCE "+pvpFormatPct(reduce);
+
+  if(skillsEl){
+    const parts=["F1","F2","F3"].map(function(k){return build.skillElements[k]||k});
+    skillsEl.textContent=parts.join(" · ")+" · BURST F"+(build.burstSkill||1);
+  }
+
+  if(tetrisEl)tetrisEl.textContent=cubes+" / 16 ESPAÇOS";
+}
+
+function pvpTooltipElementos(mapa){
+  const linhas=PVP_ELEMENTS
+    .filter(function(e){return Number(mapa&&mapa[e])>0})
+    .map(function(e){return e+" "+pvpFormatPct(mapa[e])});
+  return linhas.length?linhas.join("\n"):"Nenhum elemento configurado";
+}
+
 function pvpGetBaseStat(digi,stat){
   if(!digi)return 0;
   const key="base"+stat;
@@ -8810,15 +9147,24 @@ function pvpRenderCriticos(build,digi){
   const crit=pvpCalcularCriticosCalibrados(build,digi);
   if(!crit)return "";
 
-  return `<div class="pvp-crit-result">
-    <div class="pvp-crit-grid">
+  const attrBoost=pvpSomarMapaElementos(build.attrBoost);
+  const attrReduce=pvpSomarMapaElementos(build.attrReduce);
+  const boostTip=pvpEscapeHtml(pvpTooltipElementos(build.attrBoost));
+  const reduceTip=pvpEscapeHtml(pvpTooltipElementos(build.attrReduce));
+
+  return `<div class="pvp-crit-result pvp-extra-status-result">
+    <div class="pvp-extra-status-list">
       <div><strong>CRIT RATE</strong><b>${crit.critRate.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
       <div><strong>CRIT DOWN</strong><b>${crit.critDown.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
-      <div class="pvp-crit-range"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+      <div class="pvp-extra-wide"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
       <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+      <div><strong>CRIT RESIST</strong><b>0,00%</b></div>
+      <div><strong>ABNORMAL RESIST</strong><b>0,00%</b></div>
+      <div class="pvp-extra-tooltip" data-tooltip="${reduceTip}"><strong>ATTR REDUCE</strong><b>${pvpFormatPct(attrReduce)}</b></div>
+      <div class="pvp-extra-tooltip" data-tooltip="${boostTip}"><strong>ATTRBOOST</strong><b>${pvpFormatPct(attrBoost)}</b></div>
     </div>
     <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · BÔNUS DE INT +${formatarStatusSimulator(crit.bonusInt)}</small>
-    <em>VALORES CRÍTICOS APROXIMADOS · A FÓRMULA SEGUE EM CALIBRAÇÃO</em>
+    <em>CRIT RESIST FIXADO EM 0,00% · ABNORMAL RESIST SERÁ CALIBRADO POSTERIORMENTE</em>
   </div>`;
 }
 
@@ -8873,7 +9219,9 @@ function pvpAtualizarBuildCalculado(){
   const build=pvpGetSlotBuild(slot);
   const did=Number(slot.dataset.did||0);
   const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+
   pvpAtualizarBabyTotal(build);
+  pvpAtualizarResumosWizard(build);
   pvpRenderSummary(build,digi);
   pvpRenderBuildTabs();
   pvpSalvarEstadoLocal();
@@ -8933,7 +9281,7 @@ function pvpBuildProximo(){
 function pvpLimparBuildAtual(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
-  if(!confirm("Limpar Baby Correction, Tetris e Buff Deck deste Digimon?"))return;
+  if(!confirm("Limpar Baby Correction, Buff Deck, elementos, Skills e Tetris deste Digimon?"))return;
   slot._hgPvpBuild=null;
   pvpRenderBuildTabs();pvpRenderBuildAtual();pvpSalvarEstadoLocal()
 }

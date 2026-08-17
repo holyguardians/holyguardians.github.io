@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v7-4-1">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v8">
 </head>
 <body>
 
@@ -1490,7 +1490,7 @@
         <div>
           <div class="pvp-kicker">PVP TEAM // INDIVIDUAL BUILD</div>
           <h2 class="page-title">CONFIGURE DIGIMONS</h2>
-          <p class="page-subtitle">Configure Baby Correction, Tetris 3% e Buff Deck para cada um dos 8 Digimons.</p>
+          <p class="page-subtitle">Configure Baby Correction, Buff Deck, Skills Lv.10 e Tetris 3% para cada um dos 8 Digimons.</p>
         </div>
 
         <div class="pvp-build-top-actions">
@@ -1515,29 +1515,95 @@
             </div>
           </div>
 
-          <div class="pvp-build-section">
-            <div class="pvp-build-section-title">
-              <span>BABY CORRECTION</span>
-              <small>Máximo 14% por atributo · 28% total</small>
+          <div id="pvpStepBaby" class="pvp-wizard-step" data-pvp-step="0">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(0)">
+              <span class="pvp-wizard-index">01</span>
+              <span class="pvp-wizard-title">
+                <strong>BABY CORRECTION</strong>
+                <small>Máximo 14% por atributo · 28% total</small>
+              </span>
+              <span id="pvpBabyStepSummary" class="pvp-wizard-summary">0 / 28%</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpBabyGrid" class="pvp-stat-input-grid"></div>
+              <div id="pvpBabyTotal" class="pvp-total-line">TOTAL: 0%</div>
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" disabled>← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(1)">NEXT →</button>
+              </div>
             </div>
-            <div id="pvpBabyGrid" class="pvp-stat-input-grid"></div>
-            <div id="pvpBabyTotal" class="pvp-total-line">TOTAL: 0%</div>
           </div>
 
-          <div class="pvp-build-section">
-            <div class="pvp-build-section-title">
-              <span>BUFF DECK</span>
-              <small>Informe o bônus em valor absoluto por status</small>
+          <div id="pvpStepDeck" class="pvp-wizard-step" data-pvp-step="1">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(1)">
+              <span class="pvp-wizard-index">02</span>
+              <span class="pvp-wizard-title">
+                <strong>BUFF DECK</strong>
+                <small>Status absolutos + AttrBoost / AttrReduce por elemento</small>
+              </span>
+              <span id="pvpDeckStepSummary" class="pvp-wizard-summary">ATTRBOOST 0% · REDUCE 0%</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div class="pvp-subsection-title">
+                <strong>STATUS BONUS</strong>
+                <span>Valor inteiro por status</span>
+              </div>
+              <div id="pvpBuffGrid" class="pvp-stat-input-grid"></div>
+
+              <div class="pvp-subsection-title pvp-element-deck-title">
+                <strong>ELEMENT ATTRIBUTES</strong>
+                <span>DMG e DMG REDUCE em %</span>
+              </div>
+              <div id="pvpElementDeckGrid" class="pvp-element-deck-grid"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(0)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(2)">NEXT →</button>
+              </div>
             </div>
-            <div id="pvpBuffGrid" class="pvp-stat-input-grid"></div>
           </div>
 
-          <div class="pvp-build-section">
-            <div class="pvp-build-section-title">
-              <span>TETRIS</span>
-              <small>Somente cubos de 3%</small>
+          <div id="pvpStepSkills" class="pvp-wizard-step" data-pvp-step="2">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(2)">
+              <span class="pvp-wizard-index">03</span>
+              <span class="pvp-wizard-title">
+                <strong>SKILLS</strong>
+                <small>F1 / F2 / F3 Mastered + elemento aplicado + Burst</small>
+              </span>
+              <span id="pvpSkillsStepSummary" class="pvp-wizard-summary">F1 · F2 · F3 · BURST</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpSkillsGrid" class="pvp-skills-grid"></div>
+              <div id="pvpBurstSkillPanel" class="pvp-burst-panel"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(1)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(3)">NEXT →</button>
+              </div>
             </div>
-            <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
+          </div>
+
+          <div id="pvpStepTetris" class="pvp-wizard-step" data-pvp-step="3">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(3)">
+              <span class="pvp-wizard-index">04</span>
+              <span class="pvp-wizard-title">
+                <strong>TETRIS</strong>
+                <small>16 espaços · somente cubos de 3%</small>
+              </span>
+              <span id="pvpTetrisStepSummary" class="pvp-wizard-summary">0 / 16 ESPAÇOS</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(2)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn pvp-action-success" onclick="pvpConcluirBuildAtual()">CONCLUIR BUILD →</button>
+              </div>
+            </div>
           </div>
 
         </section>
@@ -1974,6 +2040,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260816-pvp-builder-v7-4-1"></script>
+<script src="script.js?v=20260816-pvp-builder-v8"></script>
 </body>
 </html>
