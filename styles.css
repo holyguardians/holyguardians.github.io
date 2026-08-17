@@ -14854,3 +14854,22 @@ body.pvp-modal-open{overflow:hidden}
   display:none;
 }
 
+
+
+/* =====================================================
+   PVP V8.2.1 — CURRENT DIGIMON ICON FRAME FIX
+   O V6 aumentou width/height para 160px, mas o flex-basis antigo
+   continuava travado em 84px. Isso criava o retângulo alto.
+===================================================== */
+#pvpPagina .pvp-current-icon{
+  width:118px !important;
+  height:118px !important;
+  flex:0 0 118px !important;
+  aspect-ratio:1 / 1;
+}
+#pvpPagina .pvp-current-icon img{
+  width:100% !important;
+  height:100% !important;
+  padding:4px !important;
+  object-fit:contain !important;
+}
