@@ -13831,7 +13831,8 @@ body.modal-open { overflow: hidden; }
 #pvpPagina .pvp-slot-name{overflow:hidden;color:#e9f8ff;font-family:"Oxanium",Arial,sans-serif;font-size:12px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
 #pvpPagina .pvp-slot-meta{margin-top:5px;color:#7597b6;font-size:9px;line-height:1.35}
 #pvpPagina .pvp-slot-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-#pvpPagina .pvp-slot-tags span{padding:3px 6px;border:1px solid rgba(51,164,239,.25);border-radius:4px;background:rgba(12,52,91,.42);color:#86ccef;font-size:7px;font-weight:800;letter-spacing:.3px}
+#pvpPagina .pvp-slot-tags .pvp-mini-icon-tag,
+#pvpPagina .pvp-slot-tags .pvp-mini-text-tag{padding:3px 6px;border:1px solid rgba(51,164,239,.25);border-radius:4px;background:rgba(12,52,91,.42);color:#86ccef;font-size:7px;font-weight:800;letter-spacing:.3px}
 
 body.pvp-modal-open{overflow:hidden}
 #pvpPagina .pvp-picker-overlay{position:fixed;z-index:12000;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;background:rgba(0,6,17,.78);backdrop-filter:blur(4px);opacity:0;visibility:hidden;pointer-events:none;transition:.16s ease}
@@ -15095,4 +15096,49 @@ body.pvp-modal-open{overflow:hidden}
 #builderPagina .hg-relation-tooltip,
 #pvpPagina .hg-relation-tooltip{
   flex-shrink:0;
+}
+
+
+/* =====================================================
+   PVP V8.6.1 — SLOT STRONG / WEAK VISUAL FIX
+   O seletor antigo de .pvp-slot-tags estilizada TODO <span>,
+   inclusive wrappers e o próprio tooltip. Isso criava caixas
+   duplas nos ícones e deixava o fundo do hover translúcido.
+===================================================== */
+
+/* Nos cards de seleção, o hover deve ter o mesmo porte compacto
+   do Team Builder — o tamanho grande fica apenas no cabeçalho PvP. */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip{
+  min-width:230px;
+  max-width:285px;
+  padding:12px 14px;
+  border:1px solid rgba(87,157,229,.50);
+  border-radius:9px;
+  background:#050c1e;
+  color:#e6eef8;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.58),
+    inset 0 0 22px rgba(50,121,208,.055);
+}
+
+/* Garante que os wrappers de STRONG/WEAK não recebam a aparência
+   de tag. Somente o .pvp-mini-icon-tag interno conserva a caixinha. */
+#pvpPagina .pvp-slot-tags .hg-relation,
+#pvpPagina .pvp-slot-tags .hg-relation-trigger,
+#pvpPagina .pvp-slot-tags .hg-relation-tooltip-head,
+#pvpPagina .pvp-slot-tags .hg-relation-tooltip-icon,
+#pvpPagina .pvp-slot-tags .hg-relation-tooltip-head > span:last-child,
+#pvpPagina .pvp-slot-tags .hg-relation-tooltip-copy{
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+
+#pvpPagina .pvp-slot-tags .hg-relation-tooltip-copy{
+  color:#dbe4ee;
+  font-size:9px;
+  font-weight:400;
+  letter-spacing:normal;
 }
