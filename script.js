@@ -9182,45 +9182,80 @@ function pvpCalcularCriticosCalibrados(build,digi){
   );
 
   /* -------------------------
-     RES-derived values — TESTE
+     RES-derived values — CALIBRAÇÃO EMPÍRICA V8.3
      -------------------------
-     O jogo está mostrando que os derivados abaixo respondem ao RES
-     e, nos testes atuais, ao ganho de RES do Potential/Tetris.
-     Buff Deck RES NÃO entra nesses derivados por enquanto.
+     Regras confirmadas pelos testes em:
+     Mega Lv100 / Ultimate Lv90 / Champion Lv60 / Rookie Lv15.
+
+     1) Baby RES e Tetris RES são percentuais sobre o RES BASE.
+     2) Cada fonte é arredondada separadamente com Math.ceil.
+     3) Buff Deck RES aumenta o RES mostrado, mas NÃO entrou nos
+        derivados abaixo em nenhum dos casos medidos até agora.
   */
   const resBase=Number(pvpGetBaseStat(digi,"RES"))||0;
-  const resCubes=Math.max(0,Number(build.tetris.RES||0));
-  const resPotentialPercent=resCubes*3;
-  const resPotentialGain=resPotentialPercent>0
-    ?Math.ceil(resBase*resPotentialPercent/100)
-    :0;
-
-  const critResist=Math.sqrt(resPotentialGain);
-
-  // Fórmula experimental validada nos prints de:
-  // Beelzemon, Beelzemon-XWars, BlackSeraphimon e Creepymon.
-  const critDownBaseAdjustment={
-    arukenimon:1.4136
-  };
-  const critDown=Math.max(
-    0,
-    resBase*0.0067
-      +critResist*2.017
-      +(Number(critDownBaseAdjustment[chave])||0)
-  );
-
   const levelFactor=Math.max(0,Number(digi.level||100)/100);
 
+  const babyResPercent=Math.max(0,Number(build.baby.RES||0));
+  const tetrisResPercent=Math.max(0,Number(build.tetris.RES||0))*3;
+
+  const babyResGain=babyResPercent>0
+    ?Math.ceil(resBase*babyResPercent/100)
+    :0;
+
+  const tetrisResGain=tetrisResPercent>0
+    ?Math.ceil(resBase*tetrisResPercent/100)
+    :0;
+
+  const resPercentGain=babyResGain+tetrisResGain;
+
+  /*
+   * CRIT RESIST
+   * Confirmado inclusive no Rookie com Baby RES sem cubo:
+   * sqrt((Baby RES Gain + Tetris RES Gain) * Level Factor)
+   */
+  const critResist=Math.sqrt(Math.max(0,resPercentGain*levelFactor));
+
+  /*
+   * CRIT DOWN
+   * O termo natural muda por Stage/Lv; o RES base continua sendo
+   * o valor individual de cada Digimon.
+   *
+   * Coeficientes ajustados sobre os pontos reais enviados:
+   * Rookie   Lv15  = 0.04219966864307316
+   * Champion Lv60  = 0.014792899408284023
+   * Ultimate Lv90  = 0.008739848130289869
+   * Mega     Lv100 = 0.006699507521875943
+   *
+   * O componente do ganho percentual é compartilhado:
+   * Crit Resist * 2.017
+   */
+  const stageKey=String(digi.stage||"").trim().toUpperCase();
+  const critDownBaseCoef={
+    ROOKIE:0.04219966864307316,
+    CHAMPION:0.014792899408284023,
+    ULTIMATE:0.008739848130289869,
+    MEGA:0.006699507521875943
+  }[stageKey] ?? 0.006699507521875943;
+
+  const critDown=Math.max(
+    0,
+    resBase*critDownBaseCoef
+      +critResist*2.017
+  );
+
+  /*
+   * ABNORMAL RESIST
+   * O fator de nível afeta tanto a parcela do RES base quanto
+   * a parcela de Baby/Tetris.
+   */
   const abnormalResistMin=Math.max(
     0,
-    resBase*0.009*levelFactor
-      +resPotentialGain*0.045
+    (resBase*0.009 + resPercentGain*0.045)*levelFactor
   );
 
   const abnormalResistMax=Math.max(
     abnormalResistMin,
-    resBase*0.011*levelFactor
-      +resPotentialGain*0.055
+    (resBase*0.011 + resPercentGain*0.055)*levelFactor
   );
 
   return{
@@ -9236,8 +9271,12 @@ function pvpCalcularCriticosCalibrados(build,digi){
     intFinal,
     bonusInt,
     resBase,
-    resPotentialGain,
-    resPotentialPercent,
+    babyResGain,
+    tetrisResGain,
+    resPercentGain,
+    babyResPercent,
+    tetrisResPercent,
+    critDownBaseCoef,
     levelFactor
   };
 }
@@ -9266,8 +9305,8 @@ function pvpRenderCriticos(build,digi){
       <div class="pvp-extra-tooltip" data-tooltip="${reduceTip}"><strong>ATTR REDUCE</strong><b>${pvpFormatPct(attrReduce)}</b></div>
       <div class="pvp-extra-tooltip" data-tooltip="${boostTip}"><strong>ATTRBOOST</strong><b>${pvpFormatPct(attrBoost)}</b></div>
     </div>
-    <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · LV FACTOR ×${Number(crit.levelFactor||1).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})} · RES POTENTIAL +${formatarStatusSimulator(crit.resPotentialGain)} (${crit.resPotentialPercent}%)</small>
-    <em>CRIT RESIST / CRIT DOWN / ABNORMAL RESIST EM CALIBRAÇÃO DE TESTE COM BASE NOS PRINTS DO JOGO</em>
+    <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · LV FACTOR ×${Number(crit.levelFactor||1).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})} · BABY RES +${formatarStatusSimulator(crit.babyResGain)} · TETRIS RES +${formatarStatusSimulator(crit.tetrisResGain)}</small>
+    <em>RES CALIBRADO NOS CASOS TESTADOS · TOLERÂNCIA-ALVO ≤ 0,10% · BUFF RES NÃO ENTRA NOS DERIVADOS</em>
   </div>`;
 }
 
