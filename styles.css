@@ -14873,3 +14873,23 @@ body.pvp-modal-open{overflow:hidden}
   padding:4px !important;
   object-fit:contain !important;
 }
+
+
+/* =====================================================
+   PVP V8.4 — GLOBAL TEAM DECK + NO ICON FLICKER
+===================================================== */
+
+/* Reserva o espaço, mas não mostra tentativas quebradas do ícone. */
+#pvpPagina .pvp-element-icon-loading{
+  visibility:hidden !important;
+}
+
+/* Buff Deck é compartilhado pelo time todo. */
+#pvpPagina #pvpStepDeck .pvp-wizard-index{
+  color:#63efa4;
+}
+
+#pvpPagina #pvpStepDeck.ativo{
+  border-color:rgba(74,227,151,.38);
+}
+

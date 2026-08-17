@@ -8110,11 +8110,71 @@ const PVP_STAGE_LEVEL = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
 const PVP_TETRIS_STATS = ["STR","INT","DEF","RES","SPD"];
 
 const PVP_ELEMENTS = ["DARKNESS","PHYSICAL","FIRE","WIND","WATER","ICE","THUNDER","EARTH","WOOD","STEEL","LIGHT"];
+const pvpElementIconResolvedCache={};
 
 function pvpNovoMapaElementos(){
   const obj={};
   PVP_ELEMENTS.forEach(function(e){obj[e]=0});
   return obj;
+}
+
+function pvpCriarTeamDeckPadrao(){
+  return{
+    buff:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+    attrBoost:pvpNovoMapaElementos(),
+    attrReduce:pvpNovoMapaElementos(),
+    configured:false
+  };
+}
+
+function pvpNormalizarTeamDeck(deck){
+  const base=pvpCriarTeamDeckPadrao();
+  if(!deck||typeof deck!=="object")return base;
+
+  base.buff=Object.assign(base.buff,deck.buff||{});
+  base.attrBoost=Object.assign(base.attrBoost,deck.attrBoost||{});
+  base.attrReduce=Object.assign(base.attrReduce,deck.attrReduce||{});
+  base.configured=!!deck.configured;
+  return base;
+}
+
+let pvpTeamDeck=pvpCriarTeamDeckPadrao();
+
+function pvpAplicarDeckGlobalAoBuild(build){
+  if(!build)return build;
+  build.buff=pvpTeamDeck.buff;
+  build.attrBoost=pvpTeamDeck.attrBoost;
+  build.attrReduce=pvpTeamDeck.attrReduce;
+  return build;
+}
+
+function pvpInvalidarBuildsPorDeck(){
+  pvpBuildSlots().forEach(function(slot){
+    if(!slot._hgPvpBuild)return;
+    slot._hgPvpBuild=pvpNormalizarBuildSchema(slot._hgPvpBuild);
+    pvpAplicarDeckGlobalAoBuild(slot._hgPvpBuild);
+    slot._hgPvpBuild.complete=false;
+  });
+}
+
+function pvpDeckGlobalAlterado(){
+  pvpInvalidarBuildsPorDeck();
+  const atual=pvpBuildAtualSlot();
+  const build=atual?pvpGetSlotBuild(atual):null;
+  if(build)pvpAtualizarResumosWizard(build);
+  pvpRenderBuildTabs();
+  pvpSalvarEstadoLocal();
+}
+
+function pvpNextDepoisBaby(){
+  pvpSetBuildStep(pvpTeamDeck.configured?2:1);
+}
+
+function pvpConcluirDeckGlobal(){
+  pvpTeamDeck.configured=true;
+  pvpInvalidarBuildsPorDeck();
+  pvpSalvarEstadoLocal();
+  pvpSetBuildStep(2);
 }
 
 function pvpNormalizarBuildSchema(build){
@@ -8171,8 +8231,8 @@ function pvpFieldIconHtml(field){
 
 function pvpElementIconHtml(element){
   const e=(typeof normalizarElemento==="function"
-    ? normalizarElemento(element)
-    : String(element||"").trim().toUpperCase());
+    ?normalizarElemento(element)
+    :String(element||"").trim().toUpperCase());
 
   if(!e)return "";
 
@@ -8184,13 +8244,14 @@ function pvpElementIconHtml(element){
     if(src&&!candidates.includes(src))candidates.push(src);
   }
 
+  // Se já descobrimos qual URL funciona, ela vem SEMPRE primeiro.
+  pushCandidate(pvpElementIconResolvedCache[logical]);
+
   aliases.forEach(function(alias){
-    // 1) tenta o resolver já existente do site
     if(typeof pegarImagemElemento==="function"){
       pushCandidate(pegarImagemElemento(alias));
     }
 
-    // 2) tenta localizar diretamente nas imagens já carregadas
     if(typeof imagensSite==="object"&&imagensSite){
       Object.keys(imagensSite).forEach(function(key){
         const limpa=String(key||"")
@@ -8205,7 +8266,6 @@ function pvpElementIconHtml(element){
       });
     }
 
-    // 3) fallback direto no GitHub / main branch
     const nomes=[
       alias,
       alias.toLowerCase(),
@@ -8226,14 +8286,31 @@ function pvpElementIconHtml(element){
 
   const encoded=pvpEscapeHtml(JSON.stringify(candidates));
 
-  return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(logical)}">
+  // O wrapper fica invisível enquanto tenta os candidatos.
+  // Assim nenhum ícone quebrado aparece/pisca na tela.
+  return `<span class="pvp-mini-icon-tag pvp-element-icon-tag pvp-element-icon-loading"
+      title="${pvpEscapeHtml(logical)}">
     <img src="${candidates[0]}"
+      data-pvp-element="${pvpEscapeHtml(logical)}"
       data-pvp-icon-candidates="${encoded}"
       data-pvp-icon-index="0"
+      onload="pvpIconeElementoCarregado(this)"
       onerror="pvpTentarProximoIconeElemento(this)"
       alt="${pvpEscapeHtml(logical)}">
     <b>${pvpEscapeHtml(logical)}</b>
   </span>`;
+}
+
+function pvpIconeElementoCarregado(img){
+  if(!img)return;
+
+  const logical=String(img.dataset.pvpElement||"").trim().toUpperCase();
+  if(logical){
+    pvpElementIconResolvedCache[logical]=img.currentSrc||img.src||"";
+  }
+
+  const wrapper=img.closest(".pvp-mini-icon-tag");
+  if(wrapper)wrapper.classList.remove("pvp-element-icon-loading");
 }
 
 function pvpTentarProximoIconeElemento(img){
@@ -8252,8 +8329,7 @@ function pvpTentarProximoIconeElemento(img){
     return;
   }
 
-  // Se todos os aliases falharem, remove o bloco inteiro:
-  // sem ícone quebrado, sem espaço vazio e sem retângulo.
+  // Nenhum candidato funcionou: remove tudo sem mostrar ícone quebrado.
   const wrapper=img.closest(".pvp-mini-icon-tag");
   if(wrapper)wrapper.remove();
 }
@@ -8432,22 +8508,71 @@ function pvpEscolherDigimon(did){
 
 function pvpLerEstado(){
   const slots=Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map(function(slot,index){
-    return{slot:index+1,did:slot.dataset.did?Number(slot.dataset.did):null,digimon:slot.dataset.digimon||null,build:slot._hgPvpBuild||null}
+    const build=slot._hgPvpBuild?pvpNormalizarBuildSchema(slot._hgPvpBuild):null;
+    if(build)pvpAplicarDeckGlobalAoBuild(build);
+    return{
+      slot:index+1,
+      did:slot.dataset.did?Number(slot.dataset.did):null,
+      digimon:slot.dataset.digimon||null,
+      build:build
+    }
   });
-  return{format:"holy-guardians-pvp-team",version:2,stage:pvpStageAtual,level:PVP_STAGE_LEVEL[pvpStageAtual]||100,slots:slots}
+
+  return{
+    format:"holy-guardians-pvp-team",
+    version:3,
+    stage:pvpStageAtual,
+    level:PVP_STAGE_LEVEL[pvpStageAtual]||100,
+    teamDeck:pvpTeamDeck,
+    slots:slots
+  }
 }
 
 function pvpAplicarEstado(pacote){
-  if(!pacote||pacote.format!=="holy-guardians-pvp-team"||!Array.isArray(pacote.slots))throw new Error("Este arquivo não é um time PvP exportado pela Holy Guardians.");
+  if(!pacote||pacote.format!=="holy-guardians-pvp-team"||!Array.isArray(pacote.slots)){
+    throw new Error("Este arquivo não é um time PvP exportado pela Holy Guardians.");
+  }
+
   pvpCriarSlots();
-  const stagesValidas=["Rookie","Champion","Ultimate","Mega"],stage=stagesValidas.includes(pacote.stage)?pacote.stage:"Mega";
+
+  const stagesValidas=["Rookie","Champion","Ultimate","Mega"];
+  const stage=stagesValidas.includes(pacote.stage)?pacote.stage:"Mega";
+
+  // V3 usa teamDeck. Para V2 antigo, usa o deck do primeiro build salvo.
+  let deckFonte=pacote.teamDeck||null;
+  if(!deckFonte){
+    const legado=pacote.slots.find(function(item){
+      return item&&item.build&&(item.build.buff||item.build.attrBoost||item.build.attrReduce);
+    });
+    if(legado&&legado.build){
+      deckFonte={
+        buff:legado.build.buff||{},
+        attrBoost:legado.build.attrBoost||{},
+        attrReduce:legado.build.attrReduce||{},
+        configured:true
+      };
+    }
+  }
+
+  pvpTeamDeck=pvpNormalizarTeamDeck(deckFonte);
   pvpSelecionarStage(stage,PVP_STAGE_LEVEL[stage]);
+
   document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
     const salvo=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index]||null;
-    slot.dataset.did=salvo&&salvo.did?String(salvo.did):"";slot.dataset.digimon=salvo&&salvo.digimon?String(salvo.digimon):"";
-    slot._hgPvpBuild=salvo&&salvo.build?salvo.build:null
+
+    slot.dataset.did=salvo&&salvo.did?String(salvo.did):"";
+    slot.dataset.digimon=salvo&&salvo.digimon?String(salvo.digimon):"";
+
+    if(salvo&&salvo.build){
+      slot._hgPvpBuild=pvpNormalizarBuildSchema(salvo.build);
+      pvpAplicarDeckGlobalAoBuild(slot._hgPvpBuild);
+    }else{
+      slot._hgPvpBuild=null;
+    }
   });
-  pvpAtualizarTodosSlots();pvpSalvarEstadoLocal()
+
+  pvpAtualizarTodosSlots();
+  pvpSalvarEstadoLocal()
 }
 
 function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(pvpLerEstado()))}catch(erro){}}
@@ -8455,19 +8580,62 @@ function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.st
 function pvpRestaurarEstadoLocal(){
   try{
     const salvo=localStorage.getItem(PVP_STORAGE_KEY);
-    if(!salvo){pvpSelecionarStage("Mega",100);return}
-    const pacote=JSON.parse(salvo);
-    if(pacote&&pacote.stage&&PVP_STAGE_LEVEL[pacote.stage]){
-      pvpStageAtual=pacote.stage;const label=document.getElementById("pvpStageLabel");if(label)label.textContent=pvpStageTexto(pvpStageAtual)
+
+    if(!salvo){
+      pvpTeamDeck=pvpCriarTeamDeckPadrao();
+      pvpSelecionarStage("Mega",100);
+      return
     }
+
+    const pacote=JSON.parse(salvo);
+
+    if(pacote&&pacote.stage&&PVP_STAGE_LEVEL[pacote.stage]){
+      pvpStageAtual=pacote.stage;
+      const label=document.getElementById("pvpStageLabel");
+      if(label)label.textContent=pvpStageTexto(pvpStageAtual)
+    }
+
+    let deckFonte=pacote&&pacote.teamDeck?pacote.teamDeck:null;
+
+    if(!deckFonte&&pacote&&Array.isArray(pacote.slots)){
+      const legado=pacote.slots.find(function(item){
+        return item&&item.build&&(item.build.buff||item.build.attrBoost||item.build.attrReduce);
+      });
+
+      if(legado&&legado.build){
+        deckFonte={
+          buff:legado.build.buff||{},
+          attrBoost:legado.build.attrBoost||{},
+          attrReduce:legado.build.attrReduce||{},
+          configured:true
+        };
+      }
+    }
+
+    pvpTeamDeck=pvpNormalizarTeamDeck(deckFonte);
+
     if(pacote&&Array.isArray(pacote.slots)){
       document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
         const s=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index];
-        if(!s)return;slot.dataset.did=s.did?String(s.did):"";slot.dataset.digimon=s.digimon||"";slot._hgPvpBuild=s.build||null
+        if(!s)return;
+
+        slot.dataset.did=s.did?String(s.did):"";
+        slot.dataset.digimon=s.digimon||"";
+
+        if(s.build){
+          slot._hgPvpBuild=pvpNormalizarBuildSchema(s.build);
+          pvpAplicarDeckGlobalAoBuild(slot._hgPvpBuild);
+        }else{
+          slot._hgPvpBuild=null;
+        }
       })
     }
+
     pvpAtualizarTodosSlots()
-  }catch(erro){pvpSelecionarStage("Mega",100)}
+  }catch(erro){
+    pvpTeamDeck=pvpCriarTeamDeckPadrao();
+    pvpSelecionarStage("Mega",100)
+  }
 }
 
 
@@ -8605,6 +8773,7 @@ function pvpGetSlotBuild(slot){
   }else{
     slot._hgPvpBuild=pvpNormalizarBuildSchema(slot._hgPvpBuild);
   }
+  pvpAplicarDeckGlobalAoBuild(slot._hgPvpBuild);
   return slot._hgPvpBuild;
 }
 
@@ -8800,20 +8969,25 @@ function pvpRenderTetrisGrid(build){
 function pvpRenderBuffGrid(build){
   const grid=document.getElementById("pvpBuffGrid");
   if(!grid)return;
+
+  pvpAplicarDeckGlobalAoBuild(build);
   grid.innerHTML="";
+
   PVP_BUILD_STATS.forEach(function(stat){
     const row=document.createElement("label");
     row.className="pvp-stat-input";
-    row.innerHTML='<span>'+stat+'</span><input class="pvp-number-clean" type="text" inputmode="numeric" maxlength="3" autocomplete="off" value="'+(build.buff[stat]||0)+'"><em>+</em>';
+    row.innerHTML='<span>'+stat+'</span><input class="pvp-number-clean" type="text" inputmode="numeric" maxlength="3" autocomplete="off" value="'+(pvpTeamDeck.buff[stat]||0)+'"><em>+</em>';
     const input=row.querySelector("input");
+
     input.oninput=function(){
       const raw=String(input.value||"").replace(/\D/g,"").slice(0,3);
       const v=Math.max(0,Math.min(999,Number(raw)||0));
       input.value=String(v);
-      build.buff[stat]=v;
-      build.complete=false;
-      pvpAtualizarBuildCalculado()
+      pvpTeamDeck.buff[stat]=v;
+      pvpDeckGlobalAlterado();
+      pvpAtualizarBuildCalculado();
     };
+
     grid.appendChild(row)
   })
 }
@@ -8823,9 +8997,11 @@ function pvpRenderElementDeck(build){
   const grid=document.getElementById("pvpElementDeckGrid");
   if(!grid)return;
 
+  pvpAplicarDeckGlobalAoBuild(build);
+
   grid.innerHTML=PVP_ELEMENTS.map(function(element){
-    const boost=Number(build.attrBoost[element]||0);
-    const reduce=Number(build.attrReduce[element]||0);
+    const boost=Number(pvpTeamDeck.attrBoost[element]||0);
+    const reduce=Number(pvpTeamDeck.attrReduce[element]||0);
 
     return `<div class="pvp-element-deck-row">
       <div class="pvp-element-deck-name">
@@ -8855,6 +9031,7 @@ function pvpRenderElementDeck(build){
       const kind=input.dataset.kind;
       let raw=String(input.value||"").replace(",",".").replace(/[^0-9.]/g,"");
       const firstDot=raw.indexOf(".");
+
       if(firstDot>=0){
         raw=raw.slice(0,firstDot+1)+raw.slice(firstDot+1).replace(/\./g,"");
         const pair=raw.split(".");
@@ -8862,17 +9039,24 @@ function pvpRenderElementDeck(build){
       }else{
         raw=raw.slice(0,3);
       }
+
       input.value=raw;
       const value=pvpValorPercentualInput(raw);
-      if(kind==="boost")build.attrBoost[element]=value;
-      else build.attrReduce[element]=value;
-      build.complete=false;
-      pvpAtualizarBuildCalculado()
+
+      if(kind==="boost")pvpTeamDeck.attrBoost[element]=value;
+      else pvpTeamDeck.attrReduce[element]=value;
+
+      pvpDeckGlobalAlterado();
+      pvpAtualizarBuildCalculado();
     };
+
     input.onblur=function(){
       const kind=input.dataset.kind;
       const element=input.dataset.element;
-      const value=kind==="boost"?build.attrBoost[element]:build.attrReduce[element];
+      const value=kind==="boost"
+        ?pvpTeamDeck.attrBoost[element]
+        :pvpTeamDeck.attrReduce[element];
+
       input.value=Number(value||0);
     };
   });
@@ -9423,14 +9607,21 @@ function pvpBuildProximo(){
 function pvpLimparBuildAtual(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
-  if(!confirm("Limpar Baby Correction, Buff Deck, elementos, Skills e Tetris deste Digimon?"))return;
+  if(!confirm("Limpar Baby Correction, Skills e Tetris deste Digimon? O Buff Deck global dos 8 será mantido."))return;
   slot._hgPvpBuild=null;
   pvpRenderBuildTabs();pvpRenderBuildAtual();pvpSalvarEstadoLocal()
 }
 
 function pvpLimparTimeCompleto(){
-  if(!confirm("Limpar todo o time PvP? Isso remove os 8 Digimons e todos os builds."))return;
-  pvpBuildSlots().forEach(function(slot){pvpLimparSlot(slot);slot._hgPvpBuild=null});
+  if(!confirm("Limpar todo o time PvP? Isso remove os 8 Digimons, todos os builds e o Buff Deck global."))return;
+
+  pvpTeamDeck=pvpCriarTeamDeckPadrao();
+
+  pvpBuildSlots().forEach(function(slot){
+    pvpLimparSlot(slot);
+    slot._hgPvpBuild=null
+  });
+
   localStorage.removeItem(PVP_STORAGE_KEY);
   pvpBuildIndex=0;
   pvpMostrarView("build");

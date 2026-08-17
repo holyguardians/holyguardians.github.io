@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260817-pvp-builder-v8-2-1">
+  <link rel="stylesheet" href="styles.css?v=20260817-pvp-builder-v8-4">
 </head>
 <body>
 
@@ -1530,7 +1530,7 @@
               <div id="pvpBabyTotal" class="pvp-total-line">TOTAL: 0%</div>
               <div class="pvp-wizard-nav">
                 <button type="button" class="pvp-action-btn pvp-action-secondary" disabled>← PREVIOUS</button>
-                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(1)">NEXT →</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpNextDepoisBaby()">NEXT →</button>
               </div>
             </div>
           </div>
@@ -1539,8 +1539,8 @@
             <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(1)">
               <span class="pvp-wizard-index">02</span>
               <span class="pvp-wizard-title">
-                <strong>BUFF DECK</strong>
-                <small>Status absolutos + AttrBoost / AttrReduce por elemento</small>
+                <strong>BUFF DECK · GLOBAL DO TIME</strong>
+                <small>Preencha uma vez · os mesmos valores são aplicados aos 8 Digimons</small>
               </span>
               <span id="pvpDeckStepSummary" class="pvp-wizard-summary">ATTRBOOST 0% · REDUCE 0%</span>
               <span class="pvp-wizard-chevron">⌄</span>
@@ -1560,7 +1560,7 @@
 
               <div class="pvp-wizard-nav">
                 <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(0)">← PREVIOUS</button>
-                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(2)">NEXT →</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpConcluirDeckGlobal()">NEXT →</button>
               </div>
             </div>
           </div>
@@ -2040,6 +2040,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260817-pvp-builder-v8-3-res-calibrated"></script>
+<script src="script.js?v=20260817-pvp-builder-v8-4"></script>
 </body>
 </html>
