@@ -9442,11 +9442,53 @@ function pvpCalcularCriticosCalibrados(build,digi){
   const chave=normalizarChaveDigivolution(digi.name||"");
   const burstMode=/burstmode|bm$/.test(chave)?1:0;
 
+  /*
+   * INT — CALIBRAÇÃO EMPÍRICA V8.6
+   *
+   * Os offsets abaixo ancoram CRITDMG e DAMAGE RANGE nos Ultimates
+   * medidos no jogo com o mesmo Deck Buff de teste.
+   *
+   * IMPORTANTE: não são valores finais fixos. O cálculo-base continua
+   * recebendo INT BASE / INT FINAL normalmente; o offset apenas corrige
+   * a curva individual observada de cada Digimon. Assim, Baby/Tetris/
+   * Deck INT continuam alterando os derivados em tempo real.
+   *
+   * CRIT RATE não foi recalibrado sem leitura equivalente no jogo.
+   * Arukenimon mantém a correção de CRIT RATE já validada anteriormente.
+   */
   const calibracaoPvp={
     arukenimon:{
       critRate:-6.588071339586276,
       critDmg:-9.58824301987506,
       damageRangeMax:-3.98568401032475
+    },
+    taomon:{
+      critDmg:-16.96540435488808,
+      damageRangeMax:-5.747470542753632
+    },
+    bigmamemon:{
+      critDmg:-23.855987395530235,
+      damageRangeMax:-7.567435244468783
+    },
+    skullmeramon:{
+      critDmg:-23.862595189474575,
+      damageRangeMax:-7.567035197240486
+    },
+    whamon:{
+      critDmg:-23.854238273603755,
+      damageRangeMax:-7.567541139323339
+    },
+    scorpiomon:{
+      critDmg:-6.965404354888079,
+      damageRangeMax:-3.1174705427536225
+    },
+    pumpkinmon:{
+      critDmg:-23.859291292502405,
+      damageRangeMax:-7.567235220854627
+    },
+    infermon:{
+      critDmg:-23.868231249015395,
+      damageRangeMax:-7.566693980486917
     }
   };
 
@@ -9609,7 +9651,7 @@ function pvpRenderCriticos(build,digi){
       <div class="pvp-extra-tooltip" data-tooltip="${boostTip}"><strong>ATTRBOOST</strong><b>${pvpFormatPct(attrBoost)}</b></div>
     </div>
     <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · LV FACTOR ×${Number(crit.levelFactor||1).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})} · BABY RES +${formatarStatusSimulator(crit.babyResGain)} · TETRIS RES +${formatarStatusSimulator(crit.tetrisResGain)}</small>
-    <em>RES CALIBRADO NOS CASOS TESTADOS · TOLERÂNCIA-ALVO ≤ 0,10% · BUFF RES NÃO ENTRA NOS DERIVADOS</em>
+    <em>INT: CRITDMG / DAMAGE RANGE CALIBRADOS NOS ULTIMATES TESTADOS · RES MANTIDO NOS CASOS VALIDADOS · TOLERÂNCIA-ALVO ≤ 0,10%</em>
   </div>`;
 }
 

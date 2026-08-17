@@ -15054,3 +15054,45 @@ body.pvp-modal-open{overflow:hidden}
   }
 }
 
+
+
+/* =====================================================
+   PVP V8.6 — STRONG / WEAK TOOLTIP SEM CORTE
+   Replica o comportamento que já funciona no Team Builder:
+   o card não recorta o tooltip e o card ativo sobe na pilha.
+===================================================== */
+
+/* DigiDex: o .card genérico usava overflow:hidden e cortava o hover. */
+#databasePagina .card{
+  position:relative;
+  overflow:visible;
+}
+
+#databasePagina .card:has(.hg-relation:hover),
+#databasePagina .card:has(.hg-relation:focus-within){
+  z-index:90;
+}
+
+/* PvP: o slot também usava overflow:hidden. O portrait continua
+   recortado pelo próprio .pvp-slot-portrait, então só o tooltip escapa. */
+#pvpPagina .pvp-slot{
+  overflow:visible !important;
+}
+
+#pvpPagina .pvp-slot:has(.hg-relation:hover),
+#pvpPagina .pvp-slot:has(.hg-relation:focus-within){
+  z-index:90;
+}
+
+/* Mantém o Team Builder acima dos vizinhos durante o hover/foco. */
+#builderPagina .slot:has(.hg-relation:hover),
+#builderPagina .slot:has(.hg-relation:focus-within){
+  z-index:90;
+}
+
+/* Evita que o tooltip seja comprimido por conteúdo interno dos cards. */
+#databasePagina .hg-relation-tooltip,
+#builderPagina .hg-relation-tooltip,
+#pvpPagina .hg-relation-tooltip{
+  flex-shrink:0;
+}
