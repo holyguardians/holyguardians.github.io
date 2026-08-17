@@ -13967,3 +13967,158 @@ body.pvp-modal-open{overflow:hidden}
   #pvpPagina .pvp-tetris-grid{grid-template-columns:1fr}
   #pvpPagina .pvp-final-actions{align-items:flex-start;flex-direction:column}
 }
+
+
+/* =====================================================
+   PVP V4 — TETRIS COMPACTO + ICONS
+===================================================== */
+#pvpPagina .pvp-meta-icons{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;margin-top:6px}
+#pvpPagina .pvp-meta-icon-group{display:flex;align-items:center;gap:4px;min-width:0}
+#pvpPagina .pvp-meta-icon-group>small{color:#4f7897;font-size:5.5px;font-weight:900;letter-spacing:.5px}
+#pvpPagina .pvp-meta-icon-list{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+#pvpPagina .pvp-mini-icon-tag{min-height:23px;display:inline-flex;align-items:center;justify-content:center;gap:3px;padding:2px 4px;border:1px solid rgba(64,174,235,.27);border-radius:5px;background:rgba(5,34,68,.64);color:#9edcff;font-size:6px;font-weight:900}
+#pvpPagina .pvp-mini-icon-tag img{width:18px;height:18px;object-fit:contain;display:block}
+#pvpPagina .pvp-type-icon-tag img,#pvpPagina .pvp-element-icon-tag img{width:19px;height:19px}
+#pvpPagina .pvp-mini-icon-tag b{font-size:5.5px}
+#pvpPagina .pvp-mini-text-tag{padding:3px 5px;border:1px solid rgba(64,174,235,.27);border-radius:4px;color:#8edbff;font-size:6px;font-weight:900}
+
+#pvpPagina .pvp-slot-tags{margin-top:7px}
+#pvpPagina .pvp-slot-tags .pvp-meta-icon-group>small{display:none}
+#pvpPagina .pvp-slot-tags .pvp-meta-icons{gap:4px;margin-top:0}
+#pvpPagina .pvp-slot-tags .pvp-mini-icon-tag{min-height:21px;padding:1px 3px}
+#pvpPagina .pvp-slot-tags .pvp-mini-icon-tag img{width:16px;height:16px}
+
+#pvpPagina .pvp-picker-mini-meta{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-top:3px}
+#pvpPagina .pvp-picker-mini-meta .pvp-mini-icon-tag{min-height:20px;padding:1px 3px}
+#pvpPagina .pvp-picker-mini-meta .pvp-mini-icon-tag img{width:15px;height:15px}
+#pvpPagina .pvp-picker-mini-meta .pvp-mini-icon-tag b{display:none}
+
+#pvpPagina .pvp-current-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px}
+#pvpPagina .pvp-current-stage{color:#7397b5;font-size:8px;font-weight:800}
+#pvpPagina .pvp-current-meta .pvp-meta-icons{margin-top:0}
+
+#pvpPagina .pvp-tetris-grid{display:block}
+#pvpPagina .pvp-tetris-compact-workspace{display:grid;grid-template-columns:minmax(270px,.75fr) minmax(250px,1.25fr);gap:10px;align-items:start}
+#pvpPagina .pvp-tetris-mode-label{min-height:32px;display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:6px;border:1px solid rgba(71,143,201,.42);border-radius:6px;background:linear-gradient(180deg,rgba(21,113,167,.66),rgba(8,55,91,.78));color:#8fb8d2;font-size:6.5px;font-weight:900}
+#pvpPagina .pvp-tetris-mode-label strong{color:#fff;font-size:9px}
+#pvpPagina .pvp-tetris-board{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px;border:1px solid rgba(65,153,215,.36);border-radius:8px;background:#020918}
+#pvpPagina .pvp-tetris-slot,#pvpPagina .pvp-tetris-cube{aspect-ratio:1;min-width:0;display:grid;place-items:center;align-content:center;border-radius:4px}
+#pvpPagina .pvp-tetris-slot{border:1px dashed rgba(72,125,166,.30);color:#25445f;background:rgba(8,25,47,.48);font-size:6px}
+#pvpPagina .pvp-tetris-cube{gap:1px;border:1px solid color-mix(in srgb,var(--pvp-cube-color),white 30%);background:linear-gradient(145deg,color-mix(in srgb,var(--pvp-cube-color),white 13%),color-mix(in srgb,var(--pvp-cube-color),black 25%));color:#fff;text-shadow:0 1px 2px #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.14),inset -2px -2px 0 rgba(0,0,0,.22)}
+#pvpPagina .pvp-tetris-cube strong{font-size:7px}
+#pvpPagina .pvp-tetris-cube small{font-size:6px;font-weight:900}
+
+#pvpPagina .pvp-tetris-palette{min-width:0;padding:8px;border:1px solid rgba(56,139,198,.20);border-radius:7px;background:rgba(3,19,42,.48)}
+#pvpPagina .pvp-tetris-palette>span{display:block;margin-bottom:6px;color:#6993b1;font-size:6px;font-weight:900;letter-spacing:.45px}
+#pvpPagina .pvp-tetris-add-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+#pvpPagina .pvp-tetris-add{position:relative;min-width:0;min-height:42px;border:1px solid color-mix(in srgb,var(--pvp-cube-color),white 30%);border-radius:5px;background:linear-gradient(145deg,color-mix(in srgb,var(--pvp-cube-color),white 12%),color-mix(in srgb,var(--pvp-cube-color),black 28%));color:#fff;font-family:inherit;cursor:pointer;text-shadow:0 1px 2px #000}
+#pvpPagina .pvp-tetris-add:hover{transform:translateY(-1px);filter:brightness(1.12)}
+#pvpPagina .pvp-tetris-add strong{display:block;font-size:7px}
+#pvpPagina .pvp-tetris-add small{display:block;margin-top:1px;font-size:5.5px}
+#pvpPagina .pvp-tetris-add em{position:absolute;top:3px;right:4px;color:rgba(255,255,255,.75);font-size:5px;font-style:normal;font-weight:900}
+#pvpPagina .pvp-tetris-palette>small{display:block;margin-top:7px;color:#557d9b;font-size:5.5px;line-height:1.35}
+
+#pvpPagina .pvp-tetris-actions{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:5px;margin-top:6px}
+#pvpPagina .pvp-tetris-actions span{color:#6d93ae;font-size:6px;font-weight:900}
+#pvpPagina .pvp-tetris-actions button{min-height:27px;padding:0 8px;border:1px solid rgba(64,145,205,.35);border-radius:5px;background:#07182d;color:#8fb4ce;font-family:inherit;font-size:5.8px;font-weight:900;cursor:pointer}
+#pvpPagina .pvp-tetris-actions button:hover{border-color:#49dfff;color:#fff}
+
+@media(max-width:900px){#pvpPagina .pvp-tetris-compact-workspace{grid-template-columns:1fr}}
+
+
+/* =====================================================
+   PVP V5 — STATUS SUMMARY = STATUS SIMULATOR
+===================================================== */
+
+#pvpPagina .pvp-build-summary{
+  padding:16px !important;
+}
+
+#pvpPagina .pvp-summary-stats.pvp-summary-status-simulator{
+  display:grid !important;
+  gap:7px !important;
+}
+
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-simulator-row{
+  min-width:0;
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  gap:3px 8px;
+  padding:9px 10px;
+  border:1px solid rgba(56,119,166,.20);
+  border-left:2px solid var(--stat-color);
+  border-radius:7px;
+  background:rgba(3,14,31,.68);
+  box-shadow:none;
+}
+
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-simulator-row>*{
+  min-width:0;
+  padding:0;
+  text-align:left;
+}
+
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-simulator-row>strong{
+  grid-row:1 / span 2;
+  align-self:center;
+  color:var(--stat-color);
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:9px;
+  font-weight:900;
+  text-shadow:0 0 7px color-mix(in srgb,var(--stat-color),transparent 55%);
+}
+
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-simulator-row>b{
+  color:#63efa4;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.1;
+  text-shadow:0 0 9px rgba(61,244,157,.25);
+}
+
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-simulator-row>small{
+  color:#789bb3;
+  font-size:6px;
+  line-height:1.45;
+  letter-spacing:.01em;
+}
+
+/* Old PvP summary chip layout is intentionally disabled in V5. */
+#pvpPagina .pvp-summary-status-simulator .pvp-summary-bonuses{
+  display:none !important;
+}
+
+/* Completion action follows the compact action language of Status Simulator. */
+#pvpPagina .pvp-build-summary #pvpMarkDoneBtn{
+  width:100%;
+  min-height:40px;
+  margin-top:13px;
+  padding:0 15px;
+  border:1px solid rgba(74,202,255,.55);
+  border-radius:7px;
+  background:linear-gradient(180deg,#0e6898,#074266);
+  color:#eaffff;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.35px;
+  cursor:pointer;
+  box-shadow:inset 0 0 14px rgba(45,206,255,.08);
+  transition:.16s ease;
+}
+
+#pvpPagina .pvp-build-summary #pvpMarkDoneBtn:hover{
+  border-color:#62e4ff;
+  filter:brightness(1.08);
+  box-shadow:0 0 13px rgba(51,191,255,.16),inset 0 0 14px rgba(45,206,255,.10);
+}
+
+#pvpPagina .pvp-build-summary #pvpMarkDoneBtn.done{
+  border-color:rgba(73,235,146,.62);
+  background:linear-gradient(180deg,#11724d,#075239);
+  color:#dffff0;
+  box-shadow:0 0 12px rgba(50,226,133,.10),inset 0 0 14px rgba(50,226,133,.08);
+}
+

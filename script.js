@@ -8107,6 +8107,47 @@ let pvpDadosCarregando = null;
 
 const PVP_STAGE_LEVEL = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
 
+const PVP_TETRIS_STATS = ["STR","INT","DEF","RES","SPD"];
+
+function pvpTypeIconHtml(type){
+  const tipo=normalizarType(type)||"UNKNOWN";
+  const src=TYPE_ICONS[tipo]||"";
+  if(!src)return `<span class="pvp-mini-text-tag">${pvpEscapeHtml(tipo)}</span>`;
+  return `<span class="pvp-mini-icon-tag pvp-type-icon-tag" title="${pvpEscapeHtml(tipo)}">
+    <img src="${src}" alt="${pvpEscapeHtml(tipo)}"><b>${pvpEscapeHtml(tipo)}</b>
+  </span>`;
+}
+
+function pvpFieldIconHtml(field){
+  const f=String(field||"").trim().toUpperCase();
+  if(!f)return "";
+  const src=(typeof pegarImagemField==="function" ? pegarImagemField(f) : "") || `FIELD ICONS/${encodeURIComponent(f)}.png`;
+  return `<span class="pvp-mini-icon-tag" title="${pvpEscapeHtml(f)}">
+    <img src="${src}" alt="${pvpEscapeHtml(f)}"><b>${pvpEscapeHtml(f)}</b>
+  </span>`;
+}
+
+function pvpElementIconHtml(element){
+  const e=(typeof normalizarElemento==="function" ? normalizarElemento(element) : String(element||"").trim().toUpperCase());
+  if(!e)return "";
+  const src=(typeof pegarImagemElemento==="function" ? pegarImagemElemento(e) : "") || `ELEMENTOS ICONS/${encodeURIComponent(e)}.png`;
+  return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(e)}">
+    <img src="${src}" alt="${pvpEscapeHtml(e)}"><b>${pvpEscapeHtml(e)}</b>
+  </span>`;
+}
+
+function pvpMetaIconsHtml(digi){
+  if(!digi)return "";
+  const fields=String(digi.fields||"").split(/[,/|]+/).map(function(x){return x.trim()}).filter(Boolean);
+  const elements=Array.isArray(digi.elements)?digi.elements:[];
+  return `<div class="pvp-meta-icons">
+    <div class="pvp-meta-icon-group"><small>TYPE</small>${pvpTypeIconHtml(digi.attribute)}</div>
+    ${elements.length ? `<div class="pvp-meta-icon-group"><small>ELEMENT</small><div class="pvp-meta-icon-list">${elements.map(pvpElementIconHtml).join("")}</div></div>` : ""}
+    ${fields.length ? `<div class="pvp-meta-icon-group"><small>FIELD</small><div class="pvp-meta-icon-list">${fields.map(pvpFieldIconHtml).join("")}</div></div>` : ""}
+  </div>`;
+}
+
+
 function fecharPvpNavMenu(){const d=document.getElementById("pvpNavDropdown");if(d)d.classList.remove("aberto")}
 function togglePvpNavMenu(event){if(event){event.preventDefault();event.stopPropagation()}const d=document.getElementById("pvpNavDropdown");if(d)d.classList.toggle("aberto")}
 function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}
@@ -8215,7 +8256,7 @@ function pvpAtualizarSlotVisual(slot,digi){
   if(plus)plus.hidden=true;
   if(nome)nome.textContent=digi.name;
   if(meta)meta.textContent=digi.stage.toUpperCase()+" · LV. "+digi.level;
-  if(tags)tags.innerHTML='<span>'+pvpEscapeHtml(digi.attribute||"UNKNOWN")+'</span>'+(digi.fields?'<span>'+pvpEscapeHtml(String(digi.fields).replace(/,\s*/g," · "))+'</span>':"");
+  if(tags)tags.innerHTML=pvpMetaIconsHtml(digi);
   if(remove)remove.style.display="grid"
 }
 
@@ -8247,7 +8288,7 @@ function pvpRenderPicker(){
     const btn=document.createElement("button"),repetido=escolhidos.has(Number(digi.did));
     btn.type="button";btn.className="pvp-picker-card tech-corners"+(repetido?" ja-usado":"");btn.disabled=repetido;
     btn.innerHTML='<span class="pvp-picker-icon tech-icon-frame"><img src="'+digi.icon+'" alt="'+pvpEscapeHtml(digi.name)+'"></span>'+
-      '<span class="pvp-picker-copy"><strong>'+pvpEscapeHtml(digi.name)+'</strong><small>'+pvpEscapeHtml(digi.attribute||"UNKNOWN")+' · LV. '+digi.level+'</small></span>'+
+      '<span class="pvp-picker-copy"><strong>'+pvpEscapeHtml(digi.name)+'</strong><small>'+digi.stage.toUpperCase()+' · LV. '+digi.level+'</small><span class="pvp-picker-mini-meta">'+pvpTypeIconHtml(digi.attribute)+(Array.isArray(digi.elements)?digi.elements.map(pvpElementIconHtml).join(""):"")+'</span></span>'+
       (repetido?'<em>IN TEAM</em>':'');
     btn.onclick=function(){pvpEscolherDigimon(digi.did)};grid.appendChild(btn)
   });
@@ -8418,7 +8459,7 @@ function pvpRenderBuildAtual(){
   const progress=document.getElementById("pvpBuildProgress");
   if(img&&digi){img.src=digi.icon;img.alt=digi.name}
   if(name)name.textContent=digi?digi.name:"DIGIMON";
-  if(meta&&digi)meta.textContent=digi.stage.toUpperCase()+" · LV. "+digi.level+" · "+(digi.attribute||"UNKNOWN");
+  if(meta&&digi)meta.innerHTML=`<span class="pvp-current-stage">${digi.stage.toUpperCase()} · LV. ${digi.level}</span>${pvpMetaIconsHtml(digi)}`;
   if(sl)sl.textContent="SLOT "+String(pvpBuildIndex+1).padStart(2,"0");
   if(progress)progress.textContent=(pvpBuildIndex+1)+" / 8";
 
@@ -8458,32 +8499,92 @@ function pvpAtualizarBabyTotal(build){
   if(el)el.textContent="TOTAL: "+total+"% / 28%"
 }
 
+function pvpTetrisCubeList(build){
+  const cubes=[];
+  PVP_TETRIS_STATS.forEach(function(stat){
+    const qtd=Math.max(0,Number(build.tetris[stat]||0));
+    for(let i=0;i<qtd;i++)cubes.push(stat);
+  });
+  return cubes.slice(0,16);
+}
+
+function pvpTetrisColor(stat){
+  return {STR:"#eb4e66",INT:"#4d8fff",DEF:"#e6b54d",RES:"#a86bf2",SPD:"#43cfbf"}[stat]||"#40bde8";
+}
+
+function pvpAdicionarCuboTetris(build,stat){
+  if(!PVP_TETRIS_STATS.includes(stat))return;
+  if(pvpTetrisCubeList(build).length>=16)return;
+  build.tetris[stat]=(Number(build.tetris[stat]||0))+1;
+  build.complete=false;
+  pvpRenderTetrisGrid(build);
+  pvpAtualizarBuildCalculado();
+}
+
+function pvpRemoverUltimoCuboTetris(build){
+  const cubes=pvpTetrisCubeList(build);
+  if(!cubes.length)return;
+  const stat=cubes[cubes.length-1];
+  build.tetris[stat]=Math.max(0,(Number(build.tetris[stat]||0))-1);
+  build.complete=false;
+  pvpRenderTetrisGrid(build);
+  pvpAtualizarBuildCalculado();
+}
+
+function pvpResetTetris(build){
+  PVP_BUILD_STATS.forEach(function(stat){build.tetris[stat]=0});
+  build.complete=false;
+  pvpRenderTetrisGrid(build);
+  pvpAtualizarBuildCalculado();
+}
+
 function pvpRenderTetrisGrid(build){
   const grid=document.getElementById("pvpTetrisGrid");
   if(!grid)return;
-  grid.innerHTML="";
-  PVP_BUILD_STATS.forEach(function(stat){
-    const row=document.createElement("div");
-    row.className="pvp-tetris-stat";
-    row.innerHTML='<span>'+stat+'</span><div class="pvp-tetris-cubes"></div><small>0%</small>';
-    const cubes=row.querySelector(".pvp-tetris-cubes");
-    const total=row.querySelector("small");
-    for(let i=1;i<=6;i++){
-      const b=document.createElement("button");
-      b.type="button";
-      b.className="pvp-cube-btn"+(i<=(build.tetris[stat]||0)?" ativo":"");
-      b.textContent="3%";
-      b.onclick=function(){
-        build.tetris[stat]=(build.tetris[stat]===i?i-1:i);
-        build.complete=false;
-        pvpRenderTetrisGrid(build);
-        pvpAtualizarBuildCalculado()
-      };
-      cubes.appendChild(b)
-    }
-    total.textContent=((build.tetris[stat]||0)*3)+"%";
-    grid.appendChild(row)
-  })
+
+  build.tetris.HP=0;
+  build.tetris.SP=0;
+
+  const cubes=pvpTetrisCubeList(build);
+  const board=Array.from({length:16},function(_,index){
+    const stat=cubes[index];
+    if(!stat)return `<div class="pvp-tetris-slot"><span>${String(index+1).padStart(2,"0")}</span></div>`;
+    return `<div class="pvp-tetris-cube" style="--pvp-cube-color:${pvpTetrisColor(stat)}">
+      <strong>${stat}</strong><small>3%</small>
+    </div>`;
+  }).join("");
+
+  const palette=PVP_TETRIS_STATS.map(function(stat){
+    const qtd=Number(build.tetris[stat]||0);
+    return `<button type="button" class="pvp-tetris-add" style="--pvp-cube-color:${pvpTetrisColor(stat)}" data-stat="${stat}">
+      <strong>${stat}</strong><small>+3%</small><em>${qtd}×</em>
+    </button>`;
+  }).join("");
+
+  grid.innerHTML=`<div class="pvp-tetris-compact-workspace">
+    <div class="pvp-tetris-board-wrap">
+      <div class="pvp-tetris-mode-label"><span>CUBOS DE</span><strong>3%</strong></div>
+      <div class="pvp-tetris-board">${board}</div>
+      <div class="pvp-tetris-actions">
+        <span>${cubes.length} / 16 ESPAÇOS</span>
+        <button type="button" data-action="undo">DESFAZER</button>
+        <button type="button" data-action="reset">RESET</button>
+      </div>
+    </div>
+    <aside class="pvp-tetris-palette">
+      <span>ADICIONAR CUBO</span>
+      <div class="pvp-tetris-add-grid">${palette}</div>
+      <small>Mesmo sistema visual do Status Simulator, reduzido para o PvP.</small>
+    </aside>
+  </div>`;
+
+  grid.querySelectorAll(".pvp-tetris-add").forEach(function(btn){
+    btn.onclick=function(){pvpAdicionarCuboTetris(build,btn.dataset.stat)};
+  });
+  const undo=grid.querySelector('[data-action="undo"]');
+  const reset=grid.querySelector('[data-action="reset"]');
+  if(undo)undo.onclick=function(){pvpRemoverUltimoCuboTetris(build)};
+  if(reset)reset.onclick=function(){pvpResetTetris(build)};
 }
 
 function pvpRenderBuffGrid(build){
@@ -8513,22 +8614,32 @@ function pvpGetBaseStat(digi,stat){
 function pvpRenderSummary(build,digi){
   const wrap=document.getElementById("pvpSummaryStats");
   if(!wrap)return;
+
+  wrap.classList.add("pvp-summary-status-simulator");
   wrap.innerHTML="";
+
   PVP_BUILD_STATS.forEach(function(stat){
     const base=pvpGetBaseStat(digi,stat);
     const babyPct=Number(build.baby[stat]||0);
     const tetrisPct=(Number(build.tetris[stat]||0))*3;
-    const buff=Number(build.buff[stat]||0);
+    const deck=Number(build.buff[stat]||0);
+
     const babyBonus=Math.round(base*(babyPct/100));
     const tetrisBonus=Math.round(base*(tetrisPct/100));
-    const final=base+babyBonus+tetrisBonus+buff;
+    const final=base+babyBonus+tetrisBonus+deck;
 
     const row=document.createElement("div");
-    row.className="pvp-summary-row";
+    row.className="status-simulator-result-row pvp-summary-simulator-row";
+    row.style.setProperty("--stat-color",STATUS_SIMULATOR_COLORS[stat]||"#55dfff");
     row.innerHTML=
-      '<div><strong>'+stat+'</strong><small>Base '+base+'</small></div>'+
-      '<div class="pvp-summary-bonuses"><span>+'+babyBonus+' Baby</span><span>+'+tetrisBonus+' Tetris</span><span>+'+buff+' Deck</span></div>'+
-      '<b>'+final+'</b>';
+      '<strong>'+stat+'</strong>'+
+      '<b>'+formatarStatusSimulator(final)+'</b>'+
+      '<small>'+
+        'BASE '+formatarStatusSimulator(base)+
+        ' · BABY +'+formatarStatusSimulator(babyBonus)+' ('+babyPct+'%)'+
+        ' · TETRIS +'+formatarStatusSimulator(tetrisBonus)+' ('+tetrisPct+'%)'+
+        ' · DECK +'+formatarStatusSimulator(deck)+
+      '</small>';
     wrap.appendChild(row)
   });
 
