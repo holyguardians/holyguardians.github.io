@@ -8176,15 +8176,53 @@ function pvpElementIconHtml(element){
 
   if(!e)return "";
 
-  const iconKey=e==="STEEL"?"IRON":e;
+  const logical=e==="IRON"?"STEEL":e;
+  const aliases=logical==="STEEL"?["IRON","STEEL"]:[logical];
+  const candidates=[];
 
-  const src=(typeof pegarImagemElemento==="function"
-    ? pegarImagemElemento(iconKey)
-    : "") || `ELEMENTOS ICONS/${encodeURIComponent(iconKey)}.png`;
+  aliases.forEach(function(alias){
+    if(typeof pegarImagemElemento==="function"){
+      const resolved=pegarImagemElemento(alias);
+      if(resolved&&!candidates.includes(resolved))candidates.push(resolved);
+    }
 
-  return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(e)}">
-    <img src="${src}" alt="${pvpEscapeHtml(e)}"><b>${pvpEscapeHtml(e)}</b>
+    [
+      `ELEMENTOS ICONS/${encodeURIComponent(alias)}.png`,
+      `ELEMENTOS ICONS/${encodeURIComponent(alias.toLowerCase())}.png`,
+      `ELEMENTOS ICONS/${encodeURIComponent(alias)}.webp`,
+      `ELEMENTOS ICONS/${encodeURIComponent(alias.toLowerCase())}.webp`
+    ].forEach(function(src){
+      if(!candidates.includes(src))candidates.push(src);
+    });
+  });
+
+  const first=candidates[0]||"";
+  const encoded=pvpEscapeHtml(JSON.stringify(candidates));
+
+  return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(logical)}">
+    <img src="${first}" data-pvp-icon-candidates="${encoded}" data-pvp-icon-index="0"
+      onerror="pvpTentarProximoIconeElemento(this)" alt="${pvpEscapeHtml(logical)}">
+    <b>${pvpEscapeHtml(logical)}</b>
   </span>`;
+}
+
+function pvpTentarProximoIconeElemento(img){
+  if(!img)return;
+  let candidates=[];
+  try{
+    candidates=JSON.parse(img.dataset.pvpIconCandidates||"[]");
+  }catch(erro){}
+
+  let index=Number(img.dataset.pvpIconIndex||0)+1;
+  if(index<candidates.length){
+    img.dataset.pvpIconIndex=String(index);
+    img.src=candidates[index];
+    return;
+  }
+
+  img.style.display="none";
+  const fallback=img.nextElementSibling;
+  if(fallback)fallback.style.display="inline";
 }
 
 function pvpMetaIconsHtml(digi){
@@ -9052,35 +9090,25 @@ function pvpGetBaseStat(digi,stat){
 function pvpCalcularCriticosCalibrados(build,digi){
   if(!digi)return null;
 
+  /* -------------------------
+     INT-derived values
+     ------------------------- */
   const intBase=Number(pvpGetBaseStat(digi,"INT"))||0;
-  const babyPercent=Number(build.baby.INT||0);
-  const tetrisPercent=(Number(build.tetris.INT||0))*3;
-  const deck=Number(build.buff.INT||0);
+  const babyIntPercent=Number(build.baby.INT||0);
+  const tetrisIntPercent=(Number(build.tetris.INT||0))*3;
+  const deckInt=Number(build.buff.INT||0);
 
-  const babyGain=babyPercent>0?Math.ceil(intBase*babyPercent/100):0;
-  const tetrisGain=tetrisPercent>0?Math.ceil(intBase*tetrisPercent/100):0;
-  const intFinal=intBase+babyGain+tetrisGain+deck;
+  const babyIntGain=babyIntPercent>0?Math.ceil(intBase*babyIntPercent/100):0;
+  const tetrisIntGain=tetrisIntPercent>0?Math.ceil(intBase*tetrisIntPercent/100):0;
+  const intFinal=intBase+babyIntGain+tetrisIntGain+deckInt;
   const bonusInt=Math.max(0,intFinal-intBase);
 
   const chave=normalizarChaveDigivolution(digi.name||"");
   const burstMode=/burstmode|bm$/.test(chave)?1:0;
 
-  // Existing Status Simulator special calibration is copied here only;
-  // the Status Simulator function itself remains untouched.
-  const ajustesCritDown={
-    lilithmon:-0.0706,
-    blackseraphimon:0.0545,
-    beelzemon:0.2379,
-    ulforceveedramon:-0.2218
-  };
-
-  // PvP calibration points validated against actual in-game screenshots.
-  // These are offsets around the already-calibrated curve, not a new
-  // universal formula guessed in the dark.
   const calibracaoPvp={
     arukenimon:{
       critRate:-6.588071339586276,
-      critDown:-12.616542085540826,
       critDmg:-9.58824301987506,
       damageRangeMax:-3.98568401032475
     }
@@ -9088,7 +9116,6 @@ function pvpCalcularCriticosCalibrados(build,digi){
 
   const ajuste=calibracaoPvp[chave]||{
     critRate:0,
-    critDown:0,
     critDmg:0,
     damageRangeMax:0
   };
@@ -9100,16 +9127,6 @@ function pvpCalcularCriticosCalibrados(build,digi){
       -intBase*0.03651377191538811
       -burstMode*0.25833219773252186
       +(Number(ajuste.critRate)||0)
-  );
-
-  const critDown=Math.max(
-    0,
-    18.26819125664886
-      +intFinal*0.00823240939263425
-      -intBase*0.009013734512031439
-      -burstMode*9.615389959281332
-      +(Number(ajustesCritDown[chave])||0)
-      +(Number(ajuste.critDown)||0)
   );
 
   const critDmg=Math.max(
@@ -9131,15 +9148,61 @@ function pvpCalcularCriticosCalibrados(build,digi){
       +(Number(ajuste.damageRangeMax)||0)
   );
 
+  /* -------------------------
+     RES-derived values — TESTE
+     -------------------------
+     O jogo está mostrando que os derivados abaixo respondem ao RES
+     e, nos testes atuais, ao ganho de RES do Potential/Tetris.
+     Buff Deck RES NÃO entra nesses derivados por enquanto.
+  */
+  const resBase=Number(pvpGetBaseStat(digi,"RES"))||0;
+  const resCubes=Math.max(0,Number(build.tetris.RES||0));
+  const resPotentialPercent=resCubes*3;
+  const resPotentialGain=resPotentialPercent>0
+    ?Math.ceil(resBase*resPotentialPercent/100)
+    :0;
+
+  const critResist=Math.sqrt(resPotentialGain);
+
+  // Fórmula experimental validada nos prints de:
+  // Beelzemon, Beelzemon-XWars, BlackSeraphimon e Creepymon.
+  const critDownBaseAdjustment={
+    arukenimon:1.4136
+  };
+  const critDown=Math.max(
+    0,
+    resBase*0.0067
+      +critResist*2.017
+      +(Number(critDownBaseAdjustment[chave])||0)
+  );
+
+  const abnormalResistMin=Math.max(
+    0,
+    resBase*0.009
+      +resPotentialGain*0.045
+  );
+
+  const abnormalResistMax=Math.max(
+    abnormalResistMin,
+    resBase*0.011
+      +resPotentialGain*0.055
+  );
+
   return{
     critRate,
     critDown,
     critDmg,
+    critResist,
+    abnormalResistMin,
+    abnormalResistMax,
     damageRangeMin,
     damageRangeMax,
     intBase,
     intFinal,
-    bonusInt
+    bonusInt,
+    resBase,
+    resPotentialGain,
+    resPotentialPercent
   };
 }
 
@@ -9152,19 +9215,23 @@ function pvpRenderCriticos(build,digi){
   const boostTip=pvpEscapeHtml(pvpTooltipElementos(build.attrBoost));
   const reduceTip=pvpEscapeHtml(pvpTooltipElementos(build.attrReduce));
 
+  const fmt=function(v){
+    return Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
+  };
+
   return `<div class="pvp-crit-result pvp-extra-status-result">
     <div class="pvp-extra-status-list">
-      <div><strong>CRIT RATE</strong><b>${crit.critRate.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
-      <div><strong>CRIT DOWN</strong><b>${crit.critDown.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
-      <div class="pvp-extra-wide"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
-      <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
-      <div><strong>CRIT RESIST</strong><b>0,00%</b></div>
-      <div><strong>ABNORMAL RESIST</strong><b>0,00%</b></div>
+      <div><strong>CRIT RATE</strong><b>${fmt(crit.critRate)}</b></div>
+      <div><strong>CRIT DOWN</strong><b>${fmt(crit.critDown)}</b></div>
+      <div class="pvp-extra-wide"><strong>DAMAGE RANGE</strong><b>${fmt(crit.damageRangeMin)} ~ ${fmt(crit.damageRangeMax)}</b></div>
+      <div><strong>CRITDMG</strong><b>${fmt(crit.critDmg)}</b></div>
+      <div><strong>CRIT RESIST</strong><b>${fmt(crit.critResist)}</b></div>
+      <div><strong>ABNORMAL RESIST</strong><b>${fmt(crit.abnormalResistMin)} ~ ${fmt(crit.abnormalResistMax)}</b></div>
       <div class="pvp-extra-tooltip" data-tooltip="${reduceTip}"><strong>ATTR REDUCE</strong><b>${pvpFormatPct(attrReduce)}</b></div>
       <div class="pvp-extra-tooltip" data-tooltip="${boostTip}"><strong>ATTRBOOST</strong><b>${pvpFormatPct(attrBoost)}</b></div>
     </div>
-    <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · BÔNUS DE INT +${formatarStatusSimulator(crit.bonusInt)}</small>
-    <em>CRIT RESIST FIXADO EM 0,00% · ABNORMAL RESIST SERÁ CALIBRADO POSTERIORMENTE</em>
+    <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · RES POTENTIAL +${formatarStatusSimulator(crit.resPotentialGain)} (${crit.resPotentialPercent}%)</small>
+    <em>CRIT RESIST / CRIT DOWN / ABNORMAL RESIST EM CALIBRAÇÃO DE TESTE COM BASE NOS PRINTS DO JOGO</em>
   </div>`;
 }
 
