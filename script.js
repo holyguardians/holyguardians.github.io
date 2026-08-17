@@ -8571,13 +8571,16 @@ function pvpRenderBabyGrid(build){
   PVP_BUILD_STATS.forEach(function(stat){
     const row=document.createElement("label");
     row.className="pvp-stat-input";
-    row.innerHTML='<span>'+stat+'</span><input type="number" min="0" max="14" step="1" value="'+(build.baby[stat]||0)+'"><em>%</em>';
+    row.innerHTML='<span>'+stat+'</span><input class="pvp-number-clean" type="text" inputmode="numeric" maxlength="2" autocomplete="off" value="'+(build.baby[stat]||0)+'"><em>%</em>';
     const input=row.querySelector("input");
     input.oninput=function(){
-      let v=Math.max(0,Math.min(14,Number(input.value)||0));
-      const others=PVP_BUILD_STATS.reduce(function(sum,s){return sum+(s===stat?0:(Number(build.baby[s])||0))},0);
+      let raw=String(input.value||"").replace(/\D/g,"").slice(0,2);
+      let v=Math.max(0,Math.min(14,Number(raw)||0));
+      const others=PVP_BUILD_STATS.reduce(function(sum,s){
+        return sum+(s===stat?0:(Number(build.baby[s])||0))
+      },0);
       if(others+v>28)v=Math.max(0,28-others);
-      input.value=v;
+      input.value=String(v);
       build.baby[stat]=v;
       build.complete=false;
       pvpAtualizarBuildCalculado()
@@ -8688,10 +8691,13 @@ function pvpRenderBuffGrid(build){
   PVP_BUILD_STATS.forEach(function(stat){
     const row=document.createElement("label");
     row.className="pvp-stat-input";
-    row.innerHTML='<span>'+stat+'</span><input type="number" min="0" step="1" value="'+(build.buff[stat]||0)+'"><em>+</em>';
+    row.innerHTML='<span>'+stat+'</span><input class="pvp-number-clean" type="text" inputmode="numeric" maxlength="3" autocomplete="off" value="'+(build.buff[stat]||0)+'"><em>+</em>';
     const input=row.querySelector("input");
     input.oninput=function(){
-      build.buff[stat]=Math.max(0,Number(input.value)||0);
+      const raw=String(input.value||"").replace(/\D/g,"").slice(0,3);
+      const v=Math.max(0,Math.min(999,Number(raw)||0));
+      input.value=String(v);
+      build.buff[stat]=v;
       build.complete=false;
       pvpAtualizarBuildCalculado()
     };
@@ -8709,66 +8715,83 @@ function pvpGetBaseStat(digi,stat){
 function pvpCalcularCriticosCalibrados(build,digi){
   if(!digi)return null;
 
-  // Mesma regra de status do Status Simulator:
-  // Baby e Tetris são calculados separadamente sobre o INT base
-  // e cada ganho usa Math.ceil antes da soma.
   const intBase=Number(pvpGetBaseStat(digi,"INT"))||0;
   const babyPercent=Number(build.baby.INT||0);
   const tetrisPercent=(Number(build.tetris.INT||0))*3;
   const deck=Number(build.buff.INT||0);
 
-  const babyGain=babyPercent>0 ? Math.ceil(intBase*babyPercent/100) : 0;
-  const tetrisGain=tetrisPercent>0 ? Math.ceil(intBase*tetrisPercent/100) : 0;
+  const babyGain=babyPercent>0?Math.ceil(intBase*babyPercent/100):0;
+  const tetrisGain=tetrisPercent>0?Math.ceil(intBase*tetrisPercent/100):0;
   const intFinal=intBase+babyGain+tetrisGain+deck;
   const bonusInt=Math.max(0,intFinal-intBase);
 
-  // A partir daqui são exatamente os coeficientes atualmente usados
-  // em calcularCritRateStatusSimulator(). Nada dessa função original
-  // é alterado pelo PvP.
   const chave=normalizarChaveDigivolution(digi.name||"");
   const burstMode=/burstmode|bm$/.test(chave)?1:0;
 
-  // Ajustes individuais já calibrados no Status Simulator.
+  // Existing Status Simulator special calibration is copied here only;
+  // the Status Simulator function itself remains untouched.
   const ajustesCritDown={
     lilithmon:-0.0706,
     blackseraphimon:0.0545,
     beelzemon:0.2379,
     ulforceveedramon:-0.2218
   };
-  const ajusteCritDown=Number(ajustesCritDown[chave])||0;
+
+  // PvP calibration points validated against actual in-game screenshots.
+  // These are offsets around the already-calibrated curve, not a new
+  // universal formula guessed in the dark.
+  const calibracaoPvp={
+    arukenimon:{
+      critRate:-6.588071339586276,
+      critDown:-12.616542085540826,
+      critDmg:-9.58824301987506,
+      damageRangeMax:-3.98568401032475
+    }
+  };
+
+  const ajuste=calibracaoPvp[chave]||{
+    critRate:0,
+    critDown:0,
+    critDmg:0,
+    damageRangeMax:0
+  };
 
   const critRate=Math.max(
     0,
     26.950915089047466
-      + intFinal*0.04994600527878049
-      - intBase*0.03651377191538811
-      - burstMode*0.25833219773252186
+      +intFinal*0.04994600527878049
+      -intBase*0.03651377191538811
+      -burstMode*0.25833219773252186
+      +(Number(ajuste.critRate)||0)
   );
 
   const critDown=Math.max(
     0,
     18.26819125664886
-      + intFinal*0.00823240939263425
-      - intBase*0.009013734512031439
-      - burstMode*9.615389959281332
-      + ajusteCritDown
+      +intFinal*0.00823240939263425
+      -intBase*0.009013734512031439
+      -burstMode*9.615389959281332
+      +(Number(ajustesCritDown[chave])||0)
+      +(Number(ajuste.critDown)||0)
   );
 
   const critDmg=Math.max(
     0,
     172.3803368817766
-      + intFinal*0.04887066469303948
-      - intBase*0.04877349125268096
-      - burstMode*0.2554690272742557
+      +intFinal*0.04887066469303948
+      -intBase*0.04877349125268096
+      -burstMode*0.2554690272742557
+      +(Number(ajuste.critDmg)||0)
   );
 
   const damageRangeMin=95;
   const damageRangeMax=Math.max(
     damageRangeMin,
     112.1233752759157
-      + intFinal*0.01543433379605434
-      - intBase*0.015440216843529378
-      - burstMode*0.08093217150093454
+      +intFinal*0.01543433379605434
+      -intBase*0.015440216843529378
+      -burstMode*0.08093217150093454
+      +(Number(ajuste.damageRangeMax)||0)
   );
 
   return{
@@ -8812,9 +8835,10 @@ function pvpRenderSummary(build,digi){
     const tetrisPct=(Number(build.tetris[stat]||0))*3;
     const deck=Number(build.buff[stat]||0);
 
+    const pvpHpBonus=stat==="HP"?Math.floor(base*0.50):0;
     const babyBonus=babyPct>0?Math.ceil(base*(babyPct/100)):0;
     const tetrisBonus=tetrisPct>0?Math.ceil(base*(tetrisPct/100)):0;
-    const totalBonus=babyBonus+tetrisBonus+deck;
+    const totalBonus=pvpHpBonus+babyBonus+tetrisBonus+deck;
     const final=base+totalBonus;
 
     const row=document.createElement("div");
@@ -8827,6 +8851,7 @@ function pvpRenderSummary(build,digi){
         (totalBonus>0?'<em>(+'+formatarStatusSimulator(totalBonus)+')</em>':'')+
       '</div>'+
       '<small>BASE '+formatarStatusSimulator(base)+
+        (stat==="HP"?' · <span class="pvp-rank-adjustment">RANK ADJUSTMENT +50%</span> (+'+formatarStatusSimulator(pvpHpBonus)+')':'')+
         ' · BABY +'+formatarStatusSimulator(babyBonus)+' ('+babyPct+'%)'+
         ' · DECK +'+formatarStatusSimulator(deck)+
         ' · TETRIS +'+formatarStatusSimulator(tetrisBonus)+' ('+tetrisPct+'%)'+

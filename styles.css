@@ -14693,3 +14693,39 @@ body.pvp-modal-open{overflow:hidden}
     grid-template-columns:1fr;
   }
 }
+
+
+/* =====================================================
+   PVP V7.4 — INPUT CLEANUP / LEVEL-STATS FIX
+===================================================== */
+
+#pvpPagina .pvp-number-clean{
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+
+#pvpPagina .pvp-number-clean::-webkit-outer-spin-button,
+#pvpPagina .pvp-number-clean::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+/* The input remains entirely inside the HG field design. */
+#pvpPagina .pvp-stat-input input.pvp-number-clean{
+  letter-spacing:.02em;
+}
+
+
+/* =====================================================
+   PVP V7.4.1 — RANK ADJUSTMENT LABEL
+===================================================== */
+#pvpPagina .pvp-rank-adjustment{
+  color:#32f06e;
+  font-weight:900;
+  text-shadow:
+    -1px -1px 0 #003819,
+     1px -1px 0 #003819,
+    -1px  1px 0 #003819,
+     1px  1px 0 #003819,
+     0 0 6px rgba(29,255,105,.35);
+}
