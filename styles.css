@@ -14844,3 +14844,13 @@ body.pvp-modal-open{overflow:hidden}
   #pvpPagina .pvp-skill-main{grid-template-columns:auto 1fr}
   #pvpPagina .pvp-skill-damage{grid-column:1/-1;align-items:flex-start;text-align:left}
 }
+
+
+/* =====================================================
+   PVP V8.2 — STEEL/IRON + LEVEL FACTOR
+===================================================== */
+#pvpPagina .pvp-meta-icon-list:empty,
+#pvpPagina .pvp-skill-icons:has(.pvp-mini-icon-tag:only-child:empty){
+  display:none;
+}
+

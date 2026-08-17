@@ -8176,53 +8176,86 @@ function pvpElementIconHtml(element){
 
   if(!e)return "";
 
-  const logical=e==="IRON"?"STEEL":e;
+  const logical=(e==="IRON"||e==="STEEL")?"STEEL":e;
   const aliases=logical==="STEEL"?["IRON","STEEL"]:[logical];
   const candidates=[];
 
+  function pushCandidate(src){
+    if(src&&!candidates.includes(src))candidates.push(src);
+  }
+
   aliases.forEach(function(alias){
+    // 1) tenta o resolver já existente do site
     if(typeof pegarImagemElemento==="function"){
-      const resolved=pegarImagemElemento(alias);
-      if(resolved&&!candidates.includes(resolved))candidates.push(resolved);
+      pushCandidate(pegarImagemElemento(alias));
     }
 
-    [
-      `ELEMENTOS ICONS/${encodeURIComponent(alias)}.png`,
-      `ELEMENTOS ICONS/${encodeURIComponent(alias.toLowerCase())}.png`,
-      `ELEMENTOS ICONS/${encodeURIComponent(alias)}.webp`,
-      `ELEMENTOS ICONS/${encodeURIComponent(alias.toLowerCase())}.webp`
-    ].forEach(function(src){
-      if(!candidates.includes(src))candidates.push(src);
+    // 2) tenta localizar diretamente nas imagens já carregadas
+    if(typeof imagensSite==="object"&&imagensSite){
+      Object.keys(imagensSite).forEach(function(key){
+        const limpa=String(key||"")
+          .trim()
+          .toLowerCase()
+          .replace(/\.(png|webp|jpg|jpeg)$/i,"")
+          .replace(/^(elemento_|element_|icone_|icon_)/,"");
+
+        if(limpa===alias.toLowerCase()){
+          pushCandidate(imagensSite[key]);
+        }
+      });
+    }
+
+    // 3) fallback direto no GitHub / main branch
+    const nomes=[
+      alias,
+      alias.toLowerCase(),
+      "elemento_"+alias.toLowerCase(),
+      "element_"+alias.toLowerCase(),
+      "icone_"+alias.toLowerCase(),
+      "icon_"+alias.toLowerCase()
+    ];
+
+    nomes.forEach(function(nome){
+      ["png","webp"].forEach(function(ext){
+        pushCandidate(`ELEMENTOS ICONS/${encodeURIComponent(nome)}.${ext}`);
+      });
     });
   });
 
-  const first=candidates[0]||"";
+  if(!candidates.length)return "";
+
   const encoded=pvpEscapeHtml(JSON.stringify(candidates));
 
   return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(logical)}">
-    <img src="${first}" data-pvp-icon-candidates="${encoded}" data-pvp-icon-index="0"
-      onerror="pvpTentarProximoIconeElemento(this)" alt="${pvpEscapeHtml(logical)}">
+    <img src="${candidates[0]}"
+      data-pvp-icon-candidates="${encoded}"
+      data-pvp-icon-index="0"
+      onerror="pvpTentarProximoIconeElemento(this)"
+      alt="${pvpEscapeHtml(logical)}">
     <b>${pvpEscapeHtml(logical)}</b>
   </span>`;
 }
 
 function pvpTentarProximoIconeElemento(img){
   if(!img)return;
+
   let candidates=[];
   try{
     candidates=JSON.parse(img.dataset.pvpIconCandidates||"[]");
   }catch(erro){}
 
-  let index=Number(img.dataset.pvpIconIndex||0)+1;
-  if(index<candidates.length){
-    img.dataset.pvpIconIndex=String(index);
-    img.src=candidates[index];
+  const next=Number(img.dataset.pvpIconIndex||0)+1;
+
+  if(next<candidates.length){
+    img.dataset.pvpIconIndex=String(next);
+    img.src=candidates[next];
     return;
   }
 
-  img.style.display="none";
-  const fallback=img.nextElementSibling;
-  if(fallback)fallback.style.display="inline";
+  // Se todos os aliases falharem, remove o bloco inteiro:
+  // sem ícone quebrado, sem espaço vazio e sem retângulo.
+  const wrapper=img.closest(".pvp-mini-icon-tag");
+  if(wrapper)wrapper.remove();
 }
 
 function pvpMetaIconsHtml(digi){
@@ -9176,15 +9209,17 @@ function pvpCalcularCriticosCalibrados(build,digi){
       +(Number(critDownBaseAdjustment[chave])||0)
   );
 
+  const levelFactor=Math.max(0,Number(digi.level||100)/100);
+
   const abnormalResistMin=Math.max(
     0,
-    resBase*0.009
+    resBase*0.009*levelFactor
       +resPotentialGain*0.045
   );
 
   const abnormalResistMax=Math.max(
     abnormalResistMin,
-    resBase*0.011
+    resBase*0.011*levelFactor
       +resPotentialGain*0.055
   );
 
@@ -9202,7 +9237,8 @@ function pvpCalcularCriticosCalibrados(build,digi){
     bonusInt,
     resBase,
     resPotentialGain,
-    resPotentialPercent
+    resPotentialPercent,
+    levelFactor
   };
 }
 
@@ -9230,7 +9266,7 @@ function pvpRenderCriticos(build,digi){
       <div class="pvp-extra-tooltip" data-tooltip="${reduceTip}"><strong>ATTR REDUCE</strong><b>${pvpFormatPct(attrReduce)}</b></div>
       <div class="pvp-extra-tooltip" data-tooltip="${boostTip}"><strong>ATTRBOOST</strong><b>${pvpFormatPct(attrBoost)}</b></div>
     </div>
-    <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · RES POTENTIAL +${formatarStatusSimulator(crit.resPotentialGain)} (${crit.resPotentialPercent}%)</small>
+    <small>INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · RES BASE ${formatarStatusSimulator(crit.resBase)} · LV FACTOR ×${Number(crit.levelFactor||1).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})} · RES POTENTIAL +${formatarStatusSimulator(crit.resPotentialGain)} (${crit.resPotentialPercent}%)</small>
     <em>CRIT RESIST / CRIT DOWN / ABNORMAL RESIST EM CALIBRAÇÃO DE TESTE COM BASE NOS PRINTS DO JOGO</em>
   </div>`;
 }
