@@ -8128,9 +8128,18 @@ function pvpFieldIconHtml(field){
 }
 
 function pvpElementIconHtml(element){
-  const e=(typeof normalizarElemento==="function" ? normalizarElemento(element) : String(element||"").trim().toUpperCase());
+  const e=(typeof normalizarElemento==="function"
+    ? normalizarElemento(element)
+    : String(element||"").trim().toUpperCase());
+
   if(!e)return "";
-  const src=(typeof pegarImagemElemento==="function" ? pegarImagemElemento(e) : "") || `ELEMENTOS ICONS/${encodeURIComponent(e)}.png`;
+
+  const iconKey=e==="STEEL"?"IRON":e;
+
+  const src=(typeof pegarImagemElemento==="function"
+    ? pegarImagemElemento(iconKey)
+    : "") || `ELEMENTOS ICONS/${encodeURIComponent(iconKey)}.png`;
+
   return `<span class="pvp-mini-icon-tag pvp-element-icon-tag" title="${pvpEscapeHtml(e)}">
     <img src="${src}" alt="${pvpEscapeHtml(e)}"><b>${pvpEscapeHtml(e)}</b>
   </span>`;
@@ -8626,6 +8635,80 @@ function pvpGetBaseStat(digi,stat){
   return Number(digi[key]||0)
 }
 
+
+function pvpCalcularCriticosComFormulaDoSimulator(build,digi){
+  if(typeof calcularCritRateStatusSimulator!=="function"){
+    return null;
+  }
+
+  const snapshotDigimon=statusSimulatorDigimon;
+  const snapshotBaby=JSON.parse(JSON.stringify(statusSimulatorBaby||{}));
+  const snapshotTetris=JSON.parse(JSON.stringify(statusSimulatorTetris||[]));
+  const snapshotFlat=JSON.parse(JSON.stringify(statusSimulatorFlat||{}));
+
+  try{
+    const finalStats={};
+    PVP_BUILD_STATS.forEach(function(stat){
+      const base=pvpGetBaseStat(digi,stat);
+      const babyPct=Number(build.baby[stat]||0);
+      const tetrisPct=(Number(build.tetris[stat]||0))*3;
+      const deck=Number(build.buff[stat]||0);
+      const babyBonus=Math.round(base*(babyPct/100));
+      const tetrisBonus=Math.round(base*(tetrisPct/100));
+      finalStats[stat]=base+babyBonus+tetrisBonus+deck;
+    });
+
+    statusSimulatorDigimon={
+      digimon:digi.name||"",
+      stage:digi.stage||"",
+      type:digi.attribute||"UNKNOWN",
+      HP:finalStats.HP,
+      SP:finalStats.SP,
+      STR:finalStats.STR,
+      INT:finalStats.INT,
+      DEF:finalStats.DEF,
+      RES:finalStats.RES,
+      SPD:finalStats.SPD
+    };
+
+    // We feed the already-calculated PvP final values as the simulator "base"
+    // and neutralize simulator modifiers to reuse only the critical curve.
+    statusSimulatorBaby={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
+    statusSimulatorTetris=[];
+    statusSimulatorFlat={
+      accessory:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+      clothing:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0},
+      deck:{HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0}
+    };
+
+    return calcularCritRateStatusSimulator();
+  }catch(erro){
+    console.error("[PvP] Falha ao calcular críticos com fórmula do Status Simulator",erro);
+    return null;
+  }finally{
+    statusSimulatorDigimon=snapshotDigimon;
+    statusSimulatorBaby=snapshotBaby;
+    statusSimulatorTetris=snapshotTetris;
+    statusSimulatorFlat=snapshotFlat;
+  }
+}
+
+function pvpRenderCriticos(build,digi){
+  const crit=pvpCalcularCriticosComFormulaDoSimulator(build,digi);
+  if(!crit)return "";
+
+  return `<div class="pvp-crit-result">
+    <div class="pvp-crit-grid">
+      <div><strong>CRIT RATE</strong><b>${crit.critRate.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+      <div><strong>CRIT DOWN</strong><b>${crit.critDown.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+      <div class="pvp-crit-range"><strong>DAMAGE RANGE</strong><b>${crit.damageRangeMin.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}% ~ ${crit.damageRangeMax.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+      <div><strong>CRITDMG</strong><b>${crit.critDmg.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}%</b></div>
+    </div>
+    <small>CURVA: INT BASE ${formatarStatusSimulator(crit.intBase)} · INT FINAL ${formatarStatusSimulator(crit.intFinal)} · BÔNUS DE INT +${formatarStatusSimulator(crit.bonusInt)}</small>
+    <em>VALORES CRÍTICOS APROXIMADOS · A FÓRMULA SEGUE EM CALIBRAÇÃO</em>
+  </div>`;
+}
+
 function pvpRenderSummary(build,digi){
   const wrap=document.getElementById("pvpSummaryStats");
   if(!wrap)return;
@@ -8661,6 +8744,8 @@ function pvpRenderSummary(build,digi){
     wrap.appendChild(row)
   });
 
+  wrap.insertAdjacentHTML("beforeend",pvpRenderCriticos(build,digi));
+
   const done=document.getElementById("pvpMarkDoneBtn");
   if(done){
     done.classList.toggle("done",!!build.complete);
@@ -8683,11 +8768,41 @@ function pvpAtualizarBuildCalculado(){
 function pvpConcluirBuildAtual(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
+
   const build=pvpGetSlotBuild(slot);
+  const estavaConcluido=!!build.complete;
   build.complete=!build.complete;
+
   pvpRenderBuildTabs();
   pvpRenderBuildAtual();
-  pvpSalvarEstadoLocal()
+  pvpSalvarEstadoLocal();
+  pvpAtualizarFinalActions();
+
+  // Ao concluir, avança automaticamente para o próximo Digimon não concluído.
+  if(!estavaConcluido && build.complete){
+    const slots=pvpBuildSlots();
+    const total=slots.length;
+    let destino=-1;
+
+    for(let passo=1;passo<total;passo++){
+      const idx=(pvpBuildIndex+passo)%total;
+      const outro=pvpGetSlotBuild(slots[idx]);
+      if(!outro.complete){
+        destino=idx;
+        break;
+      }
+    }
+
+    if(destino>=0){
+      pvpBuildIndex=destino;
+      pvpRenderBuildTabs();
+      pvpRenderBuildAtual();
+      const painel=document.querySelector("#pvpIndividualView .pvp-build-current");
+      if(painel){
+        painel.scrollIntoView({behavior:"smooth",block:"start"});
+      }
+    }
+  }
 }
 
 function pvpBuildAnterior(){
