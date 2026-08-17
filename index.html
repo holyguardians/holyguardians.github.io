@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v5">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v6">
 </head>
 <body>
 
@@ -1526,18 +1526,18 @@
 
           <div class="pvp-build-section">
             <div class="pvp-build-section-title">
-              <span>TETRIS</span>
-              <small>Somente cubos de 3%</small>
-            </div>
-            <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
-          </div>
-
-          <div class="pvp-build-section">
-            <div class="pvp-build-section-title">
               <span>BUFF DECK</span>
               <small>Informe o bônus em valor absoluto por status</small>
             </div>
             <div id="pvpBuffGrid" class="pvp-stat-input-grid"></div>
+          </div>
+
+          <div class="pvp-build-section">
+            <div class="pvp-build-section-title">
+              <span>TETRIS</span>
+              <small>Somente cubos de 3%</small>
+            </div>
+            <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
           </div>
 
           <div class="pvp-build-nav">
@@ -1565,6 +1565,39 @@
         <div class="pvp-final-buttons">
           <button type="button" class="pvp-action-btn" onclick="pvpSalvarTime()">SAVE TEAM</button>
           <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">EXPORT TEAM</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="pvpImportView" class="pvp-view">
+      <div class="pvp-import-page tech-corners">
+        <div class="pvp-import-copy">
+          <div class="pvp-kicker">PVP TEAM // IMPORT</div>
+          <h2 class="page-title">IMPORT TEAM</h2>
+          <p class="page-subtitle">Carregue um time PvP exportado anteriormente pela Holy Guardians.</p>
+
+          <div class="pvp-import-drop tech-corners">
+            <div class="pvp-import-placeholder-icon">⇧</div>
+            <strong>CARREGUE SEU TIME AQUI</strong>
+            <span>Arquivo JSON exportado pelo PvP Team Builder.</span>
+
+            <button type="button" class="pvp-action-btn pvp-import-main-btn"
+              onclick="document.getElementById('pvpImportFile').click()">
+              SELECIONAR ARQUIVO
+            </button>
+
+            <input id="pvpImportFile" type="file" accept="application/json,.json" hidden
+              onchange="importarTimePvp(this.files && this.files[0])">
+          </div>
+
+          <button type="button" class="pvp-action-btn pvp-action-secondary pvp-import-back"
+            onclick="abrirPvpBuild()">← VOLTAR AO PVP BUILDER</button>
+        </div>
+
+        <div class="pvp-import-art-placeholder tech-corners" aria-hidden="true">
+          <span>ARTE DO IMPORT TEAM</span>
+          <small>Espaço reservado para a arte que você vai escolher depois.</small>
         </div>
       </div>
     </div>
@@ -1923,6 +1956,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260816-pvp-builder-v5"></script>
+<script src="script.js?v=20260816-pvp-builder-v6"></script>
 </body>
 </html>

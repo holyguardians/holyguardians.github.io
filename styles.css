@@ -14122,3 +14122,310 @@ body.pvp-modal-open{overflow:hidden}
   box-shadow:0 0 12px rgba(50,226,133,.10),inset 0 0 14px rgba(50,226,133,.08);
 }
 
+
+
+/* =====================================================
+   PVP V6 — SCALE UP / 4+4 / IMPORT PAGE / GAME STATUS
+===================================================== */
+
+/* Toda a área PvP ganha mais presença sem alterar as outras páginas. */
+#pvpPagina .pvp-wrap{
+  width:min(1880px,calc(100vw - 28px)) !important;
+  max-width:none !important;
+  padding-top:34px !important;
+  padding-bottom:58px !important;
+}
+
+#pvpPagina .pvp-kicker{
+  font-size:12px !important;
+  letter-spacing:1.9px !important;
+}
+#pvpPagina .page-title{
+  font-size:clamp(28px,2vw,42px) !important;
+}
+#pvpPagina .page-subtitle{
+  font-size:clamp(13px,.86vw,17px) !important;
+  line-height:1.45 !important;
+}
+
+#pvpPagina .pvp-stage-panel{
+  min-width:340px;
+  padding:17px 18px !important;
+}
+#pvpPagina .pvp-stage-panel label{font-size:10px !important}
+#pvpPagina .pvp-stage-trigger{min-height:45px !important;font-size:12px !important}
+#pvpPagina .pvp-stage-panel small{font-size:9px !important}
+
+#pvpPagina .pvp-toolbar{
+  padding:17px 19px !important;
+}
+#pvpPagina .pvp-toolbar-note strong{font-size:13px !important}
+#pvpPagina .pvp-toolbar-note span{font-size:11px !important}
+#pvpPagina .pvp-next-stage-btn{
+  min-width:230px !important;
+  min-height:52px !important;
+  font-size:11px !important;
+}
+
+/* Etapa 1: cards maiores, ainda 4 + 4. */
+#pvpPagina .pvp-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:16px !important;
+}
+#pvpPagina .pvp-slot{
+  min-height:330px !important;
+  padding:15px !important;
+}
+#pvpPagina .pvp-slot-number{font-size:10px !important}
+#pvpPagina .pvp-slot-portrait{
+  height:215px !important;
+}
+#pvpPagina .pvp-slot-name{
+  font-size:14px !important;
+  margin-top:3px;
+}
+#pvpPagina .pvp-slot-meta{font-size:10px !important}
+#pvpPagina .pvp-slot-tags .pvp-mini-icon-tag{
+  min-height:27px !important;
+}
+#pvpPagina .pvp-slot-tags .pvp-mini-icon-tag img{
+  width:20px !important;
+  height:20px !important;
+}
+
+/* Etapa 2: 4 cards em cima + 4 embaixo, maiores e mais limpos. */
+#pvpPagina .pvp-build-tabs{
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+  margin-bottom:20px !important;
+}
+#pvpPagina .pvp-build-tab{
+  min-height:92px !important;
+  padding:10px 12px !important;
+}
+#pvpPagina .pvp-build-tab-icon{
+  width:70px !important;
+  height:70px !important;
+  flex-basis:70px !important;
+}
+#pvpPagina .pvp-build-tab-icon img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain;
+}
+#pvpPagina .pvp-build-tab-copy strong{
+  font-size:12px !important;
+}
+#pvpPagina .pvp-build-tab-copy small{
+  font-size:8px !important;
+}
+
+#pvpPagina .pvp-build-head{
+  padding:25px 30px !important;
+  min-height:190px;
+}
+#pvpPagina .pvp-build-top-actions .pvp-action-btn{
+  min-height:50px !important;
+  padding:0 20px !important;
+  font-size:10px !important;
+}
+
+#pvpPagina .pvp-build-layout{
+  grid-template-columns:minmax(0,1.52fr) minmax(420px,.72fr) !important;
+  gap:18px !important;
+}
+#pvpPagina .pvp-build-config,
+#pvpPagina .pvp-build-summary{
+  padding:20px !important;
+}
+#pvpPagina .pvp-current-icon{
+  width:160px !important;
+  height:160px !important;
+}
+#pvpPagina .pvp-build-current h3{
+  font-size:28px !important;
+}
+#pvpPagina .pvp-current-slot{font-size:10px !important}
+#pvpPagina .pvp-current-stage{font-size:10px !important}
+#pvpPagina .pvp-build-section-title>span{
+  font-size:12px !important;
+}
+#pvpPagina .pvp-build-section-title>small{
+  font-size:8px !important;
+}
+#pvpPagina .pvp-stat-input{
+  min-height:48px !important;
+}
+#pvpPagina .pvp-stat-input span{
+  font-size:10px !important;
+}
+#pvpPagina .pvp-stat-input input{
+  height:36px !important;
+  font-size:12px !important;
+}
+#pvpPagina .pvp-total-line{
+  font-size:8px !important;
+}
+
+/* IMPORT TEAM agora é uma tela própria. */
+#pvpPagina .pvp-import-page{
+  min-height:690px;
+  display:grid;
+  grid-template-columns:minmax(0,.95fr) minmax(430px,1.05fr);
+  gap:28px;
+  align-items:stretch;
+  padding:28px;
+  border:1px solid rgba(61,178,255,.42);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(6,26,54,.92),rgba(2,13,31,.95));
+}
+#pvpPagina .pvp-import-copy{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:20px;
+}
+#pvpPagina .pvp-import-drop{
+  margin-top:26px;
+  min-height:330px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:32px;
+  border:1px dashed rgba(83,202,255,.46);
+  border-radius:12px;
+  background:radial-gradient(circle at 50% 35%,rgba(25,128,211,.14),transparent 48%),rgba(2,15,35,.62);
+  text-align:center;
+}
+#pvpPagina .pvp-import-placeholder-icon{
+  font-size:58px;
+  line-height:1;
+  color:#58ddff;
+  text-shadow:0 0 18px rgba(73,209,255,.38);
+}
+#pvpPagina .pvp-import-drop strong{
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:18px;
+  color:#f0fbff;
+}
+#pvpPagina .pvp-import-drop span{
+  color:#7fa6c2;
+  font-size:11px;
+}
+#pvpPagina .pvp-import-main-btn{
+  min-height:48px !important;
+  margin-top:8px;
+  padding:0 22px !important;
+  font-size:10px !important;
+}
+#pvpPagina .pvp-import-back{
+  align-self:flex-start;
+  margin-top:14px;
+}
+#pvpPagina .pvp-import-art-placeholder{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:580px;
+  border:1px solid rgba(86,120,255,.22);
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(62,89,190,.16),transparent 55%),
+    linear-gradient(145deg,rgba(5,18,42,.9),rgba(10,8,35,.94));
+  color:#6d8ca8;
+  text-align:center;
+}
+#pvpPagina .pvp-import-art-placeholder span{
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+#pvpPagina .pvp-import-art-placeholder small{
+  margin-top:8px;
+  font-size:8px;
+}
+
+/* STATUS SUMMARY mais próximo do jogo:
+   valor principal branco grande + ganho total em verde ao lado. */
+#pvpPagina .pvp-summary-stats.pvp-summary-game{
+  display:grid !important;
+  gap:9px !important;
+}
+#pvpPagina .pvp-summary-game-row{
+  min-height:86px;
+  display:grid;
+  grid-template-columns:55px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  align-items:center;
+  gap:4px 12px;
+  padding:12px 14px;
+  border:1px solid rgba(56,119,166,.18);
+  border-left:3px solid var(--stat-color);
+  border-radius:8px;
+  background:rgba(2,13,29,.78);
+}
+#pvpPagina .pvp-summary-game-stat{
+  grid-row:1 / span 2;
+  align-self:center;
+  color:var(--stat-color);
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:13px;
+  font-weight:900;
+  text-shadow:0 0 8px color-mix(in srgb,var(--stat-color),transparent 50%);
+}
+#pvpPagina .pvp-summary-game-main{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  min-width:0;
+}
+#pvpPagina .pvp-summary-game-main>b{
+  color:#fff;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:26px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:.3px;
+  text-shadow:
+    -1px -1px 0 rgba(0,0,0,.7),
+     1px -1px 0 rgba(0,0,0,.7),
+    -1px  1px 0 rgba(0,0,0,.7),
+     1px  1px 0 rgba(0,0,0,.7);
+}
+#pvpPagina .pvp-summary-game-main>em{
+  color:#32f06e;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:18px;
+  font-style:normal;
+  font-weight:900;
+  white-space:nowrap;
+  text-shadow:
+    -1px -1px 0 #003819,
+     1px -1px 0 #003819,
+    -1px  1px 0 #003819,
+     1px  1px 0 #003819,
+     0 0 8px rgba(29,255,105,.45);
+}
+#pvpPagina .pvp-summary-game-row>small{
+  color:#789bb3;
+  font-size:7px;
+  line-height:1.45;
+}
+
+@media(max-width:1250px){
+  #pvpPagina .pvp-build-layout{grid-template-columns:1fr !important}
+  #pvpPagina .pvp-import-page{grid-template-columns:1fr}
+  #pvpPagina .pvp-import-art-placeholder{min-height:360px}
+}
+@media(max-width:900px){
+  #pvpPagina .pvp-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+  #pvpPagina .pvp-build-tabs{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+@media(max-width:580px){
+  #pvpPagina .pvp-grid,
+  #pvpPagina .pvp-build-tabs{grid-template-columns:1fr !important}
+}

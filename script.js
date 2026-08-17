@@ -8171,9 +8171,7 @@ function pvpSelecionarStage(stage,level){
 
 function pvpMostrarView(nome){
   document.querySelectorAll("#pvpPagina .pvp-view").forEach(function(v){v.classList.remove("ativa")});
-  let id="pvpBuildView";
-  if(nome==="match")id="pvpMatchView";
-  if(nome==="individual")id="pvpIndividualView";
+  const id=nome==="match"?"pvpMatchView":nome==="individual"?"pvpIndividualView":nome==="import"?"pvpImportView":"pvpBuildView";
   const alvo=document.getElementById(id);
   if(alvo)alvo.classList.add("ativa")
 }
@@ -8346,13 +8344,30 @@ function pvpRestaurarEstadoLocal(){
 }
 
 function abrirImportacaoTimePvp(){
-  fecharPvpNavMenu();abrirPvpBuild();
-  const input=document.getElementById("pvpImportFile");if(!input)return;input.value="";input.click()
+  fecharPvpNavMenu();
+  mostrarPagina("pvpPagina",document.getElementById("btnPvp"));
+  pvpMostrarView("import");
 }
 async function importarTimePvp(file){
   if(!file)return;
-  try{await pvpCarregarDatabase();const texto=await file.text();pvpAplicarEstado(JSON.parse(texto));abrirPvpBuild()}
-  catch(erro){alert("Não foi possível importar o time PvP.\n\n"+(erro&&erro.message?erro.message:erro))}
+  try{
+    await pvpCarregarDatabase();
+    const texto=await file.text();
+    pvpAplicarEstado(JSON.parse(texto));
+    const input=document.getElementById("pvpImportFile");
+    if(input)input.value="";
+    if(pvpSlotsPreenchidos().length===8){
+      pvpBuildIndex=0;
+      pvpMostrarView("individual");
+      pvpRenderBuildTabs();
+      pvpRenderBuildAtual();
+    }else{
+      pvpMostrarView("build");
+      pvpAtualizarBotaoEtapa2();
+    }
+  }catch(erro){
+    alert("Não foi possível importar o time PvP.\n\n"+(erro&&erro.message?erro.message:erro))
+  }
 }
 function exportarTimePvp(){
   fecharPvpNavMenu();pvpCriarSlots();
@@ -8615,7 +8630,7 @@ function pvpRenderSummary(build,digi){
   const wrap=document.getElementById("pvpSummaryStats");
   if(!wrap)return;
 
-  wrap.classList.add("pvp-summary-status-simulator");
+  wrap.classList.add("pvp-summary-game");
   wrap.innerHTML="";
 
   PVP_BUILD_STATS.forEach(function(stat){
@@ -8626,19 +8641,22 @@ function pvpRenderSummary(build,digi){
 
     const babyBonus=Math.round(base*(babyPct/100));
     const tetrisBonus=Math.round(base*(tetrisPct/100));
-    const final=base+babyBonus+tetrisBonus+deck;
+    const totalBonus=babyBonus+tetrisBonus+deck;
+    const final=base+totalBonus;
 
     const row=document.createElement("div");
-    row.className="status-simulator-result-row pvp-summary-simulator-row";
+    row.className="pvp-summary-game-row";
     row.style.setProperty("--stat-color",STATUS_SIMULATOR_COLORS[stat]||"#55dfff");
     row.innerHTML=
-      '<strong>'+stat+'</strong>'+
-      '<b>'+formatarStatusSimulator(final)+'</b>'+
-      '<small>'+
-        'BASE '+formatarStatusSimulator(base)+
+      '<strong class="pvp-summary-game-stat">'+stat+'</strong>'+
+      '<div class="pvp-summary-game-main">'+
+        '<b>'+formatarStatusSimulator(final)+'</b>'+
+        (totalBonus>0?'<em>(+'+formatarStatusSimulator(totalBonus)+')</em>':'')+
+      '</div>'+
+      '<small>BASE '+formatarStatusSimulator(base)+
         ' · BABY +'+formatarStatusSimulator(babyBonus)+' ('+babyPct+'%)'+
-        ' · TETRIS +'+formatarStatusSimulator(tetrisBonus)+' ('+tetrisPct+'%)'+
         ' · DECK +'+formatarStatusSimulator(deck)+
+        ' · TETRIS +'+formatarStatusSimulator(tetrisBonus)+' ('+tetrisPct+'%)'+
       '</small>';
     wrap.appendChild(row)
   });
@@ -8649,7 +8667,6 @@ function pvpRenderSummary(build,digi){
     done.textContent=build.complete?"✓ BUILD CONCLUÍDO":"✓ MARCAR BUILD COMO CONCLUÍDO"
   }
 }
-
 function pvpAtualizarBuildCalculado(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
