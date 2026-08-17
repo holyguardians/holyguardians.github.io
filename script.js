@@ -8706,70 +8706,85 @@ function pvpGetBaseStat(digi,stat){
 }
 
 
-function pvpCalcularCriticosComFormulaDoSimulator(build,digi){
-  if(typeof calcularCritRateStatusSimulator!=="function")return null;
+function pvpCalcularCriticosCalibrados(build,digi){
+  if(!digi)return null;
 
-  const snapshot={
-    digimon:statusSimulatorDigimon,
-    baby:statusSimulatorBaby,
-    cubes:statusSimulatorCubes,
-    accessories:statusSimulatorAccessories,
-    clothing:statusSimulatorClothing,
-    deck:statusSimulatorDeck
+  // Mesma regra de status do Status Simulator:
+  // Baby e Tetris são calculados separadamente sobre o INT base
+  // e cada ganho usa Math.ceil antes da soma.
+  const intBase=Number(pvpGetBaseStat(digi,"INT"))||0;
+  const babyPercent=Number(build.baby.INT||0);
+  const tetrisPercent=(Number(build.tetris.INT||0))*3;
+  const deck=Number(build.buff.INT||0);
+
+  const babyGain=babyPercent>0 ? Math.ceil(intBase*babyPercent/100) : 0;
+  const tetrisGain=tetrisPercent>0 ? Math.ceil(intBase*tetrisPercent/100) : 0;
+  const intFinal=intBase+babyGain+tetrisGain+deck;
+  const bonusInt=Math.max(0,intFinal-intBase);
+
+  // A partir daqui são exatamente os coeficientes atualmente usados
+  // em calcularCritRateStatusSimulator(). Nada dessa função original
+  // é alterado pelo PvP.
+  const chave=normalizarChaveDigivolution(digi.name||"");
+  const burstMode=/burstmode|bm$/.test(chave)?1:0;
+
+  // Ajustes individuais já calibrados no Status Simulator.
+  const ajustesCritDown={
+    lilithmon:-0.0706,
+    blackseraphimon:0.0545,
+    beelzemon:0.2379,
+    ulforceveedramon:-0.2218
   };
+  const ajusteCritDown=Number(ajustesCritDown[chave])||0;
 
-  try{
-    // Mantém o INT BASE real do Digimon.
-    statusSimulatorDigimon={
-      digimon:digi.name||"",
-      stage:digi.stage||"",
-      type:digi.attribute||"UNKNOWN",
-      hp:pvpGetBaseStat(digi,"HP"),
-      sp:pvpGetBaseStat(digi,"SP"),
-      str:pvpGetBaseStat(digi,"STR"),
-      int:pvpGetBaseStat(digi,"INT"),
-      def:pvpGetBaseStat(digi,"DEF"),
-      res:pvpGetBaseStat(digi,"RES"),
-      spd:pvpGetBaseStat(digi,"SPD")
-    };
+  const critRate=Math.max(
+    0,
+    26.950915089047466
+      + intFinal*0.04994600527878049
+      - intBase*0.03651377191538811
+      - burstMode*0.25833219773252186
+  );
 
-    statusSimulatorBaby={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
-    PVP_BUILD_STATS.forEach(function(stat){
-      statusSimulatorBaby[stat]=Number(build.baby[stat]||0);
-    });
+  const critDown=Math.max(
+    0,
+    18.26819125664886
+      + intFinal*0.00823240939263425
+      - intBase*0.009013734512031439
+      - burstMode*9.615389959281332
+      + ajusteCritDown
+  );
 
-    // O PvP usa somente cubos de 3%.
-    statusSimulatorCubes=[];
-    PVP_TETRIS_STATS.forEach(function(stat){
-      const qtd=Math.max(0,Number(build.tetris[stat]||0));
-      for(let i=0;i<qtd;i++){
-        statusSimulatorCubes.push({stat:stat,percent:3,mega:false});
-      }
-    });
+  const critDmg=Math.max(
+    0,
+    172.3803368817766
+      + intFinal*0.04887066469303948
+      - intBase*0.04877349125268096
+      - burstMode*0.2554690272742557
+  );
 
-    statusSimulatorAccessories={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
-    statusSimulatorClothing={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
-    statusSimulatorDeck={HP:0,SP:0,STR:0,INT:0,DEF:0,RES:0,SPD:0};
-    PVP_BUILD_STATS.forEach(function(stat){
-      statusSimulatorDeck[stat]=Number(build.buff[stat]||0);
-    });
+  const damageRangeMin=95;
+  const damageRangeMax=Math.max(
+    damageRangeMin,
+    112.1233752759157
+      + intFinal*0.01543433379605434
+      - intBase*0.015440216843529378
+      - burstMode*0.08093217150093454
+  );
 
-    return calcularCritRateStatusSimulator();
-  }catch(erro){
-    console.error("[PvP] Erro ao calcular críticos:",erro);
-    return null;
-  }finally{
-    statusSimulatorDigimon=snapshot.digimon;
-    statusSimulatorBaby=snapshot.baby;
-    statusSimulatorCubes=snapshot.cubes;
-    statusSimulatorAccessories=snapshot.accessories;
-    statusSimulatorClothing=snapshot.clothing;
-    statusSimulatorDeck=snapshot.deck;
-  }
+  return{
+    critRate,
+    critDown,
+    critDmg,
+    damageRangeMin,
+    damageRangeMax,
+    intBase,
+    intFinal,
+    bonusInt
+  };
 }
 
 function pvpRenderCriticos(build,digi){
-  const crit=pvpCalcularCriticosComFormulaDoSimulator(build,digi);
+  const crit=pvpCalcularCriticosCalibrados(build,digi);
   if(!crit)return "";
 
   return `<div class="pvp-crit-result">
@@ -8797,8 +8812,8 @@ function pvpRenderSummary(build,digi){
     const tetrisPct=(Number(build.tetris[stat]||0))*3;
     const deck=Number(build.buff[stat]||0);
 
-    const babyBonus=Math.round(base*(babyPct/100));
-    const tetrisBonus=Math.round(base*(tetrisPct/100));
+    const babyBonus=babyPct>0?Math.ceil(base*(babyPct/100)):0;
+    const tetrisBonus=tetrisPct>0?Math.ceil(base*(tetrisPct/100)):0;
     const totalBonus=babyBonus+tetrisBonus+deck;
     const final=base+totalBonus;
 
