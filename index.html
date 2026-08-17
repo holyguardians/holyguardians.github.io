@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v7-1-fixed">
+  <link rel="stylesheet" href="styles.css?v=20260816-pvp-builder-v7-2">
 </head>
 <body>
 
@@ -1558,7 +1558,7 @@
           <span>Os 8 Digimons estão configurados.</span>
         </div>
         <div class="pvp-final-buttons">
-          <button type="button" class="pvp-action-btn" onclick="pvpSalvarTime()">SAVE TEAM</button>
+          <button type="button" class="pvp-action-btn pvp-action-success" onclick="pvpSalvarTime()">SAVE TEAM → MATCH</button>
           <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">EXPORT TEAM</button>
         </div>
       </div>
@@ -1593,6 +1593,29 @@
         <div class="pvp-import-art-placeholder tech-corners" aria-hidden="true">
           <span>ARTE DO IMPORT TEAM</span>
           <small>Espaço reservado para a arte que você vai escolher depois.</small>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="pvpImportedReadyView" class="pvp-view">
+      <div class="pvp-imported-ready tech-corners">
+        <div class="pvp-imported-ready-head">
+          <div>
+            <div class="pvp-kicker">PVP TEAM // LOADED TEAM</div>
+            <h2 class="page-title">TIME CARREGADO</h2>
+            <p class="page-subtitle">Confira o time importado antes de editar ou seguir para a Match.</p>
+          </div>
+          <div class="pvp-imported-ready-actions">
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpEditarTimeImportado()">EDITAR TIME</button>
+            <button id="pvpImportedMatchBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchComTimeImportado()">MATCH</button>
+          </div>
+        </div>
+
+        <div id="pvpImportedReadyGrid" class="pvp-imported-ready-grid"></div>
+
+        <div id="pvpImportedReadyWarning" class="pvp-imported-ready-warning">
+          Este time possui builds incompletos. Use EDITAR TIME para concluir antes de entrar em uma Match.
         </div>
       </div>
     </div>
@@ -1951,6 +1974,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260816-pvp-builder-v7-1-fixed"></script>
+<script src="script.js?v=20260816-pvp-builder-v7-2"></script>
 </body>
 </html>

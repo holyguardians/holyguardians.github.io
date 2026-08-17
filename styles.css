@@ -14512,3 +14512,184 @@ body.pvp-modal-open{overflow:hidden}
   font-weight:900;
   letter-spacing:.04em;
 }
+
+
+/* =====================================================
+   PVP V7.2 — IMPORTED TEAM CONFIRMATION / MATCH FLOW
+===================================================== */
+
+#pvpPagina .pvp-imported-ready{
+  min-height:640px;
+  padding:28px;
+  border:1px solid rgba(62,181,255,.42);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(6,26,54,.94),rgba(2,13,31,.97));
+}
+
+#pvpPagina .pvp-imported-ready-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:24px;
+}
+
+#pvpPagina .pvp-imported-ready-actions{
+  display:flex;
+  gap:10px;
+  flex:0 0 auto;
+}
+
+#pvpPagina .pvp-imported-ready-actions .pvp-action-btn{
+  min-width:170px;
+  min-height:48px;
+}
+
+#pvpPagina .pvp-action-success{
+  border-color:rgba(60,230,147,.62) !important;
+  background:linear-gradient(180deg,rgba(14,126,83,.92),rgba(6,78,53,.95)) !important;
+  color:#e8fff3 !important;
+}
+
+#pvpPagina .pvp-action-success:hover{
+  border-color:#5cf0a4 !important;
+  box-shadow:0 0 14px rgba(61,232,148,.15),inset 0 0 14px rgba(61,232,148,.08) !important;
+}
+
+#pvpPagina .pvp-action-success:disabled{
+  opacity:.32;
+  cursor:not-allowed;
+  filter:grayscale(.45);
+  box-shadow:none !important;
+}
+
+#pvpPagina .pvp-imported-ready-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+}
+
+#pvpPagina .pvp-imported-ready-card{
+  min-height:125px;
+  display:grid;
+  grid-template-columns:82px minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border:1px solid rgba(48,150,225,.34);
+  border-radius:10px;
+  background:linear-gradient(160deg,rgba(8,34,69,.88),rgba(4,17,39,.94));
+}
+
+#pvpPagina .pvp-imported-ready-card.concluido{
+  border-color:rgba(59,211,138,.34);
+}
+
+#pvpPagina .pvp-imported-ready-card.incompleto{
+  border-color:rgba(244,174,77,.34);
+}
+
+#pvpPagina .pvp-imported-ready-icon{
+  width:82px;
+  height:82px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+
+#pvpPagina .pvp-imported-ready-icon img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  padding:5px;
+}
+
+#pvpPagina .pvp-imported-ready-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+#pvpPagina .pvp-imported-ready-copy small{
+  color:#58cfff;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.55px;
+}
+
+#pvpPagina .pvp-imported-ready-copy strong{
+  overflow:hidden;
+  color:#f3fbff;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:12px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+#pvpPagina .pvp-imported-ready-copy span{
+  color:#7399b6;
+  font-size:8px;
+}
+
+#pvpPagina .pvp-imported-ready-state{
+  min-width:62px;
+  padding:5px 7px;
+  border:1px solid rgba(75,180,237,.25);
+  border-radius:5px;
+  background:rgba(3,20,42,.7);
+  color:#799bb5;
+  font-size:7px;
+  font-weight:900;
+  text-align:center;
+}
+
+#pvpPagina .pvp-imported-ready-card.concluido .pvp-imported-ready-state{
+  border-color:rgba(61,226,142,.35);
+  color:#63efa4;
+}
+
+#pvpPagina .pvp-imported-ready-card.incompleto .pvp-imported-ready-state{
+  border-color:rgba(244,174,77,.35);
+  color:#f1b765;
+}
+
+#pvpPagina .pvp-imported-ready-warning{
+  display:none;
+  margin-top:16px;
+  padding:12px 14px;
+  border:1px solid rgba(243,176,78,.34);
+  border-left:3px solid #e6ae50;
+  border-radius:7px;
+  background:rgba(73,42,9,.22);
+  color:#d8b77f;
+  font-size:9px;
+}
+
+#pvpPagina .pvp-imported-ready-warning.visivel{
+  display:block;
+}
+
+@media(max-width:1200px){
+  #pvpPagina .pvp-imported-ready-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:720px){
+  #pvpPagina .pvp-imported-ready-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #pvpPagina .pvp-imported-ready-actions{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  #pvpPagina .pvp-imported-ready-actions .pvp-action-btn{
+    min-width:0;
+  }
+  #pvpPagina .pvp-imported-ready-grid{
+    grid-template-columns:1fr;
+  }
+}

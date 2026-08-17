@@ -8180,7 +8180,12 @@ function pvpSelecionarStage(stage,level){
 
 function pvpMostrarView(nome){
   document.querySelectorAll("#pvpPagina .pvp-view").forEach(function(v){v.classList.remove("ativa")});
-  const id=nome==="match"?"pvpMatchView":nome==="individual"?"pvpIndividualView":nome==="import"?"pvpImportView":"pvpBuildView";
+  const id=
+    nome==="match"?"pvpMatchView":
+    nome==="individual"?"pvpIndividualView":
+    nome==="import"?"pvpImportView":
+    nome==="imported-ready"?"pvpImportedReadyView":
+    "pvpBuildView";
   const alvo=document.getElementById(id);
   if(alvo)alvo.classList.add("ativa")
 }
@@ -8352,6 +8357,70 @@ function pvpRestaurarEstadoLocal(){
   }catch(erro){pvpSelecionarStage("Mega",100)}
 }
 
+
+function pvpRenderTimeImportado(){
+  const grid=document.getElementById("pvpImportedReadyGrid");
+  const warning=document.getElementById("pvpImportedReadyWarning");
+  const matchBtn=document.getElementById("pvpImportedMatchBtn");
+  if(!grid)return;
+
+  const slots=pvpBuildSlots();
+  grid.innerHTML="";
+
+  slots.forEach(function(slot,index){
+    const did=Number(slot.dataset.did||0);
+    const digi=did?pvpDatabase.find(function(item){return Number(item.did)===did}):null;
+    const build=pvpGetSlotBuild(slot);
+
+    const card=document.createElement("article");
+    card.className="pvp-imported-ready-card tech-corners"+(build.complete?" concluido":" incompleto");
+
+    card.innerHTML=
+      '<div class="pvp-imported-ready-icon tech-icon-frame">'+
+        (digi&&digi.icon?'<img src="'+digi.icon+'" alt="'+pvpEscapeHtml(digi.name)+'">':'<span>?</span>')+
+      '</div>'+
+      '<div class="pvp-imported-ready-copy">'+
+        '<small>SLOT '+String(index+1).padStart(2,"0")+'</small>'+
+        '<strong>'+(digi?pvpEscapeHtml(digi.name):pvpEscapeHtml(slot.dataset.digimon||"EMPTY SLOT"))+'</strong>'+
+        '<span>'+(digi?digi.stage.toUpperCase()+' · LV. '+digi.level:'SEM DIGIMON')+'</span>'+
+      '</div>'+
+      '<div class="pvp-imported-ready-state">'+
+        (build.complete?'✓ BUILD':'PENDENTE')+
+      '</div>';
+
+    grid.appendChild(card);
+  });
+
+  const pronto=pvpTodosBuildsConcluidos();
+  if(warning)warning.classList.toggle("visivel",!pronto);
+  if(matchBtn){
+    matchBtn.disabled=!pronto;
+    matchBtn.title=pronto?"Time pronto para Match":"Conclua os 8 builds antes da Match";
+  }
+}
+
+function pvpEditarTimeImportado(){
+  if(pvpSlotsPreenchidos().length!==8){
+    pvpMostrarView("build");
+    pvpAtualizarBotaoEtapa2();
+    return;
+  }
+
+  pvpBuildIndex=0;
+  pvpMostrarView("individual");
+  pvpRenderBuildTabs();
+  pvpRenderBuildAtual();
+}
+
+function pvpMatchComTimeImportado(){
+  if(!pvpTodosBuildsConcluidos()){
+    alert("Este time possui builds incompletos. Edite o time antes de seguir para Match.");
+    return;
+  }
+  pvpSalvarEstadoLocal();
+  abrirPvpMatch();
+}
+
 function abrirImportacaoTimePvp(){
   fecharPvpNavMenu();
   mostrarPagina("pvpPagina",document.getElementById("btnPvp"));
@@ -8363,16 +8432,17 @@ async function importarTimePvp(file){
     await pvpCarregarDatabase();
     const texto=await file.text();
     pvpAplicarEstado(JSON.parse(texto));
+
     const input=document.getElementById("pvpImportFile");
     if(input)input.value="";
+
     if(pvpSlotsPreenchidos().length===8){
-      pvpBuildIndex=0;
-      pvpMostrarView("individual");
-      pvpRenderBuildTabs();
-      pvpRenderBuildAtual();
+      pvpMostrarView("imported-ready");
+      pvpRenderTimeImportado();
     }else{
       pvpMostrarView("build");
       pvpAtualizarBotaoEtapa2();
+      alert("O arquivo foi carregado, mas o time não possui 8 Digimons completos.");
     }
   }catch(erro){
     alert("Não foi possível importar o time PvP.\n\n"+(erro&&erro.message?erro.message:erro))
@@ -8848,8 +8918,13 @@ function pvpAtualizarFinalActions(){
 }
 
 function pvpSalvarTime(){
+  if(!pvpTodosBuildsConcluidos()){
+    alert("Conclua os 8 builds antes de salvar o time para Match.");
+    return;
+  }
+
   pvpSalvarEstadoLocal();
-  alert("Time PvP salvo neste navegador.")
+  abrirPvpMatch();
 }
 
 const _pvpAplicarEstadoOriginal=pvpAplicarEstado;
