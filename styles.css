@@ -15268,3 +15268,23 @@ body.pvp-modal-open{overflow:hidden}
   font-size:9px !important;
   line-height:1.55 !important;
 }
+
+/* =====================================================
+   PVP V8.6.3 — SLOT RELATION TOOLTIP LABEL FIX
+   O pvpElementIconHtml já escreve o nome do elemento dentro da
+   mini-tag. No cabeçalho do tooltip o mesmo nome já aparece ao lado,
+   então escondemos SOMENTE o texto interno do ícone para não duplicar.
+===================================================== */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation
+.hg-relation-tooltip-icon .pvp-mini-icon-tag b{
+  display:none !important;
+}
+
+/* Mantém o ícone centralizado depois de remover o texto duplicado. */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation
+.hg-relation-tooltip-icon .pvp-mini-icon-tag{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:0 !important;
+}
