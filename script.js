@@ -273,8 +273,8 @@ function criarLinhaTabelaDigidex(d) {
         </span>
       </td>
 
-      <td>${renderizarIconeElemento(d.strong)}</td>
-      <td>${renderizarIconeElemento(d.weak)}</td>
+      <td>${renderizarRelacaoAtributo(d,"strong")}</td>
+      <td>${renderizarRelacaoAtributo(d,"weak")}</td>
       <td>${renderizarField(d.field)}</td>
 
       <td>${escaparHtml(d.hp || "-")}</td>
@@ -1235,6 +1235,106 @@ function normalizarType(tipo) {
 }
 
 
+
+/* =====================================================
+   HG GLOBAL — STRONG / WEAK RELATION TOOLTIP
+   Fonte consolidada: pvp-data.json
+===================================================== */
+
+const HG_RELATION_BY_DIGIMON={"agumon":{"strong":"Wind","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"agumons":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"agumonsburstmode":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Effect Probability"},"armadillomon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"betamon":{"strong":"Iron","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"biyomon":{"strong":"Wind","strongEffect":"Evasion","weak":"Water","weakEffect":"Weakness"},"candlemon":{"strong":"Wind","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"chuumon":{"strong":"Physical","strongEffect":"Evasion","weak":"Dark","weakEffect":"Cannot Evade"},"crabmon":{"strong":"Water","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Weakness"},"demidevimon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"dorumon":{"strong":"Iron","strongEffect":"Resistance","weak":"Earth","weakEffect":"Weakness"},"dracmon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"dracomon":{"strong":"Physical","strongEffect":"Reflection","weak":"Water","weakEffect":"Weakness"},"elecmon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Earth","weakEffect":"Weakness"},"elecmonviolet":{"strong":"Thunder","strongEffect":"Resistance","weak":"Earth","weakEffect":"Weakness"},"falcomon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"floramon":{"strong":"Wood","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"funbeemon":{"strong":"Ice","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"gabumon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"gaomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"gazimon":{"strong":"Dark","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Weakness"},"gizamon":{"strong":"Fire","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Weakness"},"goblimon":{"strong":"Ice","strongEffect":"Reflection","weak":"Earth","weakEffect":"Weakness"},"gomamon":{"strong":"Fire","strongEffect":"Reflection","weak":"Wood","weakEffect":"Cannot Evade"},"gotsumon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"guilmon":{"strong":"Fire","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"hagurumon":{"strong":"Light","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Cannot Evade"},"hawkmon":{"strong":"Wind","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"impmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"keramon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"kokuwamon":{"strong":"Physical","strongEffect":"Evasion","weak":"Water","weakEffect":"Effect Probability"},"kotemon":{"strong":"Thunder","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"kudamon":{"strong":"Light","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"kunemon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"lopmon":{"strong":"Ice","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"lopmonwhite":{"strong":"Ice","strongEffect":"Resistance","weak":"Dark","weakEffect":"Weakness"},"monmon":{"strong":"Wood","strongEffect":"Evasion","weak":"Ice","weakEffect":"Weakness"},"monodramon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"mushroomon":{"strong":"Water","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"otamamon":{"strong":"Water","strongEffect":"Evasion","weak":"Physical","weakEffect":"Weakness"},"palmon":{"strong":"Water","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"patamon":{"strong":"Earth","strongEffect":"Evasion","weak":"Dark","weakEffect":"Cannot Evade"},"penmon":{"strong":"Ice","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"pomumon":{"strong":"Wood","strongEffect":"Evasion","weak":"Dark","weakEffect":"Cannot Evade"},"renamon":{"strong":"Wind","strongEffect":"Evasion","weak":"Physical","weakEffect":"Weakness"},"salamon":{"strong":"Dark","strongEffect":"Reflection","weak":"Iron","weakEffect":"Weakness"},"shakomon":{"strong":"Water","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Cannot Evade"},"solarmon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"soundbirdmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"sunarizamon":{"strong":"Earth","strongEffect":"Resistance","weak":"Wind","weakEffect":"Cannot Evade"},"tapirmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"tentomon":{"strong":"Water","strongEffect":"Resistance","weak":"Ice","weakEffect":"Cannot Evade"},"terriermon":{"strong":"Wind","strongEffect":"Evasion","weak":"Ice","weakEffect":"Cannot Evade"},"toyagumon":{"strong":"Iron","strongEffect":"Reflection","weak":"Physical","weakEffect":"Cannot Evade"},"toyagumonblack":{"strong":"Iron","strongEffect":"Resistance","weak":"Physical","weakEffect":"Effect Probability"},"veemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"wormmon":{"strong":"Earth","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"airdramon":{"strong":"Physical","strongEffect":"Resistance","weak":"Iron","weakEffect":"Effect Probability"},"angemon":{"strong":"Dark","strongEffect":"Resistance","weak":"Iron","weakEffect":"Cannot Evade"},"ankylomon":{"strong":"Earth","strongEffect":"Reflection","weak":"Water","weakEffect":"Cannot Evade"},"apemon":{"strong":"Physical","strongEffect":"Resistance","weak":"Iron","weakEffect":"Weakness"},"aquilamon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"bakemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"birdramon":{"strong":"Wind","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"bladekuwagamon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Earth","weakEffect":"Weakness"},"centarumon":{"strong":"Physical","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"clockmon":{"strong":"Iron","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"coelamon":{"strong":"Water","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"coredramongreen":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Weakness"},"darklizamon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"darktyrannomon":{"strong":"Dark","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"deltamon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"deputymon":{"strong":"Dark","strongEffect":"Evasion","weak":"Water","weakEffect":"Weakness"},"devidramon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"devimon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Weakness"},"dokugumon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"dolphmon":{"strong":"Water","strongEffect":"Resistance","weak":"Physical","weakEffect":"Cannot Evade"},"dorugamon":{"strong":"Iron","strongEffect":"Evasion","weak":"Earth","weakEffect":"Cannot Evade"},"drimogemon":{"strong":"Earth","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"ebidramon":{"strong":"Water","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Effect Probability"},"exveemon":{"strong":"Wind","strongEffect":"Reflection","weak":"Fire","weakEffect":"Effect Probability"},"eyesmon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Weakness"},"eyesmonscattermode":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"flarelizamon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"flymon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"frigimon":{"strong":"Ice","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"gaogamon":{"strong":"Wind","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"gargomon":{"strong":"Physical","strongEffect":"Resistance","weak":"Dark","weakEffect":"Cannot Evade"},"garurumon":{"strong":"Wood","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"gatomon":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Weakness"},"gekomon":{"strong":"Water","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"geogreymon":{"strong":"Fire","strongEffect":"Reflection","weak":"Earth","weakEffect":"Effect Probability"},"gesomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"golemon":{"strong":"Earth","strongEffect":"Reflection","weak":"Wood","weakEffect":"Weakness"},"gorillamon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"greymon":{"strong":"Wind","strongEffect":"Reflection","weak":"Water","weakEffect":"Effect Probability"},"growlmon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"guardromon":{"strong":"Physical","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"icemon":{"strong":"Physical","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"ikkakumon":{"strong":"Wood","strongEffect":"Reflection","weak":"Physical","weakEffect":"Weakness"},"kabuterimon":{"strong":"Iron","strongEffect":"Reflection","weak":"Earth","weakEffect":"Weakness"},"kiwimon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"kokatorimon":{"strong":"Physical","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"kurisarimon":{"strong":"Physical","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"kuwagamon":{"strong":"Iron","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"kyubimon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"leomon":{"strong":"Physical","strongEffect":"Resistance","weak":"Dark","weakEffect":"Effect Probability"},"madleomon":{"strong":"Dark","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"mechanorimon":{"strong":"Iron","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Effect Probability"},"meramon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"minotaurmon":{"strong":"Dark","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"mojyamon":{"strong":"Water","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"monochromon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"musyamon":{"strong":"Iron","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"nanimon":{"strong":"Earth","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"ninjamon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"numemon":{"strong":"Dark","strongEffect":"Reflection","weak":"Ice","weakEffect":"Cannot Evade"},"octomon":{"strong":"Water","strongEffect":"Resistance","weak":"Wood","weakEffect":"Cannot Evade"},"opossummon":{"strong":"Fire","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"orgemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"peckmon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"raptordramon":{"strong":"Iron","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"raremon":{"strong":"Dark","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"redvegiemon":{"strong":"Wood","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"reppamon":{"strong":"Iron","strongEffect":"Evasion","weak":"Ice","weakEffect":"Effect Probability"},"roachmon":{"strong":"Physical","strongEffect":"Evasion","weak":"Water","weakEffect":"Weakness"},"sangloupmon":{"strong":"Physical","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"seadramon":{"strong":"Ice","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Effect Probability"},"shellmon":{"strong":"Physical","strongEffect":"Reflection","weak":"Earth","weakEffect":"Cannot Evade"},"snimon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"soulmon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"starmon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"stingmon":{"strong":"Wood","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"strikedramon":{"strong":"Fire","strongEffect":"Reflection","weak":"Earth","weakEffect":"Weakness"},"sukamon":{"strong":"Earth","strongEffect":"Evasion","weak":"Ice","weakEffect":"Cannot Evade"},"sunflowmon":{"strong":"Water","strongEffect":"Reflection","weak":"Fire","weakEffect":"Effect Probability"},"tankmon":{"strong":"Iron","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"thundermon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Earth","weakEffect":"Effect Probability"},"togemon":{"strong":"Water","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"tortomon":{"strong":"Earth","strongEffect":"Resistance","weak":"Iron","weakEffect":"Weakness"},"turuiemon":{"strong":"Iron","strongEffect":"Evasion","weak":"Ice","weakEffect":"Effect Probability"},"tuskmon":{"strong":"Physical","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"tyrannomon":{"strong":"Fire","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"unimon":{"strong":"Physical","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Cannot Evade"},"veedramon":{"strong":"Light","strongEffect":"Resistance","weak":"Wind","weakEffect":"Effect Probability"},"vegiemon":{"strong":"Wood","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"vilemon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Weakness"},"waspmon":{"strong":"Wind","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Weakness"},"wendigomon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"wizardmon":{"strong":"Thunder","strongEffect":"Evasion","weak":"Dark","weakEffect":"Weakness"},"woodmon":{"strong":"Earth","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"youkomon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"aeroveedramon":{"strong":"Physical","strongEffect":"Evasion","weak":"Iron","weakEffect":"Weakness"},"andromon":{"strong":"Iron","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"angewomon":{"strong":"Dark","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"antylamon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"antylamondeva":{"strong":"Iron","strongEffect":"Reflection","weak":"Dark","weakEffect":"Effect Probability"},"arukenimon":{"strong":"Earth","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"astamon":{"strong":"Dark","strongEffect":"Reflection","weak":"Water","weakEffect":"Cannot Evade"},"asuramon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"baalmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"bigmamemon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"blossomon":{"strong":"Water","strongEffect":"Resistance","weak":"Wind","weakEffect":"Weakness"},"bluemeramon":{"strong":"Ice","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"cannonbeemon":{"strong":"Physical","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"cherrymon":{"strong":"Earth","strongEffect":"Reflection","weak":"Fire","weakEffect":"Effect Probability"},"chirinmon":{"strong":"Light","strongEffect":"Reflection","weak":"Dark","weakEffect":"Effect Probability"},"chohakkaimon":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"crowmon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"cyberdramon":{"strong":"Light","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"datamon":{"strong":"Iron","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"deramon":{"strong":"Wind","strongEffect":"Reflection","weak":"Fire","weakEffect":"Cannot Evade"},"digitamamon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Weakness"},"divermon":{"strong":"Water","strongEffect":"Resistance","weak":"Iron","weakEffect":"Weakness"},"doumon":{"strong":"Dark","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"dragomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Cannot Evade"},"etemon":{"strong":"Physical","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"garbagemon":{"strong":"Earth","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"garudamon":{"strong":"Wind","strongEffect":"Evasion","weak":"Ice","weakEffect":"Cannot Evade"},"gigadramon":{"strong":"Iron","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"giromon":{"strong":"Iron","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"gogmamon":{"strong":"Earth","strongEffect":"Resistance","weak":"Iron","weakEffect":"Cannot Evade"},"grademon":{"strong":"Physical","strongEffect":"Evasion","weak":"Earth","weakEffect":"Weakness"},"groundramon":{"strong":"Earth","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"hippogryphonmon":{"strong":"Wind","strongEffect":"Resistance","weak":"Iron","weakEffect":"Weakness"},"iceleomon":{"strong":"Ice","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"infermon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"jokermon":{"strong":"Dark","strongEffect":"Resistance","weak":"Physical","weakEffect":"Weakness"},"karatenmon":{"strong":"Wind","strongEffect":"Resistance","weak":"Ice","weakEffect":"Cannot Evade"},"kimeramon":{"strong":"Fire","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"knightmon":{"strong":"Physical","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Cannot Evade"},"ladydevimon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"lilamon":{"strong":"Wind","strongEffect":"Reflection","weak":"Fire","weakEffect":"Cannot Evade"},"lillymon":{"strong":"Water","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"loaderleomon":{"strong":"Physical","strongEffect":"Reflection","weak":"Fire","weakEffect":"Weakness"},"machgaogamon":{"strong":"Iron","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"magnaangemon":{"strong":"Light","strongEffect":"Resistance","weak":"Dark","weakEffect":"Weakness"},"magnaangemonpriestmode":{"strong":"Light","strongEffect":"Resistance","weak":"Dark","weakEffect":"Weakness"},"makuramon":{"strong":"Fire","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"mamemon":{"strong":"Iron","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"mammothmon":{"strong":"Ice","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"marindevimon":{"strong":"Water","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"mastertyrannomon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"megadramon":{"strong":"Iron","strongEffect":"Resistance","weak":"Ice","weakEffect":"Cannot Evade"},"megakabuterimon":{"strong":"Iron","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Weakness"},"megaseadramon":{"strong":"Wind","strongEffect":"Resistance","weak":"Physical","weakEffect":"Cannot Evade"},"mephistomon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"metalgreymon":{"strong":"Iron","strongEffect":"Reflection","weak":"Water","weakEffect":"Weakness"},"metalgreymonalterousmode":{"strong":"Iron","strongEffect":"Reflection","weak":"Water","weakEffect":"Weakness"},"metalgreymonvirus":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"metalmamemon":{"strong":"Iron","strongEffect":"Resistance","weak":"Wood","weakEffect":"Cannot Evade"},"metalphantomon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"metaltyrannomon":{"strong":"Physical","strongEffect":"Reflection","weak":"Fire","weakEffect":"Cannot Evade"},"meteormon":{"strong":"Physical","strongEffect":"Reflection","weak":"Water","weakEffect":"Effect Probability"},"mistymon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"monzaemon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"mummymon":{"strong":"Earth","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"myotismon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"neodevimon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"okuwamon":{"strong":"Earth","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"orochimon":{"strong":"Water","strongEffect":"Reflection","weak":"Fire","weakEffect":"Effect Probability"},"paildramon":{"strong":"Iron","strongEffect":"Evasion","weak":"Earth","weakEffect":"Cannot Evade"},"parrotmon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"phantomon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"piximon":{"strong":"Dark","strongEffect":"Reflection","weak":"Wind","weakEffect":"Effect Probability"},"pumpkinmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"rapidmon":{"strong":"Physical","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"rebellimon":{"strong":"Iron","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Weakness"},"rizegreymon":{"strong":"Iron","strongEffect":"Reflection","weak":"Water","weakEffect":"Weakness"},"scorpiomon":{"strong":"Earth","strongEffect":"Resistance","weak":"Physical","weakEffect":"Cannot Evade"},"shakkoumon":{"strong":"Fire","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Effect Probability"},"shogungekomon":{"strong":"Water","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"silphymon":{"strong":"Wind","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"skullgreymon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Weakness"},"skullmeramon":{"strong":"Fire","strongEffect":"Resistance","weak":"Earth","weakEffect":"Effect Probability"},"skullsatamon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"skullscorpiomon":{"strong":"Physical","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"superstarmon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"taomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"triceramon":{"strong":"Thunder","strongEffect":"Evasion","weak":"Ice","weakEffect":"Weakness"},"vademon":{"strong":"Wood","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"volcanomon":{"strong":"Iron","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"wargrowlmon":{"strong":"Fire","strongEffect":"Reflection","weak":"Ice","weakEffect":"Cannot Evade"},"warumonzaemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"weregarurumon":{"strong":"Physical","strongEffect":"Evasion","weak":"Ice","weakEffect":"Effect Probability"},"weregarurumonsagittariusmode":{"strong":"Iron","strongEffect":"Evasion","weak":"Water","weakEffect":"Effect Probability"},"whamon":{"strong":"Physical","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Effect Probability"},"zudomon":{"strong":"Iron","strongEffect":"Reflection","weak":"Wind","weakEffect":"Effect Probability"},"agumonkizuna":{"strong":"Fire","strongEffect":"Reflection","weak":"Water","weakEffect":"Effect Probability"},"apocalymon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Cannot Evade"},"armageddemon":{"strong":"Fire","strongEffect":"Evasion","weak":"Light","weakEffect":"Weakness"},"azulongmon":{"strong":"Water","strongEffect":"Resistance","weak":"Earth","weakEffect":"Weakness"},"babamon":{"strong":"Earth","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"baihumon":{"strong":"Iron","strongEffect":"Reflection","weak":"Water","weakEffect":"Cannot Evade"},"bancholeomon":{"strong":"Physical","strongEffect":"Resistance","weak":"Ice","weakEffect":"Weakness"},"bancholeomonburstmode":{"strong":"Fire","strongEffect":"Reflection","weak":"Water","weakEffect":"Effect Probability"},"banchomamemon":{"strong":"Iron","strongEffect":"Reflection","weak":"Wood","weakEffect":"Cannot Evade"},"beelzemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"beelzemonxwars":{"strong":"Dark","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"beelzemonblastmode":{"strong":"Dark","strongEffect":"Evasion","weak":"Wind","weakEffect":"Cannot Evade"},"belphemonragemode":{"strong":"Light","strongEffect":"Reflection","weak":"Physical","weakEffect":"Cannot Evade"},"belphemonsleepmode":{"strong":"Dark","strongEffect":"Resistance","weak":"Iron","weakEffect":"Effect Probability"},"blackseraphimon":{"strong":"Fire","strongEffect":"Reflection","weak":"Light","weakEffect":"Cannot Evade"},"blackwargreymon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"blastmon":{"strong":"Earth","strongEffect":"Resistance","weak":"Iron","weakEffect":"Cannot Evade"},"blitzgreymon":{"strong":"Water","strongEffect":"Reflection","weak":"Earth","weakEffect":"Cannot Evade"},"bloomlordmon":{"strong":"Water","strongEffect":"Resistance","weak":"Ice","weakEffect":"Effect Probability"},"breakdramon":{"strong":"Iron","strongEffect":"Reflection","weak":"Fire","weakEffect":"Cannot Evade"},"cherubimonblack":{"strong":"Light","strongEffect":"Resistance","weak":"Iron","weakEffect":"Weakness"},"cherubimongood":{"strong":"Physical","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"clavisangemon":{"strong":"Dark","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"craniamon":{"strong":"Physical","strongEffect":"Resistance","weak":"Wind","weakEffect":"Cannot Evade"},"creepymon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Effect Probability"},"cresgarurumon":{"strong":"Ice","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"diaboromon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"donedevimon":{"strong":"Dark","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"dynasmon":{"strong":"Wind","strongEffect":"Resistance","weak":"Wood","weakEffect":"Cannot Evade"},"eaglemon":{"strong":"Iron","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"ebemon":{"strong":"Thunder","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"ebonwumon":{"strong":"Wood","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Cannot Evade"},"examon":{"strong":"Dark","strongEffect":"Resistance","weak":"Ice","weakEffect":"Effect Probability"},"fanglongmon":{"strong":"Iron","strongEffect":"Reflection","weak":"Wind","weakEffect":"Cannot Evade"},"gabumonkizuna":{"strong":"Iron","strongEffect":"Resistance","weak":"Fire","weakEffect":"Cannot Evade"},"gaiomon":{"strong":"Iron","strongEffect":"Reflection","weak":"Physical","weakEffect":"Cannot Evade"},"gallantmon":{"strong":"Iron","strongEffect":"Evasion","weak":"Ice","weakEffect":"Weakness"},"gallantmoncrimsonmode":{"strong":"Light","strongEffect":"Reflection","weak":"Physical","weakEffect":"Weakness"},"ghoulmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"goldramon":{"strong":"Fire","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Effect Probability"},"grandiskuwagamon":{"strong":"Iron","strongEffect":"Reflection","weak":"Fire","weakEffect":"Cannot Evade"},"grankuwagamon":{"strong":"Wood","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"gryphonmon":{"strong":"Wind","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Cannot Evade"},"gulfmon":{"strong":"Physical","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"herculeskabuterimon":{"strong":"Thunder","strongEffect":"Reflection","weak":"Earth","weakEffect":"Cannot Evade"},"himachinedramon":{"strong":"Iron","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"imperialdramondragonmode":{"strong":"Wind","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"imperialdramondragonmodeinfected":{"strong":"Light","strongEffect":"Evasion","weak":"Ice","weakEffect":"Effect Probability"},"imperialdramonfightermode":{"strong":"Wind","strongEffect":"Evasion","weak":"Dark","weakEffect":"Effect Probability"},"imperialdramonpaladinmode":{"strong":"Dark","strongEffect":"Resistance","weak":"Physical","weakEffect":"Effect Probability"},"justimonaccelarm":{"strong":"Earth","strongEffect":"Resistance","weak":"Wind","weakEffect":"Cannot Evade"},"justimonblitzarm":{"strong":"Thunder","strongEffect":"Reflection","weak":"Physical","weakEffect":"Weakness"},"justimoncriticalarm":{"strong":"Light","strongEffect":"Resistance","weak":"Water","weakEffect":"Weakness"},"kentaurosmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Weakness"},"kingwhamon":{"strong":"Physical","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Cannot Evade"},"kuzuhamon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"kuzuhamonmaidmode":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"leopardmon":{"strong":"Earth","strongEffect":"Evasion","weak":"Water","weakEffect":"Effect Probability"},"leviamon":{"strong":"Fire","strongEffect":"Resistance","weak":"Wood","weakEffect":"Weakness"},"lilithmon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Effect Probability"},"lordknightmon":{"strong":"Thunder","strongEffect":"Reflection","weak":"Physical","weakEffect":"Effect Probability"},"machinedramon":{"strong":"Iron","strongEffect":"Reflection","weak":"Light","weakEffect":"Weakness"},"machinedramonkai":{"strong":"Iron","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"magnadramon":{"strong":"Light","strongEffect":"Evasion","weak":"Iron","weakEffect":"Cannot Evade"},"malomyotismon":{"strong":"Dark","strongEffect":"Reflection","weak":"Light","weakEffect":"Cannot Evade"},"marineangemon":{"strong":"Water","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"marsmon":{"strong":"Earth","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Effect Probability"},"mastemon":{"strong":"Dark","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"megagargomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Weakness"},"megidramon":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Cannot Evade"},"metaletemon":{"strong":"Thunder","strongEffect":"Reflection","weak":"Light","weakEffect":"Cannot Evade"},"metalgarurumon":{"strong":"Ice","strongEffect":"Resistance","weak":"Earth","weakEffect":"Cannot Evade"},"metalseadramon":{"strong":"Water","strongEffect":"Evasion","weak":"Physical","weakEffect":"Cannot Evade"},"millenniumon":{"strong":"Iron","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"miragegaogamon":{"strong":"Dark","strongEffect":"Resistance","weak":"Ice","weakEffect":"Effect Probability"},"miragegaogamonburstmode":{"strong":"Dark","strongEffect":"Reflection","weak":"Earth","weakEffect":"Effect Probability"},"moonmillenniumon":{"strong":"Physical","strongEffect":"Reflection","weak":"Iron","weakEffect":"Cannot Evade"},"neomyotismon":{"strong":"Dark","strongEffect":"Reflection","weak":"Fire","weakEffect":"Effect Probability"},"neptunemon":{"strong":"Water","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Weakness"},"omnimon":{"strong":"Dark","strongEffect":"Resistance","weak":"Physical","weakEffect":"Effect Probability"},"omnimonmercifulmode":{"strong":"Dark","strongEffect":"Reflection","weak":"Wood","weakEffect":"Weakness"},"omnimonalters":{"strong":"Thunder","strongEffect":"Reflection","weak":"Iron","weakEffect":"Cannot Evade"},"ophanimon":{"strong":"Light","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"ophanimonfalldownmode":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Cannot Evade"},"parasimon":{"strong":"Earth","strongEffect":"Resistance","weak":"Light","weakEffect":"Weakness"},"pharaohmon":{"strong":"Dark","strongEffect":"Resistance","weak":"Fire","weakEffect":"Weakness"},"phoenixmon":{"strong":"Fire","strongEffect":"Evasion","weak":"Water","weakEffect":"Weakness"},"piedmon":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Effect Probability"},"plesiomon":{"strong":"Earth","strongEffect":"Resistance","weak":"Iron","weakEffect":"Cannot Evade"},"pukumon":{"strong":"Wood","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Weakness"},"puppetmon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"ravemon":{"strong":"Wind","strongEffect":"Evasion","weak":"Iron","weakEffect":"Weakness"},"ravemonburstmode":{"strong":"Dark","strongEffect":"Evasion","weak":"Light","weakEffect":"Cannot Evade"},"reapermon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"rosemon":{"strong":"Wood","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"rosemonburstmode":{"strong":"Wood","strongEffect":"Evasion","weak":"Fire","weakEffect":"Effect Probability"},"saberleomon":{"strong":"Physical","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Cannot Evade"},"sakuyamon":{"strong":"Fire","strongEffect":"Reflection","weak":"Dark","weakEffect":"Cannot Evade"},"seraphimon":{"strong":"Light","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"shinegreymon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Effect Probability"},"shinegreymonburstmode":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Effect Probability"},"shinegreymonruinmode":{"strong":"Fire","strongEffect":"Reflection","weak":"Water","weakEffect":"Weakness"},"skullmammothmon":{"strong":"Physical","strongEffect":"Evasion","weak":"Iron","weakEffect":"Cannot Evade"},"slashangemon":{"strong":"Physical","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"tigervespamon":{"strong":"Physical","strongEffect":"Evasion","weak":"Fire","weakEffect":"Cannot Evade"},"titamon":{"strong":"Dark","strongEffect":"Resistance","weak":"Thunder","weakEffect":"Cannot Evade"},"ulforceveedramon":{"strong":"Wind","strongEffect":"Reflection","weak":"Earth","weakEffect":"Effect Probability"},"valkyrimon":{"strong":"Wind","strongEffect":"Evasion","weak":"Thunder","weakEffect":"Effect Probability"},"varodurumon":{"strong":"Dark","strongEffect":"Resistance","weak":"Fire","weakEffect":"Effect Probability"},"venommyotismon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Weakness"},"vikemon":{"strong":"Ice","strongEffect":"Reflection","weak":"Dark","weakEffect":"Cannot Evade"},"wargreymon":{"strong":"Fire","strongEffect":"Resistance","weak":"Water","weakEffect":"Cannot Evade"},"zanbamon":{"strong":"Physical","strongEffect":"Evasion","weak":"Iron","weakEffect":"Weakness"},"zeedmillenniumon":{"strong":"Dark","strongEffect":"Resistance","weak":"Light","weakEffect":"Effect Probability"},"zhuqiaomon":{"strong":"Fire","strongEffect":"Reflection","weak":"Thunder","weakEffect":"Cannot Evade"}};
+
+const HG_RELATION_EFFECT_TEXT={
+  "Resistance":"Takes 25% reduced damage from attacks of this attribute.",
+  "Evasion":"Has 2x evasion rate against attacks of this attribute.",
+  "Reflection":"Reflects 25% of the damage received from attacks of this attribute.",
+  "Weakness":"Takes 25% increased damage from attacks of this attribute.",
+  "Cannot Evade":"Attacks of this attribute cannot be evaded.",
+  "Effect Probability":"If the attack has an effect with this attribute, the chance of inflicting the effect increases."
+};
+
+function hgRelationKey(nome){
+  return String(nome||"")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g,"");
+}
+
+function hgRelationData(digi,kind){
+  const isStrong=String(kind||"").toLowerCase()==="strong";
+  const nome=typeof digi==="string"
+    ?digi
+    :(digi&&((digi.digimon||digi.name)))||"";
+
+  const mapa=HG_RELATION_BY_DIGIMON[hgRelationKey(nome)]||{};
+
+  const element=String(
+    (digi&&typeof digi==="object"
+      ?(isStrong?(digi.strong||digi.strongAgaints):(digi.weak||digi.weakAgaints))
+      :"")
+    ||(isStrong?mapa.strong:mapa.weak)
+    ||""
+  ).trim();
+
+  const effect=String(
+    (digi&&typeof digi==="object"
+      ?(isStrong?(digi.strongEffect||digi.strong_effect):(digi.weakEffect||digi.weak_effect))
+      :"")
+    ||(isStrong?mapa.strongEffect:mapa.weakEffect)
+    ||""
+  ).trim();
+
+  return{element:element,effect:effect,nome:nome,kind:isStrong?"strong":"weak"};
+}
+
+function hgRelationEffectClass(effect){
+  return String(effect||"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+function hgRelationTooltipHtml(element,effect,kind,iconHtml){
+  if(!element)return "-";
+
+  const descricao=HG_RELATION_EFFECT_TEXT[effect]||"";
+  const classe=hgRelationEffectClass(effect);
+  const label=String(kind||"").toLowerCase()==="strong"?"STRONG":"WEAK";
+
+  if(!effect){
+    return `<span class="hg-relation hg-relation-${String(kind||"").toLowerCase()}">
+      ${iconHtml}
+    </span>`;
+  }
+
+  return `<span class="hg-relation hg-relation-${String(kind||"").toLowerCase()} hg-relation-${classe}" tabindex="0">
+    <span class="hg-relation-trigger" aria-label="${escaparHtml(label+" "+element+" "+effect)}">
+      ${iconHtml}
+    </span>
+    <span class="hg-relation-tooltip" role="tooltip">
+      <span class="hg-relation-tooltip-head">
+        <span class="hg-relation-tooltip-icon">${iconHtml}</span>
+        <span>
+          <small>${escaparHtml(element)}</small>
+          <strong>${escaparHtml(effect)}</strong>
+        </span>
+      </span>
+      ${descricao?`<span class="hg-relation-tooltip-copy">${escaparHtml(descricao)}</span>`:""}
+    </span>
+  </span>`;
+}
+
+function renderizarRelacaoAtributo(digi,kind){
+  const info=hgRelationData(digi,kind);
+  if(!info.element)return "-";
+  return hgRelationTooltipHtml(
+    info.element,
+    info.effect,
+    info.kind,
+    renderizarIconeElemento(info.element)
+  );
+}
+
 function normalizarElemento(elemento) {
 
   const valor =
@@ -2064,68 +2164,54 @@ function pegarImagemField(codigo) {
 
 function pegarImagemElemento(codigo) {
 
-  const elemento =
-    normalizarElemento(
-      codigo
-    )
-      .toLowerCase();
+  const normalizado=normalizarElemento(codigo);
+  if(!normalizado)return "";
 
-  if (!elemento) {
-    return "";
-  }
+  const aliases=(normalizado==="STEEL"||normalizado==="IRON")
+    ?["iron","steel"]
+    :[normalizado.toLowerCase()];
 
-  const candidatos = [
-    elemento,
-    elemento + ".png",
-    "elemento_" + elemento,
-    "element_" + elemento,
-    "icone_" + elemento,
-    "icon_" + elemento
-  ];
+  for(let a=0;a<aliases.length;a++){
 
-  for (let i = 0; i < candidatos.length; i++) {
+    const elemento=aliases[a];
 
-    const candidato =
-      candidatos[i];
+    const candidatos=[
+      elemento,
+      elemento+".png",
+      elemento+".webp",
+      "elemento_"+elemento,
+      "element_"+elemento,
+      "icone_"+elemento,
+      "icon_"+elemento
+    ];
 
-    const srcDireto =
-      pegarImagem(
-        candidato
-      );
+    for(let i=0;i<candidatos.length;i++){
 
-    if (srcDireto) {
-      return srcDireto;
+      const candidato=candidatos[i];
+      const srcDireto=pegarImagem(candidato);
+
+      if(srcDireto){
+        return srcDireto;
+      }
+
+      const chaveEncontrada=Object.keys(imagensSite||{}).find(function(chave){
+
+        const limpa=String(chave||"")
+          .trim()
+          .toLowerCase()
+          .replace(/\.(png|webp|jpg|jpeg)$/i,"")
+          .replace(/^(elemento_|element_|icone_|icon_)/,"");
+
+        return limpa===elemento;
+      });
+
+      if(chaveEncontrada){
+        return imagensSite[chaveEncontrada]||"";
+      }
     }
-
-    /*
-     * Segurança extra:
-     * procura também diretamente nas chaves retornadas pelo Drive,
-     * caso o Code.gs tenha mantido ".png" no nome.
-     */
-    const chaveEncontrada =
-      Object.keys(
-        imagensSite || {}
-      )
-        .find(function(chave) {
-
-          const limpa =
-            String(chave || "")
-              .trim()
-              .toLowerCase()
-              .replace(/\.png$/i, "");
-
-          return limpa === elemento;
-
-        });
-
-    if (chaveEncontrada) {
-      return imagensSite[chaveEncontrada] || "";
-    }
-
   }
 
   return "";
-
 }
 
 
@@ -2520,7 +2606,7 @@ function criarCard(d) {
           </div>
 
           <div class="value">
-            ${renderizarIconeElemento(d.strong)}
+            ${renderizarRelacaoAtributo(d,"strong")}
           </div>
 
         </div>
@@ -2532,7 +2618,7 @@ function criarCard(d) {
           </div>
 
           <div class="value">
-            ${renderizarIconeElemento(d.weak)}
+            ${renderizarRelacaoAtributo(d,"weak")}
           </div>
 
         </div>
@@ -4098,7 +4184,7 @@ function mostrarDadosDoSlot(
       </div>
 
       <div class="value">
-        ${renderizarIconeElemento(d.strong)}
+        ${renderizarRelacaoAtributo(d,"strong")}
       </div>
     `;
 
@@ -4125,7 +4211,7 @@ function mostrarDadosDoSlot(
       </div>
 
       <div class="value">
-        ${renderizarIconeElemento(d.weak)}
+        ${renderizarRelacaoAtributo(d,"weak")}
       </div>
     `;
 
@@ -5151,14 +5237,14 @@ function cardComparacaoMultipla(
           <div class="comparacao-extra-box">
             <div class="label">STRONG</div>
             <div class="value">
-              ${renderizarIconeElemento(d.strong)}
+              ${renderizarRelacaoAtributo(d,"strong")}
             </div>
           </div>
 
           <div class="comparacao-extra-box">
             <div class="label">WEAK</div>
             <div class="value">
-              ${renderizarIconeElemento(d.weak)}
+              ${renderizarRelacaoAtributo(d,"weak")}
             </div>
           </div>
         </div>
@@ -8334,14 +8420,47 @@ function pvpTentarProximoIconeElemento(img){
   if(wrapper)wrapper.remove();
 }
 
+function pvpRelationHtml(digi,kind){
+  if(!digi)return "";
+  const info=hgRelationData(digi,kind);
+  if(!info.element)return "";
+
+  return hgRelationTooltipHtml(
+    info.element,
+    info.effect,
+    info.kind,
+    pvpElementIconHtml(info.element)
+  );
+}
+
 function pvpMetaIconsHtml(digi){
   if(!digi)return "";
-  const fields=String(digi.fields||"").split(/[,/|]+/).map(function(x){return x.trim()}).filter(Boolean);
-  const elements=Array.isArray(digi.elements)?digi.elements:[];
+
+  const fields=String(digi.fields||"")
+    .split(/[,/|]+/)
+    .map(function(x){return x.trim()})
+    .filter(Boolean);
+
   return `<div class="pvp-meta-icons">
-    <div class="pvp-meta-icon-group"><small>TYPE</small>${pvpTypeIconHtml(digi.attribute)}</div>
-    ${elements.length ? `<div class="pvp-meta-icon-group"><small>ELEMENT</small><div class="pvp-meta-icon-list">${elements.map(pvpElementIconHtml).join("")}</div></div>` : ""}
-    ${fields.length ? `<div class="pvp-meta-icon-group"><small>FIELD</small><div class="pvp-meta-icon-list">${fields.map(pvpFieldIconHtml).join("")}</div></div>` : ""}
+    <div class="pvp-meta-icon-group">
+      <small>TYPE</small>
+      ${pvpTypeIconHtml(digi.attribute)}
+    </div>
+
+    <div class="pvp-meta-icon-group pvp-meta-relation pvp-meta-strong">
+      <small>STRONG</small>
+      ${pvpRelationHtml(digi,"strong")}
+    </div>
+
+    <div class="pvp-meta-icon-group pvp-meta-relation pvp-meta-weak">
+      <small>WEAK</small>
+      ${pvpRelationHtml(digi,"weak")}
+    </div>
+
+    ${fields.length?`<div class="pvp-meta-icon-group">
+      <small>FIELD</small>
+      <div class="pvp-meta-icon-list">${fields.map(pvpFieldIconHtml).join("")}</div>
+    </div>`:""}
   </div>`;
 }
 
