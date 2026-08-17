@@ -15142,3 +15142,129 @@ body.pvp-modal-open{overflow:hidden}
   font-weight:400;
   letter-spacing:normal;
 }
+
+/* =====================================================
+   PVP V8.6.2 — SLOT STRONG / WEAK = TEAM BUILDER VISUAL
+   Ajuste somente nos cards da etapa de seleção do PvP.
+===================================================== */
+
+/* Um único frame para o ícone em repouso. O HTML interno do elemento
+   deixa de desenhar uma segunda caixinha em cima do trigger. */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-trigger{
+  min-width:42px;
+  min-height:27px;
+  padding:2px 5px !important;
+  border:1px solid rgba(52,167,255,.58) !important;
+  border-radius:6px !important;
+  background:linear-gradient(160deg,rgba(7,39,72,.96),rgba(4,21,45,.98)) !important;
+  box-shadow:inset 0 0 10px rgba(35,145,255,.08) !important;
+}
+
+/* STRONG acompanha o dourado/laranja do Team Builder. */
+#pvpPagina .pvp-slot-tags .pvp-meta-strong .hg-relation-trigger{
+  border-color:rgba(216,138,36,.76) !important;
+  background:linear-gradient(160deg,rgba(91,52,8,.96),rgba(48,27,5,.98)) !important;
+  box-shadow:inset 0 0 10px rgba(255,174,58,.09),0 0 7px rgba(255,155,38,.12) !important;
+}
+
+/* WEAK mantém o azul do Team Builder. */
+#pvpPagina .pvp-slot-tags .pvp-meta-weak .hg-relation-trigger{
+  border-color:rgba(45,130,212,.76) !important;
+  background:linear-gradient(160deg,rgba(7,42,78,.96),rgba(4,24,51,.98)) !important;
+  box-shadow:inset 0 0 10px rgba(35,145,255,.09),0 0 7px rgba(0,137,255,.12) !important;
+}
+
+/* O pvpElementIconHtml já vem com .pvp-mini-icon-tag. Dentro de
+   STRONG/WEAK ele vira apenas o ícone, sem borda/fundo próprios. */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-trigger .pvp-mini-icon-tag,
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip .pvp-mini-icon-tag{
+  min-width:0 !important;
+  min-height:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:inherit !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-trigger .pvp-mini-icon-tag img{
+  width:20px !important;
+  height:20px !important;
+}
+
+/* Hover igual ao que ficou bom no Team Builder: painel totalmente
+   opaco, espaçamento limpo e sem tags azuis dentro do conteúdo. */
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip{
+  z-index:10050 !important;
+  min-width:310px !important;
+  max-width:420px !important;
+  padding:14px 16px !important;
+  gap:10px !important;
+  border:1px solid rgba(87,157,229,.48) !important;
+  border-radius:10px !important;
+  background:linear-gradient(180deg,#071126 0%,#040b19 100%) !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.68),inset 0 0 22px rgba(50,121,208,.05) !important;
+  color:#e6eef8 !important;
+  opacity:0;
+  isolation:isolate;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation:hover .hg-relation-tooltip,
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation:focus-within .hg-relation-tooltip{
+  opacity:1;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-head{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  background:transparent !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-icon{
+  width:40px !important;
+  height:40px !important;
+  flex:0 0 40px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:transparent !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-icon .pvp-mini-icon-tag img{
+  width:28px !important;
+  height:28px !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-head > span:last-child{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:2px !important;
+  background:transparent !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-head small{
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  color:#a9bed0 !important;
+  font-size:8px !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-head strong{
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  font-size:12px !important;
+}
+
+#pvpPagina .pvp-slot-tags .pvp-meta-relation .hg-relation-tooltip-copy{
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  color:#dbe4ee !important;
+  font-size:9px !important;
+  line-height:1.55 !important;
+}
