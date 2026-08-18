@@ -1510,6 +1510,7 @@ function atualizarContadoresStageDigidex() {
 ===================================================== */
 
 const HG_DISPLAY_SETTINGS_KEY = "hgDisplaySettingsV1";
+const HG_DISPLAY_SETTINGS_COOKIE = "hgDisplaySettingsV1";
 const HG_DISPLAY_MIN_SCALE = 80;
 const HG_DISPLAY_MAX_SCALE = 150;
 const HG_DISPLAY_STEP = 5;
@@ -1534,31 +1535,94 @@ function limitarHgDisplayScale(valor) {
   return Math.min(HG_DISPLAY_MAX_SCALE, Math.max(HG_DISPLAY_MIN_SCALE, Math.round(numero)));
 }
 
-function lerHgDisplaySettings() {
+function normalizarHgDisplaySettingsSalvo(salvo) {
+  if (!salvo || typeof salvo !== "object") return null;
+
+  const ultrawide = Boolean(salvo.ultrawide);
+  let preset = Object.prototype.hasOwnProperty.call(HG_DISPLAY_PRESETS, salvo.preset)
+    ? salvo.preset
+    : "custom";
+
+  /* Se o usuário ajustou manualmente a escala depois de escolher ULTRAWIDE,
+     o modo continua sendo ULTRAWIDE. Assim ele permanece visualmente ativo
+     e volta exatamente como estava após F5 / retorno para uma partida. */
+  if (ultrawide) preset = "ultrawide";
+
+  return {
+    preset: preset,
+    scale: limitarHgDisplayScale(salvo.scale),
+    ultrawide: ultrawide
+  };
+}
+
+function lerHgDisplaySettingsCookie() {
   try {
-    const salvo = JSON.parse(localStorage.getItem(HG_DISPLAY_SETTINGS_KEY) || "null");
-    if (!salvo || typeof salvo !== "object") return null;
-
-    const preset = Object.prototype.hasOwnProperty.call(HG_DISPLAY_PRESETS, salvo.preset)
-      ? salvo.preset
-      : "custom";
-
-    return {
-      preset: preset,
-      scale: limitarHgDisplayScale(salvo.scale),
-      ultrawide: Boolean(salvo.ultrawide)
-    };
+    const prefixo = HG_DISPLAY_SETTINGS_COOKIE + "=";
+    const item = String(document.cookie || "")
+      .split(";")
+      .map(function(valor) { return valor.trim(); })
+      .find(function(valor) { return valor.indexOf(prefixo) === 0; });
+    if (!item) return null;
+    return JSON.parse(decodeURIComponent(item.slice(prefixo.length)));
   } catch (erro) {
     return null;
   }
 }
 
-function salvarHgDisplaySettings() {
+function lerHgDisplaySettings() {
+  let salvo = null;
+
   try {
-    localStorage.setItem(HG_DISPLAY_SETTINGS_KEY, JSON.stringify(hgDisplayState));
+    salvo = JSON.parse(localStorage.getItem(HG_DISPLAY_SETTINGS_KEY) || "null");
   } catch (erro) {
-    /* A interface continua funcionando mesmo com storage bloqueado. */
+    salvo = null;
   }
+
+  if (!salvo) salvo = lerHgDisplaySettingsCookie();
+  return normalizarHgDisplaySettingsSalvo(salvo);
+}
+
+function salvarHgDisplaySettings() {
+  const serializado = JSON.stringify(hgDisplayState);
+
+  try {
+    localStorage.setItem(HG_DISPLAY_SETTINGS_KEY, serializado);
+  } catch (erro) {
+    /* Mantemos cookie como fallback quando o storage estiver bloqueado. */
+  }
+
+  try {
+    document.cookie = HG_DISPLAY_SETTINGS_COOKIE + "=" + encodeURIComponent(serializado) +
+      "; path=/; max-age=31536000; SameSite=Lax";
+  } catch (erro) {
+    /* A interface continua funcionando mesmo sem persistência. */
+  }
+}
+
+function atualizarHgDisplayRuntimeMetrics() {
+  const root = document.documentElement;
+  const body = document.body;
+  if (!root || !body) return;
+
+  if (!hgDisplayState.ultrawide || window.innerWidth < 2200) {
+    root.style.removeProperty("--hg-pvp-ultrawide-arena-height");
+    return;
+  }
+
+  const scale = limitarHgDisplayScale(hgDisplayState.scale) / 100;
+  const viewportH = window.innerHeight || root.clientHeight || 900;
+  const topbar = document.querySelector(".topbar");
+  const headerH = topbar ? Math.max(0, topbar.getBoundingClientRect().height) : 0;
+
+  /* A página usa CSS zoom. Em escala alta, 58vh também era ampliado e fazia
+     a arena empurrar log/skills para baixo. Calculamos a altura em CSS px
+     já descontando o zoom, reservando espaço para o HUD inferior. */
+  const alturaInternaDisponivel = (viewportH - headerH - 24) / Math.max(.8, scale);
+  const alturaHudInferior = 220;
+  const estrutura = 66;
+  const arena = Math.max(440, Math.min(650, Math.floor(alturaInternaDisponivel - alturaHudInferior - estrutura)));
+
+  root.style.setProperty("--hg-pvp-ultrawide-arena-height", arena + "px");
 }
 
 function aplicarHgDisplaySettings(estado, persistir = true) {
@@ -1581,6 +1645,7 @@ function aplicarHgDisplaySettings(estado, persistir = true) {
   /* O header acompanha a preferência do usuário também.
      Mantemos um teto visual no CSS para não estourar a navegação em telas menores. */
   document.documentElement.style.setProperty("--hg-header-scale", String(scale / 100));
+  atualizarHgDisplayRuntimeMetrics();
 
   if (persistir) salvarHgDisplaySettings();
   atualizarHgDisplaySettingsUi();
@@ -1598,12 +1663,16 @@ function selecionarHgDisplayPreset(nome) {
 function ajustarHgDisplayScale(delta) {
   const atual = limitarHgDisplayScale(hgDisplayState.scale);
   const proximo = limitarHgDisplayScale(atual + Number(delta || 0));
-  aplicarHgDisplaySettings({ preset: "custom", scale: proximo, ultrawide: hgDisplayState.ultrawide });
+  aplicarHgDisplaySettings({
+    preset: hgDisplayState.ultrawide ? "ultrawide" : "custom",
+    scale: proximo,
+    ultrawide: hgDisplayState.ultrawide
+  });
 }
 
 function definirHgDisplayScale(valor) {
   aplicarHgDisplaySettings({
-    preset: "custom",
+    preset: hgDisplayState.ultrawide ? "ultrawide" : "custom",
     scale: limitarHgDisplayScale(valor),
     ultrawide: hgDisplayState.ultrawide
   });
@@ -1695,7 +1764,19 @@ function inicializarHgDisplaySettings() {
     if (event.key === "Escape") fecharHgDisplaySettings();
   });
 
-  window.addEventListener("resize", atualizarHgDisplayScreenInfo, { passive: true });
+  window.addEventListener("resize", function() {
+    atualizarHgDisplayScreenInfo();
+    atualizarHgDisplayRuntimeMetrics();
+  }, { passive: true });
+
+  /* pageshow também cobre F5, bfcache e retorno para a tela de partida. */
+  window.addEventListener("pageshow", function() {
+    const persistido = lerHgDisplaySettings();
+    if (persistido) aplicarHgDisplaySettings(persistido, false);
+    else atualizarHgDisplayRuntimeMetrics();
+  });
+
+  window.addEventListener("beforeunload", salvarHgDisplaySettings);
 }
 
 /* =====================================================

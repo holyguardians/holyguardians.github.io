@@ -16982,3 +16982,81 @@ body.hg-display-scaled footer {
   visibility: visible;
   transform: translate(-50%, 0);
 }
+
+
+/* =====================================================
+   AJUSTE DE TELA — ULTRAWIDE PVP V3
+   Só atua quando o preset ULTRAWIDE está ativo em telas >= 2200px.
+   A altura dinâmica vem do JS para compensar CSS zoom e manter arena +
+   Battle Log + Skills + Gauge visíveis juntos sempre que houver altura.
+===================================================== */
+@media (min-width: 2200px) {
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-hud {
+    grid-template-rows: var(--hg-pvp-ultrawide-arena-height, 560px) auto !important;
+    gap: 8px !important;
+    padding-top: 30px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-arena {
+    height: var(--hg-pvp-ultrawide-arena-height, 560px) !important;
+    min-height: var(--hg-pvp-ultrawide-arena-height, 560px) !important;
+    max-height: var(--hg-pvp-ultrawide-arena-height, 560px) !important;
+  }
+
+  /* Usa a largura extra sem transformar a arena num corredor vertical. */
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-field {
+    left: 4% !important;
+    right: 4% !important;
+    height: 39% !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-field.enemy {
+    top: 9% !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-field.own {
+    bottom: 1.5% !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-row {
+    gap: 36px !important;
+  }
+
+  /* No ultrawide o HUD inferior aproveita mais a horizontal e perde altura. */
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-bottom {
+    grid-template-columns: minmax(260px, .78fr) minmax(0, 3fr) minmax(190px, .68fr) !important;
+    gap: 8px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-log {
+    min-height: 188px !important;
+    padding: 9px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-log-lines {
+    height: 148px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-skills {
+    padding: 8px !important;
+    gap: 7px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-hud-digi {
+    padding: 6px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-hud-digi-top {
+    margin-bottom: 5px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-hud-digi-top img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  body.hg-display-ultrawide #pvpPagina .pvp-battle-controls {
+    padding: 9px !important;
+    gap: 7px !important;
+  }
+}
