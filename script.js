@@ -5,7 +5,7 @@
 
 const HG_API_URL = "https://script.google.com/macros/s/AKfycbxMJE0SjJhdHSupnoinJ6GlCxIOHwLl96uqjPDBGaAnGJHLrvZoWWz2-kPCvCQR0coe/exec";
 
-function chamarApiJsonp(api) {
+function chamarApiJsonp(api, parametrosExtras) {
   return new Promise(function(resolve, reject) {
     const callback =
       "__hgCallback_" +
@@ -73,10 +73,17 @@ function chamarApiJsonp(api) {
         );
       };
 
+    const extras = parametrosExtras && typeof parametrosExtras === "object"
+      ? Object.keys(parametrosExtras).map(function(chave) {
+          return "&" + encodeURIComponent(chave) + "=" + encodeURIComponent(parametrosExtras[chave]);
+        }).join("")
+      : "";
+
     script.src =
       HG_API_URL +
       "?api=" +
       encodeURIComponent(api) +
+      extras +
       "&callback=" +
       encodeURIComponent(callback) +
       "&_=" +
@@ -257,8 +264,12 @@ function criarLinhaTabelaDigidex(d) {
   const tipo =
     normalizarType(d.type);
 
+  const nomeCodificado = encodeURIComponent(String(d.digimon || ""));
+
   return `
-    <tr>
+    <tr class="digidex-profile-trigger" role="button" tabindex="0"
+        onclick="abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'))"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'));}">
       <td class="digidex-table-name">
         <div class="digidex-table-name-wrap">
           ${
@@ -2926,9 +2937,13 @@ function criarCard(d) {
       `;
 
 
+  const nomeCodificado = encodeURIComponent(String(d.digimon || ""));
+
   return `
 
-    <div class="card">
+    <div class="card digidex-profile-trigger" role="button" tabindex="0"
+      onclick="abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'))"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'));}">
 
       ${imagem}
 
@@ -3353,6 +3368,536 @@ function filtrar() {
       .map(criarCard)
       .join("");
 
+}
+
+
+/* =====================================================
+   DIGIDEX — PERFIL + EVOLUTION TREE
+===================================================== */
+
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v1";
+let evolutionMaster = null;
+let evolutionMasterPromise = null;
+let digidexEvolutionTrail = [];
+
+function normalizarNomeEvolution(valor) {
+  let nome = String(valor || "").trim().toLowerCase();
+  try {
+    nome = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (erro) {}
+  return nome
+    .replace(/\\/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function numeroEvolution(valor) {
+  const numero = Number(String(valor == null ? "" : valor).replace(",", "."));
+  return Number.isFinite(numero) ? numero : null;
+}
+
+function formatarEvolutionNumero(valor) {
+  const numero = numeroEvolution(valor);
+  if (numero === null) return "";
+  return String(Math.round(numero * 100) / 100).replace(".", ",");
+}
+
+function evolutionCacheSalvar(dados) {
+  try {
+    localStorage.setItem(HG_EVOLUTION_CACHE_KEY, JSON.stringify(dados));
+  } catch (erro) {
+    // Sem problema: a sessão continua usando a cópia em memória.
+  }
+}
+
+function evolutionCacheLer() {
+  try {
+    const bruto = localStorage.getItem(HG_EVOLUTION_CACHE_KEY);
+    if (!bruto) return null;
+    const dados = JSON.parse(bruto);
+    if (!dados || !Array.isArray(dados.digimons) || !Array.isArray(dados.evolutions)) return null;
+    return dados;
+  } catch (erro) {
+    return null;
+  }
+}
+
+function prepararIndicesEvolution(dados) {
+  if (!dados || dados.__indexed) return dados;
+
+  dados.byDid = {};
+  dados.byName = {};
+  dados.skillsByDid = {};
+  dados.incomingByDid = {};
+  dados.outgoingByDid = {};
+
+  (dados.digimons || []).forEach(function(d) {
+    if (d.did != null) dados.byDid[String(d.did)] = d;
+    dados.byName[normalizarNomeEvolution(d.name)] = d;
+  });
+
+  (dados.skills || []).forEach(function(skill) {
+    const key = String(skill.did == null ? "" : skill.did);
+    if (!dados.skillsByDid[key]) dados.skillsByDid[key] = [];
+    dados.skillsByDid[key].push(skill);
+  });
+
+  Object.keys(dados.skillsByDid).forEach(function(key) {
+    dados.skillsByDid[key].sort(function(a, b) {
+      return (Number(a.slot) || 0) - (Number(b.slot) || 0);
+    });
+  });
+
+  (dados.evolutions || []).forEach(function(evo) {
+    const fromKey = String(evo.fromDid == null ? "" : evo.fromDid);
+    const partnerKey = String(evo.partnerDid == null ? "" : evo.partnerDid);
+    const toKey = String(evo.toDid == null ? "" : evo.toDid);
+
+    if (fromKey) {
+      if (!dados.outgoingByDid[fromKey]) dados.outgoingByDid[fromKey] = [];
+      dados.outgoingByDid[fromKey].push(evo);
+    }
+
+    if (partnerKey) {
+      if (!dados.outgoingByDid[partnerKey]) dados.outgoingByDid[partnerKey] = [];
+      dados.outgoingByDid[partnerKey].push(evo);
+    }
+
+    if (toKey) {
+      if (!dados.incomingByDid[toKey]) dados.incomingByDid[toKey] = [];
+      dados.incomingByDid[toKey].push(evo);
+    }
+  });
+
+  Object.defineProperty(dados, "__indexed", {
+    value: true,
+    enumerable: false,
+    configurable: true
+  });
+
+  return dados;
+}
+
+function carregarEvolutionMaster() {
+  if (evolutionMaster) return Promise.resolve(evolutionMaster);
+  if (evolutionMasterPromise) return evolutionMasterPromise;
+
+  const cache = evolutionCacheLer();
+  if (cache) {
+    evolutionMaster = prepararIndicesEvolution(cache);
+    return Promise.resolve(evolutionMaster);
+  }
+
+  evolutionMasterPromise = chamarApiJsonp("evolution-master")
+    .then(function(resposta) {
+      const dados = resposta && resposta.evolutionMaster;
+      if (!dados || !Array.isArray(dados.digimons)) {
+        throw new Error("DIGIVOLUTION MASTER retornou dados inválidos.");
+      }
+      evolutionCacheSalvar(dados);
+      evolutionMaster = prepararIndicesEvolution(dados);
+      return evolutionMaster;
+    })
+    .finally(function() {
+      evolutionMasterPromise = null;
+    });
+
+  return evolutionMasterPromise;
+}
+
+function encontrarDigimonEvolution(nomeOuDid) {
+  if (!evolutionMaster) return null;
+  const chaveDid = String(nomeOuDid == null ? "" : nomeOuDid);
+  if (evolutionMaster.byDid && evolutionMaster.byDid[chaveDid]) {
+    return evolutionMaster.byDid[chaveDid];
+  }
+  return evolutionMaster.byName[
+    normalizarNomeEvolution(nomeOuDid)
+  ] || null;
+}
+
+function encontrarDatabaseEvolution(nome) {
+  const alvo = normalizarNomeEvolution(nome);
+  return (database || []).find(function(d) {
+    return normalizarNomeEvolution(d.digimon) === alvo;
+  }) || null;
+}
+
+function fecharPerfilDigidex() {
+  const pagina = document.getElementById("databasePagina");
+  const perfil = document.getElementById("digidexProfile");
+  if (pagina) pagina.classList.remove("digidex-profile-open");
+  if (perfil) perfil.hidden = true;
+  digidexEvolutionTrail = [];
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function abrirPerfilDigidex(nomeOuDid, navegando) {
+  const pagina = document.getElementById("databasePagina");
+  const perfil = document.getElementById("digidexProfile");
+  if (!pagina || !perfil) return;
+
+  pagina.classList.add("digidex-profile-open");
+  perfil.hidden = false;
+  perfil.innerHTML = `
+    <div class="digidex-profile-loading">
+      <span class="digidex-profile-loading-dot"></span>
+      CARREGANDO DIGIVOLUTION MASTER...
+    </div>
+  `;
+
+  carregarEvolutionMaster()
+    .then(function() {
+      const current = encontrarDigimonEvolution(nomeOuDid);
+      if (!current) {
+        throw new Error("Digimon não encontrado na DIGIVOLUTION MASTER: " + nomeOuDid);
+      }
+
+      if (!navegando) {
+        digidexEvolutionTrail = [];
+      }
+
+      const last = digidexEvolutionTrail[digidexEvolutionTrail.length - 1];
+      if (!last || String(last.did) !== String(current.did)) {
+        digidexEvolutionTrail.push({ did: current.did, name: current.name });
+      }
+
+      renderizarPerfilDigidexEvolution(current);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    })
+    .catch(function(erro) {
+      perfil.innerHTML = `
+        <div class="digidex-profile-error">
+          <strong>Não foi possível abrir o perfil.</strong>
+          <span>${escaparHtml(erro && erro.message ? erro.message : String(erro))}</span>
+          <button type="button" onclick="fecharPerfilDigidex()">VOLTAR PARA A DIGIDEX</button>
+        </div>
+      `;
+    });
+}
+
+function navegarEvolutionDid(did) {
+  abrirPerfilDigidex(String(did), true);
+}
+
+function voltarTrilhaEvolution(indice) {
+  if (indice < 0 || indice >= digidexEvolutionTrail.length) return;
+  const item = digidexEvolutionTrail[indice];
+  digidexEvolutionTrail = digidexEvolutionTrail.slice(0, indice);
+  abrirPerfilDigidex(String(item.did), true);
+}
+
+function dedupeEvolutionRows(rows, currentDid) {
+  const mapa = {};
+
+  (rows || []).forEach(function(row) {
+    const key = [row.toDid, row.category, row.subtype].join("|");
+    const atual = mapa[key];
+    if (!atual) {
+      mapa[key] = row;
+      return;
+    }
+
+    const currentName = encontrarDigimonEvolution(currentDid);
+    const nomeAtual = currentName ? normalizarNomeEvolution(currentName.name) : "";
+    const ownerNovo = normalizarNomeEvolution(row.requirementOwner);
+    const ownerAtual = normalizarNomeEvolution(atual.requirementOwner);
+
+    if (ownerNovo === nomeAtual && ownerAtual !== nomeAtual) {
+      mapa[key] = row;
+    }
+  });
+
+  return Object.keys(mapa).map(function(key) { return mapa[key]; });
+}
+
+function incomingEvolutionSources(current) {
+  const rows = (evolutionMaster.incomingByDid[String(current.did)] || []);
+  const mapa = {};
+
+  rows.forEach(function(row) {
+    [
+      { did: row.fromDid, name: row.from, stage: row.fromStage, icon: row.fromIcon },
+      row.partnerDid ? { did: row.partnerDid, name: row.partner, stage: row.partnerStage, icon: row.partnerIcon } : null
+    ].filter(Boolean).forEach(function(source) {
+      const key = String(source.did || normalizarNomeEvolution(source.name));
+      if (!mapa[key]) mapa[key] = source;
+    });
+  });
+
+  return Object.keys(mapa).map(function(key) { return mapa[key]; });
+}
+
+function outgoingEvolutionRows(current) {
+  return dedupeEvolutionRows(
+    evolutionMaster.outgoingByDid[String(current.did)] || [],
+    current.did
+  ).sort(function(a, b) {
+    const pa = numeroEvolution(a.probability);
+    const pb = numeroEvolution(b.probability);
+    return (pb == null ? -1 : pb) - (pa == null ? -1 : pa);
+  });
+}
+
+function renderEvolutionStage(stage) {
+  const valor = String(stage || "-").toUpperCase();
+  return `<span class="digidex-evo-stage digidex-evo-stage-${valor.toLowerCase().replace(/[^a-z0-9]+/g,"-")}">${escaparHtml(valor)}</span>`;
+}
+
+function renderEvolutionProbability(probability) {
+  const valor = numeroEvolution(probability);
+  return valor === null
+    ? ""
+    : `<strong class="digidex-evo-probability">${escaparHtml(formatarEvolutionNumero(valor))}%</strong>`;
+}
+
+function renderRequirementTooltip(row) {
+  const linhas = [];
+  const level = numeroEvolution(row.level);
+  const bond = numeroEvolution(row.bond);
+
+  if (level !== null) linhas.push(`<span><i>Level</i><b>${escaparHtml(formatarEvolutionNumero(level))}</b></span>`);
+  if (bond !== null) linhas.push(`<span><i>Bond</i><b>${escaparHtml(formatarEvolutionNumero(bond))}</b></span>`);
+
+  const stats = row.stats || {};
+  ["str","int","def","res","spd"].forEach(function(stat) {
+    const info = stats[stat] || {};
+    const req = numeroEvolution(info.required);
+    const pct = numeroEvolution(info.percent);
+    if (req !== null || pct !== null) {
+      const texto = [
+        req !== null ? formatarEvolutionNumero(req) : "",
+        pct !== null ? "+" + formatarEvolutionNumero(pct) + "%" : ""
+      ].filter(Boolean).join(" • ");
+      linhas.push(`<span><i>${stat.toUpperCase()}</i><b>${escaparHtml(texto)}</b></span>`);
+    }
+  });
+
+  (row.items || []).forEach(function(item) {
+    linhas.push(`<span class="wide"><i>Item</i><b>${escaparHtml(item.name)}${item.quantity !== "" && item.quantity != null ? " ×" + escaparHtml(item.quantity) : ""}</b></span>`);
+  });
+
+  if (row.partner) {
+    linhas.push(`<span class="wide"><i>Jogress</i><b>${escaparHtml(row.partner)}</b></span>`);
+  }
+
+  if (!linhas.length) {
+    linhas.push(`<span class="wide"><i>Requisitos</i><b>Sem requisito adicional registrado</b></span>`);
+  }
+
+  return `
+    <span class="digidex-evo-tooltip" role="tooltip">
+      <strong>EVOLUTION REQUIREMENTS</strong>
+      <span class="digidex-evo-tooltip-grid">${linhas.join("")}</span>
+      ${row.notes ? `<em>${escaparHtml(row.notes)}</em>` : ""}
+    </span>
+  `;
+}
+
+function renderEvolutionSourceCard(source) {
+  return `
+    <button type="button" class="digidex-evo-node digidex-evo-node-from" onclick="navegarEvolutionDid('${escaparHtml(String(source.did))}')">
+      <span class="digidex-evo-node-image">
+        ${source.icon ? `<img src="${escaparHtml(source.icon)}" alt="${escaparHtml(source.name)}" loading="lazy">` : "?"}
+      </span>
+      <span class="digidex-evo-node-copy">
+        <strong>${escaparHtml(source.name || "-")}</strong>
+        ${renderEvolutionStage(source.stage)}
+      </span>
+    </button>
+  `;
+}
+
+function renderEvolutionTargetCard(row) {
+  return `
+    <button type="button" class="digidex-evo-node digidex-evo-node-to" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
+      <span class="digidex-evo-node-image">
+        ${row.toIcon ? `<img src="${escaparHtml(row.toIcon)}" alt="${escaparHtml(row.to)}" loading="lazy">` : "?"}
+      </span>
+      <span class="digidex-evo-node-copy">
+        <strong>${escaparHtml(row.to || "-")}</strong>
+        <span class="digidex-evo-node-meta">
+          ${renderEvolutionStage(row.toStage)}
+          ${row.category ? `<small>${escaparHtml(row.category)}</small>` : ""}
+        </span>
+      </span>
+      ${renderEvolutionProbability(row.probability)}
+      ${renderRequirementTooltip(row)}
+    </button>
+  `;
+}
+
+function renderSkillTooltipEvolution(skill) {
+  const linhas = [];
+  const hits = numeroEvolution(skill.hits);
+  const perHit = numeroEvolution(skill.perHit);
+  const total = numeroEvolution(skill.total);
+  const chance = numeroEvolution(skill.effectChance);
+
+  linhas.push(`<span><i>Level</i><b>10</b></span>`);
+  if (skill.type) linhas.push(`<span><i>Type</i><b>${escaparHtml(skill.type)}</b></span>`);
+  if (skill.range) linhas.push(`<span><i>Range</i><b>${escaparHtml(skill.range)}</b></span>`);
+  if (skill.base) linhas.push(`<span><i>Base</i><b>${escaparHtml(skill.base)}</b></span>`);
+
+  if (hits !== null && hits > 0 && perHit !== null && perHit > 0) {
+    const dano = formatarEvolutionNumero(hits) + " × " + formatarEvolutionNumero(perHit) + "%" +
+      (total !== null && total > 0 ? " = " + formatarEvolutionNumero(total) + "%" : "");
+    linhas.push(`<span class="wide"><i>Damage</i><b>${escaparHtml(dano)}</b></span>`);
+  }
+
+  const effects = [];
+  if (skill.cc && !["NO",""].includes(skill.cc)) effects.push("CC" + (skill.ccType ? ": " + skill.ccType : ""));
+  if (skill.dot && !["NO",""].includes(skill.dot)) effects.push("DOT");
+  if (skill.defBreak && !["NO",""].includes(skill.defBreak)) effects.push("DEF BREAK");
+  if (skill.effectName) effects.push(skill.effectName);
+  if (effects.length) linhas.push(`<span class="wide"><i>Effect</i><b>${escaparHtml(Array.from(new Set(effects)).join(" • "))}</b></span>`);
+  if (chance !== null) linhas.push(`<span><i>Chance</i><b>${escaparHtml(formatarEvolutionNumero(chance))}%</b></span>`);
+
+  const elements = Array.isArray(skill.elements) ? skill.elements : [];
+  if (elements.length) {
+    linhas.push(`<span class="wide"><i>Can change to</i><b>${escaparHtml(elements.join(", "))}</b></span>`);
+  }
+
+  return `
+    <span class="digidex-profile-skill-tooltip" role="tooltip">
+      <strong>${escaparHtml(skill.name || "Skill")}</strong>
+      <span class="digidex-profile-skill-tooltip-grid">${linhas.join("")}</span>
+      ${(skill.effectDescription || skill.description) ? `<em>${escaparHtml(skill.effectDescription || skill.description)}</em>` : ""}
+    </span>
+  `;
+}
+
+function renderSkillCardEvolution(skill, index) {
+  const slot = Number(skill && skill.slot) || (index + 1);
+  if (!skill) {
+    return `<div class="digidex-profile-skill is-empty"><span>S${slot}</span><strong>SEM SKILL</strong></div>`;
+  }
+
+  return `
+    <div class="digidex-profile-skill" tabindex="0">
+      <span class="digidex-profile-skill-icon">
+        ${skill.icon ? `<img src="${escaparHtml(skill.icon)}" alt="${escaparHtml(skill.name)}" loading="lazy">` : `<b>S${slot}</b>`}
+      </span>
+      <span class="digidex-profile-skill-copy">
+        <strong>${escaparHtml(skill.name || ("SKILL " + slot))}</strong>
+        <small>LV.10${skill.base ? " • " + escaparHtml(skill.base) : ""}</small>
+      </span>
+      ${renderSkillTooltipEvolution(skill)}
+    </div>
+  `;
+}
+
+function renderStatsPerfilEvolution(db) {
+  if (!db) {
+    return `<div class="digidex-profile-no-stats">Stats completos indisponíveis nesta entrada da Digidex.</div>`;
+  }
+
+  return `
+    <div class="digidex-profile-stats">
+      ${["hp","sp","str","int","def","res","spd"].map(function(stat) {
+        return `<span><i>${stat.toUpperCase()}</i><b>${escaparHtml(db[stat] || "-")}</b></span>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderizarPerfilDigidexEvolution(current) {
+  const perfil = document.getElementById("digidexProfile");
+  if (!perfil) return;
+
+  const db = encontrarDatabaseEvolution(current.name);
+  const skills = (evolutionMaster.skillsByDid[String(current.did)] || []).slice(0, 3);
+  const incoming = incomingEvolutionSources(current);
+  const outgoing = outgoingEvolutionRows(current);
+  const tipo = db ? normalizarType(db.type) : normalizarType(current.attribute);
+  const fields = db ? db.field : current.fields;
+  const strong = db ? db.strong : current.strong;
+  const weak = db ? db.weak : current.weak;
+
+  const trilha = digidexEvolutionTrail.map(function(item, indice) {
+    const atual = indice === digidexEvolutionTrail.length - 1;
+    return `
+      ${indice ? `<span class="digidex-profile-crumb-arrow">›</span>` : ""}
+      <button type="button" ${atual ? "disabled" : `onclick="voltarTrilhaEvolution(${indice})"`}>${escaparHtml(item.name)}</button>
+    `;
+  }).join("");
+
+  perfil.innerHTML = `
+    <div class="digidex-profile-toolbar">
+      <button type="button" class="digidex-profile-back" onclick="fecharPerfilDigidex()">← VOLTAR PARA DIGIDEX</button>
+      <div class="digidex-profile-breadcrumb">${trilha}</div>
+      <span class="digidex-profile-master-status"><i></i>DIGIVOLUTION MASTER</span>
+    </div>
+
+    <div class="digidex-profile-hero">
+      <div class="digidex-profile-portrait">
+        ${current.icon ? `<img src="${escaparHtml(current.icon)}" alt="${escaparHtml(current.name)}">` : "⚔️"}
+      </div>
+
+      <div class="digidex-profile-identity">
+        <span class="digidex-profile-kicker">CURRENT DIGIMON // ${escaparHtml(current.stage || "-")}</span>
+        <h2>${escaparHtml(current.name)}</h2>
+        <div class="digidex-profile-tags">
+          ${renderEvolutionStage(current.stage)}
+          ${tipo ? `<span class="digidex-profile-type ${getClasseType(tipo)}">${renderizarTypeIcon(tipo)}</span>` : ""}
+          ${current.mutant ? `<span class="digidex-profile-mutant">MUTANT</span>` : ""}
+        </div>
+      </div>
+
+      <div class="digidex-profile-relations">
+        <span><i>STRONG</i><b>${strong ? renderizarRelacaoAtributo({strong:strong}, "strong") : "-"}</b></span>
+        <span><i>WEAK</i><b>${weak ? renderizarRelacaoAtributo({weak:weak}, "weak") : "-"}</b></span>
+        <span class="wide"><i>FIELD</i><b>${fields ? renderizarField(fields) : "-"}</b></span>
+      </div>
+    </div>
+
+    ${renderStatsPerfilEvolution(db)}
+
+    <section class="digidex-profile-section digidex-profile-skills-section">
+      <div class="digidex-profile-section-title">
+        <span>SKILLS // LEVEL 10</span>
+        <small>Passe o mouse no ícone ou nome para ver os detalhes.</small>
+      </div>
+      <div class="digidex-profile-skills">
+        ${[0,1,2].map(function(index) {
+          const skill = skills.find(function(s) { return Number(s.slot) === index + 1; });
+          return renderSkillCardEvolution(skill, index);
+        }).join("")}
+      </div>
+    </section>
+
+    <section class="digidex-profile-section digidex-evolution-tree">
+      <div class="digidex-profile-section-title">
+        <span>EVOLUTION TREE</span>
+        <small>Clique em qualquer Digimon para navegar pela linha evolutiva.</small>
+      </div>
+
+      <div class="digidex-evo-layout">
+        <div class="digidex-evo-column digidex-evo-from-column">
+          <header><span>←</span><strong>EVOLVES FROM</strong><small>${incoming.length}</small></header>
+          <div class="digidex-evo-list">
+            ${incoming.length ? incoming.map(renderEvolutionSourceCard).join("") : `<div class="digidex-evo-empty">INÍCIO DA LINHA</div>`}
+          </div>
+        </div>
+
+        <div class="digidex-evo-current-column">
+          <span class="digidex-evo-current-label">CURRENT</span>
+          <div class="digidex-evo-current-card">
+            <span class="digidex-evo-current-image">${current.icon ? `<img src="${escaparHtml(current.icon)}" alt="">` : "?"}</span>
+            <strong>${escaparHtml(current.name)}</strong>
+            ${renderEvolutionStage(current.stage)}
+          </div>
+        </div>
+
+        <div class="digidex-evo-column digidex-evo-to-column">
+          <header><strong>EVOLVES TO</strong><small>${outgoing.length}</small><span>→</span></header>
+          <div class="digidex-evo-list">
+            ${outgoing.length ? outgoing.map(renderEvolutionTargetCard).join("") : `<div class="digidex-evo-empty">FIM DA LINHA</div>`}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 

@@ -17060,3 +17060,722 @@ body.hg-display-scaled footer {
     gap: 7px !important;
   }
 }
+
+
+/* =====================================================
+   DIGIDEX — PERFIL / DIGIVOLUTION MASTER
+===================================================== */
+
+#databasePagina.digidex-profile-open .digidex-hakase-wrap,
+#databasePagina.digidex-profile-open .digidex-header-tech,
+#databasePagina.digidex-profile-open .digidex-type-filter-row,
+#databasePagina.digidex-profile-open .filtros,
+#databasePagina.digidex-profile-open #lista {
+  display: none !important;
+}
+
+#databasePagina .digidex-profile-view[hidden] {
+  display: none !important;
+}
+
+#databasePagina .digidex-profile-view {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 0 34px;
+  color: #dff7ff;
+}
+
+#databasePagina .digidex-profile-trigger {
+  cursor: pointer;
+}
+
+#databasePagina .card.digidex-profile-trigger:focus-visible,
+#databasePagina .digidex-table tr.digidex-profile-trigger:focus-visible {
+  outline: 2px solid #4ce6ff;
+  outline-offset: 3px;
+}
+
+#databasePagina .digidex-profile-loading,
+#databasePagina .digidex-profile-error {
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  border: 1px solid rgba(44, 188, 255, .25);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(7,31,62,.9), rgba(2,14,31,.88));
+  color: #83dcff;
+  letter-spacing: .09em;
+  font-size: 12px;
+}
+
+#databasePagina .digidex-profile-loading-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #57ecff;
+  box-shadow: 0 0 18px #57ecff;
+  animation: hgProfilePulse 1s infinite alternate;
+}
+
+@keyframes hgProfilePulse {
+  from { opacity: .35; transform: scale(.8); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+#databasePagina .digidex-profile-error strong {
+  color: #ff8fa0;
+  font-size: 16px;
+}
+
+#databasePagina .digidex-profile-error span {
+  max-width: 720px;
+  color: #a9c1d3;
+  letter-spacing: 0;
+}
+
+#databasePagina .digidex-profile-error button,
+#databasePagina .digidex-profile-back {
+  border: 1px solid rgba(57, 196, 255, .55);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(9,77,127,.72), rgba(3,37,71,.82));
+  color: #dff8ff;
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: .055em;
+  cursor: pointer;
+}
+
+#databasePagina .digidex-profile-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+#databasePagina .digidex-profile-breadcrumb {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+#databasePagina .digidex-profile-breadcrumb button {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: #88dfff;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+#databasePagina .digidex-profile-breadcrumb button[disabled] {
+  color: #fff;
+  font-weight: 800;
+  cursor: default;
+}
+
+#databasePagina .digidex-profile-crumb-arrow {
+  color: #456e93;
+}
+
+#databasePagina .digidex-profile-master-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #7fe8ff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+#databasePagina .digidex-profile-master-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #28e8a4;
+  box-shadow: 0 0 10px rgba(40,232,164,.7);
+}
+
+#databasePagina .digidex-profile-hero {
+  display: grid;
+  grid-template-columns: 170px minmax(240px,1fr) minmax(290px,.8fr);
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid rgba(48,176,245,.32);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 13% 28%, rgba(23,183,255,.16), transparent 30%),
+    linear-gradient(135deg, rgba(9,40,77,.96), rgba(3,18,39,.96));
+  box-shadow: inset 0 0 50px rgba(6,93,153,.08), 0 14px 38px rgba(0,0,0,.2);
+}
+
+#databasePagina .digidex-profile-portrait {
+  height: 150px;
+  border: 1px solid rgba(66,222,255,.62);
+  border-radius: 12px;
+  background: rgba(1,15,35,.78);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 28px rgba(27,192,255,.15), 0 0 20px rgba(24,166,225,.1);
+}
+
+#databasePagina .digidex-profile-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#databasePagina .digidex-profile-kicker {
+  display: block;
+  color: #54d9ff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+#databasePagina .digidex-profile-identity h2 {
+  margin: 7px 0 10px;
+  font-size: clamp(24px, 2.3vw, 40px);
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 18px rgba(70,210,255,.15);
+}
+
+#databasePagina .digidex-profile-tags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#databasePagina .digidex-profile-type,
+#databasePagina .digidex-profile-mutant,
+#databasePagina .digidex-evo-stage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border: 1px solid rgba(75,171,229,.33);
+  border-radius: 6px;
+  background: rgba(6,27,54,.8);
+  color: #a9dfff;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+#databasePagina .digidex-profile-type img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+#databasePagina .digidex-profile-mutant {
+  border-color: rgba(227,69,255,.5);
+  color: #f1a8ff;
+  background: rgba(85,17,92,.35);
+}
+
+#databasePagina .digidex-profile-relations {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+#databasePagina .digidex-profile-relations > span {
+  min-height: 68px;
+  border: 1px solid rgba(57,120,177,.35);
+  border-radius: 9px;
+  background: rgba(2,18,39,.74);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+#databasePagina .digidex-profile-relations > span.wide {
+  grid-column: 1/-1;
+  min-height: 58px;
+}
+
+#databasePagina .digidex-profile-relations i {
+  font-style: normal;
+  color: #6e9bb9;
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
+#databasePagina .digidex-profile-relations b {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+}
+
+#databasePagina .digidex-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0,1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#databasePagina .digidex-profile-stats > span {
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(46,115,174,.32);
+  border-radius: 8px;
+  background: rgba(4,22,46,.86);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#databasePagina .digidex-profile-stats i {
+  color: #65b9e2;
+  font-style: normal;
+  font-size: 8px;
+}
+
+#databasePagina .digidex-profile-stats b {
+  color: #fff;
+  font-size: 11px;
+}
+
+#databasePagina .digidex-profile-no-stats {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px dashed rgba(74,136,187,.34);
+  border-radius: 8px;
+  color: #799bb6;
+  font-size: 10px;
+}
+
+#databasePagina .digidex-profile-section {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(48,132,196,.29);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(6,28,58,.9), rgba(2,15,34,.92));
+}
+
+#databasePagina .digidex-profile-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+#databasePagina .digidex-profile-section-title > span {
+  color: #6de6ff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+#databasePagina .digidex-profile-section-title small {
+  color: #668aa6;
+  font-size: 9px;
+}
+
+#databasePagina .digidex-profile-skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+}
+
+#databasePagina .digidex-profile-skill {
+  position: relative;
+  min-width: 0;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px;
+  border: 1px solid rgba(43,139,202,.34);
+  border-radius: 10px;
+  background: rgba(2,19,42,.88);
+  cursor: help;
+  z-index: 2;
+}
+
+#databasePagina .digidex-profile-skill:hover,
+#databasePagina .digidex-profile-skill:focus-within {
+  border-color: rgba(73,222,255,.74);
+  z-index: 30;
+}
+
+#databasePagina .digidex-profile-skill.is-empty {
+  opacity: .42;
+  cursor: default;
+}
+
+#databasePagina .digidex-profile-skill-icon {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid rgba(65,183,235,.45);
+  background: #04152d;
+}
+
+#databasePagina .digidex-profile-skill-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#databasePagina .digidex-profile-skill-copy {
+  min-width: 0;
+  display: block;
+}
+
+#databasePagina .digidex-profile-skill-copy strong {
+  display: block;
+  color: #f6fbff;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#databasePagina .digidex-profile-skill-copy small {
+  display: block;
+  margin-top: 3px;
+  color: #59cfff;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .055em;
+}
+
+#databasePagina .digidex-profile-skill-tooltip,
+#databasePagina .digidex-evo-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  width: min(390px, 80vw);
+  transform: translate(-50%, 7px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 9999;
+  padding: 13px;
+  border: 1px solid rgba(81,198,255,.58);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(6,22,48,.995), rgba(2,10,25,.995));
+  box-shadow: 0 18px 44px rgba(0,0,0,.68);
+  text-align: left;
+  transition: .14s ease;
+}
+
+#databasePagina .digidex-profile-skill:hover .digidex-profile-skill-tooltip,
+#databasePagina .digidex-profile-skill:focus-within .digidex-profile-skill-tooltip,
+#databasePagina .digidex-evo-node:hover .digidex-evo-tooltip,
+#databasePagina .digidex-evo-node:focus .digidex-evo-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+#databasePagina .digidex-profile-skill-tooltip > strong,
+#databasePagina .digidex-evo-tooltip > strong {
+  display: block;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(74,142,195,.28);
+  color: #fff;
+  font-size: 13px;
+}
+
+#databasePagina .digidex-profile-skill-tooltip-grid,
+#databasePagina .digidex-evo-tooltip-grid {
+  margin-top: 9px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+
+#databasePagina .digidex-profile-skill-tooltip-grid > span,
+#databasePagina .digidex-evo-tooltip-grid > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #86a9c1;
+  font-size: 9px;
+}
+
+#databasePagina .digidex-profile-skill-tooltip-grid > span.wide,
+#databasePagina .digidex-evo-tooltip-grid > span.wide {
+  grid-column: 1/-1;
+}
+
+#databasePagina .digidex-profile-skill-tooltip-grid i,
+#databasePagina .digidex-evo-tooltip-grid i {
+  font-style: normal;
+}
+
+#databasePagina .digidex-profile-skill-tooltip-grid b,
+#databasePagina .digidex-evo-tooltip-grid b {
+  color: #eaf8ff;
+  text-align: right;
+}
+
+#databasePagina .digidex-profile-skill-tooltip em,
+#databasePagina .digidex-evo-tooltip em {
+  display: block;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(74,142,195,.2);
+  color: #a9bfd0;
+  font-size: 9px;
+  line-height: 1.5;
+  font-style: normal;
+  white-space: normal;
+}
+
+#databasePagina .digidex-evo-layout {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 190px minmax(0,1.2fr);
+  align-items: stretch;
+  gap: 14px;
+}
+
+#databasePagina .digidex-evo-column,
+#databasePagina .digidex-evo-current-column {
+  min-width: 0;
+  border: 1px solid rgba(40,112,171,.28);
+  border-radius: 11px;
+  background: rgba(2,16,36,.62);
+  padding: 10px;
+}
+
+#databasePagina .digidex-evo-column header {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6cdbff;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+#databasePagina .digidex-evo-column header small {
+  margin-left: auto;
+  color: #617f99;
+}
+
+#databasePagina .digidex-evo-list {
+  display: grid;
+  gap: 7px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 2px 3px 2px 0;
+  scrollbar-width: thin;
+}
+
+#databasePagina .digidex-evo-node {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 52px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(51,126,184,.3);
+  border-radius: 9px;
+  background: rgba(5,28,56,.88);
+  padding: 7px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+#databasePagina .digidex-evo-node:hover,
+#databasePagina .digidex-evo-node:focus {
+  outline: none;
+  border-color: rgba(69,221,255,.72);
+  background: rgba(8,47,81,.96);
+  z-index: 40;
+}
+
+#databasePagina .digidex-evo-node-image,
+#databasePagina .digidex-evo-current-image {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(61,171,222,.42);
+  border-radius: 8px;
+  background: #04142b;
+}
+
+#databasePagina .digidex-evo-node-image img,
+#databasePagina .digidex-evo-current-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#databasePagina .digidex-evo-node-copy {
+  min-width: 0;
+}
+
+#databasePagina .digidex-evo-node-copy > strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f4fbff;
+  font-size: 11px;
+}
+
+#databasePagina .digidex-evo-node-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  min-width: 0;
+}
+
+#databasePagina .digidex-evo-node-meta small {
+  color: #698aa5;
+  font-size: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#databasePagina .digidex-evo-probability {
+  align-self: center;
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+#databasePagina .digidex-evo-current-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+#databasePagina .digidex-evo-current-label {
+  color: #66dcff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+#databasePagina .digidex-evo-current-card {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(77,224,255,.62);
+  border-radius: 11px;
+  background: radial-gradient(circle at 50% 35%, rgba(44,176,255,.18), rgba(3,20,43,.92) 65%);
+  box-shadow: inset 0 0 28px rgba(45,195,255,.08);
+}
+
+#databasePagina .digidex-evo-current-card strong {
+  max-width: 90%;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+#databasePagina .digidex-evo-current-image {
+  width: 70px;
+  height: 70px;
+}
+
+#databasePagina .digidex-evo-empty {
+  min-height: 80px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgba(60,116,160,.32);
+  border-radius: 8px;
+  color: #58758d;
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
+@media (max-width: 1100px) {
+  #databasePagina .digidex-profile-hero {
+    grid-template-columns: 130px 1fr;
+  }
+
+  #databasePagina .digidex-profile-relations {
+    grid-column: 1/-1;
+  }
+
+  #databasePagina .digidex-profile-stats {
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+
+  #databasePagina .digidex-evo-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #databasePagina .digidex-evo-current-column {
+    order: -1;
+  }
+}
+
+@media (max-width: 720px) {
+  #databasePagina .digidex-profile-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  #databasePagina .digidex-profile-master-status {
+    display: none;
+  }
+
+  #databasePagina .digidex-profile-hero {
+    grid-template-columns: 1fr;
+  }
+
+  #databasePagina .digidex-profile-portrait {
+    height: 220px;
+  }
+
+  #databasePagina .digidex-profile-stats,
+  #databasePagina .digidex-profile-skills {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #databasePagina .digidex-profile-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
