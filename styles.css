@@ -15682,3 +15682,62 @@ body.pvp-modal-open{overflow:hidden}
   color:#ffd84a!important;
   text-shadow:0 0 8px rgba(255,211,74,.28);
 }
+
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V4.4 — COMPACT HUD / PICK CUE / SURRENDER
+===================================================== */
+/* Remove the large PVP MATCH hero box to keep the whole match above the fold. */
+#pvpPagina #pvpMatchView .pvp-match-head{display:none!important}
+#pvpPagina #pvpMatchView .pvp-match-shell{padding-top:0!important}
+
+/* Draft: pulse only the next empty slot of the player whose pick is active. */
+@keyframes pvpDraftActiveSlotPulse{
+  0%,100%{border-color:rgba(76,218,255,.50);box-shadow:0 0 0 0 rgba(71,220,255,.05),inset 0 0 15px rgba(51,197,255,.04)}
+  50%{border-color:#7aeaff;box-shadow:0 0 0 2px rgba(85,224,255,.22),0 0 24px rgba(56,210,255,.48),inset 0 0 22px rgba(65,215,255,.12)}
+}
+#pvpPagina .pvp-draft-pick.active-pick-slot{
+  animation:pvpDraftActiveSlotPulse 1.05s ease-in-out infinite!important;
+  background:radial-gradient(circle at 50% 50%,rgba(44,178,235,.16),#041126 72%)!important;
+}
+#pvpPagina .pvp-draft-side.p2 .pvp-draft-pick.active-pick-slot{
+  animation-name:pvpDraftActiveSlotPulseEnemy!important;
+}
+@keyframes pvpDraftActiveSlotPulseEnemy{
+  0%,100%{border-color:rgba(255,84,113,.48);box-shadow:0 0 0 0 rgba(255,70,103,.04),inset 0 0 15px rgba(255,64,96,.04)}
+  50%{border-color:#ff7890;box-shadow:0 0 0 2px rgba(255,81,111,.19),0 0 24px rgba(255,60,94,.42),inset 0 0 22px rgba(255,58,92,.10)}
+}
+
+/* Target card: no redundant portrait; HP value sits under the life bar like the game HUD. */
+#pvpPagina .pvp-battle-target .pvp-target-top{min-height:30px!important}
+#pvpPagina .pvp-battle-target .pvp-target-top>img{display:none!important}
+#pvpPagina .pvp-battle-target .pvp-target-copy strong{font-size:12px!important}
+#pvpPagina .pvp-target-hpbar{height:7px!important;margin-top:8px!important}
+#pvpPagina .pvp-target-hp-number{
+  margin-top:4px;
+  color:#f4f7fb;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:10px;
+  font-weight:900;
+  text-align:center;
+  letter-spacing:.4px;
+  text-shadow:0 1px 2px #000;
+}
+#pvpPagina .pvp-battle-target .pvp-target-hp-value{display:none!important}
+
+/* Battlefield portraits stay clean; relation details live only in the top enemy target card. */
+#pvpPagina .pvp-battle-unit .pvp-unit-tooltip{display:none!important}
+
+/* Surrender is intentionally separated from tactical controls. */
+#pvpPagina .pvp-surrender-btn{
+  margin-top:4px!important;
+  border-color:rgba(255,66,87,.55)!important;
+  background:linear-gradient(180deg,rgba(89,9,25,.92),rgba(48,5,15,.96))!important;
+  color:#ff9aaa!important;
+}
+#pvpPagina .pvp-surrender-btn:hover:not(:disabled){
+  border-color:#ff5c73!important;
+  color:#fff!important;
+  box-shadow:0 0 16px rgba(255,54,82,.18)!important;
+}
+#pvpPagina .pvp-surrender-btn:disabled{opacity:.3!important;cursor:not-allowed!important}

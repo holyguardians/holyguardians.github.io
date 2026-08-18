@@ -10148,10 +10148,13 @@ function pvpMatchHoverCard(slot){
 
 function pvpMatchPickBoxes(role){
   const state=pvpMatchRoomState;const picks=state.draft&&state.draft.picks&&state.draft.picks[role]||[];
+  const current=pvpMatchDraftCurrentRole();
+  const nextOpenIndex=picks.length;
   let html="";
   for(let i=0;i<4;i++){
     const did=picks[i],d=pvpMatchDigi(did);
-    html+='<div class="pvp-draft-pick '+(!d?'empty':'')+'">'+(d?'<img src="'+d.icon+'" alt=""><b>'+pvpEscapeHtml(d.name)+'</b>':'')+'</div>';
+    const activeSlot=!d&&role===current&&i===nextOpenIndex;
+    html+='<div class="pvp-draft-pick '+(!d?'empty ':'')+(activeSlot?'active-pick-slot':'')+'">'+(d?'<img src="'+d.icon+'" alt=""><b>'+pvpEscapeHtml(d.name)+'</b>':'')+'</div>';
   }
   return html;
 }
@@ -10476,7 +10479,7 @@ function pvpBattleUnitHtml(u,current,targeted){
   return '<div class="pvp-battle-unit '+(u.position==="F"?'front':'back')+' '+pvpBattleUnitStatusClasses(u)+(current?' current':'')+(targeted?' targeted':'')+'" onclick="pvpBattleSelectTarget(\''+u.id+'\')">'+
     (num?'<button type="button" class="pvp-target-number '+(validTarget?'valid':'invalid')+'" '+(validTarget?'onclick="event.stopPropagation();pvpBattleSelectTargetNumber('+num+')"':'disabled')+'>'+num+'</button>':'')+
     '<div class="pvp-battle-unit-frame"><span class="pvp-battle-unit-pos">'+u.position+'</span><img src="'+u.icon+'" alt=""></div><strong class="pvp-battle-unit-name">'+pvpEscapeHtml(u.name)+'</strong>'+
-    '<div class="pvp-battle-unit-hp"><i style="width:'+hp+'%"></i></div><div class="pvp-battle-unit-sp"><i style="width:'+sp+'%"></i></div><div class="pvp-battle-unit-status">'+pvpBattleStatusesHtml(u)+'</div>'+pvpBattleUnitTooltip(u)+'</div>';
+    '<div class="pvp-battle-unit-hp"><i style="width:'+hp+'%"></i></div><div class="pvp-battle-unit-sp"><i style="width:'+sp+'%"></i></div><div class="pvp-battle-unit-status">'+pvpBattleStatusesHtml(u)+'</div></div>';
 }
 
 function pvpBattleRenderOpponentLabel(){
@@ -10492,9 +10495,9 @@ function pvpBattleRenderTarget(){
   if(target)pvpBattleSelectedTarget=target.id;
   const box=document.getElementById("pvpBattleTarget");if(!box)return;if(!target){box.innerHTML="";return}
   const pct=Math.max(0,target.hp/target.maxHp*100),d=pvpMatchDigi(target.did)||{};
-  box.innerHTML='<div class="pvp-target-top"><img src="'+target.icon+'" alt=""><div class="pvp-target-copy"><strong>'+pvpEscapeHtml(target.name)+'</strong><small>'+target.position+' · '+pvpEscapeHtml(pvpMatchRoomState.players[target.role].nick)+'</small></div><span class="pvp-target-hp-value">'+Math.max(0,Math.round(target.hp)).toLocaleString("pt-BR")+' / '+Math.round(target.maxHp).toLocaleString("pt-BR")+'</span></div>'+
+  box.innerHTML='<div class="pvp-target-top"><div class="pvp-target-copy"><strong>'+pvpEscapeHtml(target.name)+'</strong><small>'+target.position+' · '+pvpEscapeHtml(pvpMatchRoomState.players[target.role].nick)+'</small></div></div>'+
     '<div class="pvp-target-meta pvp-target-meta-assets">'+pvpBattleTypeBadge(d.attribute)+pvpBattleElementBadge("STRONG",d.strong,d.strongEffect)+pvpBattleElementBadge("WEAK",d.weak,d.weakEffect)+'</div>'+
-    '<div class="pvp-target-hpbar"><i style="width:'+pct+'%"></i></div><div class="pvp-target-debuffs">'+pvpBattleStatusesHtml(target)+'</div>';
+    '<div class="pvp-target-hpbar"><i style="width:'+pct+'%"></i></div><div class="pvp-target-hp-number">'+Math.max(0,Math.round(target.hp)).toLocaleString("pt-BR")+' / '+Math.round(target.maxHp).toLocaleString("pt-BR")+'</div><div class="pvp-target-debuffs">'+pvpBattleStatusesHtml(target)+'</div>';
 }
 
 function pvpBattleFieldRows(units,current){
@@ -10592,11 +10595,25 @@ function pvpBattleRenderGauge(gauge){
   }).join("");
   if(txt)txt.textContent=g.toFixed(2).replace('.',',')+' / 5';
 }
+function pvpBattleSurrender(){
+  const room=pvpMatchRoomState,b=room&&room.battle;if(!room||!b||b.winner)return;
+  const me=pvpBattleMyRole(),player=room.players&&room.players[me];
+  if(!confirm((player&&player.nick?player.nick:"Você")+", deseja realmente desistir da partida? O oponente será declarado vencedor."))return;
+  if(pvpMatchLocalMode){
+    b.winner=pvpMatchOpponentRole(me);
+    b.surrenderedBy=me;
+    pvpBattleLog((player&&player.nick?player.nick:"Player")+" surrendered the match.");
+    room.phase="finished";pvpBattleRender();return;
+  }
+  pvpMatchSend("surrender",{});
+}
+
 function pvpBattleRenderControls(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),gauge=Math.max(0,Number(b.gauge[me]||0));pvpBattleRenderGauge(gauge);
   const count=document.getElementById("pvpSubstitutionCount");if(count)count.textContent=b.subs[me]+"/3";
   const standby=(b.units[me]||[]).some(function(u){return !u.active&&u.alive}),sub=document.getElementById("pvpSubstitutionBtn");if(sub)sub.disabled=!!b.pendingReplacement||b.subs[me]<=0||gauge<1||!standby;
   const hint=document.getElementById("pvpBattleActionHint");if(hint)hint.textContent=pvpBattleActionHintText();
+  const surrender=document.getElementById("pvpSurrenderBtn");if(surrender)surrender.disabled=!!b.winner;
   const hud=document.getElementById("pvpBattleHud");if(hud)hud.classList.toggle("waiting-turn",!pvpBattleCurrentOwnedByMe());
 }
 function pvpBattleRender(){
