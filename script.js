@@ -3392,7 +3392,10 @@ function normalizarNomeEvolution(valor) {
 }
 
 function numeroEvolution(valor) {
-  const numero = Number(String(valor == null ? "" : valor).replace(",", "."));
+  if (valor == null) return null;
+  const texto = String(valor).trim();
+  if (!texto) return null;
+  const numero = Number(texto.replace(",", "."));
   return Number.isFinite(numero) ? numero : null;
 }
 
@@ -3651,47 +3654,137 @@ function renderEvolutionProbability(probability) {
     : `<strong class="digidex-evo-probability">${escaparHtml(formatarEvolutionNumero(valor))}%</strong>`;
 }
 
-function renderRequirementTooltip(row) {
+function evolutionStatsComRequisito(row) {
+  const stats = row && row.stats ? row.stats : {};
+  return ["str", "int", "def", "res", "spd"].filter(function(stat) {
+    const info = stats[stat] || {};
+    return numeroEvolution(info.required) !== null || numeroEvolution(info.percent) !== null;
+  });
+}
+
+function evolutionTemPotential(row) {
+  const cubo = numeroEvolution(row && row.cubePercent);
+  if (cubo === null || cubo <= 0) return false;
+  return evolutionStatsComRequisito(row).some(function(stat) {
+    const pct = numeroEvolution(((row.stats || {})[stat] || {}).percent);
+    return pct !== null && pct > 0;
+  });
+}
+
+function renderEvolutionRequirementsBox(row) {
   const linhas = [];
   const level = numeroEvolution(row.level);
   const bond = numeroEvolution(row.bond);
 
-  if (level !== null) linhas.push(`<span><i>Level</i><b>${escaparHtml(formatarEvolutionNumero(level))}</b></span>`);
-  if (bond !== null) linhas.push(`<span><i>Bond</i><b>${escaparHtml(formatarEvolutionNumero(bond))}</b></span>`);
+  if (level !== null) {
+    linhas.push(`<span class="digidex-evo-req-item"><i>LEVEL</i><b>${escaparHtml(formatarEvolutionNumero(level))}</b></span>`);
+  }
+  if (bond !== null) {
+    linhas.push(`<span class="digidex-evo-req-item"><i>BOND</i><b>${escaparHtml(formatarEvolutionNumero(bond))}</b></span>`);
+  }
 
   const stats = row.stats || {};
-  ["str","int","def","res","spd"].forEach(function(stat) {
+  evolutionStatsComRequisito(row).forEach(function(stat) {
     const info = stats[stat] || {};
     const req = numeroEvolution(info.required);
+    const natural = numeroEvolution(info.natural);
     const pct = numeroEvolution(info.percent);
-    if (req !== null || pct !== null) {
-      const texto = [
-        req !== null ? formatarEvolutionNumero(req) : "",
-        pct !== null ? "+" + formatarEvolutionNumero(pct) + "%" : ""
-      ].filter(Boolean).join(" • ");
-      linhas.push(`<span><i>${stat.toUpperCase()}</i><b>${escaparHtml(texto)}</b></span>`);
-    }
+    const partes = [];
+    if (req !== null) partes.push(formatarEvolutionNumero(req));
+    if (pct !== null) partes.push(`+${formatarEvolutionNumero(pct)}%`);
+    const naturalTxt = natural !== null ? `<small>NAT. ${escaparHtml(formatarEvolutionNumero(natural))}</small>` : "";
+    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-stat"><i>${stat.toUpperCase()}</i><b>${escaparHtml(partes.join(" • ") || "-")}</b>${naturalTxt}</span>`);
   });
 
   (row.items || []).forEach(function(item) {
-    linhas.push(`<span class="wide"><i>Item</i><b>${escaparHtml(item.name)}${item.quantity !== "" && item.quantity != null ? " ×" + escaparHtml(item.quantity) : ""}</b></span>`);
+    if (!item || !item.name) return;
+    const qtd = item.quantity !== "" && item.quantity != null ? ` ×${item.quantity}` : "";
+    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-wide"><i>ITEM</i><b>${escaparHtml(item.name + qtd)}</b></span>`);
   });
 
   if (row.partner) {
-    linhas.push(`<span class="wide"><i>Jogress</i><b>${escaparHtml(row.partner)}</b></span>`);
+    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-wide"><i>JOGRESS</i><b>${escaparHtml(row.partner)}</b></span>`);
   }
 
   if (!linhas.length) {
-    linhas.push(`<span class="wide"><i>Requisitos</i><b>Sem requisito adicional registrado</b></span>`);
+    linhas.push(`<span class="digidex-evo-req-empty">SEM REQUISITO ADICIONAL REGISTRADO</span>`);
   }
 
+  const podePotential = evolutionTemPotential(row);
   return `
-    <span class="digidex-evo-tooltip" role="tooltip">
-      <strong>EVOLUTION REQUIREMENTS</strong>
-      <span class="digidex-evo-tooltip-grid">${linhas.join("")}</span>
-      ${row.notes ? `<em>${escaparHtml(row.notes)}</em>` : ""}
-    </span>
+    <div class="digidex-evo-requirements-box">
+      <div class="digidex-evo-req-head">
+        <strong>EVOLUTION REQUIREMENTS</strong>
+        ${row.requirementOwner ? `<small>${escaparHtml(row.requirementOwner)}</small>` : ""}
+      </div>
+      <div class="digidex-evo-req-grid">${linhas.join("")}</div>
+      ${podePotential ? `
+        <button type="button" class="digidex-evo-potential-btn" onclick="abrirPotentialModalEvolution('${escaparHtml(String(row.id || ""))}')">
+          MOSTRAR POTENCIAL
+        </button>
+      ` : ""}
+    </div>
   `;
+}
+
+function converterEvolutionParaPotential(row) {
+  const statsOrig = row && row.stats ? row.stats : {};
+  const stats = {};
+  ["str", "int", "def", "res", "spd"].forEach(function(stat) {
+    const info = statsOrig[stat] || {};
+    const pct = numeroEvolution(info.percent);
+    if (pct === null) return;
+    stats[stat.toUpperCase()] = {
+      value: numeroEvolution(info.required),
+      natural: numeroEvolution(info.natural),
+      percent: pct
+    };
+  });
+
+  return {
+    id: row.id,
+    to: row.to,
+    displayName: row.to,
+    requirementOwner: row.requirementOwner || row.from,
+    cubePercent: numeroEvolution(row.cubePercent),
+    requirements: {
+      level: numeroEvolution(row.level),
+      bond: numeroEvolution(row.bond),
+      stats: stats,
+      items: row.items || []
+    }
+  };
+}
+
+function abrirPotentialModalEvolution(id) {
+  if (!evolutionMaster || !Array.isArray(evolutionMaster.evolutions)) return;
+  const row = evolutionMaster.evolutions.find(function(item) {
+    return String(item.id || "") === String(id || "");
+  });
+  if (!row || !evolutionTemPotential(row)) return;
+
+  digivolutionAtual = converterEvolutionParaPotential(row);
+  POTENTIAL_STATS.forEach(function(stat) { babyCorrections[stat] = 0; });
+
+  const modal = document.getElementById("potentialModal");
+  const titulo = document.getElementById("potentialTitle");
+  const subtitulo = document.getElementById("potentialSubtitle");
+  const campos = document.getElementById("babyCorrectionFields");
+  if (!modal) return;
+
+  if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
+  if (subtitulo) {
+    const levelTxt = digivolutionAtual.requirements.level != null ? digivolutionAtual.requirements.level : "-";
+    subtitulo.textContent = `${digivolutionAtual.requirementOwner || "DIGIMON ANTERIOR"} // LEVEL ${levelTxt} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
+  }
+  if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
+    return `<label><span>${stat}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="Aumentar ${stat}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="Diminuir ${stat}">▼</button></span></span><small>%</small></label>`;
+  }).join("");
+
+  modal.classList.add("ativo");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  atualizarPotentialPlanner();
 }
 
 function renderEvolutionSourceCard(source) {
@@ -3710,20 +3803,22 @@ function renderEvolutionSourceCard(source) {
 
 function renderEvolutionTargetCard(row) {
   return `
-    <button type="button" class="digidex-evo-node digidex-evo-node-to" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
-      <span class="digidex-evo-node-image">
-        ${row.toIcon ? `<img src="${escaparHtml(row.toIcon)}" alt="${escaparHtml(row.to)}" loading="lazy">` : "?"}
-      </span>
-      <span class="digidex-evo-node-copy">
-        <strong>${escaparHtml(row.to || "-")}</strong>
-        <span class="digidex-evo-node-meta">
-          ${renderEvolutionStage(row.toStage)}
-          ${row.category ? `<small>${escaparHtml(row.category)}</small>` : ""}
+    <article class="digidex-evo-target-card">
+      <button type="button" class="digidex-evo-node digidex-evo-node-to" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
+        <span class="digidex-evo-node-image">
+          ${row.toIcon ? `<img src="${escaparHtml(row.toIcon)}" alt="${escaparHtml(row.to)}" loading="lazy">` : "?"}
         </span>
-      </span>
-      ${renderEvolutionProbability(row.probability)}
-      ${renderRequirementTooltip(row)}
-    </button>
+        <span class="digidex-evo-node-copy">
+          <strong>${escaparHtml(row.to || "-")}</strong>
+          <span class="digidex-evo-node-meta">
+            ${renderEvolutionStage(row.toStage)}
+            ${row.category ? `<small>${escaparHtml(row.category)}</small>` : ""}
+          </span>
+        </span>
+        ${renderEvolutionProbability(row.probability)}
+      </button>
+      ${renderEvolutionRequirementsBox(row)}
+    </article>
   `;
 }
 

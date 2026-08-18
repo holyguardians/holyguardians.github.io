@@ -17779,3 +17779,165 @@ body.hg-display-scaled footer {
     flex-direction: column;
   }
 }
+
+/* =====================================================
+   DIGIDEX EVOLUTION V2 — REQUISITOS VISIVEIS + POTENCIAL
+===================================================== */
+#databasePagina .digidex-evo-to-column .digidex-evo-list {
+  max-height: 520px;
+}
+
+#databasePagina .digidex-evo-target-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(51,126,184,.34);
+  border-radius: 10px;
+  background: rgba(4,22,46,.9);
+  box-shadow: inset 0 0 18px rgba(34,142,220,.035);
+}
+
+#databasePagina .digidex-evo-target-card:has(.digidex-evo-node:hover),
+#databasePagina .digidex-evo-target-card:has(.digidex-evo-node:focus) {
+  border-color: rgba(69,221,255,.72);
+}
+
+#databasePagina .digidex-evo-target-card > .digidex-evo-node {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(49,119,178,.24);
+  background: rgba(5,28,56,.72);
+}
+
+#databasePagina .digidex-evo-target-card > .digidex-evo-node:hover,
+#databasePagina .digidex-evo-target-card > .digidex-evo-node:focus {
+  background: rgba(8,47,81,.96);
+}
+
+#databasePagina .digidex-evo-requirements-box {
+  padding: 9px 10px 10px;
+  background: linear-gradient(180deg, rgba(4,20,42,.84), rgba(2,14,31,.94));
+}
+
+#databasePagina .digidex-evo-req-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+#databasePagina .digidex-evo-req-head strong {
+  color: #61dcff;
+  font-size: 8px;
+  letter-spacing: .09em;
+}
+
+#databasePagina .digidex-evo-req-head small {
+  margin-left: auto;
+  max-width: 48%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #6d90aa;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+#databasePagina .digidex-evo-req-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 5px;
+}
+
+#databasePagina .digidex-evo-req-item {
+  min-width: 0;
+  min-height: 37px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 7px;
+  border: 1px solid rgba(50,113,166,.3);
+  border-radius: 6px;
+  background: rgba(3,15,33,.78);
+}
+
+#databasePagina .digidex-evo-req-item i {
+  color: #668da8;
+  font-size: 6px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+#databasePagina .digidex-evo-req-item b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #f4fbff;
+  font-size: 9px;
+}
+
+#databasePagina .digidex-evo-req-stat b {
+  color: #70e8a9;
+}
+
+#databasePagina .digidex-evo-req-item small {
+  color: #577890;
+  font-size: 6px;
+  font-weight: 800;
+}
+
+#databasePagina .digidex-evo-req-wide {
+  grid-column: span 2;
+}
+
+#databasePagina .digidex-evo-req-empty {
+  grid-column: 1 / -1;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgba(55,111,156,.28);
+  border-radius: 6px;
+  color: #587990;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+#databasePagina .digidex-evo-potential-btn {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 7px;
+  border: 1px solid #1597d1;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #087db2, #07517d);
+  color: #fff;
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .055em;
+  cursor: pointer;
+  box-shadow: inset 0 0 12px rgba(67,220,255,.08);
+}
+
+#databasePagina .digidex-evo-potential-btn:hover,
+#databasePagina .digidex-evo-potential-btn:focus {
+  outline: none;
+  border-color: #6be9ff;
+  background: linear-gradient(180deg, #1099d1, #07618f);
+  box-shadow: 0 0 13px rgba(44,204,255,.22);
+}
+
+@media (max-width: 1450px) {
+  #databasePagina .digidex-evo-req-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  #databasePagina .digidex-evo-req-grid {
+    grid-template-columns: 1fr;
+  }
+  #databasePagina .digidex-evo-req-wide {
+    grid-column: auto;
+  }
+}
