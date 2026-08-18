@@ -15883,3 +15883,192 @@ body.pvp-modal-open{overflow:hidden}
   #pvpPagina .pvp-battle-field{left:2%!important;right:2%!important}
   #pvpPagina .pvp-battle-field.enemy{top:18%!important}
 }
+
+
+/* =====================================================
+   HEADER HG RECOLHÍVEL — 2026-08-18
+   A própria logo recolhe/expande a navegação para liberar
+   espaço vertical nas ferramentas, principalmente no PvP.
+===================================================== */
+
+.topbar,
+.topbar .brand,
+.topbar .nav-menu,
+.topbar .brand-logo-shell {
+  transition:
+    min-height .28s ease,
+    width .28s ease,
+    max-width .28s ease,
+    padding .28s ease,
+    gap .28s ease,
+    opacity .18s ease,
+    transform .28s ease,
+    border-radius .28s ease;
+}
+
+/* A largura explícita permite que o recolhimento tenha animação real
+   em vez de a barra simplesmente desaparecer de uma vez. */
+.topbar {
+  width: 100%;
+  max-width: 100%;
+}
+
+.topbar .nav-menu {
+  max-width: 5000px;
+  opacity: 1;
+  transform: translateX(0);
+  overflow: hidden;
+}
+
+.brand {
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brand:focus-visible {
+  outline: 2px solid rgba(72, 181, 255, .95);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+/* Pequeno indicador tecnológico: aponta para a esquerda quando o menu
+   está aberto e para a direita quando está recolhido. */
+.header-collapse-indicator {
+  position: absolute;
+  z-index: 8;
+  right: 2px;
+  bottom: 14px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(74, 178, 255, .62);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(14, 55, 105, .96), rgba(3, 19, 43, .98));
+  box-shadow:
+    0 0 12px rgba(32, 145, 255, .22),
+    inset 0 0 10px rgba(75, 178, 255, .08);
+  opacity: .72;
+  transition: opacity .2s ease, transform .28s ease, border-color .2s ease;
+}
+
+.header-collapse-indicator::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-left: 2px solid #bfe6ff;
+  border-bottom: 2px solid #bfe6ff;
+  transform: rotate(45deg);
+  margin-left: 3px;
+  filter: drop-shadow(0 0 4px rgba(72, 184, 255, .55));
+  transition: transform .28s ease, margin .28s ease;
+}
+
+.brand:hover .header-collapse-indicator,
+.brand:focus-visible .header-collapse-indicator {
+  opacity: 1;
+  border-color: rgba(110, 207, 255, .9);
+}
+
+/* Estado recolhido: a topbar deixa de ocupar a largura inteira e vira
+   uma pequena extensão da própria logo. */
+.topbar.header-collapsed {
+  width: 94px !important;
+  max-width: 94px !important;
+  min-height: 64px !important;
+  height: 64px !important;
+  padding: 4px 9px !important;
+  gap: 0 !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  border-right: 1px solid rgba(63, 150, 255, .48);
+  border-bottom-right-radius: 16px;
+  box-shadow:
+    7px 9px 24px rgba(0, 0, 0, .42),
+    0 0 18px rgba(28, 126, 235, .08);
+}
+
+.topbar.header-collapsed .brand {
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+.topbar.header-collapsed .nav-menu {
+  flex: 0 0 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  transform: translateX(-14px) !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+.topbar.header-collapsed .brand-logo-shell {
+  width: 56px !important;
+  height: 56px !important;
+  flex: 0 0 56px !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+.topbar.header-collapsed .brand:hover .brand-logo-shell {
+  animation: none !important;
+  transform: scale(1.06) !important;
+}
+
+.topbar.header-collapsed .header-collapse-indicator {
+  right: -4px;
+  bottom: 7px;
+  transform: scale(.92);
+}
+
+.topbar.header-collapsed .header-collapse-indicator::before {
+  transform: rotate(225deg);
+  margin-left: -3px;
+}
+
+/* Em telas menores a lógica é a mesma, apenas reduzimos um pouco a cápsula. */
+@media (max-width: 700px) {
+  .header-collapse-indicator {
+    width: 20px;
+    height: 20px;
+    right: -3px;
+    bottom: 8px;
+  }
+
+  .topbar.header-collapsed {
+    width: 78px !important;
+    max-width: 78px !important;
+    min-height: 56px !important;
+    height: 56px !important;
+    padding: 3px 7px !important;
+    border-bottom-right-radius: 14px;
+  }
+
+  .topbar.header-collapsed .brand {
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    min-height: 50px !important;
+    height: 50px !important;
+  }
+
+  .topbar.header-collapsed .brand-logo-shell {
+    width: 50px !important;
+    height: 50px !important;
+    flex-basis: 50px !important;
+  }
+}

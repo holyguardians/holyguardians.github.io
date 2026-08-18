@@ -1447,6 +1447,78 @@ function selecionarFiltroType(tipo, botao) {
    NAVEGAÇÃO
 ===================================================== */
 
+/* =====================================================
+   HEADER RECOLHÍVEL — LOGO COMO CONTROLE
+===================================================== */
+
+const HG_HEADER_COLLAPSE_KEY = "hgHeaderCollapsed";
+
+function aplicarEstadoSiteHeader(recolhido, persistir = true) {
+  const topbar = document.querySelector(".topbar");
+  const toggle = document.getElementById("headerToggle");
+  const menu = document.getElementById("siteNavMenu");
+
+  if (!topbar || !toggle || !menu) return;
+
+  const fechado = Boolean(recolhido);
+  topbar.classList.toggle("header-collapsed", fechado);
+
+  toggle.setAttribute("aria-expanded", fechado ? "false" : "true");
+  toggle.setAttribute("aria-label", fechado ? "Expandir menu" : "Recolher menu");
+  toggle.setAttribute("title", fechado ? "Expandir menu" : "Recolher menu");
+  menu.setAttribute("aria-hidden", fechado ? "true" : "false");
+
+  /* Garante que o submenu PvP não fique logicamente aberto atrás do header. */
+  if (fechado) {
+    const dropdown = document.getElementById("pvpNavDropdown");
+    const pvpMenu = document.getElementById("pvpNavMenu");
+    const pvpButton = document.getElementById("btnPvp");
+    if (dropdown) dropdown.classList.remove("aberto", "open");
+    if (pvpMenu) pvpMenu.classList.remove("aberto", "open");
+    if (pvpButton) pvpButton.setAttribute("aria-expanded", "false");
+  }
+
+  if (persistir) {
+    try {
+      localStorage.setItem(HG_HEADER_COLLAPSE_KEY, fechado ? "1" : "0");
+    } catch (erro) {
+      /* O header continua funcionando mesmo se o storage estiver bloqueado. */
+    }
+  }
+}
+
+function toggleSiteHeader(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const topbar = document.querySelector(".topbar");
+  if (!topbar) return;
+
+  aplicarEstadoSiteHeader(!topbar.classList.contains("header-collapsed"));
+}
+
+function inicializarSiteHeaderRecolhivel() {
+  const toggle = document.getElementById("headerToggle");
+  if (!toggle) return;
+
+  let recolhido = false;
+  try {
+    recolhido = localStorage.getItem(HG_HEADER_COLLAPSE_KEY) === "1";
+  } catch (erro) {
+    recolhido = false;
+  }
+
+  aplicarEstadoSiteHeader(recolhido, false);
+
+  toggle.addEventListener("keydown", function(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      toggleSiteHeader(event);
+    }
+  });
+}
+
 function mostrarPagina(
   id,
   botao,
@@ -7993,6 +8065,7 @@ document.addEventListener(
   "DOMContentLoaded",
   function() {
 
+    inicializarSiteHeaderRecolhivel();
     atualizarBotoesViewDigidex();
     montarFiltrosAvancadosDigidex();
     inicializarFechamentoFiltrosDigidex();
