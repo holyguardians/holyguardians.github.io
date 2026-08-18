@@ -3380,7 +3380,7 @@ function filtrar() {
    DIGIDEX — PERFIL + EVOLUTION TREE
 ===================================================== */
 
-const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v3";
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v4";
 let evolutionMaster = null;
 let evolutionMasterPromise = null;
 let digidexEvolutionTrail = [];
@@ -3412,7 +3412,10 @@ function formatarEvolutionNumero(valor) {
 
 function evolutionCacheSalvar(dados) {
   try {
-    localStorage.setItem(HG_EVOLUTION_CACHE_KEY, JSON.stringify(dados));
+    localStorage.setItem(HG_EVOLUTION_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      data: dados
+    }));
   } catch (erro) {
     // Sem problema: a sessão continua usando a cópia em memória.
   }
@@ -3420,9 +3423,20 @@ function evolutionCacheSalvar(dados) {
 
 function evolutionCacheLer() {
   try {
+    /* F5/Ctrl+F5 deve sempre refletir mudanças feitas na MASTER. */
+    const navegacao = performance && performance.getEntriesByType
+      ? performance.getEntriesByType("navigation")[0]
+      : null;
+    if (navegacao && navegacao.type === "reload") return null;
+
     const bruto = localStorage.getItem(HG_EVOLUTION_CACHE_KEY);
     if (!bruto) return null;
-    const dados = JSON.parse(bruto);
+    const pacote = JSON.parse(bruto);
+    const dados = pacote && pacote.data ? pacote.data : pacote;
+    const salvoEm = pacote && pacote.savedAt ? Number(pacote.savedAt) : 0;
+
+    /* Em navegação normal, refresca automaticamente após 5 minutos. */
+    if (salvoEm && Date.now() - salvoEm > 5 * 60 * 1000) return null;
     if (!dados || !Array.isArray(dados.digimons) || !Array.isArray(dados.evolutions)) return null;
     return dados;
   } catch (erro) {
