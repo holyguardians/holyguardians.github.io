@@ -10370,9 +10370,13 @@ function pvpBattleTargetNumberForUnit(u){
 }
 function pvpBattleElementBadge(label,value,effect){
   const raw=String(value||"").trim();
-  return '<span class="pvp-target-asset-badge" title="'+pvpEscapeHtml(effect||"")+'"><small>'+label+'</small>'+(raw?pvpElementIconHtml(raw):'<b>-</b>')+'</span>';
+  const kind=String(label||"").toUpperCase()==="STRONG"?"strong":"weak";
+  const relation=raw
+    ? hgRelationTooltipHtml(raw,effect||"",kind,pvpElementIconHtml(raw))
+    : '<b>-</b>';
+  return '<span class="pvp-target-asset-badge pvp-target-asset-'+kind+'"><small>'+pvpEscapeHtml(label)+'</small>'+relation+'</span>';
 }
-function pvpBattleTypeBadge(type){return '<span class="pvp-target-asset-badge"><small>TYPE</small>'+pvpTypeIconHtml(type||"UNKNOWN")+'</span>'}
+function pvpBattleTypeBadge(type){return '<span class="pvp-target-asset-badge pvp-target-asset-type"><small>TYPE</small>'+pvpTypeIconHtml(type||"UNKNOWN")+'</span>'}
 function pvpBattleActionHintText(){
   const b=pvpMatchRoomState&&pvpMatchRoomState.battle,actor=pvpBattleCurrentUnit();if(!b||!actor)return "";
   if(b.pendingReplacement){const p=pvpMatchPlayer(b.pendingReplacement.role);return "DEPLOY // "+(p?p.nick:"PLAYER")+" ESCOLHE QUEM ENTRA"}
@@ -10475,6 +10479,12 @@ function pvpBattleUnitHtml(u,current,targeted){
     '<div class="pvp-battle-unit-hp"><i style="width:'+hp+'%"></i></div><div class="pvp-battle-unit-sp"><i style="width:'+sp+'%"></i></div><div class="pvp-battle-unit-status">'+pvpBattleStatusesHtml(u)+'</div>'+pvpBattleUnitTooltip(u)+'</div>';
 }
 
+function pvpBattleRenderOpponentLabel(){
+  const box=document.getElementById("pvpBattleOpponentLabel");
+  if(!box||!pvpMatchRoomState||!pvpMatchRoomState.players)return;
+  const me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me),player=pvpMatchRoomState.players[enemy];
+  box.innerHTML='<span>OPONENTE:</span><strong>'+pvpEscapeHtml(player&&player.nick?player.nick:"AGUARDANDO...")+'</strong>';
+}
 function pvpBattleRenderTarget(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me);
   let target=pvpBattleSelectedTarget?pvpBattleUnitById(b,pvpBattleSelectedTarget):null;
@@ -10591,7 +10601,7 @@ function pvpBattleRenderControls(){
 }
 function pvpBattleRender(){
   const room=pvpMatchRoomState;if(!room||!room.battle)return;pvpBattleNormalizeBattle(room.battle);
-  pvpBattleRenderTarget();pvpBattleRenderFields();pvpBattleRenderTurnQueue();pvpBattleRenderSkills();pvpBattleRenderLog();pvpBattleRenderControls();
+  pvpBattleRenderOpponentLabel();pvpBattleRenderTarget();pvpBattleRenderFields();pvpBattleRenderTurnQueue();pvpBattleRenderSkills();pvpBattleRenderLog();pvpBattleRenderControls();
   if(room.battle.pendingReplacement&&room.battle.pendingReplacement.role===pvpBattleMyRole())pvpBattleAbrirReposicaoObrigatoria();
   if(room.battle.winner){const winner=room.players[room.battle.winner],target=document.getElementById("pvpBattleTarget");if(target)target.innerHTML='<div style="text-align:center;padding:8px"><strong style="font-size:18px;color:#ffd65b">'+pvpEscapeHtml(winner.nick)+' WINS!</strong><div style="font-size:9px;color:#8db0cf;margin-top:4px">CHALLENGE ROOM ALPHA V4</div></div>';return}
   setTimeout(pvpBattlePrepareCurrentTurn,0);

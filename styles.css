@@ -15532,3 +15532,153 @@ body.pvp-modal-open{overflow:hidden}
 #pvpPagina .pvp-gauge-segment.full{border-color:rgba(255,255,255,.58)!important}
 #pvpPagina .pvp-gauge-segment.partial{border-color:rgba(109,220,255,.72)!important;box-shadow:0 0 8px rgba(76,207,255,.16),inset 0 0 5px rgba(0,0,0,.75)!important}
 #pvpPagina .pvp-gauge-segment.partial i{background:linear-gradient(90deg,#dff8ff,#75deff)!important}
+
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V4.2 — ENEMY READABILITY
+===================================================== */
+#pvpPagina .pvp-battle-opponent-label{
+  position:absolute;
+  z-index:25;
+  top:10px;
+  left:14px;
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  max-width:330px;
+  padding:7px 11px;
+  border:1px solid rgba(255,76,99,.48);
+  border-left:3px solid #ff4f68;
+  border-radius:6px;
+  background:linear-gradient(90deg,rgba(86,8,24,.92),rgba(28,5,14,.82));
+  box-shadow:0 0 18px rgba(255,54,86,.10);
+  pointer-events:none;
+}
+#pvpPagina .pvp-battle-opponent-label span{
+  color:#ff8798;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:1.15px;
+}
+#pvpPagina .pvp-battle-opponent-label strong{
+  min-width:0;
+  overflow:hidden;
+  color:#fff;
+  font-size:11px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-shadow:0 0 8px rgba(255,79,104,.28);
+}
+
+/* O card superior representa sempre o alvo inimigo. */
+#pvpPagina .pvp-battle-target{
+  border-color:rgba(255,76,99,.48)!important;
+  background:
+    radial-gradient(circle at 16% 35%,rgba(180,25,52,.18),transparent 42%),
+    linear-gradient(180deg,rgba(47,7,18,.96),rgba(15,4,12,.97))!important;
+  box-shadow:inset 0 0 26px rgba(142,17,42,.08),0 0 18px rgba(255,61,91,.05);
+}
+#pvpPagina .pvp-battle-target::before{
+  border-top-color:rgba(255,86,107,.62)!important;
+  border-left-color:rgba(255,86,107,.62)!important;
+}
+#pvpPagina .pvp-battle-target::after{
+  border-right-color:rgba(255,86,107,.62)!important;
+  border-bottom-color:rgba(255,86,107,.62)!important;
+}
+#pvpPagina .pvp-battle-target .pvp-target-copy small{color:#d98b99!important}
+#pvpPagina .pvp-battle-target .pvp-target-asset-badge{
+  border-color:rgba(255,88,111,.26)!important;
+  background:rgba(68,8,22,.66)!important;
+}
+#pvpPagina .pvp-battle-target .pvp-target-asset-badge>small{color:#d98b99!important}
+#pvpPagina .pvp-target-asset-strong{box-shadow:inset 0 0 12px rgba(79,236,154,.035)}
+#pvpPagina .pvp-target-asset-weak{box-shadow:inset 0 0 12px rgba(255,78,105,.06)}
+
+/* Strong / Weak do alvo: reaproveita o tooltip global completo e abre para baixo. */
+#pvpPagina .pvp-target-asset-badge .hg-relation{overflow:visible}
+#pvpPagina .pvp-target-asset-badge .hg-relation-tooltip{
+  top:calc(100% + 11px);
+  bottom:auto;
+  min-width:270px;
+  max-width:360px;
+  z-index:99999;
+}
+#pvpPagina .pvp-target-asset-badge .hg-relation-tooltip::after{
+  top:auto;
+  bottom:100%;
+  border-right:0;
+  border-bottom:0;
+  border-left:1px solid rgba(87,157,229,.42);
+  border-top:1px solid rgba(87,157,229,.42);
+  transform:translate(-50%,5px) rotate(45deg);
+}
+#pvpPagina .pvp-target-asset-badge .hg-relation-trigger{cursor:help}
+
+/* Campo: aliado continua ciano; inimigo passa a ter leitura vermelha imediata. */
+#pvpPagina .pvp-battle-field.enemy .pvp-battle-unit-frame{
+  border-color:rgba(255,70,96,.58)!important;
+  background:radial-gradient(circle at 50% 44%,rgba(152,20,43,.28),rgba(30,4,13,.93))!important;
+  box-shadow:inset 0 0 18px rgba(145,15,37,.12);
+}
+#pvpPagina .pvp-battle-field.enemy .pvp-battle-unit-frame>img{
+  background:radial-gradient(circle at 50% 45%,rgba(153,22,43,.24),rgba(29,4,13,.94))!important;
+}
+#pvpPagina .pvp-battle-field.enemy .pvp-battle-unit-pos{
+  color:#ff95a5!important;
+  border-color:rgba(255,77,102,.38)!important;
+  background:rgba(67,5,17,.90)!important;
+}
+#pvpPagina .pvp-battle-field.enemy .pvp-battle-unit-name{
+  color:#ffdbe1!important;
+  text-shadow:0 0 7px rgba(255,65,95,.18);
+}
+#pvpPagina .pvp-battle-field.enemy .pvp-battle-unit.current{
+  filter:drop-shadow(0 0 12px rgba(255,70,98,.72))!important;
+}
+#pvpPagina .pvp-battle-field.own .pvp-battle-unit-frame{
+  border-color:rgba(74,209,255,.40)!important;
+  background:radial-gradient(circle at 50% 44%,rgba(34,124,201,.24),rgba(3,16,35,.91))!important;
+}
+#pvpPagina .pvp-battle-field.own .pvp-battle-unit-frame>img{
+  background:radial-gradient(circle at 50% 45%,rgba(38,138,212,.18),rgba(2,14,32,.93))!important;
+}
+
+@media(max-width:820px){
+  #pvpPagina .pvp-battle-opponent-label{
+    position:relative;
+    top:auto;
+    left:auto;
+    width:max-content;
+    max-width:100%;
+    margin:0 0 8px;
+  }
+}
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V4.3 — GAUGE VISIBILITY
+   Filled progress uses the DSR-like yellow accent.
+===================================================== */
+#pvpPagina .pvp-gauge-segment{
+  background:#111b27!important;
+  border-color:rgba(255,211,74,.24)!important;
+}
+#pvpPagina .pvp-gauge-segment i{
+  background:linear-gradient(90deg,#f2ba22,#ffe66a)!important;
+  box-shadow:0 0 10px rgba(255,211,74,.72)!important;
+}
+#pvpPagina .pvp-gauge-segment.full{
+  border-color:rgba(255,218,78,.78)!important;
+  box-shadow:0 0 7px rgba(255,205,42,.20),inset 0 0 5px rgba(0,0,0,.72)!important;
+}
+#pvpPagina .pvp-gauge-segment.partial{
+  border-color:rgba(255,218,78,.78)!important;
+  box-shadow:0 0 9px rgba(255,205,42,.24),inset 0 0 5px rgba(0,0,0,.72)!important;
+}
+#pvpPagina .pvp-gauge-segment.partial i{
+  background:linear-gradient(90deg,#f2ba22,#fff08a)!important;
+}
+#pvpPagina .pvp-gauge-label b{
+  color:#ffd84a!important;
+  text-shadow:0 0 8px rgba(255,211,74,.28);
+}
