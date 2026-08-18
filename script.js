@@ -676,8 +676,17 @@ function builderLimparSlot(numeroSlot) {
 function builderEncontrarDigimon(nome) {
   const alvo = String(nome || "").trim().toLowerCase();
   if (!alvo) return null;
+
+  /*
+   * TEAM BUILDER = MEGA ONLY.
+   * Mantemos a DATABASE completa para Digidex/Comparacao, mas o Builder
+   * trabalha apenas com Megas, inclusive ao importar um time salvo.
+   */
   return database.find(function(d) {
-    return String(d.digimon || "").trim().toLowerCase() === alvo;
+    return (
+      normalizarStageDigidex(d && d.stage) === "MEGA"
+      && String(d.digimon || "").trim().toLowerCase() === alvo
+    );
   }) || null;
 }
 
@@ -3891,14 +3900,23 @@ function atualizarSugestoes(
       .filter(
         function(d) {
 
-          return String(
-            d.digimon ||
-            ""
-          )
-            .toLowerCase()
-            .includes(
-              busca
-            );
+          /*
+           * O Team Builder e exclusivo para Megas.
+           * Importante: isso filtra somente os DIGIMONS exibidos no Builder.
+           * As opcoes de elemento das Skills continuam intactas, inclusive
+           * nas Skills marcadas como CC, DOT ou DEF BREAK.
+           */
+          return (
+            normalizarStageDigidex(d && d.stage) === "MEGA"
+            && String(
+              d.digimon ||
+              ""
+            )
+              .toLowerCase()
+              .includes(
+                busca
+              )
+          );
 
         }
       )
@@ -3918,7 +3936,7 @@ function atualizarSugestoes(
 
 
     status.textContent =
-      "Nenhum Digimon encontrado.";
+      "Nenhum Mega encontrado.";
 
 
     return;

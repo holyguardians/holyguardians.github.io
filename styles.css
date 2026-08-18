@@ -16858,3 +16858,42 @@ body.hg-display-scaled footer {
   #calculadoraPagina .calc-burst-skill-options { grid-template-columns: 1fr; }
   #calculadoraPagina .calc-burst-skill-option .calc-skill-identity-copy strong { max-width: none; }
 }
+
+/* =====================================================
+   CALCULADORA — HEADER DA SKILL SEM SOBREPOSICAO
+   TEAM BUILDER — MEGA ONLY (JS) / ELEMENTOS PRESERVADOS
+===================================================== */
+#calculadoraPagina .calc-skill-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+#calculadoraPagina .calc-skill-top > .calc-skill-identity {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#calculadoraPagina .calc-skill-identity-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#calculadoraPagina .calc-skill-identity-copy strong {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#calculadoraPagina .calc-status {
+  position: relative;
+  z-index: 2;
+  max-width: 150px;
+  white-space: nowrap;
+}
