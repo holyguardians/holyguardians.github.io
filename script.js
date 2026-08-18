@@ -9847,6 +9847,12 @@ let pvpMatchFormationDraft = {};
 let pvpBattleSelectedTarget = null;
 let pvpBattleSubOut = null;
 let pvpBattleSubIn = null;
+let pvpBattleIntentByUnit = Object.create(null);
+let pvpBattleAutoTimer = null;
+let pvpBattleAutoBusy = false;
+const PVP_BATTLE_AUTO_TURN_MS = 2200;
+const PVP_BATTLE_GAUGE_MAX = 5;
+const PVP_BATTLE_GAUGE_GAIN_PER_GLOBAL_TURN = 0.25;
 
 function pvpMatchApiBase(){
   try {
@@ -10092,6 +10098,8 @@ function pvpMatchToggleReady(){pvpMatchSend("ready",{})}
 
 function pvpMatchSairSala(silencioso){
   if(pvpMatchSocket){try{pvpMatchSocket.close()}catch(erro){}pvpMatchSocket=null}
+  if(pvpBattleAutoTimer){clearInterval(pvpBattleAutoTimer);pvpBattleAutoTimer=null}
+  pvpBattleAutoBusy=false;pvpBattleIntentByUnit=Object.create(null);pvpBattleSelectedTarget=null;
   pvpMatchRoomState=null;pvpMatchRole=null;pvpMatchToken="";pvpMatchRoomId="";pvpMatchLocalMode=false;pvpMatchLocalRole="host";
   pvpMatchSetConnection("offline");
   if(!silencioso){pvpMatchTela("pvpMatchLobby");pvpMatchAtualizarTeamCheck()}
@@ -10254,6 +10262,8 @@ function pvpMatchLocalAction(type,payload){
     role=pvpMatchLocalRole;s.formations[role]=payload.positions||{};
     if(s.formations.host&&s.formations.guest){s.phase="battle";s.battle=null;pvpMatchLocalRole="host"}
     else pvpMatchLocalRole=pvpMatchOpponentRole(role);
+  }else if(type==="substitute"&&s.phase==="battle"){
+    if(s.battle)pvpBattleApplySubstitutionState(s.battle,role,String(payload.outId||""),String(payload.inId||""));
   }else if(type==="battle_update"){
     s.battle=payload.battle;s.phase=payload.battle&&payload.battle.winner?"finished":"battle";
   }
@@ -10262,26 +10272,59 @@ function pvpMatchLocalAction(type,payload){
 
 function pvpBattleCreateUnit(role,slot,position,active){
   const digi=pvpMatchDigi(slot.did),stats=pvpMatchFinalStats(slot),crit=pvpCalcularCriticosCalibrados(slot.build,digi)||{};
-  return {id:role+":"+slot.did,role:role,did:Number(slot.did),name:digi.name,icon:digi.icon,position:position||"B",active:!!active,alive:true,hp:stats.HP,maxHp:stats.HP,sp:stats.SP,maxSp:stats.SP,stats:stats,burst:0,status:{stun:0,dot:0,defBreak:0},tempBuffs:{},crit:crit};
+  return {
+    id:role+":"+slot.did,role:role,did:Number(slot.did),name:digi.name,icon:digi.icon,
+    position:position||"B",active:!!active,alive:true,
+    hp:stats.HP,maxHp:stats.HP,sp:stats.SP,maxSp:stats.SP,stats:stats,burst:0,
+    status:{cc:null,dot:null,defBreak:null},tempBuffs:{},crit:crit
+  };
+}
+
+function pvpBattleNormalizeStatus(status){
+  status=status&&typeof status==="object"?status:{};
+  if(!("cc" in status)){
+    const oldStun=Number(status.stun)||0;
+    status.cc=oldStun>0?{type:"Stun",turns:oldStun,icon:"",description:"Unable to act."}:null;
+  }
+  if(typeof status.dot==="number")status.dot=status.dot>0?{type:"DOT",turns:status.dot,icon:"",description:"Damage over time."}:null;
+  if(typeof status.defBreak==="number")status.defBreak=status.defBreak>0?{type:"DEF Break",turns:status.defBreak,icon:"",description:"Defense reduced."}:null;
+  delete status.stun;
+  return status;
+}
+
+function pvpBattleNormalizeBattle(b){
+  if(!b)return b;
+  b.gauge=b.gauge||{host:1,guest:1};
+  ["host","guest"].forEach(function(role){
+    let g=Number(b.gauge[role]);
+    if(!Number.isFinite(g))g=1;
+    if(g>5)g=g/100;
+    b.gauge[role]=Math.max(0,Math.min(PVP_BATTLE_GAUGE_MAX,g));
+    (b.units&&b.units[role]||[]).forEach(function(u){u.status=pvpBattleNormalizeStatus(u.status)});
+  });
+  b.subs=b.subs||{host:3,guest:3};
+  b.turnSerial=Number(b.turnSerial)||0;
+  b.nextActionAt=Number(b.nextActionAt)||Date.now()+PVP_BATTLE_AUTO_TURN_MS;
+  return b;
 }
 
 function pvpBattleEnsureState(){
   const room=pvpMatchRoomState;if(!room||room.phase!=="battle"&&room.phase!=="finished")return;
-  if(room.battle)return;
-  // No modo online somente o host cria o estado inicial; o guest recebe pelo socket.
+  if(room.battle){pvpBattleNormalizeBattle(room.battle);pvpBattleEnsureAutoLoop();return}
   if(!pvpMatchLocalMode&&pvpMatchRole!=="host")return;
-  const battle={round:1,gauge:{host:100,guest:100},subs:{host:3,guest:3},units:{host:[],guest:[]},turnOrder:[],turnIndex:0,log:[],winner:null};
+  const battle={round:1,gauge:{host:1,guest:1},subs:{host:3,guest:3},units:{host:[],guest:[]},turnOrder:[],turnIndex:0,turnSerial:0,nextActionAt:Date.now()+PVP_BATTLE_AUTO_TURN_MS,log:[],winner:null};
   ["host","guest"].forEach(function(role){
-    const survivors=pvpMatchSurvivors(role);const positions=room.formations[role]||{};const survivorSet=new Set(survivors.map(Number));
+    const survivors=pvpMatchSurvivors(role),positions=room.formations[role]||{},survivorSet=new Set(survivors.map(Number));
     pvpMatchSlotsDoTeam(room.players[role].team).forEach(function(slot){
-      const did=Number(slot.did);const active=survivorSet.has(did);const pos=active?(positions[did]||"B"):"B";
+      const did=Number(slot.did),active=survivorSet.has(did),pos=active?(positions[did]||"B"):"B";
       const banned=Number(room.bans[pvpMatchOpponentRole(role)])===did;
       if(!banned)battle.units[role].push(pvpBattleCreateUnit(role,slot,pos,active));
     });
   });
   pvpBattleRebuildOrder(battle,true);
-  battle.log.push({kind:"system",text:"Battle started · "+room.players.host.nick+" VS "+room.players.guest.nick});
+  battle.log.push({kind:"system",text:"[SYSTEM] Battle started · "+room.players.host.nick+" VS "+room.players.guest.nick+" · AUTO FLOW"});
   room.battle=battle;
+  pvpBattleEnsureAutoLoop();
   if(!pvpMatchLocalMode)pvpMatchSend("battle_update",{battle:battle});
 }
 
@@ -10296,6 +10339,31 @@ function pvpBattleCurrentUnit(){const b=pvpMatchRoomState&&pvpMatchRoomState.bat
 function pvpBattleMyRole(){return pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole}
 function pvpBattleCanAct(){const u=pvpBattleCurrentUnit();return !!u&&(pvpMatchLocalMode||u.role===pvpMatchRole)}
 
+function pvpBattleCcType(raw){return String(raw||"").split(",")[0].trim()||"CC"}
+function pvpBattleStatusTurns(v){return v&&typeof v==="object"?Math.max(0,Number(v.turns)||0):Math.max(0,Number(v)||0)}
+function pvpBattleEffectSummary(raw,fallback){
+  const lines=String(raw||"").split(/\r?\n/).map(function(x){return x.trim()}).filter(Boolean);
+  const clean=lines.filter(function(line){return !/Lv\d+/i.test(line)&&!/Higher activation rate/i.test(line)}).slice(0,3);
+  return clean.join(" ")||fallback||"Status effect.";
+}
+function pvpBattleStatusSlug(type){
+  const t=String(type||"").toLowerCase();
+  if(t.includes("charm"))return "charm";
+  if(t.includes("confusion"))return "confusion";
+  if(t.includes("freeze"))return "freeze";
+  if(t.includes("stun")||t.includes("paral"))return "stun";
+  if(t.includes("seal")||t.includes("pressure")||t.includes("vacuum")||t.includes("isolation")||t.includes("panic")||t.includes("sleep")||t.includes("metall")||t.includes("submer")||t.includes("sniper"))return "stun";
+  if(t.includes("def"))return "defbreak";
+  if(t.includes("dot")||t.includes("bleed")||t.includes("curse")||t.includes("lacer")||t.includes("suffoc"))return "dot";
+  return "cc";
+}
+function pvpBattleCcChaosKind(u){
+  const cc=u&&u.status&&u.status.cc;if(!cc||pvpBattleStatusTurns(cc)<=0)return "";
+  const slug=pvpBattleStatusSlug(cc.type);return slug==="charm"?"charm":slug==="confusion"?"confusion":"";
+}
+function pvpBattleCcBlocksCommands(u){return !!(u&&u.status&&u.status.cc&&pvpBattleStatusTurns(u.status.cc)>0)}
+function pvpBattleCcSkipsTurn(u){return pvpBattleCcBlocksCommands(u)&&!pvpBattleCcChaosKind(u)}
+
 function pvpBattleTargetValid(actor,target,skill){
   if(!actor||!target||!skill||!target.alive||!target.active||target.role===actor.role)return false;
   const scope=String(skill.scope||"").toUpperCase();
@@ -10306,223 +10374,299 @@ function pvpBattleTargetValid(actor,target,skill){
   }
   return true;
 }
-
+function pvpBattleTargetValidChaos(actor,target,skill,ally){
+  if(!actor||!target||!skill||!target.alive||!target.active)return false;
+  if(ally&&target.role!==actor.role)return false;
+  if(!ally&&target.role===actor.role)return false;
+  if(target.id===actor.id&&ally)return false;
+  return true;
+}
 function pvpBattleSelectTarget(id){
   const battle=pvpMatchRoomState&&pvpMatchRoomState.battle;if(!battle)return;
-  const u=pvpBattleUnitById(battle,id);if(!u||!u.alive||!u.active)return;
+  const u=pvpBattleUnitById(battle,id),me=pvpBattleMyRole();
+  if(!u||!u.alive||!u.active||u.role===me)return;
   pvpBattleSelectedTarget=id;pvpBattleRender();
 }
 
+function pvpBattleDotName(skill,element){
+  const raw=String(skill&&skill.attributeEffects||"");
+  const wanted=String(element||"").trim().toLowerCase();
+  for(const part of raw.split(";")){
+    const m=part.match(/^\s*([^→:]+)\s*(?:→|:)\s*(.+?)\s*$/);
+    if(m&&String(m[1]).trim().toLowerCase()===wanted)return String(m[2]).trim();
+  }
+  return "DOT";
+}
+function pvpBattleStatusItems(u){
+  const s=u&&u.status||{},out=[];
+  if(s.cc&&pvpBattleStatusTurns(s.cc)>0)out.push(s.cc);
+  if(s.dot&&pvpBattleStatusTurns(s.dot)>0)out.push(s.dot);
+  if(s.defBreak&&pvpBattleStatusTurns(s.defBreak)>0)out.push(s.defBreak);
+  return out;
+}
 function pvpBattleStatusesHtml(u){
-  const out=[];if(u.status.stun>0)out.push('<span>STUN '+u.status.stun+'</span>');if(u.status.dot>0)out.push('<span>DOT '+u.status.dot+'</span>');if(u.status.defBreak>0)out.push('<span>DEF↓ '+u.status.defBreak+'</span>');return out.join("");
+  return pvpBattleStatusItems(u).map(function(st){
+    const slug=pvpBattleStatusSlug(st.type),turns=pvpBattleStatusTurns(st),tip=pvpEscapeHtml((st.type||"STATUS")+" · "+turns+" turno"+(turns===1?"":"s")+" restante"+(turns===1?"":"s")+". "+(st.description||""));
+    return '<span class="pvp-status-icon status-'+slug+'" tabindex="0">'+(st.icon?'<img src="'+st.icon+'" alt="">':'<span class="pvp-status-fallback">'+(slug==="freeze"?'❄':slug==="charm"?'♥':slug==="confusion"?'?':slug==="stun"?'⚡':slug==="defbreak"?'↓':'✦')+'</span>')+'<b>'+turns+'</b><span class="pvp-status-tooltip">'+tip+'</span></span>';
+  }).join("");
+}
+function pvpBattleUnitStatusClasses(u){return pvpBattleStatusItems(u).map(function(st){return "has-"+pvpBattleStatusSlug(st.type)}).join(" ")}
+function pvpBattleUnitTooltip(u){
+  const d=pvpMatchDigi(u.did);if(!d)return "";
+  const statuses=pvpBattleStatusItems(u).map(function(st){return '<span>'+pvpEscapeHtml(st.type)+' '+pvpBattleStatusTurns(st)+'</span>'}).join("")||'<span>SEM STATUS</span>';
+  return '<div class="pvp-unit-tooltip"><div class="pvp-unit-tooltip-head"><img src="'+u.icon+'" alt=""><div><strong>'+pvpEscapeHtml(u.name)+'</strong><small>'+pvpEscapeHtml(String(d.attribute||"-").toUpperCase())+' · '+u.position+'</small></div></div><div class="pvp-unit-tooltip-meta"><span>STRONG <b>'+pvpEscapeHtml(String(d.strong||"-"))+'</b></span><span>WEAK <b>'+pvpEscapeHtml(String(d.weak||"-"))+'</b></span><span>HP <b>'+Math.round(u.hp).toLocaleString("pt-BR")+'</b></span><span>SP <b>'+Math.round(u.sp).toLocaleString("pt-BR")+'</b></span></div><div class="pvp-unit-tooltip-statuses">'+statuses+'</div></div>';
 }
 function pvpBattleUnitHtml(u,current,targeted){
-  const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100));const sp=Math.max(0,Math.min(100,u.sp/u.maxSp*100));
-  return '<div class="pvp-battle-unit '+(u.position==="F"?'front':'back')+(current?' current':'')+(targeted?' targeted':'')+'" onclick="pvpBattleSelectTarget(\''+u.id+'\')"><div class="pvp-battle-unit-frame"><span class="pvp-battle-unit-pos">'+u.position+'</span><img src="'+u.icon+'" alt=""></div><strong class="pvp-battle-unit-name">'+pvpEscapeHtml(u.name)+'</strong><div class="pvp-battle-unit-hp"><i style="width:'+hp+'%"></i></div><div class="pvp-battle-unit-sp"><i style="width:'+sp+'%"></i></div><div class="pvp-battle-unit-status">'+pvpBattleStatusesHtml(u)+'</div></div>';
+  const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100)),sp=Math.max(0,Math.min(100,u.sp/u.maxSp*100));
+  return '<div class="pvp-battle-unit '+(u.position==="F"?'front':'back')+' '+pvpBattleUnitStatusClasses(u)+(current?' current':'')+(targeted?' targeted':'')+'" onclick="pvpBattleSelectTarget(\''+u.id+'\')"><div class="pvp-battle-unit-frame"><span class="pvp-battle-unit-pos">'+u.position+'</span><img src="'+u.icon+'" alt=""></div><strong class="pvp-battle-unit-name">'+pvpEscapeHtml(u.name)+'</strong><div class="pvp-battle-unit-hp"><i style="width:'+hp+'%"></i></div><div class="pvp-battle-unit-sp"><i style="width:'+sp+'%"></i></div><div class="pvp-battle-unit-status">'+pvpBattleStatusesHtml(u)+'</div>'+pvpBattleUnitTooltip(u)+'</div>';
 }
 
 function pvpBattleRenderTarget(){
-  const b=pvpMatchRoomState.battle;const actor=pvpBattleCurrentUnit();
+  const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me);
   let target=pvpBattleSelectedTarget?pvpBattleUnitById(b,pvpBattleSelectedTarget):null;
-  if(!target||!target.active||!target.alive||target.role===(actor&&actor.role))target=pvpBattleActiveUnits(b).find(function(u){return actor&&u.role!==actor.role})||null;
+  if(!target||!target.active||!target.alive||target.role!==enemy){
+    target=b.units[enemy].filter(function(u){return u.active&&u.alive}).sort(function(a,b){return (a.position==="F"?-1:1)-(b.position==="F"?-1:1)}).shift()||null;
+  }
   if(target)pvpBattleSelectedTarget=target.id;
   const box=document.getElementById("pvpBattleTarget");if(!box)return;
   if(!target){box.innerHTML="";return}
-  const pct=Math.max(0,target.hp/target.maxHp*100);
-  box.innerHTML='<div class="pvp-target-top"><img src="'+target.icon+'" alt=""><div class="pvp-target-copy"><strong>'+pvpEscapeHtml(target.name)+'</strong><small>'+target.position+' · '+pvpEscapeHtml(pvpMatchRoomState.players[target.role].nick)+'</small></div><span class="pvp-target-hp-value">'+Math.max(0,Math.round(target.hp)).toLocaleString("pt-BR")+' / '+Math.round(target.maxHp).toLocaleString("pt-BR")+'</span></div><div class="pvp-target-hpbar"><i style="width:'+pct+'%"></i></div><div class="pvp-target-debuffs">'+pvpBattleStatusesHtml(target).replaceAll('pvp-battle-unit-status','')+'</div>';
+  const pct=Math.max(0,target.hp/target.maxHp*100),d=pvpMatchDigi(target.did)||{};
+  const type=String(d.attribute||"UNKNOWN").toUpperCase(),strong=String(d.strong||"-").toUpperCase(),weak=String(d.weak||"-").toUpperCase();
+  box.innerHTML='<div class="pvp-target-top"><img src="'+target.icon+'" alt=""><div class="pvp-target-copy"><strong>'+pvpEscapeHtml(target.name)+'</strong><small>'+target.position+' · '+pvpEscapeHtml(pvpMatchRoomState.players[target.role].nick)+'</small></div><span class="pvp-target-hp-value">'+Math.max(0,Math.round(target.hp)).toLocaleString("pt-BR")+' / '+Math.round(target.maxHp).toLocaleString("pt-BR")+'</span></div><div class="pvp-target-meta"><span>TYPE <b>'+pvpEscapeHtml(type)+'</b></span><span title="'+pvpEscapeHtml(d.strongEffect||"")+'">STRONG <b>'+pvpEscapeHtml(strong)+'</b></span><span title="'+pvpEscapeHtml(d.weakEffect||"")+'">WEAK <b>'+pvpEscapeHtml(weak)+'</b></span></div><div class="pvp-target-hpbar"><i style="width:'+pct+'%"></i></div><div class="pvp-target-debuffs">'+pvpBattleStatusesHtml(target)+'</div>';
 }
 
+function pvpBattleFieldRows(units,current){
+  function row(pos){return '<div class="pvp-battle-row '+(pos==="F"?'front-row':'back-row')+'">'+units.filter(function(u){return u.position===pos}).map(function(u){return pvpBattleUnitHtml(u,current&&u.id===current.id,pvpBattleSelectedTarget===u.id)}).join("")+'</div>'}
+  return row("F")+row("B");
+}
 function pvpBattleRenderFields(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me),current=pvpBattleCurrentUnit();
   const own=document.getElementById("pvpBattleOwnField"),opp=document.getElementById("pvpBattleEnemyField");
-  if(own)own.innerHTML=b.units[me].filter(function(u){return u.active&&u.alive}).map(function(u){return pvpBattleUnitHtml(u,current&&u.id===current.id,pvpBattleSelectedTarget===u.id)}).join("");
-  if(opp)opp.innerHTML=b.units[enemy].filter(function(u){return u.active&&u.alive}).map(function(u){return pvpBattleUnitHtml(u,current&&u.id===current.id,pvpBattleSelectedTarget===u.id)}).join("");
+  if(own)own.innerHTML=pvpBattleFieldRows(b.units[me].filter(function(u){return u.active&&u.alive}),current);
+  if(opp)opp.innerHTML=pvpBattleFieldRows(b.units[enemy].filter(function(u){return u.active&&u.alive}),current);
 }
 
 function pvpBattleQueuePreview(b,count){
   const active=b.turnOrder.filter(function(id){const u=pvpBattleUnitById(b,id);return u&&u.alive&&u.active});if(!active.length)return[];
-  const out=[];for(let i=0;i<count;i++){out.push(active[(b.turnIndex+i)%active.length])}return out;
+  const out=[];for(let i=0;i<count;i++)out.push(active[(b.turnIndex+i)%active.length]);return out;
 }
 function pvpBattleRenderTurnQueue(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),box=document.getElementById("pvpTurnQueue");if(!box)return;
-  box.innerHTML=pvpBattleQueuePreview(b,6).map(function(id){const u=pvpBattleUnitById(b,id);return '<div class="pvp-turn-item '+(u.role===me?'own':'enemy')+'"><img src="'+u.icon+'" alt=""><span>'+pvpEscapeHtml(u.name)+'</span></div>'}).join("");
+  box.innerHTML=pvpBattleQueuePreview(b,6).map(function(id,index){const u=pvpBattleUnitById(b,id);return '<div class="pvp-turn-item '+(u.role===me?'own':'enemy')+(index===0?' current-turn':'')+'"><img src="'+u.icon+'" alt=""><span>'+pvpEscapeHtml(u.name)+'</span></div>'}).join("");
 }
 
 function pvpBattleSkillKeys(index){return ["QWER","ASDF","ZXCV"][index]||"QWER"}
+function pvpBattleSkillTooltip(skill,slot,isBurst){
+  const element=pvpBattleElementForSkill(slot,skill),parts=[];
+  if(Number.isFinite(Number(skill.baseTotal)))parts.push((skill.hits||1)+' HIT · '+(skill.baseTotal||0)+'% BASE'+(isBurst?' · BURST ×3':''));
+  parts.push(String(skill.scope||"-").toUpperCase());
+  if(Number(skill.costSp)||0)parts.push('SP '+Number(skill.costSp).toLocaleString("pt-BR"));
+  const effects=[];
+  if(skill.cc==="YES")effects.push(pvpBattleCcType(skill.ccType));
+  if(skill.dot==="YES")effects.push('DOT');
+  if(skill.defBreak==="YES")effects.push('DEF BREAK');
+  const desc=pvpBattleEffectSummary(skill.effectRaw,skill.description||"");
+  return '<span class="pvp-skill-tooltip"><strong>'+pvpEscapeHtml((isBurst?'BURST · ':'')+skill.name)+'</strong><small>'+pvpEscapeHtml(element)+' · '+pvpEscapeHtml(parts.join(' · '))+'</small>'+(effects.length?'<em>'+pvpEscapeHtml(effects.join(' · '))+'</em>':'')+'<p>'+pvpEscapeHtml(desc||skill.description||'')+'</p></span>';
+}
+function pvpBattleIntentForUnit(u,skills){
+  let intent=pvpBattleIntentByUnit[u.id];
+  if(!intent||!skills.some(function(s){return Number(s.slot)===Number(intent.slot)})){
+    intent={slot:skills[0]?Number(skills[0].slot):1,burst:false};pvpBattleIntentByUnit[u.id]=intent;
+  }
+  return intent;
+}
+function pvpBattleSelectSkill(did,slotNo,isBurst){
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole();if(!b)return;
+  const u=b.units[me].find(function(x){return Number(x.did)===Number(did)&&x.active&&x.alive});if(!u||pvpBattleCcBlocksCommands(u))return;
+  const d=pvpMatchDigi(u.did),slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,u.did),skill=(d.skills||[]).find(function(x){return Number(x.slot)===Number(slotNo)});if(!skill)return;
+  if(isBurst&&u.burst<5)return;
+  if(u.sp<(Number(skill.costSp)||0))return;
+  pvpBattleIntentByUnit[u.id]={slot:Number(slotNo),burst:!!isBurst};pvpBattleRenderSkills();
+}
 function pvpBattleRenderSkills(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit(),box=document.getElementById("pvpBattleSkills");if(!box)return;
   const active=b.units[me].filter(function(u){return u.active&&u.alive});
   box.innerHTML=active.map(function(u,index){
-    const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,u.did),d=pvpMatchDigi(u.did),build=slot&&slot.build,keys=pvpBattleSkillKeys(index);
-    const skills=(d.skills||[]).slice(0,3);const burstSkill=skills.find(function(s){return Number(s.slot)===Number(build.burstSkill)})||skills[0];
-    const canActor=actor&&actor.id===u.id&&pvpBattleCanAct()&&u.status.stun<=0;
-    const buttons=skills.map(function(skill,i){const cost=Number(skill.costSp)||0;const disabled=!canActor||u.sp<cost;return '<button type="button" class="pvp-hud-skill" '+(disabled?'disabled':'')+' title="'+pvpEscapeHtml(skill.name+' · '+skill.scope)+'" onclick="pvpBattleUseSkill('+u.did+','+skill.slot+',false)"><img src="'+(skill.icon||'')+'" alt=""><span class="pvp-hud-skill-key">'+keys[i]+'</span></button>'}).join("");
-    const burstCost=burstSkill?Number(burstSkill.costSp)||0:0;const burstReady=u.burst>=5;const burstDisabled=!canActor||!burstReady||u.sp<burstCost;
-    const burst='<button type="button" class="pvp-hud-skill burst '+(burstReady?'ready':'')+'" '+(burstDisabled?'disabled':'')+' title="BURST · '+pvpEscapeHtml(burstSkill?burstSkill.name:'')+'" onclick="pvpBattleUseSkill('+u.did+','+(burstSkill?burstSkill.slot:1)+',true)">'+(burstSkill&&burstSkill.icon?'<img src="'+burstSkill.icon+'" alt="">':'')+'<span class="pvp-hud-skill-key">'+keys[3]+'</span><span class="pvp-burst-charge">'+(burstReady?'READY':u.burst+'/5')+'</span></button>';
-    return '<article class="pvp-hud-digi '+(actor&&actor.id===u.id?'current':'')+'"><div class="pvp-hud-digi-top"><img src="'+u.icon+'" alt=""><div><strong>'+pvpEscapeHtml(u.name)+'</strong><small>HP '+Math.max(0,Math.round(u.hp)).toLocaleString("pt-BR")+' · SP '+Math.max(0,Math.round(u.sp)).toLocaleString("pt-BR")+'</small></div></div><div class="pvp-hud-skill-row">'+buttons+burst+'</div></article>';
+    const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,u.did),d=pvpMatchDigi(u.did),build=slot&&slot.build,keys=pvpBattleSkillKeys(index),skills=(d.skills||[]).slice(0,3);
+    const burstSkill=skills.find(function(s){return Number(s.slot)===Number(build.burstSkill)})||skills[0],intent=pvpBattleIntentForUnit(u,skills),blocked=pvpBattleCcBlocksCommands(u);
+    const buttons=skills.map(function(skill,i){
+      const cost=Number(skill.costSp)||0,locked=blocked||u.sp<cost,selected=!intent.burst&&Number(intent.slot)===Number(skill.slot);
+      return '<button type="button" class="pvp-hud-skill '+(selected?'selected ':'')+(locked?'locked':'')+'" aria-disabled="'+(locked?'true':'false')+'" onclick="pvpBattleSelectSkill('+u.did+','+skill.slot+',false)"><img src="'+(skill.icon||'')+'" alt=""><span class="pvp-hud-skill-key">'+keys[i]+'</span>'+pvpBattleSkillTooltip(skill,slot,false)+'</button>';
+    }).join("");
+    const burstCost=burstSkill?Number(burstSkill.costSp)||0:0,burstReady=u.burst>=5,burstLocked=blocked||!burstReady||u.sp<burstCost,burstSelected=!!intent.burst&&Number(intent.slot)===Number(burstSkill&&burstSkill.slot);
+    const burst='<button type="button" class="pvp-hud-skill burst '+(burstReady?'ready ':'')+(burstSelected?'selected ':'')+(burstLocked?'locked':'')+'" aria-disabled="'+(burstLocked?'true':'false')+'" onclick="pvpBattleSelectSkill('+u.did+','+(burstSkill?burstSkill.slot:1)+',true)">'+(burstSkill&&burstSkill.icon?'<img src="'+burstSkill.icon+'" alt="">':'')+'<span class="pvp-hud-skill-key">'+keys[3]+'</span><span class="pvp-burst-charge">'+(burstReady?'READY':u.burst+'/5')+'</span>'+(burstSkill?pvpBattleSkillTooltip(burstSkill,slot,true):'')+'</button>';
+    return '<article class="pvp-hud-digi '+(actor&&actor.id===u.id?'current ':'')+(blocked?'status-locked':'')+'"><div class="pvp-hud-digi-top"><img src="'+u.icon+'" alt=""><div><strong>'+pvpEscapeHtml(u.name)+'</strong><small>HP '+Math.max(0,Math.round(u.hp)).toLocaleString("pt-BR")+' · SP '+Math.max(0,Math.round(u.sp)).toLocaleString("pt-BR")+'</small></div><div class="pvp-hud-mini-status">'+pvpBattleStatusesHtml(u)+'</div></div><div class="pvp-hud-skill-row">'+buttons+burst+'</div></article>';
   }).join("");
 }
 
 function pvpBattleRenderLog(){
   const b=pvpMatchRoomState.battle,box=document.getElementById("pvpBattleLogLines");if(!box)return;
   box.innerHTML=(b.log||[]).slice(-80).map(function(line){return '<div class="pvp-log-line">'+pvpEscapeHtml(line.text||"").replace(/\[(CRITICAL)\]/g,'<span class="crit">[$1]</span>').replace(/\[(SYSTEM)\]/g,'<span class="system">[$1]</span>')+'</div>'}).join("");
-  box.scrollTop=box.scrollHeight;
-  const round=document.getElementById("pvpBattleRoundLabel");if(round)round.textContent="ROUND "+(b.round||1);
+  box.scrollTop=box.scrollHeight;const round=document.getElementById("pvpBattleRoundLabel");if(round)round.textContent="ROUND "+(b.round||1);
 }
-
+function pvpBattleRenderGauge(gauge){
+  const box=document.getElementById("pvpBattleGaugeSegments"),txt=document.getElementById("pvpBattleGaugeText");if(!box)return;
+  const g=Math.max(0,Math.min(PVP_BATTLE_GAUGE_MAX,Number(gauge)||0));
+  box.innerHTML=Array.from({length:5},function(_,i){const fill=Math.max(0,Math.min(1,g-i));return '<span class="pvp-gauge-segment"><i style="width:'+(fill*100)+'%"></i></span>'}).join("");
+  if(txt)txt.textContent=g.toFixed(2).replace('.',',')+' / 5';
+}
 function pvpBattleRenderControls(){
-  const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit(),can=pvpBattleCanAct();
-  const gauge=Math.max(0,Number(b.gauge[me]||0));
-  const fill=document.getElementById("pvpBattleGaugeFill"),txt=document.getElementById("pvpBattleGaugeText");if(fill)fill.style.width=Math.min(100,gauge%100===0&&gauge>0?100:gauge%100)+"%";if(txt)txt.textContent=Math.round(gauge)+"%";
+  const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),gauge=Math.max(0,Number(b.gauge[me]||0));
+  pvpBattleRenderGauge(gauge);
   const count=document.getElementById("pvpSubstitutionCount");if(count)count.textContent=b.subs[me]+"/3";
-  const sub=document.getElementById("pvpSubstitutionBtn");if(sub)sub.disabled=!can||!actor||actor.role!==me||b.subs[me]<=0||gauge<100;
-  const pass=document.getElementById("pvpPassTurnBtn");if(pass){pass.disabled=!can;pass.textContent=actor&&actor.status.stun>0?"STUNNED · PASS":"PASS TURN"}
-  const hud=document.getElementById("pvpBattleHud");if(hud)hud.classList.toggle("waiting-turn",!can);
+  const sub=document.getElementById("pvpSubstitutionBtn");if(sub)sub.disabled=b.subs[me]<=0||gauge<1;
+  const hud=document.getElementById("pvpBattleHud");if(hud)hud.classList.remove("waiting-turn");
 }
-
 function pvpBattleRender(){
-  const room=pvpMatchRoomState;if(!room||!room.battle)return;
+  const room=pvpMatchRoomState;if(!room||!room.battle)return;pvpBattleNormalizeBattle(room.battle);pvpBattleEnsureAutoLoop();
   pvpBattleRenderTarget();pvpBattleRenderFields();pvpBattleRenderTurnQueue();pvpBattleRenderSkills();pvpBattleRenderLog();pvpBattleRenderControls();
-  if(room.battle.winner){
-    const winner=room.players[room.battle.winner];
-    const target=document.getElementById("pvpBattleTarget");if(target)target.innerHTML='<div style="text-align:center;padding:8px"><strong style="font-size:18px;color:#ffd65b">'+pvpEscapeHtml(winner.nick)+' WINS!</strong><div style="font-size:9px;color:#8db0cf;margin-top:4px">CHALLENGE ROOM ALPHA</div></div>';
-  }
+  if(room.battle.winner){const winner=room.players[room.battle.winner],target=document.getElementById("pvpBattleTarget");if(target)target.innerHTML='<div style="text-align:center;padding:8px"><strong style="font-size:18px;color:#ffd65b">'+pvpEscapeHtml(winner.nick)+' WINS!</strong><div style="font-size:9px;color:#8db0cf;margin-top:4px">CHALLENGE ROOM ALPHA</div></div>'}
 }
 
 function pvpBattleSelectedTargetForSkill(actor,skill){
   const b=pvpMatchRoomState.battle;let target=pvpBattleSelectedTarget?pvpBattleUnitById(b,pvpBattleSelectedTarget):null;
-  if(!pvpBattleTargetValid(actor,target,skill))target=b.units[pvpMatchOpponentRole(actor.role)].find(function(u){return pvpBattleTargetValid(actor,u,skill)})||null;
+  if(!pvpBattleTargetValid(actor,target,skill)){
+    const candidates=b.units[pvpMatchOpponentRole(actor.role)].filter(function(u){return pvpBattleTargetValid(actor,u,skill)}).sort(function(a,b){return (a.position==="F"?-1:1)-(b.position==="F"?-1:1)});
+    target=candidates[0]||null;
+  }
   return target;
 }
 function pvpBattleRandom(min,max){return min+Math.random()*(max-min)}
 function pvpBattleElementForSkill(slot,skill){return slot&&slot.build&&slot.build.skillElements&&slot.build.skillElements["F"+skill.slot]||skill.attribute||"PHYSICAL"}
-
 function pvpBattleComputeDamage(actor,target,slot,skill,isBurst){
-  const element=pvpBattleElementForSkill(slot,skill);const boost=Number(slot.build.attrBoost&&slot.build.attrBoost[element]||0);const dmgInfo=pvpSkillDamage(skill,element,boost,isBurst?3:1);
+  const element=pvpBattleElementForSkill(slot,skill),boost=Number(slot.build.attrBoost&&slot.build.attrBoost[element]||0),dmgInfo=pvpSkillDamage(skill,element,boost,isBurst?3:1);
   if(!dmgInfo.available)return {damage:0,crit:false,element:element};
-  const useStr=String(element).toUpperCase()==="PHYSICAL";let offense=useStr?actor.stats.STR:actor.stats.INT;let defense=useStr?target.stats.DEF:target.stats.RES;
-  Object.keys(actor.tempBuffs||{}).forEach(function(k){const b=actor.tempBuffs[k];if(b&&b.turns>0&&k===(useStr?"STR":"INT"))offense*=1+Number(b.pct||0)/100});
-  if(target.status.defBreak>0)defense*=.80;
-  Object.keys(target.tempBuffs||{}).forEach(function(k){const b=target.tempBuffs[k];if(b&&b.turns>0&&k===(useStr?"DEF":"RES"))defense*=1+Number(b.pct||0)/100});
-  const raw=offense*(dmgInfo.total/100);const mitigation=offense/(offense+Math.max(1,defense)*.72);let damage=raw*mitigation;
+  const useStr=String(element).toUpperCase()==="PHYSICAL";let offense=useStr?actor.stats.STR:actor.stats.INT,defense=useStr?target.stats.DEF:target.stats.RES;
+  Object.keys(actor.tempBuffs||{}).forEach(function(k){const bf=actor.tempBuffs[k];if(bf&&bf.turns>0&&k===(useStr?"STR":"INT"))offense*=1+Number(bf.pct||0)/100});
+  if(pvpBattleStatusTurns(target.status.defBreak)>0)defense*=.80;
+  Object.keys(target.tempBuffs||{}).forEach(function(k){const bf=target.tempBuffs[k];if(bf&&bf.turns>0&&k===(useStr?"DEF":"RES"))defense*=1+Number(bf.pct||0)/100});
+  const raw=offense*(dmgInfo.total/100),mitigation=offense/(offense+Math.max(1,defense)*.72);let damage=raw*mitigation;
   const rangeMin=Number(actor.crit.damageRangeMin||95),rangeMax=Number(actor.crit.damageRangeMax||105);damage*=pvpBattleRandom(rangeMin,rangeMax)/100;
-  const critChance=Math.max(3,Math.min(70,Number(actor.crit.critRate||0)-Number(target.crit.critDown||0)));const crit=Math.random()*100<critChance;
+  const critChance=Math.max(3,Math.min(70,Number(actor.crit.critRate||0)-Number(target.crit.critDown||0))),crit=Math.random()*100<critChance;
   if(crit)damage*=Math.max(1,Number(actor.crit.critDmg||175)/100);
-  const targetSlot=pvpMatchSlotByDid(pvpMatchRoomState.players[target.role].team,target.did);const reduce=Number(targetSlot&&targetSlot.build&&targetSlot.build.attrReduce&&targetSlot.build.attrReduce[element]||0);damage*=Math.max(.15,1-reduce/100);
+  const targetSlot=pvpMatchSlotByDid(pvpMatchRoomState.players[target.role].team,target.did),reduce=Number(targetSlot&&targetSlot.build&&targetSlot.build.attrReduce&&targetSlot.build.attrReduce[element]||0);damage*=Math.max(.15,1-reduce/100);
   let ratio=damage/target.maxHp;if(ratio>.45)ratio=.45+(ratio-.45)*.35;ratio=Math.min(.72,ratio);damage=Math.max(1,Math.round(target.maxHp*ratio));
   return {damage:damage,crit:crit,element:element};
 }
-
-function pvpBattleApplyEffects(actor,target,skill){
+function pvpBattleApplyEffects(actor,target,skill,element){
   if(!target)return;
-  const resist=Math.max(0,Math.min(80,(Number(target.crit.abnormalResistMin||0)+Number(target.crit.abnormalResistMax||0))/2));
-  const baseChance=Number(skill.effectChance)||65;const chance=Math.max(5,baseChance*(1-resist/100));
-  if(skill.cc==="YES"&&Math.random()*100<chance)target.status.stun=Math.max(target.status.stun,1);
-  if(skill.dot==="YES"&&Math.random()*100<chance)target.status.dot=Math.max(target.status.dot,3);
-  if(skill.defBreak==="YES"&&Math.random()*100<chance)target.status.defBreak=Math.max(target.status.defBreak,3);
+  const resist=Math.max(0,Math.min(80,(Number(target.crit.abnormalResistMin||0)+Number(target.crit.abnormalResistMax||0))/2)),baseChance=Number(skill.effectChance)||65,chance=Math.max(5,baseChance*(1-resist/100));
+  if(skill.cc==="YES"&&Math.random()*100<chance){
+    const type=pvpBattleCcType(skill.ccType);target.status.cc={type:type,turns:2,icon:skill.icon||"",description:pvpBattleEffectSummary(skill.effectRaw,type+" active.")};
+  }
+  if(skill.dot==="YES"&&Math.random()*100<chance){const type=pvpBattleDotName(skill,element);target.status.dot={type:type,turns:3,icon:skill.icon||"",description:pvpBattleEffectSummary(skill.effectRaw,"Damage over time.")}}
+  if(skill.defBreak==="YES"&&Math.random()*100<chance)target.status.defBreak={type:"DEF Break",turns:3,icon:skill.icon||"",description:pvpBattleEffectSummary(skill.effectRaw,"Defense reduced.")};
 }
-
-function pvpBattleApplySelfEffect(actor,skill){
-  const text=String(skill.effectRaw||"");const m=text.match(/Increases\s+(STR|INT|DEF|RES|SPD)\s+by\s+(\d+(?:\.\d+)?)%/i);
-  if(m)actor.tempBuffs[m[1].toUpperCase()]={pct:Number(m[2]),turns:3};
-}
-
+function pvpBattleApplySelfEffect(actor,skill){const text=String(skill.effectRaw||""),m=text.match(/Increases\s+(STR|INT|DEF|RES|SPD)\s+by\s+(\d+(?:\.\d+)?)%/i);if(m)actor.tempBuffs[m[1].toUpperCase()]={pct:Number(m[2]),turns:3}}
 function pvpBattleLog(text){const b=pvpMatchRoomState.battle;b.log.push({text:text});if(b.log.length>120)b.log=b.log.slice(-120)}
 function pvpBattleImpact(damage,crit){const layer=document.getElementById("pvpBattleImpactLayer");if(!layer)return;const el=document.createElement("div");el.className="pvp-impact-number"+(crit?" crit":"");el.textContent=(crit?"CRITICAL ":"")+"-"+Math.round(damage).toLocaleString("pt-BR");layer.appendChild(el);setTimeout(function(){el.remove()},800)}
-
-function pvpBattleTickActorStart(actor){
-  if(actor.status.dot>0&&actor.alive){const dot=Math.max(1,Math.round(actor.maxHp*.04));actor.hp=Math.max(0,actor.hp-dot);pvpBattleLog(actor.name+" suffers "+dot.toLocaleString("pt-BR")+" DOT damage.");if(actor.hp<=0)pvpBattleHandleDeath(actor)}
-}
-function pvpBattleTickActorEnd(actor){
-  if(actor.status.dot>0)actor.status.dot--;
-  if(actor.status.defBreak>0)actor.status.defBreak--;
-  Object.keys(actor.tempBuffs||{}).forEach(function(k){if(actor.tempBuffs[k].turns>0)actor.tempBuffs[k].turns--});
-}
+function pvpBattleTickActorStart(actor){if(pvpBattleStatusTurns(actor.status.dot)>0&&actor.alive){const dot=Math.max(1,Math.round(actor.maxHp*.04));actor.hp=Math.max(0,actor.hp-dot);pvpBattleLog(actor.name+" suffers "+dot.toLocaleString("pt-BR")+" "+(actor.status.dot.type||"DOT")+" damage.");if(actor.hp<=0)pvpBattleHandleDeath(actor)}}
+function pvpBattleTickStatus(obj){if(obj&&typeof obj==="object"){obj.turns=Math.max(0,(Number(obj.turns)||0)-1);return obj.turns>0?obj:null}return null}
+function pvpBattleTickActorEnd(actor){actor.status.cc=pvpBattleTickStatus(actor.status.cc);actor.status.dot=pvpBattleTickStatus(actor.status.dot);actor.status.defBreak=pvpBattleTickStatus(actor.status.defBreak);Object.keys(actor.tempBuffs||{}).forEach(function(k){if(actor.tempBuffs[k].turns>0)actor.tempBuffs[k].turns--})}
 function pvpBattleHandleDeath(unit){
-  unit.hp=0;unit.alive=false;unit.active=false;pvpBattleLog(unit.name+" was defeated.");
-  const b=pvpMatchRoomState.battle;const standby=b.units[unit.role].find(function(u){return u.alive&&!u.active});
-  if(standby){standby.active=true;standby.position=unit.position;standby.burst=0;pvpBattleLog(standby.name+" enters the battle with Burst Charge 0/5.")}
+  unit.hp=0;unit.alive=false;unit.active=false;pvpBattleIntentByUnit[unit.id]=null;pvpBattleLog(unit.name+" was defeated.");
+  const b=pvpMatchRoomState.battle,standby=b.units[unit.role].find(function(u){return u.alive&&!u.active});
+  if(standby){standby.active=true;standby.position=unit.position;standby.burst=0;standby.status=pvpBattleNormalizeStatus(standby.status);pvpBattleLog(standby.name+" enters the battle with Burst Charge 0/5.")}
   pvpBattleRebuildOrder(b,true);pvpBattleCheckWinner();
 }
-function pvpBattleCheckWinner(){
-  const b=pvpMatchRoomState.battle;["host","guest"].forEach(function(role){if(!b.units[role].some(function(u){return u.alive})){b.winner=pvpMatchOpponentRole(role)}})
-}
+function pvpBattleCheckWinner(){const b=pvpMatchRoomState.battle;["host","guest"].forEach(function(role){if(!b.units[role].some(function(u){return u.alive}))b.winner=pvpMatchOpponentRole(role)})}
 function pvpBattleAdvanceTurn(actor,chargeBurst){
-  const b=pvpMatchRoomState.battle;if(chargeBurst&&actor&&actor.alive)actor.burst=Math.min(5,actor.burst+1);
-  if(actor)pvpBattleTickActorEnd(actor);
-  b.gauge[actor.role]=Math.min(300,Number(b.gauge[actor.role]||0)+15);
+  const b=pvpMatchRoomState.battle;if(chargeBurst&&actor&&actor.alive)actor.burst=Math.min(5,actor.burst+1);if(actor)pvpBattleTickActorEnd(actor);
+  ["host","guest"].forEach(function(role){b.gauge[role]=Math.min(PVP_BATTLE_GAUGE_MAX,Number(b.gauge[role]||0)+PVP_BATTLE_GAUGE_GAIN_PER_GLOBAL_TURN)});
   if(!b.turnOrder.length){pvpBattleRebuildOrder(b,true);return}
-  const currentId=actor&&actor.id;let idx=b.turnOrder.indexOf(currentId);if(idx<0)idx=b.turnIndex;
-  b.turnIndex=(idx+1)%b.turnOrder.length;if(b.turnIndex===0)b.round++;
-  pvpBattleSelectedTarget=null;
+  const currentId=actor&&actor.id;let idx=b.turnOrder.indexOf(currentId);if(idx<0)idx=b.turnIndex;b.turnIndex=(idx+1)%b.turnOrder.length;if(b.turnIndex===0)b.round++;
+  b.turnSerial=(Number(b.turnSerial)||0)+1;b.nextActionAt=Date.now()+PVP_BATTLE_AUTO_TURN_MS;
 }
-
-function pvpBattleUseSkill(did,slotNo,isBurst){
-  const b=pvpMatchRoomState&&pvpMatchRoomState.battle;if(!b||b.winner)return;
-  const actor=pvpBattleCurrentUnit();if(!actor||Number(actor.did)!==Number(did)||!pvpBattleCanAct()||actor.status.stun>0)return;
-  pvpBattleTickActorStart(actor);if(!actor.alive){pvpBattleAdvanceTurn(actor,false);pvpBattleCommit();return}
-  const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[actor.role].team,actor.did),digi=pvpMatchDigi(actor.did),skill=(digi.skills||[]).find(function(s){return Number(s.slot)===Number(slotNo)});if(!slot||!skill)return;
-  if(isBurst&&actor.burst<5)return;
-  const cost=Number(skill.costSp)||0;if(actor.sp<cost){alert("SP insuficiente.");return}
-  actor.sp=Math.max(0,actor.sp-cost);
+function pvpBattleAffordableSkills(actor){
+  const d=pvpMatchDigi(actor.did),slot=pvpMatchSlotByDid(pvpMatchRoomState.players[actor.role].team,actor.did),skills=(d&&d.skills||[]).slice(0,3);
+  return {slot:slot,skills:skills.filter(function(skill){return actor.sp>=(Number(skill.costSp)||0)&&Number.isFinite(Number(skill.baseTotal))})};
+}
+function pvpBattlePickChaosTarget(actor,skill,ally){const b=pvpMatchRoomState.battle,candidates=b.units[ally?actor.role:pvpMatchOpponentRole(actor.role)].filter(function(u){return pvpBattleTargetValidChaos(actor,u,skill,ally)});return candidates.length?candidates[Math.floor(Math.random()*candidates.length)]:null}
+function pvpBattleResolveSkill(actor,skill,isBurst,targetOverride){
+  const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[actor.role].team,actor.did);if(!slot||!skill)return false;
+  if(isBurst&&actor.burst<5)return false;const cost=Number(skill.costSp)||0;if(actor.sp<cost)return false;actor.sp=Math.max(0,actor.sp-cost);
   const self=String(skill.appliesTo||"").toLowerCase()==="self"||!Number.isFinite(Number(skill.baseTotal));
   if(self){pvpBattleApplySelfEffect(actor,skill);pvpBattleLog(actor.name+" uses ["+skill.name+"] on itself.")}
   else{
-    const target=pvpBattleSelectedTargetForSkill(actor,skill);if(!target){alert("Nenhum alvo válido para esta skill. Skills Melee não alcançam a Back enquanto existir Front inimiga.");actor.sp+=cost;return}
-    const result=pvpBattleComputeDamage(actor,target,slot,skill,isBurst);target.hp=Math.max(0,target.hp-result.damage);pvpBattleApplyEffects(actor,target,skill);
-    pvpBattleLog(actor.name+" uses ["+skill.name+"] on "+target.name+" · "+result.damage.toLocaleString("pt-BR")+" damage"+(result.crit?" [CRITICAL]":"")+".");pvpBattleImpact(result.damage,result.crit);
-    if(target.hp<=0)pvpBattleHandleDeath(target);
+    const target=targetOverride||pvpBattleSelectedTargetForSkill(actor,skill);if(!target){actor.sp+=cost;return false}
+    const result=pvpBattleComputeDamage(actor,target,slot,skill,isBurst);target.hp=Math.max(0,target.hp-result.damage);pvpBattleApplyEffects(actor,target,skill,result.element);
+    pvpBattleLog(actor.name+" uses ["+skill.name+"] on "+target.name+" · "+result.damage.toLocaleString("pt-BR")+" damage"+(result.crit?" [CRITICAL]":"")+".");pvpBattleImpact(result.damage,result.crit);if(target.hp<=0)pvpBattleHandleDeath(target);
   }
-  if(isBurst)actor.burst=0;
-  pvpBattleAdvanceTurn(actor,true);pvpBattleCheckWinner();pvpBattleCommit();
+  if(isBurst)actor.burst=0;return true;
 }
-
-function pvpBattlePassarTurno(){
-  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,actor=pvpBattleCurrentUnit();if(!b||!actor||!pvpBattleCanAct()||b.winner)return;
-  pvpBattleTickActorStart(actor);if(!actor.alive){pvpBattleAdvanceTurn(actor,false);pvpBattleCommit();return}
-  if(actor.status.stun>0){actor.status.stun--;pvpBattleLog(actor.name+" is stunned and loses the turn. Burst Charge remains "+actor.burst+"/5.");pvpBattleAdvanceTurn(actor,false)}
-  else{pvpBattleLog(actor.name+" passes the turn.");pvpBattleAdvanceTurn(actor,true)}
-  pvpBattleCommit();
+function pvpBattleResolveAutoTurn(){
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,actor=pvpBattleCurrentUnit();if(!b||!actor||b.winner||!pvpBattleCanAct())return;
+  pvpBattleAutoBusy=true;
+  try{
+    pvpBattleTickActorStart(actor);if(!actor.alive){pvpBattleAdvanceTurn(actor,false);pvpBattleCommit();return}
+    if(pvpBattleCcSkipsTurn(actor)){
+      const type=actor.status.cc&&actor.status.cc.type||"CC";pvpBattleLog(actor.name+" is affected by "+type+" and loses the turn. Burst Charge remains "+actor.burst+"/5.");pvpBattleAdvanceTurn(actor,false);pvpBattleCommit();return;
+    }
+    const chaos=pvpBattleCcChaosKind(actor),pack=pvpBattleAffordableSkills(actor),skills=pack.skills;
+    if(!skills.length){pvpBattleLog(actor.name+" has no usable attack skill and loses the action.");pvpBattleAdvanceTurn(actor,true);pvpBattleCommit();return}
+    let skill=null,isBurst=false,target=null;
+    if(chaos){
+      skill=skills[Math.floor(Math.random()*skills.length)];
+      const ally=chaos==="charm"?true:Math.random()<.5;
+      target=pvpBattlePickChaosTarget(actor,skill,ally);
+      if(!target)target=pvpBattlePickChaosTarget(actor,skill,!ally);
+      pvpBattleLog(actor.name+" is under "+(actor.status.cc.type||chaos)+" · automatic target: "+(target?target.name:"none")+".");
+    }else{
+      const d=pvpMatchDigi(actor.did),all=(d.skills||[]).slice(0,3),intent=pvpBattleIntentForUnit(actor,all);
+      skill=all.find(function(x){return Number(x.slot)===Number(intent.slot)})||all[0];isBurst=!!intent.burst;
+      if(isBurst&&actor.burst<5)isBurst=false;
+      if(!skill||actor.sp<(Number(skill.costSp)||0)){skill=skills[0];isBurst=false}
+    }
+    const acted=pvpBattleResolveSkill(actor,skill,isBurst,target);if(!acted)pvpBattleLog(actor.name+" could not execute the selected command.");
+    pvpBattleAdvanceTurn(actor,true);pvpBattleCheckWinner();pvpBattleCommit();
+  }finally{pvpBattleAutoBusy=false}
 }
-
-function pvpBattleCommit(){
-  const b=pvpMatchRoomState.battle;
-  if(pvpMatchLocalMode){pvpMatchLocalRole=pvpBattleCurrentUnit()?pvpBattleCurrentUnit().role:pvpMatchLocalRole}
-  pvpMatchSend("battle_update",{battle:b});
-  pvpBattleRender();
+function pvpBattleEnsureAutoLoop(){if(pvpBattleAutoTimer)return;pvpBattleAutoTimer=setInterval(pvpBattleAutoTick,100)}
+function pvpBattleAutoTick(){
+  const room=pvpMatchRoomState,b=room&&room.battle;if(!b||room.phase!=="battle"||b.winner||pvpBattleAutoBusy)return;
+  pvpBattleNormalizeBattle(b);if(Date.now()<Number(b.nextActionAt||0))return;
+  const actor=pvpBattleCurrentUnit();if(!actor)return;if(!pvpMatchLocalMode&&actor.role!==pvpMatchRole)return;pvpBattleResolveAutoTurn();
 }
+function pvpBattleCommit(){const b=pvpMatchRoomState.battle;if(pvpMatchLocalMode)pvpMatchLocalRole=pvpBattleCurrentUnit()?pvpBattleCurrentUnit().role:pvpMatchLocalRole;pvpMatchSend("battle_update",{battle:b});pvpBattleRender()}
 
 function pvpBattleAbrirSubstituicao(){
-  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit();if(!b||!actor||actor.role!==me||!pvpBattleCanAct()||b.subs[me]<=0||b.gauge[me]<100)return;
-  pvpBattleSubOut=actor.id;pvpBattleSubIn=null;
-  const overlay=document.getElementById("pvpSubstitutionOverlay");overlay.classList.add("aberto");overlay.setAttribute("aria-hidden","false");
-  pvpBattleRenderSubstitution();
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole();if(!b||b.winner||b.subs[me]<=0||Number(b.gauge[me]||0)<1)return;
+  pvpBattleSubOut=null;pvpBattleSubIn=null;const overlay=document.getElementById("pvpSubstitutionOverlay");overlay.classList.add("aberto");overlay.setAttribute("aria-hidden","false");pvpBattleRenderSubstitution();
 }
 function pvpBattleFecharSubstituicao(){const o=document.getElementById("pvpSubstitutionOverlay");if(o){o.classList.remove("aberto");o.setAttribute("aria-hidden","true")}pvpBattleSubOut=null;pvpBattleSubIn=null}
 function pvpBattleRenderSubstitution(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),deploy=document.getElementById("pvpSubDeployGrid"),standby=document.getElementById("pvpSubStandbyGrid");
-  function card(u,kind){return '<button type="button" class="pvp-sub-card '+((kind==='out'?pvpBattleSubOut:pvpBattleSubIn)===u.id?'selecionado':'')+'" onclick="pvpBattleSelectSub(\''+kind+'\',\''+u.id+'\')"><img src="'+u.icon+'" alt=""><strong>'+pvpEscapeHtml(u.name)+'</strong><small>HP '+Math.round(u.hp).toLocaleString("pt-BR")+' / '+Math.round(u.maxHp).toLocaleString("pt-BR")+' · BURST '+u.burst+'/5</small></button>'}
+  function card(u,kind){return '<button type="button" class="pvp-sub-card '+((kind==='out'?pvpBattleSubOut:pvpBattleSubIn)===u.id?'selecionado':'')+'" onclick="pvpBattleSelectSub(\''+kind+'\',\''+u.id+'\')"><img src="'+u.icon+'" alt=""><strong>'+pvpEscapeHtml(u.name)+'</strong><small>'+u.position+' · HP '+Math.round(u.hp).toLocaleString("pt-BR")+' / '+Math.round(u.maxHp).toLocaleString("pt-BR")+' · BURST '+u.burst+'/5</small></button>'}
   deploy.innerHTML=b.units[me].filter(function(u){return u.active&&u.alive}).map(function(u){return card(u,"out")}).join("");
   standby.innerHTML=b.units[me].filter(function(u){return !u.active&&u.alive}).map(function(u){return card(u,"in")}).join("")||'<div style="font-size:10px;color:#7897b4">Nenhum Standby disponível.</div>';
   const c=document.getElementById("pvpSubModalCount");if(c)c.textContent=b.subs[me]+"/3";const btn=document.getElementById("pvpSubConfirmBtn");if(btn)btn.disabled=!pvpBattleSubOut||!pvpBattleSubIn;
 }
 function pvpBattleSelectSub(kind,id){if(kind==="out")pvpBattleSubOut=id;else pvpBattleSubIn=id;pvpBattleRenderSubstitution()}
+function pvpBattleApplySubstitutionState(b,role,outId,inId){
+  pvpBattleNormalizeBattle(b);const out=pvpBattleUnitById(b,outId),incoming=pvpBattleUnitById(b,inId);if(!out||!incoming||out.role!==role||incoming.role!==role||!out.active||!out.alive||incoming.active||!incoming.alive||b.subs[role]<=0||Number(b.gauge[role]||0)<1)return false;
+  const currentId=b.turnOrder&&b.turnOrder[b.turnIndex],wasCurrent=currentId===out.id,pos=out.position;out.active=false;incoming.active=true;incoming.position=pos;b.subs[role]--;b.gauge[role]=Math.max(0,Number(b.gauge[role])-1);
+  pvpBattleLog(out.name+" was substituted by "+incoming.name+". HP/SP and Burst Charge are preserved for "+out.name+".");pvpBattleRebuildOrder(b,true);
+  if(wasCurrent&&b.turnOrder.includes(incoming.id))b.turnIndex=b.turnOrder.indexOf(incoming.id);else if(currentId&&b.turnOrder.includes(currentId))b.turnIndex=b.turnOrder.indexOf(currentId);
+  return true;
+}
 function pvpBattleConfirmarSubstituicao(){
-  const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),out=pvpBattleUnitById(b,pvpBattleSubOut),incoming=pvpBattleUnitById(b,pvpBattleSubIn),actor=pvpBattleCurrentUnit();
-  if(!out||!incoming||!actor||actor.id!==out.id||b.subs[me]<=0||b.gauge[me]<100)return;
-  const pos=out.position;out.active=false;incoming.active=true;incoming.position=pos;b.subs[me]--;b.gauge[me]-=100;
-  pvpBattleLog(out.name+" was substituted by "+incoming.name+". HP/SP and Burst Charge are preserved for "+out.name+".");
-  pvpBattleFecharSubstituicao();pvpBattleRebuildOrder(b,true);pvpBattleAdvanceTurn(out,true);pvpBattleCommit();
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole();if(!b||!pvpBattleSubOut||!pvpBattleSubIn||b.subs[me]<=0||Number(b.gauge[me]||0)<1)return;
+  const outId=pvpBattleSubOut,inId=pvpBattleSubIn;pvpBattleFecharSubstituicao();
+  if(pvpMatchLocalMode){pvpMatchSend("substitute",{outId:outId,inId:inId});return}
+  pvpMatchSend("substitute",{outId:outId,inId:inId});
 }
 
 function pvpMatchKeyboard(event){
   if(!document.getElementById("pvpMatchBattle")?.classList.contains("ativa"))return;
-  const actor=pvpBattleCurrentUnit();if(!actor||!pvpBattleCanAct())return;
-  const me=pvpBattleMyRole(),active=pvpMatchRoomState.battle.units[me].filter(function(u){return u.active&&u.alive});const index=active.findIndex(function(u){return u.id===actor.id});if(index<0)return;
-  const keys=pvpBattleSkillKeys(index);const idx=keys.indexOf(String(event.key||"").toUpperCase());if(idx<0)return;
-  event.preventDefault();const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,actor.did),d=pvpMatchDigi(actor.did),skills=(d.skills||[]).slice(0,3);
-  if(idx<3&&skills[idx])pvpBattleUseSkill(actor.did,skills[idx].slot,false);
-  if(idx===3){const burst=skills.find(function(s){return Number(s.slot)===Number(slot.build.burstSkill)})||skills[0];if(burst)pvpBattleUseSkill(actor.did,burst.slot,true)}
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole();if(!b)return;
+  const active=b.units[me].filter(function(u){return u.active&&u.alive});
+  for(let index=0;index<active.length;index++){
+    const u=active[index],keys=pvpBattleSkillKeys(index),idx=keys.indexOf(String(event.key||"").toUpperCase());if(idx<0)continue;
+    event.preventDefault();const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,u.did),d=pvpMatchDigi(u.did),skills=(d.skills||[]).slice(0,3);
+    if(idx<3&&skills[idx])pvpBattleSelectSkill(u.did,skills[idx].slot,false);
+    if(idx===3){const burst=skills.find(function(x){return Number(x.slot)===Number(slot.build.burstSkill)})||skills[0];if(burst)pvpBattleSelectSkill(u.did,burst.slot,true)}
+    return;
+  }
 }
 
 document.addEventListener("keydown",pvpMatchKeyboard);
