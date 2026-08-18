@@ -3,7 +3,7 @@
    GITHUB PAGES → HOLY GUARDIANS API
 ===================================================== */
 
-const HG_API_URL = "https://script.google.com/macros/s/AKfycbxVM3E369Cofmp6SOcB3IISDFPnVebwVUzKp9Vcnf8JmSFXsnQJWzV1OQsWzuUSqKYG/exec";
+const HG_API_URL = "https://script.google.com/macros/s/AKfycbwfT0r-oi-NRj39-sKh3BBIfOt7UOk8BJhIzHjtaz4EZiED_Jfgcj6wMvfTh0W6f4q9/exec";
 
 function chamarApiJsonp(api) {
   return new Promise(function(resolve, reject) {
@@ -92,6 +92,9 @@ let database = [];
 let imagensSite = {};
 
 let filtroTypeSelecionado = "";
+let filtroStageSelecionado = "";
+
+const DIGIDEX_STAGES = ["ROOKIE", "CHAMPION", "ULTIMATE", "MEGA"];
 
 const TYPE_ICONS = {
   DATA: "type_icons/type_data.png",
@@ -438,8 +441,13 @@ function limparFiltrosDigidex() {
   if (ordenacao) ordenacao.value = "";
 
   filtroTypeSelecionado = "";
+  filtroStageSelecionado = "";
 
   document.querySelectorAll(".type-filter-btn").forEach(function(botao, indice) {
+    botao.classList.toggle("ativo", indice === 0);
+  });
+
+  document.querySelectorAll(".stage-filter-btn").forEach(function(botao, indice) {
     botao.classList.toggle("ativo", indice === 0);
   });
 
@@ -1440,6 +1448,47 @@ function selecionarFiltroType(tipo, botao) {
   });
 
   filtrar();
+}
+
+function normalizarStageDigidex(stage) {
+  return String(stage || "").trim().toUpperCase();
+}
+
+function selecionarFiltroStage(stage, botao) {
+  const normalizado = normalizarStageDigidex(stage);
+
+  filtroStageSelecionado =
+    DIGIDEX_STAGES.includes(normalizado)
+      ? normalizado
+      : "";
+
+  document.querySelectorAll(".stage-filter-btn").forEach(function(item) {
+    item.classList.toggle("ativo", item === botao);
+  });
+
+  filtrar();
+}
+
+function atualizarContadoresStageDigidex() {
+  const contagem = {
+    ALL: 0,
+    ROOKIE: 0,
+    CHAMPION: 0,
+    ULTIMATE: 0,
+    MEGA: 0
+  };
+
+  (Array.isArray(database) ? database : []).forEach(function(digi) {
+    const stage = normalizarStageDigidex(digi && digi.stage);
+    if (!DIGIDEX_STAGES.includes(stage)) return;
+    contagem.ALL += 1;
+    contagem[stage] += 1;
+  });
+
+  document.querySelectorAll("[data-stage-count]").forEach(function(el) {
+    const chave = String(el.getAttribute("data-stage-count") || "").toUpperCase();
+    el.textContent = contagem[chave] ? String(contagem[chave]) : "0";
+  });
 }
 
 
@@ -2924,6 +2973,11 @@ function filtrar() {
   const tipoSelecionado =
     filtroTypeSelecionado;
 
+  const stageSelecionado =
+    filtroStageSelecionado;
+
+  atualizarContadoresStageDigidex();
+
 
   const ordem =
     ordenacao
@@ -2977,6 +3031,9 @@ function filtrar() {
         const tipo =
           normalizarType(d.type);
 
+        const stage =
+          normalizarStageDigidex(d.stage);
+
 
         const nomeOk =
           nome.includes(texto);
@@ -2985,6 +3042,10 @@ function filtrar() {
         const tipoOk =
           !tipoSelecionado ||
           tipo === tipoSelecionado;
+
+        const stageOk =
+          DIGIDEX_STAGES.includes(stage) &&
+          (!stageSelecionado || stage === stageSelecionado);
 
 
         let skillOk = true;
@@ -3078,6 +3139,7 @@ function filtrar() {
         return (
           nomeOk &&
           tipoOk &&
+          stageOk &&
           skillOk &&
           fieldOk &&
           efeitoOk
@@ -5724,34 +5786,95 @@ function calcInterpretarCoeficienteSkill(skill) {
 }
 
 
-/* Alguns coeficientes do jogo possuem total Lv.10 que não é reproduzido
-   exatamente pela multiplicação do valor por hit exibido (o per-hit pode
-   estar visualmente arredondado na fonte). Mantemos correções cirúrgicas
-   somente quando o total exato foi validado. */
-const CALC_SKILL_BASE_TOTAL_EXATO = {
-  millenniumon: {
-    3: 145
-  }
-};
+/* Os coeficientes exatos agora vêm diretamente da DATABASE MASTER FINAL. */
 
-function calcAplicarBaseTotalExato(nomeDigimon, skills) {
-  const chave = calcNormalizarNome(nomeDigimon);
-  const ajustes = CALC_SKILL_BASE_TOTAL_EXATO[chave];
-  if (!ajustes || !Array.isArray(skills)) return skills;
+function calcMetaPvpDoDigimon(nome) {
+  if (!Array.isArray(pvpDatabase) || !pvpDatabase.length) return null;
+  const alvo = calcNormalizarNome(nome);
+  return pvpDatabase.find(function(item) {
+    return calcNormalizarNome(item && item.name) === alvo;
+  }) || null;
+}
 
-  Object.keys(ajustes).forEach(function(slotTexto) {
-    const slot = Number(slotTexto);
-    const indice = slot - 1;
-    const skill = skills[indice];
-    const totalExato = Number(ajustes[slotTexto]);
+function calcMarcadorTemSkill(valor, numeroSkill) {
+  const texto = String(valor == null ? "" : valor).trim().toUpperCase();
+  return texto.indexOf("SKILL " + numeroSkill) !== -1;
+}
 
-    if (!skill || !skill.available || !Number.isFinite(totalExato) || totalExato <= 0) return;
+function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
+  const metaDigi = calcMetaPvpDoDigimon(nomeDigimon);
+  const metaSkills = metaDigi && Array.isArray(metaDigi.skills) ? metaDigi.skills : [];
 
-    skill.baseTotal = totalExato;
-    skill.baseTotalExato = true;
+  (skills || []).forEach(function(skill, index) {
+    if (!skill) return;
+
+    const numero = index + 1;
+    const meta = metaSkills.find(function(item) {
+      return Number(item && item.slot) === numero;
+    }) || metaSkills[index] || null;
+
+    const efeitos = [];
+    const metaCc = meta && String(meta.cc || "").toUpperCase() === "YES";
+    const metaDot = meta && String(meta.dot || "").toUpperCase() === "YES";
+    const metaDef = meta && String(meta.defBreak || "").toUpperCase() === "YES";
+
+    if (metaCc || calcMarcadorTemSkill(dadosApi && dadosApi.cc, numero)) efeitos.push("CC");
+    if (metaDot || calcMarcadorTemSkill(dadosApi && dadosApi.dot, numero)) efeitos.push("DOT");
+    if (metaDef || calcMarcadorTemSkill(dadosApi && dadosApi.defBreak, numero)) efeitos.push("DEF BREAK");
+
+    skill.slot = numero;
+    skill.name = meta && meta.name ? String(meta.name) : "Skill " + numero;
+    skill.icon = meta && meta.icon ? String(meta.icon) : "";
+    skill.description = meta && meta.description ? String(meta.description) : "";
+    skill.effects = efeitos;
+    skill.hasEffect = efeitos.length > 0;
   });
 
   return skills;
+}
+
+function calcNomeSkill(skill, index) {
+  return String((skill && skill.name) || ("Skill " + (index + 1))).trim();
+}
+
+function calcSkillIdentityHtml(skill, index, compacto) {
+  const numero = index + 1;
+  const nome = calcNomeSkill(skill, index);
+  const icone = String((skill && skill.icon) || "").trim();
+  const descricao = String((skill && skill.description) || "").trim();
+  const efeitos = Array.isArray(skill && skill.effects) ? skill.effects : [];
+  const elementoBase = String((skill && skill.baseElement) || "").trim();
+  const hits = Number(skill && skill.hits) || 0;
+  const perHit = Number(skill && skill.perHit) || 0;
+
+  const tooltipLinhas = [];
+  tooltipLinhas.push("SKILL " + numero + " • LEVEL 10");
+  if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
+  if (hits && perHit) tooltipLinhas.push(hits + " hits × " + calcFormatar(perHit) + "%");
+  if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+
+  const tooltip = `
+    <span class="calc-skill-tooltip" role="tooltip">
+      <strong>${escaparHtml(nome)}</strong>
+      <small>${escaparHtml(tooltipLinhas.join(" • "))}</small>
+      ${descricao ? `<em>${escaparHtml(descricao)}</em>` : ""}
+    </span>
+  `;
+
+  return `
+    <span class="calc-skill-identity ${compacto ? "compacto" : ""}" ${compacto ? "" : 'tabindex="0"'}>
+      <span class="calc-skill-icon-frame">
+        ${icone
+          ? `<img src="${escaparHtml(icone)}" alt="${escaparHtml(nome)}">`
+          : `<b>S${numero}</b>`}
+      </span>
+      <span class="calc-skill-identity-copy">
+        <strong>${escaparHtml(nome)}</strong>
+        <small>SKILL ${numero}${compacto ? "" : " • LEVEL 10"}</small>
+      </span>
+      ${tooltip}
+    </span>
+  `;
 }
 
 function calcDadosDoDigimon(d) {
@@ -5764,7 +5887,7 @@ function calcDadosDoDigimon(d) {
     calcInterpretarCoeficienteSkill(d.skill3)
   ];
 
-  calcAplicarBaseTotalExato(nome, skills);
+  calcEnriquecerSkillsComMeta(nome, skills, d);
 
   return {
     name: nome,
@@ -5840,6 +5963,13 @@ function inicializarCalculadora() {
    */
 
   calcConfigurarAutocomplete();
+
+  if (typeof pvpCarregarDatabase === "function" && !pvpDatabase.length) {
+    pvpCarregarDatabase().then(function() {
+      atualizarCalculadora();
+    });
+  }
+
   atualizarCalculadora();
 }
 
@@ -6268,15 +6398,7 @@ function atualizarCalculadora() {
 
                 <div class="calc-skill-top">
 
-                  <div>
-                    <div class="calc-skill-title">
-                      SKILL ${numeroSkill}
-                    </div>
-
-                    <div class="calc-skill-lv">
-                      LEVEL 10
-                    </div>
-                  </div>
+                  ${calcSkillIdentityHtml(skill, index, false)}
 
                   <span class="calc-status nao">
                     SEM COEFICIENTE
@@ -6363,15 +6485,7 @@ function atualizarCalculadora() {
 
               <div class="calc-skill-top">
 
-                <div>
-                  <div class="calc-skill-title">
-                    SKILL ${numeroSkill}
-                  </div>
-
-                  <div class="calc-skill-lv">
-                    LEVEL 10
-                  </div>
-                </div>
+                ${calcSkillIdentityHtml(skill, index, false)}
 
                 <span
                   class="calc-status ${
@@ -6496,39 +6610,25 @@ function atualizarCalculadora() {
 
   const skillsDisponiveis =
     digi.skills
-      .map(
-        function(skill, index) {
-          return {
-            skill: skill,
-            index: index
-          };
-        }
-      )
-      .filter(
-        function(item) {
-          return (
-            item.skill &&
-            item.skill.available &&
-            Number.isFinite(
-              item.skill.baseTotal
-            ) &&
-            Number.isFinite(
-              item.skill.perHit
-            ) &&
-            Number.isFinite(
-              item.skill.hits
-            )
-          );
-        }
-      );
+      .map(function(skill, index) {
+        return { skill: skill, index: index };
+      })
+      .filter(function(item) {
+        return (
+          item.skill &&
+          item.skill.available &&
+          !item.skill.hasEffect &&
+          Number.isFinite(item.skill.baseTotal) &&
+          Number.isFinite(item.skill.perHit) &&
+          Number.isFinite(item.skill.hits)
+        );
+      });
 
 
   if (
-    !skillsDisponiveis.some(
-      function(item) {
-        return item.index === calcBurstSkillSelecionada;
-      }
-    )
+    !skillsDisponiveis.some(function(item) {
+      return item.index === calcBurstSkillSelecionada;
+    })
   ) {
     calcBurstSkillSelecionada =
       skillsDisponiveis.length
@@ -6539,42 +6639,33 @@ function atualizarCalculadora() {
 
   const opcoesBurst =
     digi.skills
-      .map(
-        function(skill, index) {
+      .map(function(skill, index) {
+        const coeficienteDisponivel =
+          skill &&
+          skill.available &&
+          Number.isFinite(skill.baseTotal) &&
+          Number.isFinite(skill.perHit) &&
+          Number.isFinite(skill.hits);
 
-          const disponivel =
-            skill &&
-            skill.available &&
-            Number.isFinite(
-              skill.baseTotal
-            ) &&
-            Number.isFinite(
-              skill.perHit
-            ) &&
-            Number.isFinite(
-              skill.hits
-            );
+        const efeitoBloqueia = Boolean(skill && skill.hasEffect);
+        const disponivel = coeficienteDisponivel && !efeitoBloqueia;
+        const nome = calcNomeSkill(skill, index);
+        const motivo = efeitoBloqueia
+          ? "Skill de efeito — Burst sem cálculo de dano"
+          : (disponivel ? "Usar como base da Burst" : "Coeficiente indisponível");
 
-          return `
-            <option
-              value="${index}"
-              ${
-                index === calcBurstSkillSelecionada
-                  ? "selected"
-                  : ""
-              }
-              ${
-                disponivel
-                  ? ""
-                  : "disabled"
-              }
-            >
-              Skill ${index + 1}${disponivel ? "" : " — indisponível"}
-            </option>
-          `;
-
-        }
-      )
+        return `
+          <button
+            type="button"
+            class="calc-burst-skill-option ${index === calcBurstSkillSelecionada ? "ativo" : ""} ${disponivel ? "" : "indisponivel"}"
+            onclick="calcSelecionarBurstSkill(${index})"
+            ${disponivel ? "" : "disabled"}
+            title="${escaparHtml(nome + " — " + motivo)}"
+          >
+            ${calcSkillIdentityHtml(skill, index, true)}
+          </button>
+        `;
+      })
       .join("");
 
 
@@ -6598,16 +6689,8 @@ function atualizarCalculadora() {
       </div>
 
       <div class="calc-burst-selector-row">
-        <label for="calcBurstSkillSelect">
-          Usar como base
-        </label>
-        <select
-          id="calcBurstSkillSelect"
-          class="calc-select calc-burst-select"
-          onchange="calcSelecionarBurstSkill(this.value)"
-        >
-          ${opcoesBurst}
-        </select>
+        <span class="calc-burst-selector-label">Usar como base</span>
+        <div class="calc-burst-skill-options">${opcoesBurst}</div>
       </div>
 
       <div class="calc-breakdown">
@@ -6628,7 +6711,8 @@ function atualizarCalculadora() {
     ) &&
     Number.isFinite(
       skillBurst.hits
-    )
+    ) &&
+    !skillBurst.hasEffect
   ) {
 
     const aplicaBurst =
@@ -6669,6 +6753,9 @@ function atualizarCalculadora() {
     const numeroSkillBurst =
       calcBurstSkillSelecionada + 1;
 
+    const nomeSkillBurst =
+      calcNomeSkill(skillBurst, calcBurstSkillSelecionada);
+
     const tagsBurst =
       (
         skillBurst.elements ||
@@ -6707,7 +6794,7 @@ function atualizarCalculadora() {
               BURST SKILL
             </div>
             <div class="calc-skill-lv">
-              SKILL ${numeroSkillBurst} • LEVEL 10 • MULTIPLICADOR ×3
+              ${escaparHtml(nomeSkillBurst)} • LEVEL 10 • MULTIPLICADOR ×3
             </div>
           </div>
 
@@ -6728,16 +6815,8 @@ function atualizarCalculadora() {
 
 
         <div class="calc-burst-selector-row">
-          <label for="calcBurstSkillSelect">
-            Burst baseada em
-          </label>
-          <select
-            id="calcBurstSkillSelect"
-            class="calc-select calc-burst-select"
-            onchange="calcSelecionarBurstSkill(this.value)"
-          >
-            ${opcoesBurst}
-          </select>
+          <span class="calc-burst-selector-label">Burst baseada em</span>
+          <div class="calc-burst-skill-options">${opcoesBurst}</div>
         </div>
 
 
@@ -6769,7 +6848,7 @@ function atualizarCalculadora() {
 
 
         <div class="calc-breakdown calc-burst-breakdown">
-          Skill ${numeroSkillBurst} original:
+          ${escaparHtml(nomeSkillBurst)} original:
           <strong>
             ${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%
           </strong>

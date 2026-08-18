@@ -16549,3 +16549,312 @@ body.hg-display-scaled footer {
     grid-column: auto;
   }
 }
+
+
+/* =====================================================
+   DIGIDEX — STAGE FILTER / DATABASE MASTER FINAL
+===================================================== */
+.digidex-type-filter-row {
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.stage-filter {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid rgba(85, 199, 255, .34);
+  border-radius: 10px;
+  background: rgba(3, 13, 29, .88);
+}
+
+.stage-filter-label {
+  padding: 0 7px 0 3px;
+  color: #69dfff;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 1.2px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  opacity: .82;
+}
+
+.stage-filter-btn {
+  min-width: 74px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 9px;
+  color: #b9dfff;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.stage-filter-btn strong {
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .55px;
+}
+
+.stage-filter-count {
+  min-width: 20px;
+  padding: 2px 5px;
+  border: 1px solid rgba(79, 202, 255, .22);
+  border-radius: 999px;
+  color: #75dfff;
+  background: rgba(43, 154, 221, .09);
+  font-size: 8px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.stage-filter-btn:hover,
+.stage-filter-btn.ativo {
+  border-color: #4cc8ff;
+  background: rgba(52, 181, 255, .13);
+  box-shadow: 0 0 13px rgba(52, 181, 255, .28);
+  transform: translateY(-1px);
+}
+
+.stage-filter-btn.ativo strong { color: #f1fbff; }
+.stage-filter-btn.ativo .stage-filter-count {
+  color: #c7f4ff;
+  border-color: rgba(91, 223, 255, .52);
+  background: rgba(31, 162, 222, .18);
+}
+
+@media (max-width: 850px) {
+  .stage-filter {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .stage-filter-label {
+    writing-mode: horizontal-tb;
+    transform: none;
+    flex: 0 0 auto;
+  }
+  .stage-filter-btn { flex: 0 0 auto; }
+}
+
+/* =====================================================
+   CALCULADORA — SKILL ICON + NAME + TOOLTIP
+===================================================== */
+#calculadoraPagina .calc-skill-card {
+  overflow: visible;
+}
+
+#calculadoraPagina .calc-skill-identity {
+  position: relative;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  outline: none;
+}
+
+#calculadoraPagina .calc-skill-icon-frame {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(79, 218, 255, .52);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(7, 27, 53, .98), rgba(3, 13, 29, .98));
+  box-shadow: inset 0 0 14px rgba(52, 203, 255, .06), 0 0 12px rgba(45, 190, 255, .08);
+}
+
+#calculadoraPagina .calc-skill-icon-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#calculadoraPagina .calc-skill-icon-frame b {
+  color: #69ddff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+#calculadoraPagina .calc-skill-identity-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+#calculadoraPagina .calc-skill-identity-copy strong {
+  max-width: 240px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.14;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#calculadoraPagina .calc-skill-identity-copy small {
+  color: #79ccec;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .9px;
+}
+
+#calculadoraPagina .calc-skill-tooltip {
+  position: absolute;
+  z-index: 250;
+  left: 0;
+  bottom: calc(100% + 9px);
+  width: min(340px, 72vw);
+  padding: 11px 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  pointer-events: none;
+  border: 1px solid rgba(83, 220, 255, .50);
+  border-radius: 11px;
+  background: rgba(2, 12, 28, .985);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, .46), 0 0 18px rgba(47, 192, 255, .12);
+  transition: .15s ease;
+}
+
+#calculadoraPagina .calc-skill-tooltip strong,
+#calculadoraPagina .calc-skill-tooltip small,
+#calculadoraPagina .calc-skill-tooltip em {
+  display: block;
+  text-align: left;
+}
+
+#calculadoraPagina .calc-skill-tooltip strong {
+  color: #f5fcff;
+  font-size: 12px;
+  font-style: normal;
+}
+
+#calculadoraPagina .calc-skill-tooltip small {
+  margin-top: 4px;
+  color: #68d7ff;
+  font-size: 9px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+#calculadoraPagina .calc-skill-tooltip em {
+  margin-top: 7px;
+  color: #b8cede;
+  font-size: 10px;
+  line-height: 1.45;
+  font-style: normal;
+  font-weight: 600;
+}
+
+#calculadoraPagina .calc-skill-identity:hover .calc-skill-tooltip,
+#calculadoraPagina .calc-skill-identity:focus .calc-skill-tooltip,
+#calculadoraPagina .calc-skill-identity:focus-within .calc-skill-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#calculadoraPagina .calc-burst-selector-row {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+#calculadoraPagina .calc-burst-selector-label {
+  color: #cda8e9;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+#calculadoraPagina .calc-burst-skill-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#calculadoraPagina .calc-burst-skill-option {
+  min-width: 0;
+  position: relative;
+  padding: 7px 8px;
+  border: 1px solid rgba(194, 106, 255, .25);
+  border-radius: 11px;
+  color: inherit;
+  background: rgba(16, 10, 39, .72);
+  cursor: pointer;
+  text-align: left;
+  transition: .16s ease;
+}
+
+#calculadoraPagina .calc-burst-skill-option:hover:not(:disabled),
+#calculadoraPagina .calc-burst-skill-option.ativo {
+  border-color: rgba(211, 135, 255, .88);
+  background: rgba(75, 35, 112, .43);
+  box-shadow: 0 0 15px rgba(190, 93, 255, .12);
+}
+
+#calculadoraPagina .calc-burst-skill-option:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity {
+  width: 100%;
+}
+
+#calculadoraPagina .calc-skill-identity.compacto {
+  gap: 7px;
+}
+
+#calculadoraPagina .calc-skill-identity.compacto .calc-skill-icon-frame {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  border-color: rgba(205, 124, 255, .45);
+}
+
+#calculadoraPagina .calc-skill-identity.compacto .calc-skill-identity-copy strong {
+  max-width: 130px;
+  color: #ead7fa;
+  font-size: 11px;
+}
+
+#calculadoraPagina .calc-skill-identity.compacto .calc-skill-identity-copy small {
+  color: #b68ad9;
+  font-size: 8px;
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-tooltip {
+  left: 50%;
+  transform: translate(-50%, 5px);
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity:hover .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity:focus .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity:focus-within .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option:focus .calc-skill-tooltip {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 820px) {
+  #calculadoraPagina .calc-burst-selector-row { grid-template-columns: 1fr; }
+  #calculadoraPagina .calc-burst-skill-options { grid-template-columns: 1fr; }
+  #calculadoraPagina .calc-burst-skill-option .calc-skill-identity-copy strong { max-width: none; }
+}

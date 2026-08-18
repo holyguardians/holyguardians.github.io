@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260818-display-settings-v2">
+  <link rel="stylesheet" href="styles.css?v=20260818-master-final-stage-skill-ui">
 </head>
 <body>
 
@@ -1016,6 +1016,25 @@
         <button type="button" class="type-filter-btn" title="Virus" onclick="selecionarFiltroType('VIRUS', this)"><img src="type_icons/type_virus.png" alt="VIRUS"></button>
         <button type="button" class="type-filter-btn" title="Unknown / UK" onclick="selecionarFiltroType('UNKNOWN', this)"><img src="type_icons/type_unknown.png" alt="UNKNOWN"></button>
         <button type="button" class="type-filter-btn" title="Free" onclick="selecionarFiltroType('FREE', this)"><img src="type_icons/type_free.png" alt="FREE"></button>
+      </div>
+
+      <div class="stage-filter" aria-label="Filtrar por Stage">
+        <span class="stage-filter-label">STAGE</span>
+        <button type="button" class="stage-filter-btn ativo" data-stage="" onclick="selecionarFiltroStage('', this)">
+          <strong>ALL</strong><small class="stage-filter-count" data-stage-count="ALL"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="ROOKIE" onclick="selecionarFiltroStage('ROOKIE', this)">
+          <strong>ROOKIE</strong><small class="stage-filter-count" data-stage-count="ROOKIE"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="CHAMPION" onclick="selecionarFiltroStage('CHAMPION', this)">
+          <strong>CHAMPION</strong><small class="stage-filter-count" data-stage-count="CHAMPION"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="ULTIMATE" onclick="selecionarFiltroStage('ULTIMATE', this)">
+          <strong>ULTIMATE</strong><small class="stage-filter-count" data-stage-count="ULTIMATE"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="MEGA" onclick="selecionarFiltroStage('MEGA', this)">
+          <strong>MEGA</strong><small class="stage-filter-count" data-stage-count="MEGA"></small>
+        </button>
       </div>
     </div>
 
@@ -2100,7 +2119,7 @@
           O bônus só entra nas Skills compatíveis com o elemento selecionado.
           Em cada hit: bônus elemental = dano base do hit × Elemento Total do Tamer.
           O total final soma esse bônus em todos os hits da Skill Lv.10.
-          A Burst Skill usa a Skill 1, 2 ou 3 escolhida como base e triplica o dano base e o bônus elemental.
+          Passe o mouse sobre o ícone/nome da Skill para ver os detalhes; Skills de efeito não entram como Burst de dano.
         </div>
 
         <div id="calcSelected" class="calc-selected" style="display:none;"></div>
@@ -2131,8 +2150,8 @@
         <div class="calc-guide-note">
           Esse valor representa a soma dos bônus provenientes de
           <strong>roupas, acessórios e deck</strong>.
-          Na <strong>Burst Skill</strong>, escolha qual Skill (1, 2 ou 3) ela replica;
-          a calculadora aplica automaticamente o multiplicador ×3.
+          Na <strong>Burst Skill</strong>, escolha a Skill base pelo ícone e nome.
+          Skills marcadas com <strong>CC, DOT ou DEF BREAK</strong> ficam fora do cálculo de Burst de dano.
         </div>
       </aside>
     </div>
@@ -2365,6 +2384,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260818-api-hotfix-v3"></script>
+<script src="script.js?v=20260818-master-final-stage-skill-ui"></script>
 </body>
 </html>
