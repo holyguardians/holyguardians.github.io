@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260817-challenge-alpha-live-v1">
+  <link rel="stylesheet" href="styles.css?v=20260818-challenge-alpha-v4">
 </head>
 <body>
 
@@ -1886,6 +1886,7 @@
                   <div class="pvp-gauge-label"><span>GAUGE</span><b id="pvpBattleGaugeText">1.00 / 5</b></div>
                   <div id="pvpBattleGaugeSegments" class="pvp-gauge-track pvp-gauge-segments" aria-label="Gauge de substituição"></div>
                 </div>
+                <div id="pvpBattleActionHint" class="pvp-battle-action-hint">SELECT SKILL</div>
                 <button id="pvpSubstitutionBtn" type="button" class="pvp-action-btn pvp-substitution-btn" onclick="pvpBattleAbrirSubstituicao()">SUBSTITUTION <span id="pvpSubstitutionCount">3/3</span></button>
               </aside>
             </div>
@@ -1895,8 +1896,8 @@
         <div id="pvpSubstitutionOverlay" class="pvp-sub-overlay" aria-hidden="true">
           <div class="pvp-sub-modal tech-corners">
             <div class="pvp-sub-head">
-              <div><small>SUBSTITUTION</small><strong>TROCAR DIGIMON</strong></div>
-              <button type="button" onclick="pvpBattleFecharSubstituicao()">×</button>
+              <div><small id="pvpSubModeKicker">SUBSTITUTION</small><strong id="pvpSubModeTitle">TROCAR DIGIMON</strong></div>
+              <button id="pvpSubCloseBtn" type="button" onclick="pvpBattleFecharSubstituicao()">×</button>
             </div>
             <div class="pvp-sub-section">
               <span>DEPLOY DIGIMON</span>
@@ -1908,7 +1909,7 @@
               <div id="pvpSubStandbyGrid" class="pvp-sub-grid"></div>
             </div>
             <div class="pvp-sub-foot">
-              <small>Remaining Substitution Count <b id="pvpSubModalCount">3/3</b> · Cost 1 Gauge</small>
+              <small id="pvpSubFootText">Remaining Substitution Count <b id="pvpSubModalCount">3/3</b> · Cost 1 Gauge</small>
               <button id="pvpSubConfirmBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpBattleConfirmarSubstituicao()" disabled>SUBSTITUIR</button>
             </div>
           </div>
@@ -2261,6 +2262,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260817-challenge-alpha-live-v1"></script>
+<script src="script.js?v=20260818-challenge-alpha-v4"></script>
 </body>
 </html>
