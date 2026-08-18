@@ -15917,7 +15917,7 @@ body.pvp-modal-open{overflow:hidden}
   max-width: 5000px;
   opacity: 1;
   transform: translateX(0);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .brand {
@@ -15936,9 +15936,11 @@ body.pvp-modal-open{overflow:hidden}
    está aberto e para a direita quando está recolhido. */
 .header-collapse-indicator {
   position: absolute;
-  z-index: 8;
-  right: 2px;
-  bottom: 14px;
+  z-index: 12020;
+  left: calc(100% + clamp(22px, 1.35vw, 30px));
+  right: auto;
+  top: 50%;
+  bottom: auto;
   width: 22px;
   height: 22px;
   display: grid;
@@ -15951,6 +15953,7 @@ body.pvp-modal-open{overflow:hidden}
     0 0 12px rgba(32, 145, 255, .22),
     inset 0 0 10px rgba(75, 178, 255, .08);
   opacity: .72;
+  transform: translateY(-50%);
   transition: opacity .2s ease, transform .28s ease, border-color .2s ease;
 }
 
@@ -16030,9 +16033,11 @@ body.pvp-modal-open{overflow:hidden}
 }
 
 .topbar.header-collapsed .header-collapse-indicator {
-  right: -4px;
-  bottom: 7px;
-  transform: scale(.92);
+  left: auto;
+  right: -10px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%) scale(.92);
 }
 
 .topbar.header-collapsed .header-collapse-indicator::before {
@@ -16040,13 +16045,31 @@ body.pvp-modal-open{overflow:hidden}
   margin-left: -3px;
 }
 
+/* Dropdowns do header precisam poder sair da altura da barra quando ela está aberta.
+   O recorte fica restrito ao estado recolhido, onde o menu está invisível. */
+.topbar:not(.header-collapsed),
+.topbar:not(.header-collapsed) .nav-menu,
+.topbar:not(.header-collapsed) .nav-dropdown {
+  overflow: visible !important;
+}
+
+.topbar:not(.header-collapsed) .nav-dropdown {
+  z-index: 12000;
+}
+
+.topbar:not(.header-collapsed) .nav-dropdown-menu {
+  z-index: 12010;
+}
+
 /* Em telas menores a lógica é a mesma, apenas reduzimos um pouco a cápsula. */
 @media (max-width: 700px) {
   .header-collapse-indicator {
     width: 20px;
     height: 20px;
-    right: -3px;
-    bottom: 8px;
+    left: calc(100% + 12px);
+    right: auto;
+    top: 50%;
+    bottom: auto;
   }
 
   .topbar.header-collapsed {
