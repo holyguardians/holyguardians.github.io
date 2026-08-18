@@ -5734,31 +5734,40 @@ function calcInterpretarCoeficienteSkill(skill) {
     };
   }
 
-  const calculo = String(skill.calculo || "").trim();
+  /*
+   * A MASTER agora entrega os números estruturados da própria aba SKILLS.
+   * O texto continua como fallback para manter compatibilidade com dados antigos.
+   */
+  let hits = Number(skill.hits);
+  let perHit = Number(skill.perHit);
+  let baseTotal = Number(skill.baseTotal);
 
-  const match = calculo.match(
-    /(\d+)\s*[x×]\s*([\d.,]+)\s*%\s*(?:=\s*([\d.,]+)\s*%)?/i
-  );
+  if (!Number.isFinite(hits)) hits = 0;
+  if (!Number.isFinite(perHit)) perHit = 0;
+  if (!Number.isFinite(baseTotal)) baseTotal = 0;
 
-  let hits = 0;
-  let perHit = 0;
-  let baseTotal = 0;
+  if (!(hits > 0 && perHit > 0 && baseTotal > 0)) {
+    const calculo = String(skill.calculo || "").trim();
 
-  if (match) {
-    hits = Number(match[1]) || 0;
-    perHit = Number(String(match[2]).replace(",", ".")) || 0;
-    baseTotal =
-      match[3] !== undefined
-        ? Number(String(match[3]).replace(",", ".")) || 0
-        : hits * perHit;
-  } else {
-    const percentual = calculo.match(/([\d.,]+)\s*%/);
+    const match = calculo.match(
+      /(\d+)\s*[x×]\s*([\d.,]+)\s*%\s*(?:=\s*([\d.,]+)\s*%)?/i
+    );
 
-    if (percentual) {
-      hits = 1;
-      perHit =
-        Number(String(percentual[1]).replace(",", ".")) || 0;
-      baseTotal = perHit;
+    if (match) {
+      hits = Number(match[1]) || 0;
+      perHit = Number(String(match[2]).replace(",", ".")) || 0;
+      baseTotal =
+        match[3] !== undefined
+          ? Number(String(match[3]).replace(",", ".")) || 0
+          : hits * perHit;
+    } else {
+      const percentual = calculo.match(/([\d.,]+)\s*%/);
+
+      if (percentual) {
+        hits = 1;
+        perHit = Number(String(percentual[1]).replace(",", ".")) || 0;
+        baseTotal = perHit;
+      }
     }
   }
 
@@ -5823,29 +5832,71 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
   const metaDigi = calcMetaPvpDoDigimon(nomeDigimon);
   const metaSkills = metaDigi && Array.isArray(metaDigi.skills) ? metaDigi.skills : [];
 
+  function numeroOpcional(valor) {
+    if (valor === "" || valor === null || valor === undefined) return null;
+    const numero = Number(String(valor).replace(",", "."));
+    return Number.isFinite(numero) ? numero : null;
+  }
+
   (skills || []).forEach(function(skill, index) {
     if (!skill) return;
 
     const numero = index + 1;
+    const apiSkill =
+      dadosApi &&
+      dadosApi["skill" + numero] &&
+      typeof dadosApi["skill" + numero] === "object"
+        ? dadosApi["skill" + numero]
+        : null;
+
     const meta = metaSkills.find(function(item) {
       return Number(item && item.slot) === numero;
     }) || metaSkills[index] || null;
 
     const efeitos = [];
+    const categoriaApi = String(apiSkill && apiSkill.effectCategory || "").toUpperCase();
+    const apiCc = String(apiSkill && apiSkill.cc || "").toUpperCase() === "YES" || categoriaApi.indexOf("CC") !== -1;
+    const apiDot = String(apiSkill && apiSkill.dot || "").toUpperCase() === "YES" || categoriaApi.indexOf("DOT") !== -1;
+    const apiDef = String(apiSkill && apiSkill.defBreak || "").toUpperCase() === "YES" || categoriaApi.indexOf("DEF_BREAK") !== -1 || categoriaApi.indexOf("DEF BREAK") !== -1;
+
     const metaCc = meta && String(meta.cc || "").toUpperCase() === "YES";
     const metaDot = meta && String(meta.dot || "").toUpperCase() === "YES";
     const metaDef = meta && String(meta.defBreak || "").toUpperCase() === "YES";
 
-    if (metaCc || calcMarcadorTemSkill(dadosApi && dadosApi.cc, numero)) efeitos.push("CC");
-    if (metaDot || calcMarcadorTemSkill(dadosApi && dadosApi.dot, numero)) efeitos.push("DOT");
-    if (metaDef || calcMarcadorTemSkill(dadosApi && dadosApi.defBreak, numero)) efeitos.push("DEF BREAK");
+    if (apiCc || metaCc || calcMarcadorTemSkill(dadosApi && dadosApi.cc, numero)) efeitos.push("CC");
+    if (apiDot || metaDot || calcMarcadorTemSkill(dadosApi && dadosApi.dot, numero)) efeitos.push("DOT");
+    if (apiDef || metaDef || calcMarcadorTemSkill(dadosApi && dadosApi.defBreak, numero)) efeitos.push("DEF BREAK");
 
     skill.slot = numero;
-    skill.name = meta && meta.name ? String(meta.name) : "Skill " + numero;
-    skill.icon = meta && meta.icon ? String(meta.icon) : "";
-    skill.description = meta && meta.description ? String(meta.description) : "";
+    skill.name = String(
+      apiSkill && apiSkill.name
+        ? apiSkill.name
+        : (meta && meta.name ? meta.name : "Skill " + numero)
+    );
+
+    skill.icon = String(
+      apiSkill && apiSkill.icon
+        ? apiSkill.icon
+        : (meta && meta.icon ? meta.icon : "")
+    );
+
+    skill.effectName = String(apiSkill && apiSkill.effectName || "").trim();
+    skill.effectCategory = categoriaApi;
+    skill.effectChance = numeroOpcional(apiSkill && apiSkill.effectChance);
+    skill.ccType = String(apiSkill && apiSkill.ccType || "").trim();
+    skill.attributeEffects = String(apiSkill && apiSkill.attributeEffects || "").trim();
+    skill.description = String(
+      apiSkill && apiSkill.effectDescription
+        ? apiSkill.effectDescription
+        : (meta && meta.description ? meta.description : "")
+    );
+
     skill.effects = efeitos;
-    skill.hasEffect = efeitos.length > 0;
+    skill.hasEffect = efeitos.length > 0 || (categoriaApi && categoriaApi !== "NONE");
+    skill.burst =
+      apiSkill && apiSkill.burst && typeof apiSkill.burst === "object"
+        ? apiSkill.burst
+        : null;
   });
 
   return skills;
@@ -5853,6 +5904,67 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
 
 function calcNomeSkill(skill, index) {
   return String((skill && skill.name) || ("Skill " + (index + 1))).trim();
+}
+
+function calcNumeroMetaOpcional(valor) {
+  if (valor === "" || valor === null || valor === undefined) return null;
+  const numero = Number(String(valor).replace(",", "."));
+  return Number.isFinite(numero) ? numero : null;
+}
+
+function calcBurstMeta(skill) {
+  return skill && skill.burst && typeof skill.burst === "object"
+    ? skill.burst
+    : null;
+}
+
+function calcBurstEhEfeito(skill) {
+  const burst = calcBurstMeta(skill);
+  return Boolean(
+    burst &&
+    String(burst.functionType || "").toUpperCase() === "EFFECT_RATE_UP"
+  );
+}
+
+function calcBurstEhDano(skill) {
+  const burst = calcBurstMeta(skill);
+  return Boolean(
+    burst &&
+    String(burst.functionType || "").toUpperCase() === "DAMAGE_VALUE_UP"
+  );
+}
+
+function calcBurstRateUpPercent(skill) {
+  const burst = calcBurstMeta(skill);
+  if (!burst) return null;
+
+  const direto = calcNumeroMetaOpcional(burst.effectRateUpPercent);
+  if (Number.isFinite(direto)) return direto;
+
+  const bruto = calcNumeroMetaOpcional(burst.functionValue2);
+  return Number.isFinite(bruto) ? bruto / 100 : null;
+}
+
+function calcBurstDisponivel(skill) {
+  if (!skill) return false;
+
+  if (calcBurstEhEfeito(skill)) {
+    return Boolean(skill.hasEffect);
+  }
+
+  if (calcBurstEhDano(skill)) {
+    const burst = calcBurstMeta(skill);
+    const perHit = Number(burst && burst.perHit);
+    const total = Number(burst && burst.total);
+
+    return Boolean(
+      skill.available &&
+      Number.isFinite(perHit) && perHit > 0 &&
+      Number.isFinite(total) && total > 0
+    );
+  }
+
+  return false;
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
@@ -5865,30 +5977,52 @@ function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
   const hits = Number(skill && skill.hits) || 0;
   const perHit = Number(skill && skill.perHit) || 0;
   const baseTotal = Number(skill && skill.baseTotal) || 0;
+  const effectName = String((skill && skill.effectName) || "").trim();
+  const effectChance = calcNumeroMetaOpcional(skill && skill.effectChance);
+  const attributeEffects = String((skill && skill.attributeEffects) || "").trim();
   const burst = modoTooltip === "burst";
+  const burstMeta = calcBurstMeta(skill);
 
   const tooltipLinhas = [];
   let tooltipTitulo = nome;
   let tooltipDescricao = descricao;
 
   if (burst) {
-    tooltipTitulo = nome + " • BURST";
+    const nomeBurst = String(burstMeta && burstMeta.name || "").trim();
+    tooltipTitulo = (nomeBurst || nome) + " • BURST";
     tooltipLinhas.push("BURST SKILL • BASE: SKILL " + numero + " • LEVEL 10");
 
-    if (efeitos.length) {
-      tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
-      tooltipLinhas.push("Burst de dano indisponível para Skill de efeito");
-    } else {
-      tooltipLinhas.push("Multiplicador de dano: ×3");
+    if (calcBurstEhEfeito(skill)) {
+      tooltipLinhas.push("Tipo: EFFECT RATE UP");
+      if (effectName) tooltipLinhas.push("Efeito: " + effectName);
+      else if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+      if (Number.isFinite(effectChance)) tooltipLinhas.push("Chance base: " + calcFormatar(effectChance) + "%");
+
+      const rateUp = calcBurstRateUpPercent(skill);
+      if (Number.isFinite(rateUp)) tooltipLinhas.push("Bônus Burst na taxa do efeito: +" + calcFormatar(rateUp) + "%");
+
+      if (hits && perHit && baseTotal) {
+        tooltipLinhas.push("Dano permanece igual: " + hits + " hits × " + calcFormatar(perHit) + "% = " + calcFormatar(baseTotal) + "%");
+      } else {
+        tooltipLinhas.push("Sem coeficiente percentual de dano na base");
+      }
+
+      tooltipDescricao = descricao || "A Burst aumenta a taxa do efeito; não multiplica o dano normal desta Skill.";
+    } else if (calcBurstEhDano(skill)) {
+      tooltipLinhas.push("Tipo: DAMAGE VALUE UP");
       if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
-      if (hits && perHit) {
-        const burstPerHit = perHit * 3;
-        const burstTotal = baseTotal > 0 ? baseTotal * 3 : burstPerHit * hits;
+
+      const burstPerHit = Number(burstMeta && burstMeta.perHit);
+      const burstTotal = Number(burstMeta && burstMeta.total);
+      if (hits && Number.isFinite(burstPerHit) && Number.isFinite(burstTotal)) {
         tooltipLinhas.push(
           hits + " hits × " + calcFormatar(burstPerHit) + "% = " + calcFormatar(burstTotal) + "%"
         );
       }
-      tooltipDescricao = "Informações da Burst calculadas a partir da Skill base selecionada.";
+
+      tooltipDescricao = "Valores de Burst lidos diretamente da DATABASE MASTER FINAL.";
+    } else {
+      tooltipLinhas.push("Dados de Burst indisponíveis para esta Skill");
     }
   } else {
     tooltipLinhas.push("SKILL " + numero + " • LEVEL 10");
@@ -5899,7 +6033,10 @@ function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
         (baseTotal > 0 ? " = " + calcFormatar(baseTotal) + "%" : "")
       );
     }
-    if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+    if (effectName) tooltipLinhas.push("Efeito: " + effectName);
+    else if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+    if (Number.isFinite(effectChance)) tooltipLinhas.push("Chance: " + calcFormatar(effectChance) + "%");
+    if (attributeEffects) tooltipLinhas.push("Mudança por elemento: " + attributeEffects);
   }
 
   const tooltip = `
@@ -6340,8 +6477,8 @@ function atualizarCalculadora() {
    * dano base daquele hit × (Elemento Total do Tamer / 100)
    *
    * BURST:
-   * a Skill 1/2/3 escolhida mantém hits e elementos,
-   * mas triplica o coeficiente base por hit e o bônus elemental.
+   * - DAMAGE_VALUE_UP usa os valores exatos de Burst da MASTER.
+   * - EFFECT_RATE_UP preserva o dano normal e aumenta a taxa do efeito.
    */
   const fatorElemento =
     bonusElemento / 100;
@@ -6441,6 +6578,10 @@ function atualizarCalculadora() {
                 )
                 .join("");
 
+            const efeitoNome = String(skill.effectName || "").trim();
+            const efeitoChance = calcNumeroMetaOpcional(skill.effectChance);
+            const efeitoDescricao = String(skill.description || "").trim();
+            const efeitoLabel = efeitoNome || (Array.isArray(skill.effects) ? skill.effects.join(" + ") : "");
 
             return `
               <article class="calc-skill-card nao-aplica">
@@ -6449,14 +6590,31 @@ function atualizarCalculadora() {
 
                   ${calcSkillIdentityHtml(skill, index, false)}
 
-                  <span class="calc-status nao">
-                    SEM COEFICIENTE
+                  <span class="calc-status ${skill.hasEffect ? "sim" : "nao"}">
+                    ${
+                      skill.hasEffect
+                        ? escaparHtml(
+                            efeitoLabel +
+                            (Number.isFinite(efeitoChance) ? " • " + calcFormatar(efeitoChance) + "%" : "")
+                          )
+                        : "SEM COEFICIENTE"
+                    }
                   </span>
 
                 </div>
 
                 <div class="calc-breakdown">
-                  Esta skill não possui coeficiente de ataque utilizável na base atual.
+                  ${
+                    skill.hasEffect
+                      ? `
+                        ${efeitoNome ? `<strong>${escaparHtml(efeitoNome)}</strong>` : "Skill de efeito"}
+                        ${Number.isFinite(efeitoChance) ? ` • chance base <strong>${calcFormatar(efeitoChance)}%</strong>` : ""}
+                        <br>
+                        Esta Skill não possui coeficiente percentual de dano utilizável na base, mas mantém normalmente seu elemento e as trocas de elemento.
+                        ${efeitoDescricao ? `<br>${escaparHtml(efeitoDescricao)}` : ""}
+                      `
+                      : `Esta skill não possui coeficiente de ataque utilizável na base atual.`
+                  }
                 </div>
 
                 <div class="calc-elements">
@@ -6663,14 +6821,7 @@ function atualizarCalculadora() {
         return { skill: skill, index: index };
       })
       .filter(function(item) {
-        return (
-          item.skill &&
-          item.skill.available &&
-          !item.skill.hasEffect &&
-          Number.isFinite(item.skill.baseTotal) &&
-          Number.isFinite(item.skill.perHit) &&
-          Number.isFinite(item.skill.hits)
-        );
+        return calcBurstDisponivel(item.skill);
       });
 
 
@@ -6689,19 +6840,15 @@ function atualizarCalculadora() {
   const opcoesBurst =
     digi.skills
       .map(function(skill, index) {
-        const coeficienteDisponivel =
-          skill &&
-          skill.available &&
-          Number.isFinite(skill.baseTotal) &&
-          Number.isFinite(skill.perHit) &&
-          Number.isFinite(skill.hits);
-
-        const efeitoBloqueia = Boolean(skill && skill.hasEffect);
-        const disponivel = coeficienteDisponivel && !efeitoBloqueia;
+        const disponivel = calcBurstDisponivel(skill);
         const nome = calcNomeSkill(skill, index);
-        const motivo = efeitoBloqueia
-          ? "Skill de efeito — Burst sem cálculo de dano"
-          : (disponivel ? "Usar como base da Burst" : "Coeficiente indisponível");
+        let motivo = "Dados de Burst indisponíveis";
+
+        if (disponivel && calcBurstEhEfeito(skill)) {
+          motivo = "Burst aumenta a taxa do efeito; dano normal não é multiplicado";
+        } else if (disponivel && calcBurstEhDano(skill)) {
+          motivo = "Burst de dano com valores exatos da MASTER";
+        }
 
         return `
           <button
@@ -6732,7 +6879,7 @@ function atualizarCalculadora() {
             BURST SKILL
           </div>
           <div class="calc-skill-lv">
-            MULTIPLICADOR ×3
+            DADOS DA DATABASE MASTER FINAL
           </div>
         </div>
       </div>
@@ -6743,7 +6890,7 @@ function atualizarCalculadora() {
       </div>
 
       <div class="calc-breakdown">
-        Nenhuma Skill com coeficiente utilizável está disponível para a Burst.
+        Nenhuma Skill com dados de Burst utilizáveis está disponível.
       </div>
     </article>
   `;
@@ -6751,224 +6898,254 @@ function atualizarCalculadora() {
 
   if (
     skillBurst &&
-    skillBurst.available &&
-    Number.isFinite(
-      skillBurst.baseTotal
-    ) &&
-    Number.isFinite(
-      skillBurst.perHit
-    ) &&
-    Number.isFinite(
-      skillBurst.hits
-    ) &&
-    !skillBurst.hasEffect
+    calcBurstDisponivel(skillBurst)
   ) {
+    const numeroSkillBurst = calcBurstSkillSelecionada + 1;
+    const nomeSkillBurst = calcNomeSkill(skillBurst, calcBurstSkillSelecionada);
+    const burstMeta = calcBurstMeta(skillBurst) || {};
+    const nomeBurst = String(burstMeta.name || nomeSkillBurst).trim();
 
     const aplicaBurst =
-      Array.isArray(
-        skillBurst.elements
-      )
-      &&
-      skillBurst.elements.includes(
-        elemento
-      );
-
-
-    const perHitBurst =
-      skillBurst.perHit * 3;
-
-    const baseTotalBurst =
-      skillBurst.baseTotal * 3;
-
-    const bonusNormalPorHit =
-      aplicaBurst
-        ? (
-            skillBurst.perHit *
-            fatorElemento
-          )
-        : 0;
-
-    const bonusBurstPorHit =
-      bonusNormalPorHit * 3;
-
-    const bonusBurstTotal =
-      bonusBurstPorHit *
-      skillBurst.hits;
-
-    const totalBurst =
-      baseTotalBurst +
-      bonusBurstTotal;
-
-    const numeroSkillBurst =
-      calcBurstSkillSelecionada + 1;
-
-    const nomeSkillBurst =
-      calcNomeSkill(skillBurst, calcBurstSkillSelecionada);
+      Array.isArray(skillBurst.elements) &&
+      skillBurst.elements.includes(elemento);
 
     const tagsBurst =
-      (
-        skillBurst.elements ||
-        []
-      )
-        .map(
-          function(el) {
-            return `
-              <span
-                class="calc-element-tag ${
-                  el === elemento
-                    ? "ativo"
-                    : ""
-                }"
-              >
-                ${el}
-              </span>
-            `;
-          }
-        )
+      (skillBurst.elements || [])
+        .map(function(el) {
+          return `
+            <span
+              class="calc-element-tag ${el === elemento ? "ativo" : ""}"
+            >
+              ${el}
+            </span>
+          `;
+        })
         .join("");
 
+    if (calcBurstEhEfeito(skillBurst)) {
+      const effectName = String(skillBurst.effectName || (skillBurst.effects || []).join(" + ") || "Efeito").trim();
+      const effectChance = calcNumeroMetaOpcional(skillBurst.effectChance);
+      const rateUp = calcBurstRateUpPercent(skillBurst);
 
-    cardBurst = `
-      <article
-        class="calc-skill-card calc-burst-card ${
+      let danoNormalTotal = null;
+      let bonusNormalPorHit = 0;
+      let bonusNormalTotal = 0;
+
+      if (skillBurst.available) {
+        bonusNormalPorHit =
           aplicaBurst
-            ? "aplica"
-            : "nao-aplica"
-        }"
-      >
+            ? skillBurst.perHit * fatorElemento
+            : 0;
 
-        <div class="calc-skill-top">
-          <div>
-            <div class="calc-skill-title calc-burst-title">
-              BURST SKILL
+        bonusNormalTotal =
+          bonusNormalPorHit * skillBurst.hits;
+
+        danoNormalTotal =
+          skillBurst.baseTotal + bonusNormalTotal;
+      }
+
+      cardBurst = `
+        <article class="calc-skill-card calc-burst-card aplica">
+
+          <div class="calc-skill-top">
+            <div>
+              <div class="calc-skill-title calc-burst-title">
+                BURST SKILL
+              </div>
+              <div class="calc-skill-lv">
+                ${escaparHtml(nomeBurst)} • LEVEL 10 • EFFECT RATE UP
+              </div>
             </div>
-            <div class="calc-skill-lv">
-              ${escaparHtml(nomeSkillBurst)} • LEVEL 10 • MULTIPLICADOR ×3
+
+            <span class="calc-status sim">
+              BURST DE EFEITO
+            </span>
+          </div>
+
+          <div class="calc-burst-selector-row">
+            <span class="calc-burst-selector-label">Burst baseada em</span>
+            <div class="calc-burst-skill-options">${opcoesBurst}</div>
+          </div>
+
+          <div class="calc-formula-row calc-burst-formula">
+            <div>
+              <div class="calc-number-label">
+                ${skillBurst.available ? "Dano normal total" : "Chance base do efeito"}
+              </div>
+              <div class="calc-number">
+                ${
+                  skillBurst.available
+                    ? calcFormatar(danoNormalTotal) + "%"
+                    : (Number.isFinite(effectChance) ? calcFormatar(effectChance) + "%" : "-")
+                }
+              </div>
+            </div>
+
+            <div class="calc-arrow">→</div>
+
+            <div>
+              <div class="calc-number-label">
+                ${skillBurst.available ? "Dano na Burst" : "Bônus Burst na taxa"}
+              </div>
+              <div class="calc-number final calc-burst-final">
+                ${
+                  skillBurst.available
+                    ? calcFormatar(danoNormalTotal) + "%"
+                    : (Number.isFinite(rateUp) ? "+" + calcFormatar(rateUp) + "%" : "RATE UP")
+                }
+              </div>
             </div>
           </div>
 
-          <span
-            class="calc-status ${
-              aplicaBurst
-                ? "sim"
-                : "nao"
-            }"
-          >
+          <div class="calc-breakdown calc-burst-breakdown">
+            Efeito:
+            <strong>${escaparHtml(effectName)}</strong>
+            ${Number.isFinite(effectChance) ? ` • chance base <strong>${calcFormatar(effectChance)}%</strong>` : ""}
+
+            <br>
+
+            Burst:
+            <strong>EFFECT RATE UP${Number.isFinite(rateUp) ? " +" + calcFormatar(rateUp) + "%" : ""}</strong>
+
+            <br>
+
+            <strong>O dano não é multiplicado pela Burst.</strong>
+            ${
+              skillBurst.available
+                ? `
+                  <br>
+                  Dano normal preservado:
+                  <strong>${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%</strong>
+                  = ${calcFormatar(skillBurst.baseTotal)}%
+                  ${
+                    aplicaBurst
+                      ? `
+                        <br>
+                        Bônus elemental por hit permanece normal:
+                        <strong>+${calcFormatar(bonusNormalPorHit)}%</strong>
+                        <br>
+                        Total com elemento:
+                        <strong>${calcFormatar(danoNormalTotal)}%</strong>
+                      `
+                      : ""
+                  }
+                `
+                : `
+                  <br>
+                  Esta Skill não possui coeficiente percentual de dano na base, mas mantém normalmente seu elemento e suas trocas de elemento.
+                `
+            }
+          </div>
+
+          <div class="calc-elements">
+            ${tagsBurst}
+          </div>
+
+        </article>
+      `;
+    } else if (calcBurstEhDano(skillBurst)) {
+      const burstPerHit = Number(burstMeta.perHit);
+      const burstBaseTotal = Number(burstMeta.total);
+
+      const bonusBurstPorHit =
+        aplicaBurst
+          ? burstPerHit * fatorElemento
+          : 0;
+
+      const bonusBurstTotal =
+        bonusBurstPorHit * skillBurst.hits;
+
+      const totalBurst =
+        burstBaseTotal + bonusBurstTotal;
+
+      cardBurst = `
+        <article
+          class="calc-skill-card calc-burst-card ${aplicaBurst ? "aplica" : "nao-aplica"}"
+        >
+
+          <div class="calc-skill-top">
+            <div>
+              <div class="calc-skill-title calc-burst-title">
+                BURST SKILL
+              </div>
+              <div class="calc-skill-lv">
+                ${escaparHtml(nomeBurst)} • LEVEL 10 • DAMAGE VALUE UP
+              </div>
+            </div>
+
+            <span class="calc-status ${aplicaBurst ? "sim" : "nao"}">
+              ${aplicaBurst ? elemento + " APLICADO" : "SEM BÔNUS"}
+            </span>
+          </div>
+
+          <div class="calc-burst-selector-row">
+            <span class="calc-burst-selector-label">Burst baseada em</span>
+            <div class="calc-burst-skill-options">${opcoesBurst}</div>
+          </div>
+
+          <div class="calc-formula-row calc-burst-formula">
+            <div>
+              <div class="calc-number-label">Base Burst total</div>
+              <div class="calc-number">${calcFormatar(burstBaseTotal)}%</div>
+            </div>
+
+            <div class="calc-arrow">→</div>
+
+            <div>
+              <div class="calc-number-label">Dano Burst total</div>
+              <div class="calc-number final calc-burst-final">${calcFormatar(totalBurst)}%</div>
+            </div>
+          </div>
+
+          <div class="calc-breakdown calc-burst-breakdown">
+            ${escaparHtml(nomeSkillBurst)} original:
+            <strong>${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%</strong>
+            = ${calcFormatar(skillBurst.baseTotal)}%
+
+            <br>
+
+            ${escaparHtml(nomeBurst)}:
+            <strong>${skillBurst.hits} hits × ${calcFormatar(burstPerHit)}%</strong>
+            = ${calcFormatar(burstBaseTotal)}%
+
+            <br>
+
             ${
               aplicaBurst
-                ? elemento + " APLICADO"
-                : "SEM BÔNUS"
+                ? `
+                  Bônus elemental Burst por hit:
+                  <strong class="calc-number bonus" style="font-size:13px;">
+                    +${calcFormatar(bonusBurstPorHit)}%
+                  </strong>
+                  (${calcFormatar(burstPerHit)} × ${calcFormatar(bonusElemento)}%)
+
+                  <br>
+
+                  Bônus elemental Burst total:
+                  <strong>+${calcFormatar(bonusBurstTotal)}%</strong>
+
+                  <br>
+
+                  <strong>
+                    ${skillBurst.hits} hits ×
+                    (${calcFormatar(burstPerHit)}% + ${calcFormatar(bonusBurstPorHit)}%)
+                  </strong>
+                  = <strong>${calcFormatar(totalBurst)}%</strong>
+                `
+                : `
+                  O elemento ${elemento} não entra na Skill ${numeroSkillBurst};
+                  portanto não há bônus elemental nesta Burst.
+                `
             }
-          </span>
-        </div>
-
-
-        <div class="calc-burst-selector-row">
-          <span class="calc-burst-selector-label">Burst baseada em</span>
-          <div class="calc-burst-skill-options">${opcoesBurst}</div>
-        </div>
-
-
-        <div class="calc-formula-row calc-burst-formula">
-
-          <div>
-            <div class="calc-number-label">
-              Base Burst total
-            </div>
-            <div class="calc-number">
-              ${calcFormatar(baseTotalBurst)}%
-            </div>
           </div>
 
-          <div class="calc-arrow">
-            →
+          <div class="calc-elements">
+            ${tagsBurst}
           </div>
 
-          <div>
-            <div class="calc-number-label">
-              Dano Burst total
-            </div>
-            <div class="calc-number final calc-burst-final">
-              ${calcFormatar(totalBurst)}%
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="calc-breakdown calc-burst-breakdown">
-          ${escaparHtml(nomeSkillBurst)} original:
-          <strong>
-            ${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%
-          </strong>
-          ${skillBurst.baseTotalExato ? "≈" : "="} ${calcFormatar(skillBurst.baseTotal)}%
-
-          <br>
-
-          Burst ×3:
-          ${
-            skillBurst.baseTotalExato
-              ? `<strong>${calcFormatar(skillBurst.baseTotal)}% × 3</strong> = ${calcFormatar(baseTotalBurst)}%`
-              : `<strong>${skillBurst.hits} hits × ${calcFormatar(perHitBurst)}%</strong> = ${calcFormatar(baseTotalBurst)}%`
-          }
-
-          <br>
-
-          ${
-            aplicaBurst
-              ? `
-                Bônus elemental normal por hit:
-                <strong>
-                  +${calcFormatar(bonusNormalPorHit)}%
-                </strong>
-
-                <br>
-
-                Bônus elemental Burst por hit:
-                <strong class="calc-number bonus" style="font-size:13px;">
-                  +${calcFormatar(bonusBurstPorHit)}%
-                </strong>
-                (${calcFormatar(bonusNormalPorHit)} × 3)
-
-                <br>
-
-                Bônus elemental Burst total:
-                <strong>
-                  +${calcFormatar(bonusBurstTotal)}%
-                </strong>
-
-                <br>
-
-                ${
-                  skillBurst.baseTotalExato
-                    ? `
-                      <strong>${calcFormatar(baseTotalBurst)}%</strong>
-                      + <strong>${calcFormatar(bonusBurstTotal)}%</strong>
-                      = <strong>${calcFormatar(totalBurst)}%</strong>
-                    `
-                    : `
-                      <strong>
-                        ${skillBurst.hits} hits ×
-                        (${calcFormatar(perHitBurst)}% + ${calcFormatar(bonusBurstPorHit)}%)
-                      </strong>
-                      = <strong>${calcFormatar(totalBurst)}%</strong>
-                    `
-                }
-              `
-              : `
-                O elemento ${elemento} não entra na Skill ${numeroSkillBurst};
-                portanto a Burst mantém apenas o dano base ×3.
-              `
-          }
-        </div>
-
-
-        <div class="calc-elements">
-          ${tagsBurst}
-        </div>
-
-      </article>
-    `;
+        </article>
+      `;
+    }
   }
 
 
