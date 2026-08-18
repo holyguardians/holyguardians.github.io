@@ -17941,3 +17941,87 @@ body.hg-display-scaled footer {
     grid-column: auto;
   }
 }
+
+
+/* =====================================================
+   DIGIDEX EVOLUTION V3 — PREVIOUS COMPACTO + NEXT AMPLO
+===================================================== */
+#databasePagina .digidex-evolution-flow {
+  padding-top: 12px;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-layout {
+  grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-from-column {
+  padding: 9px;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-from-column .digidex-evo-list {
+  max-height: 560px;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-from-column .digidex-evo-node {
+  min-height: 62px;
+  grid-template-columns: 48px minmax(0,1fr);
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-from-column .digidex-evo-node-image {
+  width: 48px;
+  height: 48px;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-to-column {
+  min-width: 0;
+}
+
+#databasePagina .digidex-evolution-flow .digidex-evo-to-column .digidex-evo-list {
+  max-height: 560px;
+}
+
+#databasePagina .digidex-evo-req-item-with-icon {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr);
+  align-items: center;
+  justify-content: initial;
+  gap: 8px;
+}
+
+#databasePagina .digidex-evo-req-item-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255,199,67,.34);
+  border-radius: 6px;
+  background: rgba(17,21,35,.88);
+  color: #ffd264;
+  font-size: 12px;
+}
+
+#databasePagina .digidex-evo-req-item-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#databasePagina .digidex-evo-req-item-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (max-width: 1100px) {
+  #databasePagina .digidex-evolution-flow .digidex-evo-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #databasePagina .digidex-evolution-flow .digidex-evo-from-column .digidex-evo-list {
+    max-height: 180px;
+  }
+}

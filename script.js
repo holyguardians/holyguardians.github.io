@@ -3375,7 +3375,7 @@ function filtrar() {
    DIGIDEX — PERFIL + EVOLUTION TREE
 ===================================================== */
 
-const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v1";
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v2";
 let evolutionMaster = null;
 let evolutionMasterPromise = null;
 let digidexEvolutionTrail = [];
@@ -3699,7 +3699,15 @@ function renderEvolutionRequirementsBox(row) {
   (row.items || []).forEach(function(item) {
     if (!item || !item.name) return;
     const qtd = item.quantity !== "" && item.quantity != null ? ` ×${item.quantity}` : "";
-    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-wide"><i>ITEM</i><b>${escaparHtml(item.name + qtd)}</b></span>`);
+    const local = pegarImagem(item.name);
+    const src = local || item.icon || "";
+    const fallback = local && item.icon ? item.icon : "";
+    linhas.push(`
+      <span class="digidex-evo-req-item digidex-evo-req-wide digidex-evo-req-item-with-icon">
+        <span class="digidex-evo-req-item-icon">${src ? renderImagemEvolution(src, item.name, fallback) : "◆"}</span>
+        <span class="digidex-evo-req-item-copy"><i>ITEM</i><b>${escaparHtml(item.name + qtd)}</b></span>
+      </span>
+    `);
   });
 
   if (row.partner) {
@@ -3787,11 +3795,45 @@ function abrirPotentialModalEvolution(id) {
   atualizarPotentialPlanner();
 }
 
+
+function fallbackSourceDigimonEvolution(nome) {
+  const chave = normalizarChaveDigivolution(nome);
+  const mapa = {
+    imperialdramondragonmodeinfected: "https://dsrworldwiki.com/assets/digimons/imperialdramon_dragonmode_infected.png"
+  };
+  return mapa[chave] || "";
+}
+
+function fallbackSourceSkillEvolution(skill) {
+  const id = Number(skill && skill.skillId);
+  const mapa = {
+    513701: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_1.png",
+    513702: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_2.png",
+    513703: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_3.png"
+  };
+  return mapa[id] || "";
+}
+
+function renderImagemEvolution(src, alt, fallback) {
+  const principal = String(src || "").trim();
+  const reserva = String(fallback || "").trim();
+  if (!principal && !reserva) return "?";
+  const inicial = principal || reserva;
+  const onerror = reserva && reserva !== inicial
+    ? ` onerror="this.onerror=null;this.src='${escaparHtml(reserva)}'"`
+    : "";
+  return `<img src="${escaparHtml(inicial)}" alt="${escaparHtml(alt || "")}" loading="lazy"${onerror}>`;
+}
+
+function fallbackDigimonEvolution(nome) {
+  return pegarImagem(nome) || fallbackSourceDigimonEvolution(nome);
+}
+
 function renderEvolutionSourceCard(source) {
   return `
     <button type="button" class="digidex-evo-node digidex-evo-node-from" onclick="navegarEvolutionDid('${escaparHtml(String(source.did))}')">
       <span class="digidex-evo-node-image">
-        ${source.icon ? `<img src="${escaparHtml(source.icon)}" alt="${escaparHtml(source.name)}" loading="lazy">` : "?"}
+        ${renderImagemEvolution(source.icon, source.name, fallbackDigimonEvolution(source.name))}
       </span>
       <span class="digidex-evo-node-copy">
         <strong>${escaparHtml(source.name || "-")}</strong>
@@ -3806,7 +3848,7 @@ function renderEvolutionTargetCard(row) {
     <article class="digidex-evo-target-card">
       <button type="button" class="digidex-evo-node digidex-evo-node-to" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
         <span class="digidex-evo-node-image">
-          ${row.toIcon ? `<img src="${escaparHtml(row.toIcon)}" alt="${escaparHtml(row.to)}" loading="lazy">` : "?"}
+          ${renderImagemEvolution(row.toIcon, row.to, fallbackDigimonEvolution(row.to))}
         </span>
         <span class="digidex-evo-node-copy">
           <strong>${escaparHtml(row.to || "-")}</strong>
@@ -3871,7 +3913,7 @@ function renderSkillCardEvolution(skill, index) {
   return `
     <div class="digidex-profile-skill" tabindex="0">
       <span class="digidex-profile-skill-icon">
-        ${skill.icon ? `<img src="${escaparHtml(skill.icon)}" alt="${escaparHtml(skill.name)}" loading="lazy">` : `<b>S${slot}</b>`}
+        ${(skill.icon || fallbackSourceSkillEvolution(skill)) ? renderImagemEvolution(skill.icon, skill.name, fallbackSourceSkillEvolution(skill)) : `<b>S${slot}</b>`}
       </span>
       <span class="digidex-profile-skill-copy">
         <strong>${escaparHtml(skill.name || ("SKILL " + slot))}</strong>
@@ -3926,7 +3968,7 @@ function renderizarPerfilDigidexEvolution(current) {
 
     <div class="digidex-profile-hero">
       <div class="digidex-profile-portrait">
-        ${current.icon ? `<img src="${escaparHtml(current.icon)}" alt="${escaparHtml(current.name)}">` : "⚔️"}
+        ${renderImagemEvolution(current.icon, current.name, fallbackDigimonEvolution(current.name))}
       </div>
 
       <div class="digidex-profile-identity">
@@ -3961,26 +4003,12 @@ function renderizarPerfilDigidexEvolution(current) {
       </div>
     </section>
 
-    <section class="digidex-profile-section digidex-evolution-tree">
-      <div class="digidex-profile-section-title">
-        <span>EVOLUTION TREE</span>
-        <small>Clique em qualquer Digimon para navegar pela linha evolutiva.</small>
-      </div>
-
+    <section class="digidex-profile-section digidex-evolution-tree digidex-evolution-flow">
       <div class="digidex-evo-layout">
         <div class="digidex-evo-column digidex-evo-from-column">
           <header><span>←</span><strong>EVOLVES FROM</strong><small>${incoming.length}</small></header>
           <div class="digidex-evo-list">
             ${incoming.length ? incoming.map(renderEvolutionSourceCard).join("") : `<div class="digidex-evo-empty">INÍCIO DA LINHA</div>`}
-          </div>
-        </div>
-
-        <div class="digidex-evo-current-column">
-          <span class="digidex-evo-current-label">CURRENT</span>
-          <div class="digidex-evo-current-card">
-            <span class="digidex-evo-current-image">${current.icon ? `<img src="${escaparHtml(current.icon)}" alt="">` : "?"}</span>
-            <strong>${escaparHtml(current.name)}</strong>
-            ${renderEvolutionStage(current.stage)}
           </div>
         </div>
 
