@@ -1979,83 +1979,45 @@ function mostrarPagina(
 
 function abrirPaginaPelaUrl() {
 
-  const rota =
-    String(
-      window.location.hash || "#home"
-    )
-      .replace(/^#/, "")
-      .trim()
-      .toLowerCase();
-
+  const rotaInfo = rotaDigidexPerfilAtual();
+  const rota = rotaInfo.base;
 
   const mapa = {
-    home: {
-      pagina: "homePagina",
-      botao: "btnHome"
-    },
-    digidex: {
-      pagina: "databasePagina",
-      botao: "btnDatabase"
-    },
-    digivolution: {
-      pagina: "digivolutionPagina",
-      botao: "btnDigivolution"
-    },
-    comparacao: {
-      pagina: "comparacaoPagina",
-      botao: "btnComparacao"
-    },
-    "team-builder": {
-      pagina: "builderPagina",
-      botao: "btnBuilder"
-    },
-    "status-simulator": {
-      pagina: "statusSimulatorPagina",
-      botao: "btnStatusSimulator"
-    },
-    elementos: {
-      pagina: "elementosPagina",
-      botao: "btnElementos"
-    },
-    pvp: {
-      pagina: "pvpPagina",
-      botao: "btnPvp"
-    },
-    calculadora: {
-      pagina: "calculadoraPagina",
-      botao: "btnCalculadora"
-    },
-    "raid-boss": {
-      pagina: "raidBossPagina",
-      botao: "btnRaidBoss"
-    },
-    "dekyu-treasure": {
-      pagina: "dekyuTreasurePagina",
-      botao: "btnDekyuTreasure"
-    },
-    social: {
-      pagina: "socialPagina",
-      botao: "btnSocial"
-    },
-    comunidade: {
-      pagina: "socialPagina",
-      botao: "btnSocial"
-    }
+    home: { pagina: "homePagina", botao: "btnHome" },
+    digidex: { pagina: "databasePagina", botao: "btnDatabase" },
+    digivolution: { pagina: "digivolutionPagina", botao: "btnDigivolution" },
+    comparacao: { pagina: "comparacaoPagina", botao: "btnComparacao" },
+    "team-builder": { pagina: "builderPagina", botao: "btnBuilder" },
+    "status-simulator": { pagina: "statusSimulatorPagina", botao: "btnStatusSimulator" },
+    elementos: { pagina: "elementosPagina", botao: "btnElementos" },
+    pvp: { pagina: "pvpPagina", botao: "btnPvp" },
+    calculadora: { pagina: "calculadoraPagina", botao: "btnCalculadora" },
+    "raid-boss": { pagina: "raidBossPagina", botao: "btnRaidBoss" },
+    "dekyu-treasure": { pagina: "dekyuTreasurePagina", botao: "btnDekyuTreasure" },
+    social: { pagina: "socialPagina", botao: "btnSocial" },
+    comunidade: { pagina: "socialPagina", botao: "btnSocial" }
   };
 
-
-  const destino =
-    mapa[rota] || mapa.home;
-
+  const destino = mapa[rota] || mapa.home;
 
   mostrarPagina(
     destino.pagina,
-    document.getElementById(
-      destino.botao
-    ),
+    document.getElementById(destino.botao),
     false
   );
 
+  if (rota !== "digidex") return;
+
+  if (!rotaInfo.perfil) {
+    fecharPerfilDigidex(true);
+    return;
+  }
+
+  // No primeiro carregamento a DATABASE pode ainda estar chegando da API.
+  // Esperamos ela para que HP/SP/STR/etc. já apareçam no perfil restaurado pelo F5.
+  if (!Array.isArray(database) || !database.length) return;
+
+  abrirPerfilDigidex(rotaInfo.perfil, false, true);
 }
 
 
@@ -3380,7 +3342,7 @@ function filtrar() {
    DIGIDEX — PERFIL + EVOLUTION TREE
 ===================================================== */
 
-const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v4";
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v5";
 let evolutionMaster = null;
 let evolutionMasterPromise = null;
 let digidexEvolutionTrail = [];
@@ -3395,6 +3357,37 @@ function normalizarNomeEvolution(valor) {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+function criarSlugDigidexPerfil(valor) {
+  let nome = String(valor || "").trim().toLowerCase();
+  try {
+    nome = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (erro) {}
+  return nome
+    .replace(/\[mutant\]/g, " mutant ")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "digimon";
+}
+
+function rotaDigidexPerfilAtual() {
+  const bruto = String(window.location.hash || "#home").replace(/^#/, "");
+  const partes = bruto.split("/");
+  const base = String(partes.shift() || "home").trim().toLowerCase();
+  let perfil = partes.join("/").trim();
+  try { perfil = decodeURIComponent(perfil); } catch (erro) {}
+  return { base: base, perfil: perfil };
+}
+
+function atualizarUrlPerfilDigidex(current, substituir) {
+  if (!current) return;
+  const slug = criarSlugDigidexPerfil(current.name);
+  const hash = "#digidex/" + encodeURIComponent(slug);
+  if (window.location.hash === hash) return;
+  const metodo = substituir ? "replaceState" : "pushState";
+  history[metodo]({ pagina: "databasePagina", digimon: current.name, did: current.did }, "", hash);
+}
+
 
 function numeroEvolution(valor) {
   if (valor == null) return null;
@@ -3449,6 +3442,7 @@ function prepararIndicesEvolution(dados) {
 
   dados.byDid = {};
   dados.byName = {};
+  dados.bySlug = {};
   dados.skillsByDid = {};
   dados.incomingByDid = {};
   dados.outgoingByDid = {};
@@ -3456,6 +3450,8 @@ function prepararIndicesEvolution(dados) {
   (dados.digimons || []).forEach(function(d) {
     if (d.did != null) dados.byDid[String(d.did)] = d;
     dados.byName[normalizarNomeEvolution(d.name)] = d;
+    const slug = criarSlugDigidexPerfil(d.name);
+    if (!dados.bySlug[slug]) dados.bySlug[slug] = d;
   });
 
   (dados.skills || []).forEach(function(skill) {
@@ -3533,9 +3529,10 @@ function encontrarDigimonEvolution(nomeOuDid) {
   if (evolutionMaster.byDid && evolutionMaster.byDid[chaveDid]) {
     return evolutionMaster.byDid[chaveDid];
   }
-  return evolutionMaster.byName[
-    normalizarNomeEvolution(nomeOuDid)
-  ] || null;
+  const porNome = evolutionMaster.byName[normalizarNomeEvolution(nomeOuDid)];
+  if (porNome) return porNome;
+  const slug = criarSlugDigidexPerfil(nomeOuDid);
+  return evolutionMaster.bySlug && evolutionMaster.bySlug[slug] || null;
 }
 
 function encontrarDatabaseEvolution(nome) {
@@ -3545,16 +3542,19 @@ function encontrarDatabaseEvolution(nome) {
   }) || null;
 }
 
-function fecharPerfilDigidex() {
+function fecharPerfilDigidex(semAtualizarUrl) {
   const pagina = document.getElementById("databasePagina");
   const perfil = document.getElementById("digidexProfile");
   if (pagina) pagina.classList.remove("digidex-profile-open");
   if (perfil) perfil.hidden = true;
   digidexEvolutionTrail = [];
+  if (!semAtualizarUrl && window.location.hash !== "#digidex") {
+    history.pushState({ pagina: "databasePagina" }, "", "#digidex");
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function abrirPerfilDigidex(nomeOuDid, navegando) {
+function abrirPerfilDigidex(nomeOuDid, navegando, semAtualizarUrl) {
   const pagina = document.getElementById("databasePagina");
   const perfil = document.getElementById("digidexProfile");
   if (!pagina || !perfil) return;
@@ -3584,6 +3584,7 @@ function abrirPerfilDigidex(nomeOuDid, navegando) {
         digidexEvolutionTrail.push({ did: current.did, name: current.name });
       }
 
+      if (!semAtualizarUrl) atualizarUrlPerfilDigidex(current, false);
       renderizarPerfilDigidexEvolution(current);
       window.scrollTo({ top: 0, behavior: "smooth" });
     })
@@ -9014,6 +9015,9 @@ function carregarDatabase() {
         inicializarCalculadora();
         renderizarStatusSimulator();
         renderizarRaids();
+
+        // Se a URL for #digidex/<digimon>, restaura o perfil depois que os stats chegaram.
+        abrirPaginaPelaUrl();
 
       }
     )
