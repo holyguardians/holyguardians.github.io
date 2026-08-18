@@ -1448,6 +1448,186 @@ function selecionarFiltroType(tipo, botao) {
 ===================================================== */
 
 /* =====================================================
+   AJUSTE DE TELA — PÚBLICO / PERSISTENTE POR NAVEGADOR
+===================================================== */
+
+const HG_DISPLAY_SETTINGS_KEY = "hgDisplaySettingsV1";
+const HG_DISPLAY_MIN_SCALE = 85;
+const HG_DISPLAY_MAX_SCALE = 130;
+const HG_DISPLAY_STEP = 5;
+
+const HG_DISPLAY_PRESETS = {
+  auto: { scale: 100, ultrawide: false },
+  compact: { scale: 90, ultrawide: false },
+  comfortable: { scale: 110, ultrawide: false },
+  large: { scale: 120, ultrawide: false },
+  ultrawide: { scale: 112, ultrawide: true }
+};
+
+let hgDisplayState = {
+  preset: "auto",
+  scale: 100,
+  ultrawide: false
+};
+
+function limitarHgDisplayScale(valor) {
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return 100;
+  return Math.min(HG_DISPLAY_MAX_SCALE, Math.max(HG_DISPLAY_MIN_SCALE, Math.round(numero)));
+}
+
+function lerHgDisplaySettings() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem(HG_DISPLAY_SETTINGS_KEY) || "null");
+    if (!salvo || typeof salvo !== "object") return null;
+
+    const preset = Object.prototype.hasOwnProperty.call(HG_DISPLAY_PRESETS, salvo.preset)
+      ? salvo.preset
+      : "custom";
+
+    return {
+      preset: preset,
+      scale: limitarHgDisplayScale(salvo.scale),
+      ultrawide: Boolean(salvo.ultrawide)
+    };
+  } catch (erro) {
+    return null;
+  }
+}
+
+function salvarHgDisplaySettings() {
+  try {
+    localStorage.setItem(HG_DISPLAY_SETTINGS_KEY, JSON.stringify(hgDisplayState));
+  } catch (erro) {
+    /* A interface continua funcionando mesmo com storage bloqueado. */
+  }
+}
+
+function aplicarHgDisplaySettings(estado, persistir = true) {
+  const body = document.body;
+  if (!body) return;
+
+  const scale = limitarHgDisplayScale(estado && estado.scale);
+  const ultrawide = Boolean(estado && estado.ultrawide);
+  const presetInformado = estado && estado.preset;
+  const preset = Object.prototype.hasOwnProperty.call(HG_DISPLAY_PRESETS, presetInformado)
+    ? presetInformado
+    : "custom";
+
+  hgDisplayState = { preset, scale, ultrawide };
+
+  body.dataset.hgDisplayPreset = preset;
+  body.classList.toggle("hg-display-scaled", scale !== 100);
+  body.classList.toggle("hg-display-ultrawide", ultrawide);
+  document.documentElement.style.setProperty("--hg-interface-scale", String(scale / 100));
+
+  if (persistir) salvarHgDisplaySettings();
+  atualizarHgDisplaySettingsUi();
+}
+
+function selecionarHgDisplayPreset(nome) {
+  const preset = HG_DISPLAY_PRESETS[nome] || HG_DISPLAY_PRESETS.auto;
+  aplicarHgDisplaySettings({
+    preset: HG_DISPLAY_PRESETS[nome] ? nome : "auto",
+    scale: preset.scale,
+    ultrawide: preset.ultrawide
+  });
+}
+
+function ajustarHgDisplayScale(delta) {
+  const atual = limitarHgDisplayScale(hgDisplayState.scale);
+  const proximo = limitarHgDisplayScale(atual + Number(delta || 0));
+  aplicarHgDisplaySettings({ preset: "custom", scale: proximo, ultrawide: hgDisplayState.ultrawide });
+}
+
+function resetarHgDisplaySettings() {
+  aplicarHgDisplaySettings({ preset: "auto", scale: 100, ultrawide: false });
+}
+
+function atualizarHgDisplayScreenInfo() {
+  const screenEl = document.getElementById("hgDisplayScreenSize");
+  const viewportEl = document.getElementById("hgDisplayViewportSize");
+
+  if (screenEl) {
+    const sw = window.screen && window.screen.width ? window.screen.width : "—";
+    const sh = window.screen && window.screen.height ? window.screen.height : "—";
+    screenEl.textContent = sw + " × " + sh;
+  }
+
+  if (viewportEl) {
+    viewportEl.textContent = window.innerWidth + " × " + window.innerHeight;
+  }
+}
+
+function atualizarHgDisplaySettingsUi() {
+  const valor = limitarHgDisplayScale(hgDisplayState.scale);
+  const scaleValue = document.getElementById("hgDisplayScaleValue");
+  const manualValue = document.getElementById("hgDisplayManualValue");
+
+  if (scaleValue) scaleValue.textContent = valor + "%";
+  if (manualValue) manualValue.textContent = valor + "%";
+
+  document.querySelectorAll("[data-hg-display-preset]").forEach(function(botao) {
+    botao.classList.toggle("ativo", botao.dataset.hgDisplayPreset === hgDisplayState.preset);
+  });
+
+  atualizarHgDisplayScreenInfo();
+}
+
+function abrirHgDisplaySettings() {
+  const panel = document.getElementById("hgDisplaySettingsPanel");
+  const trigger = document.getElementById("btnDisplaySettings");
+  if (!panel) return;
+
+  panel.hidden = false;
+  panel.classList.add("aberto");
+  if (trigger) trigger.setAttribute("aria-expanded", "true");
+  atualizarHgDisplaySettingsUi();
+}
+
+function fecharHgDisplaySettings() {
+  const panel = document.getElementById("hgDisplaySettingsPanel");
+  const trigger = document.getElementById("btnDisplaySettings");
+  if (!panel) return;
+
+  panel.classList.remove("aberto");
+  panel.hidden = true;
+  if (trigger) trigger.setAttribute("aria-expanded", "false");
+}
+
+function toggleHgDisplaySettings(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const panel = document.getElementById("hgDisplaySettingsPanel");
+  if (!panel) return;
+  if (panel.hidden) abrirHgDisplaySettings();
+  else fecharHgDisplaySettings();
+}
+
+function inicializarHgDisplaySettings() {
+  const salvo = lerHgDisplaySettings();
+  if (salvo) aplicarHgDisplaySettings(salvo, false);
+  else aplicarHgDisplaySettings({ preset: "auto", scale: 100, ultrawide: false }, false);
+
+  document.addEventListener("click", function(event) {
+    const panel = document.getElementById("hgDisplaySettingsPanel");
+    const trigger = document.getElementById("btnDisplaySettings");
+    if (!panel || panel.hidden) return;
+    if (panel.contains(event.target) || (trigger && trigger.contains(event.target))) return;
+    fecharHgDisplaySettings();
+  });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") fecharHgDisplaySettings();
+  });
+
+  window.addEventListener("resize", atualizarHgDisplayScreenInfo, { passive: true });
+}
+
+/* =====================================================
    HEADER RECOLHÍVEL — LOGO COMO CONTROLE
 ===================================================== */
 
@@ -1491,6 +1671,11 @@ function toggleSiteHeader(event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  /* Se o painel de tela estiver aberto, fecha antes de recolher a navegação. */
+  if (typeof fecharHgDisplaySettings === "function") {
+    fecharHgDisplaySettings();
   }
 
   const topbar = document.querySelector(".topbar");
@@ -8066,6 +8251,7 @@ document.addEventListener(
   function() {
 
     inicializarSiteHeaderRecolhivel();
+    inicializarHgDisplaySettings();
     atualizarBotoesViewDigidex();
     montarFiltrosAvancadosDigidex();
     inicializarFechamentoFiltrosDigidex();

@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260818-header-collapse-v2">
+  <link rel="stylesheet" href="styles.css?v=20260818-display-settings-v1">
 </head>
 <body>
 
@@ -133,8 +133,89 @@
       <span>Comunidade</span>
     </button>
 
+    <button
+      id="btnDisplaySettings"
+      class="nav-button hg-display-settings-trigger"
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded="false"
+      aria-controls="hgDisplaySettingsPanel"
+      aria-label="Ajuste de tela"
+      title="Ajuste de tela"
+      onclick="toggleHgDisplaySettings(event)"
+    >
+      <span class="hg-display-settings-gear" aria-hidden="true">⚙</span>
+    </button>
+
   </div>
 </nav>
+
+<div
+  id="hgDisplaySettingsPanel"
+  class="hg-display-settings-panel"
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="hgDisplaySettingsTitle"
+  hidden
+>
+  <div class="hg-display-settings-head">
+    <div>
+      <small>HOLY GUARDIANS // INTERFACE</small>
+      <strong id="hgDisplaySettingsTitle">AJUSTE DE TELA</strong>
+    </div>
+    <button type="button" class="hg-display-settings-close" aria-label="Fechar" onclick="fecharHgDisplaySettings()">×</button>
+  </div>
+
+  <div class="hg-display-screen-info">
+    <div><span>TELA</span><b id="hgDisplayScreenSize">—</b></div>
+    <div><span>VIEWPORT</span><b id="hgDisplayViewportSize">—</b></div>
+    <div><span>ESCALA</span><b id="hgDisplayScaleValue">100%</b></div>
+  </div>
+
+  <div class="hg-display-settings-section">
+    <div class="hg-display-settings-label">
+      <span>PRESET</span>
+      <small>Salvo somente neste navegador</small>
+    </div>
+    <div class="hg-display-preset-grid">
+      <button type="button" data-hg-display-preset="auto" onclick="selecionarHgDisplayPreset('auto')">
+        <b>AUTOMÁTICO</b><small>100% · padrão</small>
+      </button>
+      <button type="button" data-hg-display-preset="compact" onclick="selecionarHgDisplayPreset('compact')">
+        <b>COMPACTO</b><small>90%</small>
+      </button>
+      <button type="button" data-hg-display-preset="comfortable" onclick="selecionarHgDisplayPreset('comfortable')">
+        <b>CONFORTÁVEL</b><small>110%</small>
+      </button>
+      <button type="button" data-hg-display-preset="large" onclick="selecionarHgDisplayPreset('large')">
+        <b>GRANDE</b><small>120%</small>
+      </button>
+      <button type="button" class="hg-display-preset-ultrawide" data-hg-display-preset="ultrawide" onclick="selecionarHgDisplayPreset('ultrawide')">
+        <b>ULTRAWIDE</b><small>mais largura + 112%</small>
+      </button>
+    </div>
+  </div>
+
+  <div class="hg-display-settings-section hg-display-manual-section">
+    <div class="hg-display-settings-label">
+      <span>AJUSTE FINO</span>
+      <small>85% a 130%</small>
+    </div>
+    <div class="hg-display-manual-controls">
+      <button type="button" aria-label="Diminuir escala" onclick="ajustarHgDisplayScale(-5)">−</button>
+      <strong id="hgDisplayManualValue">100%</strong>
+      <button type="button" aria-label="Aumentar escala" onclick="ajustarHgDisplayScale(5)">+</button>
+    </div>
+  </div>
+
+  <button type="button" class="hg-display-reset" onclick="resetarHgDisplaySettings()">
+    RESTAURAR PADRÃO
+  </button>
+
+  <p class="hg-display-settings-note">
+    O ajuste altera somente a visualização neste dispositivo e não muda a resolução real do monitor.
+  </p>
+</div>
 
 <!-- =====================================================
      HOME
@@ -2270,6 +2351,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260818-header-collapse-v1"></script>
+<script src="script.js?v=20260818-display-settings-v1"></script>
 </body>
 </html>
