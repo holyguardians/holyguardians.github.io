@@ -5855,7 +5855,7 @@ function calcNomeSkill(skill, index) {
   return String((skill && skill.name) || ("Skill " + (index + 1))).trim();
 }
 
-function calcSkillIdentityHtml(skill, index, compacto) {
+function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
   const numero = index + 1;
   const nome = calcNomeSkill(skill, index);
   const icone = String((skill && skill.icon) || "").trim();
@@ -5864,23 +5864,54 @@ function calcSkillIdentityHtml(skill, index, compacto) {
   const elementoBase = String((skill && skill.baseElement) || "").trim();
   const hits = Number(skill && skill.hits) || 0;
   const perHit = Number(skill && skill.perHit) || 0;
+  const baseTotal = Number(skill && skill.baseTotal) || 0;
+  const burst = modoTooltip === "burst";
 
   const tooltipLinhas = [];
-  tooltipLinhas.push("SKILL " + numero + " • LEVEL 10");
-  if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
-  if (hits && perHit) tooltipLinhas.push(hits + " hits × " + calcFormatar(perHit) + "%");
-  if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+  let tooltipTitulo = nome;
+  let tooltipDescricao = descricao;
+
+  if (burst) {
+    tooltipTitulo = nome + " • BURST";
+    tooltipLinhas.push("BURST SKILL • BASE: SKILL " + numero + " • LEVEL 10");
+
+    if (efeitos.length) {
+      tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+      tooltipLinhas.push("Burst de dano indisponível para Skill de efeito");
+    } else {
+      tooltipLinhas.push("Multiplicador de dano: ×3");
+      if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
+      if (hits && perHit) {
+        const burstPerHit = perHit * 3;
+        const burstTotal = baseTotal > 0 ? baseTotal * 3 : burstPerHit * hits;
+        tooltipLinhas.push(
+          hits + " hits × " + calcFormatar(burstPerHit) + "% = " + calcFormatar(burstTotal) + "%"
+        );
+      }
+      tooltipDescricao = "Informações da Burst calculadas a partir da Skill base selecionada.";
+    }
+  } else {
+    tooltipLinhas.push("SKILL " + numero + " • LEVEL 10");
+    if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
+    if (hits && perHit) {
+      tooltipLinhas.push(
+        hits + " hits × " + calcFormatar(perHit) + "%" +
+        (baseTotal > 0 ? " = " + calcFormatar(baseTotal) + "%" : "")
+      );
+    }
+    if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
+  }
 
   const tooltip = `
-    <span class="calc-skill-tooltip" role="tooltip">
-      <strong>${escaparHtml(nome)}</strong>
+    <span class="calc-skill-tooltip ${burst ? "calc-burst-tooltip" : "calc-normal-tooltip"}" role="tooltip">
+      <strong>${escaparHtml(tooltipTitulo)}</strong>
       <small>${escaparHtml(tooltipLinhas.join(" • "))}</small>
-      ${descricao ? `<em>${escaparHtml(descricao)}</em>` : ""}
+      ${tooltipDescricao ? `<em>${escaparHtml(tooltipDescricao)}</em>` : ""}
     </span>
   `;
 
   return `
-    <span class="calc-skill-identity ${compacto ? "compacto" : ""}" ${compacto ? "" : 'tabindex="0"'}>
+    <span class="calc-skill-identity ${compacto ? "compacto" : ""}" tabindex="0">
       <span class="calc-skill-icon-frame">
         ${icone
           ? `<img src="${escaparHtml(icone)}" alt="${escaparHtml(nome)}">`
@@ -6680,7 +6711,7 @@ function atualizarCalculadora() {
             ${disponivel ? "" : "disabled"}
             title="${escaparHtml(nome + " — " + motivo)}"
           >
-            ${calcSkillIdentityHtml(skill, index, true)}
+            ${calcSkillIdentityHtml(skill, index, true, "burst")}
           </button>
         `;
       })

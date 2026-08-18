@@ -16897,3 +16897,88 @@ body.hg-display-scaled footer {
   max-width: 150px;
   white-space: nowrap;
 }
+
+/* =====================================================
+   CALCULADORA — TOOLTIP REAL DAS SKILLS / BURST
+   Hover no ícone OU no nome. Normal mostra dados normais;
+   seletor da Burst mostra os dados da Burst calculada.
+===================================================== */
+#calculadoraPagina .calc-skill-card:hover,
+#calculadoraPagina .calc-skill-card:focus-within {
+  z-index: 80;
+}
+
+#calculadoraPagina .calc-skill-identity:hover,
+#calculadoraPagina .calc-skill-identity:focus,
+#calculadoraPagina .calc-skill-identity:focus-within {
+  z-index: 300;
+}
+
+#calculadoraPagina .calc-skill-tooltip {
+  top: calc(100% + 9px);
+  bottom: auto;
+  z-index: 9999;
+  width: min(380px, 80vw);
+}
+
+#calculadoraPagina .calc-skill-tooltip::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: 100%;
+  border: 6px solid transparent;
+  border-bottom-color: rgba(83, 220, 255, .50);
+}
+
+#calculadoraPagina .calc-skill-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 23px;
+  bottom: 100%;
+  transform: translateY(2px);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(2, 12, 28, .985);
+}
+
+#calculadoraPagina .calc-burst-skill-option,
+#calculadoraPagina .calc-burst-selector-row,
+#calculadoraPagina .calc-burst-skill-options {
+  overflow: visible;
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-tooltip {
+  top: auto;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translate(-50%, 5px);
+  border-color: rgba(211, 135, 255, .62);
+  background: rgba(18, 7, 38, .985);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .52), 0 0 20px rgba(190, 93, 255, .18);
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-tooltip::before {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(211, 135, 255, .62);
+}
+
+#calculadoraPagina .calc-burst-skill-option .calc-skill-tooltip::after {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  transform: translate(-50%, -2px);
+  border: 5px solid transparent;
+  border-top-color: rgba(18, 7, 38, .985);
+}
+
+#calculadoraPagina .calc-burst-skill-option:hover .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option:focus-within .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity:hover .calc-skill-tooltip,
+#calculadoraPagina .calc-burst-skill-option .calc-skill-identity:focus .calc-skill-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
