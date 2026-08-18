@@ -2911,6 +2911,11 @@ function criarCard(d) {
     );
 
 
+  const fallbackCard = fallbackSourceDigimonEvolution(d.digimon);
+  const fallbackCardAttr = fallbackCard && fallbackCard !== d.icon
+    ? ` onerror="this.onerror=null;this.src='${escaparHtml(fallbackCard)}'"`
+    : "";
+
   const imagem =
     d.icon
       ?
@@ -2919,9 +2924,9 @@ function criarCard(d) {
         <div class="card-image">
 
           <img
-            src="${d.icon}"
-            alt="${d.digimon}"
-            loading="lazy"
+            src="${escaparHtml(d.icon)}"
+            alt="${escaparHtml(d.digimon)}"
+            loading="lazy"${fallbackCardAttr}
           >
 
         </div>
@@ -3375,7 +3380,7 @@ function filtrar() {
    DIGIDEX — PERFIL + EVOLUTION TREE
 ===================================================== */
 
-const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v2";
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v3";
 let evolutionMaster = null;
 let evolutionMasterPromise = null;
 let digidexEvolutionTrail = [];
