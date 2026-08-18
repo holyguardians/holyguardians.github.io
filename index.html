@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260818-display-settings-v1">
+  <link rel="stylesheet" href="styles.css?v=20260818-display-settings-v2">
 </head>
 <body>
 
@@ -199,12 +199,26 @@
   <div class="hg-display-settings-section hg-display-manual-section">
     <div class="hg-display-settings-label">
       <span>AJUSTE FINO</span>
-      <small>85% a 130%</small>
+      <small>80% a 150%</small>
     </div>
     <div class="hg-display-manual-controls">
       <button type="button" aria-label="Diminuir escala" onclick="ajustarHgDisplayScale(-5)">−</button>
       <strong id="hgDisplayManualValue">100%</strong>
       <button type="button" aria-label="Aumentar escala" onclick="ajustarHgDisplayScale(5)">+</button>
+    </div>
+    <input
+      id="hgDisplayScaleRange"
+      class="hg-display-scale-range"
+      type="range"
+      min="80"
+      max="150"
+      step="5"
+      value="100"
+      aria-label="Escala da interface"
+      oninput="definirHgDisplayScale(this.value)"
+    >
+    <div class="hg-display-scale-marks" aria-hidden="true">
+      <span>80%</span><span>100%</span><span>120%</span><span>135%</span><span>150%</span>
     </div>
   </div>
 
@@ -2351,6 +2365,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260818-display-settings-v1"></script>
+<script src="script.js?v=20260818-display-settings-v2"></script>
 </body>
 </html>

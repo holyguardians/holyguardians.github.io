@@ -1452,8 +1452,8 @@ function selecionarFiltroType(tipo, botao) {
 ===================================================== */
 
 const HG_DISPLAY_SETTINGS_KEY = "hgDisplaySettingsV1";
-const HG_DISPLAY_MIN_SCALE = 85;
-const HG_DISPLAY_MAX_SCALE = 130;
+const HG_DISPLAY_MIN_SCALE = 80;
+const HG_DISPLAY_MAX_SCALE = 150;
 const HG_DISPLAY_STEP = 5;
 
 const HG_DISPLAY_PRESETS = {
@@ -1520,6 +1520,9 @@ function aplicarHgDisplaySettings(estado, persistir = true) {
   body.classList.toggle("hg-display-scaled", scale !== 100);
   body.classList.toggle("hg-display-ultrawide", ultrawide);
   document.documentElement.style.setProperty("--hg-interface-scale", String(scale / 100));
+  /* O header acompanha a preferência do usuário também.
+     Mantemos um teto visual no CSS para não estourar a navegação em telas menores. */
+  document.documentElement.style.setProperty("--hg-header-scale", String(scale / 100));
 
   if (persistir) salvarHgDisplaySettings();
   atualizarHgDisplaySettingsUi();
@@ -1538,6 +1541,14 @@ function ajustarHgDisplayScale(delta) {
   const atual = limitarHgDisplayScale(hgDisplayState.scale);
   const proximo = limitarHgDisplayScale(atual + Number(delta || 0));
   aplicarHgDisplaySettings({ preset: "custom", scale: proximo, ultrawide: hgDisplayState.ultrawide });
+}
+
+function definirHgDisplayScale(valor) {
+  aplicarHgDisplaySettings({
+    preset: "custom",
+    scale: limitarHgDisplayScale(valor),
+    ultrawide: hgDisplayState.ultrawide
+  });
 }
 
 function resetarHgDisplaySettings() {
@@ -1563,9 +1574,11 @@ function atualizarHgDisplaySettingsUi() {
   const valor = limitarHgDisplayScale(hgDisplayState.scale);
   const scaleValue = document.getElementById("hgDisplayScaleValue");
   const manualValue = document.getElementById("hgDisplayManualValue");
+  const range = document.getElementById("hgDisplayScaleRange");
 
   if (scaleValue) scaleValue.textContent = valor + "%";
   if (manualValue) manualValue.textContent = valor + "%";
+  if (range && Number(range.value) !== valor) range.value = String(valor);
 
   document.querySelectorAll("[data-hg-display-preset]").forEach(function(botao) {
     botao.classList.toggle("ativo", botao.dataset.hgDisplayPreset === hgDisplayState.preset);
@@ -5711,17 +5724,52 @@ function calcInterpretarCoeficienteSkill(skill) {
 }
 
 
+/* Alguns coeficientes do jogo possuem total Lv.10 que não é reproduzido
+   exatamente pela multiplicação do valor por hit exibido (o per-hit pode
+   estar visualmente arredondado na fonte). Mantemos correções cirúrgicas
+   somente quando o total exato foi validado. */
+const CALC_SKILL_BASE_TOTAL_EXATO = {
+  millenniumon: {
+    3: 145
+  }
+};
+
+function calcAplicarBaseTotalExato(nomeDigimon, skills) {
+  const chave = calcNormalizarNome(nomeDigimon);
+  const ajustes = CALC_SKILL_BASE_TOTAL_EXATO[chave];
+  if (!ajustes || !Array.isArray(skills)) return skills;
+
+  Object.keys(ajustes).forEach(function(slotTexto) {
+    const slot = Number(slotTexto);
+    const indice = slot - 1;
+    const skill = skills[indice];
+    const totalExato = Number(ajustes[slotTexto]);
+
+    if (!skill || !skill.available || !Number.isFinite(totalExato) || totalExato <= 0) return;
+
+    skill.baseTotal = totalExato;
+    skill.baseTotalExato = true;
+  });
+
+  return skills;
+}
+
 function calcDadosDoDigimon(d) {
   if (!d) return null;
 
+  const nome = String(d.digimon || "").trim();
+  const skills = [
+    calcInterpretarCoeficienteSkill(d.skill1),
+    calcInterpretarCoeficienteSkill(d.skill2),
+    calcInterpretarCoeficienteSkill(d.skill3)
+  ];
+
+  calcAplicarBaseTotalExato(nome, skills);
+
   return {
-    name: String(d.digimon || "").trim(),
+    name: nome,
     icon: d.icon || "",
-    skills: [
-      calcInterpretarCoeficienteSkill(d.skill1),
-      calcInterpretarCoeficienteSkill(d.skill2),
-      calcInterpretarCoeficienteSkill(d.skill3)
-    ]
+    skills: skills
   };
 }
 
@@ -6376,7 +6424,7 @@ function atualizarCalculadora() {
                 <strong>
                   ${skill.hits} hits × ${calcFormatar(skill.perHit)}%
                 </strong>
-                = ${calcFormatar(skill.baseTotal)}%
+                ${skill.baseTotalExato ? "≈" : "="} ${calcFormatar(skill.baseTotal)}%
 
                 <br>
 
@@ -6409,14 +6457,22 @@ function atualizarCalculadora() {
 
                       <br>
 
-                      <strong>
-                        ${skill.hits} hits ×
-                        (${calcFormatar(skill.perHit)}% + ${calcFormatar(bonusPorHit)}%)
-                      </strong>
-                      =
-                      <strong>
-                        ${calcFormatar(totalFinal)}%
-                      </strong>
+                      ${
+                        skill.baseTotalExato
+                          ? `
+                            <strong>${calcFormatar(skill.baseTotal)}%</strong>
+                            + <strong>${calcFormatar(bonusDano)}%</strong>
+                            = <strong>${calcFormatar(totalFinal)}%</strong>
+                          `
+                          : `
+                            <strong>
+                              ${skill.hits} hits ×
+                              (${calcFormatar(skill.perHit)}% + ${calcFormatar(bonusPorHit)}%)
+                            </strong>
+                            =
+                            <strong>${calcFormatar(totalFinal)}%</strong>
+                          `
+                      }
                     `
                     : `
                       O elemento ${elemento} não entra nesta skill.
@@ -6717,15 +6773,16 @@ function atualizarCalculadora() {
           <strong>
             ${skillBurst.hits} hits × ${calcFormatar(skillBurst.perHit)}%
           </strong>
-          = ${calcFormatar(skillBurst.baseTotal)}%
+          ${skillBurst.baseTotalExato ? "≈" : "="} ${calcFormatar(skillBurst.baseTotal)}%
 
           <br>
 
           Burst ×3:
-          <strong>
-            ${skillBurst.hits} hits × ${calcFormatar(perHitBurst)}%
-          </strong>
-          = ${calcFormatar(baseTotalBurst)}%
+          ${
+            skillBurst.baseTotalExato
+              ? `<strong>${calcFormatar(skillBurst.baseTotal)}% × 3</strong> = ${calcFormatar(baseTotalBurst)}%`
+              : `<strong>${skillBurst.hits} hits × ${calcFormatar(perHitBurst)}%</strong> = ${calcFormatar(baseTotalBurst)}%`
+          }
 
           <br>
 
@@ -6754,14 +6811,21 @@ function atualizarCalculadora() {
 
                 <br>
 
-                <strong>
-                  ${skillBurst.hits} hits ×
-                  (${calcFormatar(perHitBurst)}% + ${calcFormatar(bonusBurstPorHit)}%)
-                </strong>
-                =
-                <strong>
-                  ${calcFormatar(totalBurst)}%
-                </strong>
+                ${
+                  skillBurst.baseTotalExato
+                    ? `
+                      <strong>${calcFormatar(baseTotalBurst)}%</strong>
+                      + <strong>${calcFormatar(bonusBurstTotal)}%</strong>
+                      = <strong>${calcFormatar(totalBurst)}%</strong>
+                    `
+                    : `
+                      <strong>
+                        ${skillBurst.hits} hits ×
+                        (${calcFormatar(perHitBurst)}% + ${calcFormatar(bonusBurstPorHit)}%)
+                      </strong>
+                      = <strong>${calcFormatar(totalBurst)}%</strong>
+                    `
+                }
               `
               : `
                 O elemento ${elemento} não entra na Skill ${numeroSkillBurst};
