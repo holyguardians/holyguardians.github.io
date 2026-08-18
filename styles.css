@@ -15741,3 +15741,145 @@ body.pvp-modal-open{overflow:hidden}
   box-shadow:0 0 16px rgba(255,54,82,.18)!important;
 }
 #pvpPagina .pvp-surrender-btn:disabled{opacity:.3!important;cursor:not-allowed!important}
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V4.5 — ARENA OVERLAYS / TARGET HUD
+===================================================== */
+/* TURN and enemy target HUD now live inside the arena, reclaiming the old
+   external column/row and giving the battlefield the full available width. */
+#pvpPagina .pvp-battle-hud{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(650px,70vh) auto!important;
+  gap:10px!important;
+  min-height:0!important;
+  padding-top:46px;
+}
+#pvpPagina .pvp-battle-arena{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:650px!important;
+  margin:0!important;
+}
+#pvpPagina .pvp-battle-bottom{
+  grid-column:1!important;
+  grid-row:2!important;
+}
+
+/* Compact enemy HUD, anchored at the arena's upper-left corner. */
+#pvpPagina .pvp-battle-target{
+  position:absolute!important;
+  z-index:45!important;
+  top:12px!important;
+  left:12px!important;
+  width:min(390px,34vw)!important;
+  min-width:300px!important;
+  max-width:390px!important;
+  margin:0!important;
+  padding:9px 12px!important;
+}
+#pvpPagina .pvp-battle-target .pvp-target-top{
+  display:block!important;
+  min-height:0!important;
+}
+#pvpPagina .pvp-battle-target .pvp-target-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  text-align:center!important;
+}
+#pvpPagina .pvp-target-name-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:100%;
+}
+#pvpPagina .pvp-target-name-line .pvp-mini-icon-tag{
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#pvpPagina .pvp-target-name-line .pvp-mini-icon-tag img{
+  width:21px!important;
+  height:21px!important;
+}
+#pvpPagina .pvp-target-name-line .pvp-mini-icon-tag b{display:none!important}
+#pvpPagina .pvp-target-name-line strong{
+  font-size:12px!important;
+  line-height:1.1;
+}
+#pvpPagina .pvp-battle-target .pvp-target-copy small{
+  margin-top:2px;
+  font-size:7px!important;
+}
+#pvpPagina .pvp-target-meta-assets{
+  justify-content:center!important;
+  padding-left:0!important;
+  margin:6px 0 4px!important;
+  gap:7px!important;
+}
+#pvpPagina .pvp-battle-target .pvp-target-asset-badge{
+  min-height:25px!important;
+  padding:2px 6px!important;
+}
+#pvpPagina .pvp-target-hpbar{margin-top:6px!important}
+#pvpPagina .pvp-target-debuffs{
+  justify-content:center!important;
+  padding-left:0!important;
+  min-height:22px!important;
+  margin-top:3px!important;
+}
+
+/* TURN becomes a compact overlay inside the upper-right of the battlefield. */
+#pvpPagina .pvp-turn-panel{
+  position:absolute!important;
+  z-index:44!important;
+  top:12px!important;
+  right:12px!important;
+  width:100px!important;
+  height:auto!important;
+  max-height:calc(100% - 24px)!important;
+  padding:7px!important;
+  overflow:hidden!important;
+  background:rgba(2,12,28,.91)!important;
+  backdrop-filter:blur(3px);
+}
+#pvpPagina .pvp-turn-title{font-size:10px!important;margin-bottom:5px!important}
+#pvpPagina .pvp-turn-queue{gap:4px!important}
+#pvpPagina .pvp-turn-item{height:58px!important}
+
+/* The arena fields can now use the reclaimed full width. Keep enough breathing
+   room for the two small HUD overlays without sacrificing the center. */
+#pvpPagina .pvp-battle-field{
+  left:3%!important;
+  right:3%!important;
+  height:41%!important;
+}
+#pvpPagina .pvp-battle-field.enemy{top:13%!important}
+#pvpPagina .pvp-battle-field.own{bottom:3%!important}
+#pvpPagina .pvp-battle-row{gap:32px!important}
+
+/* Invalid targets (e.g. protected Back Line against Melee) no longer show a
+   disabled number at all; only legal 1/2/3 shortcuts are visible. */
+#pvpPagina .pvp-target-number.invalid{display:none!important}
+
+@media(max-width:1180px){
+  #pvpPagina .pvp-battle-hud{grid-template-rows:minmax(600px,68vh) auto!important}
+  #pvpPagina .pvp-battle-arena{min-height:600px!important}
+  #pvpPagina .pvp-battle-target{width:min(340px,42vw)!important;min-width:280px!important}
+  #pvpPagina .pvp-turn-panel{width:88px!important}
+  #pvpPagina .pvp-turn-item{height:52px!important}
+  #pvpPagina .pvp-battle-row{gap:20px!important}
+}
+@media(max-width:820px){
+  #pvpPagina .pvp-battle-hud{display:block!important;padding-top:46px!important}
+  #pvpPagina .pvp-battle-arena{height:540px!important;min-height:540px!important;margin-bottom:8px!important}
+  #pvpPagina .pvp-battle-target{top:8px!important;left:8px!important;width:calc(100% - 112px)!important;min-width:0!important;max-width:none!important}
+  #pvpPagina .pvp-turn-panel{top:8px!important;right:8px!important;width:88px!important;max-height:520px!important}
+  #pvpPagina .pvp-battle-field{left:2%!important;right:2%!important}
+  #pvpPagina .pvp-battle-field.enemy{top:18%!important}
+}

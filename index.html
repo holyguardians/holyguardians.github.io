@@ -1860,19 +1860,17 @@
         <section id="pvpMatchBattle" class="pvp-match-screen">
           <div id="pvpBattleHud" class="pvp-battle-hud">
             <div id="pvpBattleOpponentLabel" class="pvp-battle-opponent-label" aria-live="polite"></div>
-            <div id="pvpBattleTarget" class="pvp-battle-target tech-corners"></div>
-
             <div class="pvp-battle-arena tech-corners">
               <div class="pvp-arena-lines" aria-hidden="true"></div>
+              <div id="pvpBattleTarget" class="pvp-battle-target tech-corners"></div>
+              <aside class="pvp-turn-panel tech-corners">
+                <div class="pvp-turn-title">TURN</div>
+                <div id="pvpTurnQueue" class="pvp-turn-queue"></div>
+              </aside>
               <div id="pvpBattleEnemyField" class="pvp-battle-field enemy"></div>
               <div id="pvpBattleImpactLayer" class="pvp-battle-impact-layer" aria-hidden="true"></div>
               <div id="pvpBattleOwnField" class="pvp-battle-field own"></div>
             </div>
-
-            <aside class="pvp-turn-panel tech-corners">
-              <div class="pvp-turn-title">TURN</div>
-              <div id="pvpTurnQueue" class="pvp-turn-queue"></div>
-            </aside>
 
             <div class="pvp-battle-bottom">
               <section class="pvp-battle-log tech-corners">
