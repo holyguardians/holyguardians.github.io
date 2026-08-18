@@ -10546,15 +10546,40 @@ function pvpBattleRenderSkills(){
   }).join("");
 }
 
+function pvpBattleLogColorize(text){
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole();
+  let raw=String(text||"");
+  if(!b||!b.units)return pvpEscapeHtml(raw);
+  const tokens=[];
+  function mark(role,cls){
+    (b.units[role]||[]).map(function(u){return String(u&&u.name||"").trim()}).filter(Boolean).sort(function(a,c){return c.length-a.length}).forEach(function(name){
+      const token="@@HGLOG"+tokens.length+"@@";
+      const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+      const re=new RegExp(escaped,"g");
+      if(raw.indexOf(name)!==-1){
+        raw=raw.replace(re,token);
+        tokens.push({token:token,html:'<span class="'+cls+'">'+pvpEscapeHtml(name)+'</span>'});
+      }
+    });
+  }
+  mark(me,"ally-name");
+  mark(pvpMatchOpponentRole(me),"enemy-name");
+  let html=pvpEscapeHtml(raw);
+  tokens.forEach(function(item){html=html.split(item.token).join(item.html)});
+  return html;
+}
 function pvpBattleRenderLog(){
   const b=pvpMatchRoomState.battle,box=document.getElementById("pvpBattleLogLines");if(!box)return;
-  box.innerHTML=(b.log||[]).slice(-80).map(function(line){return '<div class="pvp-log-line">'+pvpEscapeHtml(line.text||"").replace(/\[(CRITICAL)\]/g,'<span class="crit">[$1]</span>').replace(/\[(SYSTEM)\]/g,'<span class="system">[$1]</span>')+'</div>'}).join("");
+  box.innerHTML=(b.log||[]).slice(-80).map(function(line){return '<div class="pvp-log-line">'+pvpBattleLogColorize(line.text||"").replace(/\[(CRITICAL)\]/g,'<span class="crit">[$1]</span>').replace(/\[(SYSTEM)\]/g,'<span class="system">[$1]</span>')+'</div>'}).join("");
   box.scrollTop=box.scrollHeight;const round=document.getElementById("pvpBattleRoundLabel");if(round)round.textContent="ROUND "+(b.round||1);
 }
 function pvpBattleRenderGauge(gauge){
   const box=document.getElementById("pvpBattleGaugeSegments"),txt=document.getElementById("pvpBattleGaugeText");if(!box)return;
   const g=Math.max(0,Math.min(PVP_BATTLE_GAUGE_MAX,Number(gauge)||0));
-  box.innerHTML=Array.from({length:5},function(_,i){const fill=Math.max(0,Math.min(1,g-i));return '<span class="pvp-gauge-segment"><i style="width:'+(fill*100)+'%"></i></span>'}).join("");
+  box.innerHTML=Array.from({length:5},function(_,i){
+    const fill=Math.max(0,Math.min(1,g-i)),pct=Math.round(fill*100),state=fill>=1?"full":fill>0?"partial":"empty";
+    return '<span class="pvp-gauge-segment '+state+'"><i style="--gauge-fill:'+pct+'%"></i></span>';
+  }).join("");
   if(txt)txt.textContent=g.toFixed(2).replace('.',',')+' / 5';
 }
 function pvpBattleRenderControls(){
