@@ -9825,7 +9825,7 @@ pvpRestaurarEstadoLocal=function(){
    Front-end multiplayer + local test mode
 ===================================================== */
 
-const PVP_MATCH_SERVER_KEY = "hg_pvp_match_server_v1";
+const PVP_MATCH_SERVER_B64 = "aHR0cHM6Ly9ob2x5LWd1YXJkaWFucy1jaGFsbGVuZ2Utcm9vbS5oaWx0b25naXVzZXBwZWNoaWFyZWxvLndvcmtlcnMuZGV2";
 const PVP_MATCH_NICK_KEY = "hg_pvp_match_nick_v1";
 const PVP_MATCH_STAGE_LEVELS = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
 const PVP_MATCH_DRAFT_BLOCKS = [
@@ -9849,7 +9849,11 @@ let pvpBattleSubOut = null;
 let pvpBattleSubIn = null;
 
 function pvpMatchApiBase(){
-  return String(localStorage.getItem(PVP_MATCH_SERVER_KEY)||"").trim().replace(/\/+$/,"");
+  try {
+    return atob(PVP_MATCH_SERVER_B64).trim().replace(/\/+$/,"");
+  } catch (erro) {
+    return "";
+  }
 }
 
 function pvpMatchSanitizarNick(input){
@@ -9904,18 +9908,11 @@ function pvpMatchAtualizarStageLobby(){
 }
 
 function pvpMatchConfigurarServidor(){
-  const atual=pvpMatchApiBase();
-  const valor=prompt("Cole a URL do Worker da Challenge Room (ex.: https://seu-worker.workers.dev)",atual||"");
-  if(valor===null)return;
-  const limpo=String(valor||"").trim().replace(/\/+$/,"");
-  if(limpo)localStorage.setItem(PVP_MATCH_SERVER_KEY,limpo); else localStorage.removeItem(PVP_MATCH_SERVER_KEY);
-  pvpMatchAtualizarServerHint();
+  return;
 }
 
 function pvpMatchAtualizarServerHint(){
-  const base=pvpMatchApiBase();
-  const text=document.getElementById("pvpMatchServerText");
-  if(text)text.textContent=base?"Servidor configurado: "+base:"Servidor da Challenge Room ainda não configurado neste navegador.";
+  return;
 }
 
 function pvpMatchSetConnection(tipo){
@@ -9973,7 +9970,7 @@ function pvpMatchLerRoomDaUrl(){
 
 async function pvpMatchRequest(path,options){
   const base=pvpMatchApiBase();
-  if(!base)throw new Error("Configure primeiro o servidor da Challenge Room.");
+  if(!base)throw new Error("Servidor da Challenge Room indisponível.");
   const resp=await fetch(base+path,Object.assign({headers:{"Content-Type":"application/json"}},options||{}));
   let data={};
   try{data=await resp.json()}catch(erro){}
