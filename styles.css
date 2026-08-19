@@ -9082,7 +9082,32 @@ body {
     justify-self: end;
   }
 
-  #socialPagina .social-art-wrap {
+  
+
+/* =====================================================
+   COMUNIDADE — ALO TAMERS
+   Recorta apenas o exterior quadrado da imagem,
+   preservando o fundo preto interno do círculo.
+===================================================== */
+.community-alo-card .community-alo-logo {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+}
+
+.community-alo-card .community-alo-logo img {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 50%;
+  clip-path: circle(50% at 50% 50%);
+}
+
+.community-alo-card .community-alo-logo::before {
+  border-radius: 50%;
+}
+
+#socialPagina .social-art-wrap {
     width: 100%;
     max-width: 600px;
     justify-self: start;
