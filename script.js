@@ -2905,10 +2905,11 @@ function criarCard(d) {
 
 
   const nomeCodificado = encodeURIComponent(String(d.digimon || ""));
+  const cardMutant = /^\s*\[mutant\]/i.test(String(d.digimon || ""));
 
   return `
 
-    <div class="card digidex-profile-trigger" role="button" tabindex="0"
+    <div class="card digidex-profile-trigger${cardMutant ? " is-mutant-digidex" : ""}" role="button" tabindex="0"
       onclick="abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'))"
       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilDigidex(decodeURIComponent('${nomeCodificado}'));}">
 
@@ -3849,9 +3850,27 @@ function fallbackDigimonEvolution(nome) {
   return pegarImagem(nome) || fallbackSourceDigimonEvolution(nome);
 }
 
+function isMutantEvolutionEntity(did, nome, categoria) {
+  const category = String(categoria || "").trim().toUpperCase();
+  if (category === "MUTANT" || category === "MUTATION") return true;
+
+  const name = String(nome || "").trim();
+  if (/^\[mutant\]/i.test(name)) return true;
+
+  if (evolutionMaster) {
+    const byDid = evolutionMaster.byDid && evolutionMaster.byDid[String(did == null ? "" : did)];
+    const byName = evolutionMaster.byName && evolutionMaster.byName[normalizarNomeEvolution(name)];
+    const digi = byDid || byName;
+    if (digi && digi.mutant) return true;
+  }
+
+  return false;
+}
+
 function renderEvolutionSourceCard(source) {
+  const mutant = isMutantEvolutionEntity(source.did, source.name, source.category);
   return `
-    <button type="button" class="digidex-evo-node digidex-evo-node-from" onclick="navegarEvolutionDid('${escaparHtml(String(source.did))}')">
+    <button type="button" class="digidex-evo-node digidex-evo-node-from${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionDid('${escaparHtml(String(source.did))}')">
       <span class="digidex-evo-node-image">
         ${renderImagemEvolution(source.icon, source.name, fallbackDigimonEvolution(source.name))}
       </span>
@@ -3864,9 +3883,10 @@ function renderEvolutionSourceCard(source) {
 }
 
 function renderEvolutionTargetCard(row) {
+  const mutant = isMutantEvolutionEntity(row.toDid, row.to, row.category);
   return `
-    <article class="digidex-evo-target-card">
-      <button type="button" class="digidex-evo-node digidex-evo-node-to" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
+    <article class="digidex-evo-target-card${mutant ? " is-mutant" : ""}">
+      <button type="button" class="digidex-evo-node digidex-evo-node-to${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
         <span class="digidex-evo-node-image">
           ${renderImagemEvolution(row.toIcon, row.to, fallbackDigimonEvolution(row.to))}
         </span>
@@ -3970,6 +3990,15 @@ function renderizarPerfilDigidexEvolution(current) {
   const fields = db ? db.field : current.fields;
   const strong = db ? db.strong : current.strong;
   const weak = db ? db.weak : current.weak;
+  const currentMutant = isMutantEvolutionEntity(current.did, current.name, current.category);
+  const relationData = {
+    digimon: current.name,
+    name: current.name,
+    strong: strong,
+    weak: weak,
+    strongEffect: db && (db.strongEffect || db.strong_effect),
+    weakEffect: db && (db.weakEffect || db.weak_effect)
+  };
 
   const trilha = digidexEvolutionTrail.map(function(item, indice) {
     const atual = indice === digidexEvolutionTrail.length - 1;
@@ -3986,24 +4015,24 @@ function renderizarPerfilDigidexEvolution(current) {
       <span class="digidex-profile-master-status"><i></i>DIGIVOLUTION MASTER</span>
     </div>
 
-    <div class="digidex-profile-hero">
-      <div class="digidex-profile-portrait">
+    <div class="digidex-profile-hero${currentMutant ? " is-mutant" : ""}">
+      <div class="digidex-profile-portrait${currentMutant ? " is-mutant" : ""}">
         ${renderImagemEvolution(current.icon, current.name, fallbackDigimonEvolution(current.name))}
       </div>
 
-      <div class="digidex-profile-identity">
+      <div class="digidex-profile-identity${currentMutant ? " is-mutant" : ""}">
         <span class="digidex-profile-kicker">CURRENT DIGIMON // ${escaparHtml(current.stage || "-")}</span>
         <h2>${escaparHtml(current.name)}</h2>
         <div class="digidex-profile-tags">
           ${renderEvolutionStage(current.stage)}
           ${tipo ? `<span class="digidex-profile-type ${getClasseType(tipo)}">${renderizarTypeIcon(tipo)}</span>` : ""}
-          ${current.mutant ? `<span class="digidex-profile-mutant">MUTANT</span>` : ""}
+          ${currentMutant ? `<span class="digidex-profile-mutant">MUTANT</span>` : ""}
         </div>
       </div>
 
       <div class="digidex-profile-relations">
-        <span><i>STRONG</i><b>${strong ? renderizarRelacaoAtributo({strong:strong}, "strong") : "-"}</b></span>
-        <span><i>WEAK</i><b>${weak ? renderizarRelacaoAtributo({weak:weak}, "weak") : "-"}</b></span>
+        <span><i>STRONG</i><b>${strong ? renderizarRelacaoAtributo(relationData, "strong") : "-"}</b></span>
+        <span><i>WEAK</i><b>${weak ? renderizarRelacaoAtributo(relationData, "weak") : "-"}</b></span>
         <span class="wide"><i>FIELD</i><b>${fields ? renderizarField(fields) : "-"}</b></span>
       </div>
     </div>
