@@ -3708,13 +3708,14 @@ function renderEvolutionRequirementsBox(row) {
   evolutionStatsComRequisito(row).forEach(function(stat) {
     const info = stats[stat] || {};
     const req = numeroEvolution(info.required);
-    const natural = numeroEvolution(info.natural);
     const pct = numeroEvolution(info.percent);
-    const partes = [];
-    if (req !== null) partes.push(formatarEvolutionNumero(req));
-    if (pct !== null) partes.push(`+${formatarEvolutionNumero(pct)}%`);
-    const naturalTxt = natural !== null ? `<small>NAT. ${escaparHtml(formatarEvolutionNumero(natural))}</small>` : "";
-    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-stat"><i>${stat.toUpperCase()}</i><b>${escaparHtml(partes.join(" • ") || "-")}</b>${naturalTxt}</span>`);
+    // Na lista de requisitos, o que importa para o jogador é o percentual de Potential.
+    // O valor natural e o valor final exigido continuam preservados nos dados e no modal
+    // "Mostrar Potencial", mas não poluem mais o resumo da evolução.
+    const valor = pct !== null
+      ? `+${formatarEvolutionNumero(pct)}%`
+      : (req !== null ? formatarEvolutionNumero(req) : "-");
+    linhas.push(`<span class="digidex-evo-req-item digidex-evo-req-stat"><i>${stat.toUpperCase()}</i><b>${escaparHtml(valor)}</b></span>`);
   });
 
   (row.items || []).forEach(function(item) {
