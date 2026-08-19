@@ -3832,7 +3832,24 @@ function fallbackSourceSkillEvolution(skill) {
     513702: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_2.png",
     513703: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_3.png"
   };
-  return mapa[id] || "";
+  if (mapa[id]) return mapa[id];
+
+  /*
+   * A MASTER guarda os ícones live como PVP_ASSETS/skill/*.webp.
+   * Se um desses arquivos ainda não existir no GitHub, a fonte DSR usa
+   * o mesmo basename em /assets/skills/*.png. Assim o perfil não fica
+   * com ALT quebrado só porque um WEBP local está ausente.
+   */
+  const bruto = String(skill && skill.icon || "").trim();
+  if (!bruto) return "";
+
+  let arquivo = bruto.split("/").pop().split("?")[0].split("#")[0];
+  if (!arquivo) return "";
+  arquivo = arquivo.replace(/\.(webp|jpg|jpeg)$/i, ".png");
+
+  return "https://dsrworldwiki.com/assets/skills/" + encodeURIComponent(arquivo)
+    .replace(/%28/g, "(")
+    .replace(/%29/g, ")");
 }
 
 function renderImagemEvolution(src, alt, fallback) {

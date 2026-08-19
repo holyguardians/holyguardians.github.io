@@ -18025,4 +18025,209 @@ body.hg-display-scaled footer {
     max-height: 180px;
   }
 }
-\n\n/* =====================================================\n   DIGIDEX PROFILE V6 — TECH FRAMES + RELATION TOOLTIPS + MUTANT ALERT\n===================================================== */\n\n/* Moldura tecnológica reaproveitando a linguagem visual dos cards da Digidex. */\n#databasePagina .digidex-profile-portrait,\n#databasePagina .digidex-profile-skill-icon,\n#databasePagina .digidex-evo-node-image,\n#databasePagina .digidex-evo-req-item-icon {\n  position: relative;\n  isolation: isolate;\n  clip-path: polygon(\n    7px 0, calc(100% - 7px) 0, 100% 7px,\n    100% calc(100% - 7px), calc(100% - 7px) 100%,\n    7px 100%, 0 calc(100% - 7px), 0 7px\n  );\n}\n\n#databasePagina .digidex-profile-portrait::before,\n#databasePagina .digidex-profile-skill-icon::before,\n#databasePagina .digidex-evo-node-image::before,\n#databasePagina .digidex-evo-req-item-icon::before {\n  content: \"\";\n  position: absolute;\n  inset: 4px;\n  z-index: 3;\n  pointer-events: none;\n  background:\n    linear-gradient(#59efff,#59efff) left top / 15px 1px no-repeat,\n    linear-gradient(#59efff,#59efff) left top / 1px 15px no-repeat,\n    linear-gradient(#59efff,#59efff) right top / 15px 1px no-repeat,\n    linear-gradient(#59efff,#59efff) right top / 1px 15px no-repeat,\n    linear-gradient(#59efff,#59efff) left bottom / 15px 1px no-repeat,\n    linear-gradient(#59efff,#59efff) left bottom / 1px 15px no-repeat,\n    linear-gradient(#59efff,#59efff) right bottom / 15px 1px no-repeat,\n    linear-gradient(#59efff,#59efff) right bottom / 1px 15px no-repeat;\n  filter: drop-shadow(0 0 3px rgba(70,226,255,.58));\n}\n\n#databasePagina .digidex-profile-portrait::before {\n  inset: 8px;\n  background:\n    linear-gradient(#59efff,#59efff) left top / 25px 2px no-repeat,\n    linear-gradient(#59efff,#59efff) left top / 2px 25px no-repeat,\n    linear-gradient(#59efff,#59efff) right top / 25px 2px no-repeat,\n    linear-gradient(#59efff,#59efff) right top / 2px 25px no-repeat,\n    linear-gradient(#59efff,#59efff) left bottom / 25px 2px no-repeat,\n    linear-gradient(#59efff,#59efff) left bottom / 2px 25px no-repeat,\n    linear-gradient(#59efff,#59efff) right bottom / 25px 2px no-repeat,\n    linear-gradient(#59efff,#59efff) right bottom / 2px 25px no-repeat;\n}\n\n#databasePagina .digidex-profile-portrait img,\n#databasePagina .digidex-profile-skill-icon img,\n#databasePagina .digidex-evo-node-image img,\n#databasePagina .digidex-evo-req-item-icon img {\n  position: relative;\n  z-index: 1;\n}\n\n/* Cantos tecnológicos sutis nas caixas grandes do perfil. */\n#databasePagina :is(\n  .digidex-profile-hero,\n  .digidex-profile-section,\n  .digidex-evo-column,\n  .digidex-evo-target-card\n) {\n  position: relative;\n}\n\n#databasePagina :is(\n  .digidex-profile-hero,\n  .digidex-profile-section,\n  .digidex-evo-column,\n  .digidex-evo-target-card\n)::before {\n  content: \"\";\n  position: absolute;\n  inset: 6px;\n  pointer-events: none;\n  z-index: 1;\n  background:\n    linear-gradient(rgba(83,236,255,.78),rgba(83,236,255,.78)) left top / 21px 1px no-repeat,\n    linear-gradient(rgba(83,236,255,.78),rgba(83,236,255,.78)) left top / 1px 21px no-repeat,\n    linear-gradient(rgba(83,236,255,.48),rgba(83,236,255,.48)) right bottom / 21px 1px no-repeat,\n    linear-gradient(rgba(83,236,255,.48),rgba(83,236,255,.48)) right bottom / 1px 21px no-repeat;\n  filter: drop-shadow(0 0 3px rgba(52,202,255,.34));\n}\n\n/* Strong/Weak no perfil precisam subir sobre as caixas vizinhas. */\n#databasePagina .digidex-profile-relations > span {\n  position: relative;\n  overflow: visible;\n}\n\n#databasePagina .digidex-profile-relations > span:has(.hg-relation:hover),\n#databasePagina .digidex-profile-relations > span:has(.hg-relation:focus-within) {\n  z-index: 120;\n}\n\n#databasePagina .digidex-profile-relations .hg-relation-tooltip {\n  min-width: 285px;\n  max-width: 390px;\n  z-index: 140;\n}\n\n/* MUTANT = alerta visual vermelho no card, no perfil e na árvore. */\n#databasePagina .card.is-mutant-digidex .card-name,\n#databasePagina .digidex-profile-identity.is-mutant h2,\n#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-copy > strong {\n  color: #ff5a70;\n  text-shadow: 0 0 11px rgba(255,55,82,.34);\n}\n\n#databasePagina .card.is-mutant-digidex .card-image::before {\n  border-color: rgba(255,60,86,.78);\n  background:\n    linear-gradient(#ff5369,#ff5369) left top / 27px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left top / 2px 27px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 27px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 2px 27px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 27px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 2px 27px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 27px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 2px 27px no-repeat;\n  box-shadow: inset 0 0 18px rgba(255,53,78,.08), 0 0 10px rgba(255,40,70,.30);\n  filter: drop-shadow(0 0 5px rgba(255,54,83,.55));\n}\n\n#databasePagina .digidex-profile-portrait.is-mutant,\n#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-image {\n  border-color: rgba(255,67,91,.82);\n  box-shadow: inset 0 0 24px rgba(255,37,65,.10), 0 0 11px rgba(255,42,72,.25);\n}\n\n#databasePagina .digidex-profile-portrait.is-mutant::before,\n#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-image::before {\n  background:\n    linear-gradient(#ff5369,#ff5369) left top / 18px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left top / 2px 18px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 18px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 2px 18px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 18px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 2px 18px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 18px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 2px 18px no-repeat;\n  filter: drop-shadow(0 0 4px rgba(255,58,86,.7));\n}\n\n#databasePagina .digidex-profile-portrait.is-mutant::before {\n  background:\n    linear-gradient(#ff5369,#ff5369) left top / 25px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left top / 2px 25px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 25px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right top / 2px 25px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 25px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) left bottom / 2px 25px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 25px 2px no-repeat,\n    linear-gradient(#ff5369,#ff5369) right bottom / 2px 25px no-repeat;\n}\n\n#databasePagina .digidex-evo-target-card.is-mutant {\n  border-color: rgba(255,63,88,.48);\n  box-shadow: inset 0 0 22px rgba(255,45,72,.055);\n}\n\n#databasePagina .digidex-evo-target-card.is-mutant::before {\n  background:\n    linear-gradient(rgba(255,83,105,.86),rgba(255,83,105,.86)) left top / 21px 1px no-repeat,\n    linear-gradient(rgba(255,83,105,.86),rgba(255,83,105,.86)) left top / 1px 21px no-repeat,\n    linear-gradient(rgba(255,83,105,.56),rgba(255,83,105,.56)) right bottom / 21px 1px no-repeat,\n    linear-gradient(rgba(255,83,105,.56),rgba(255,83,105,.56)) right bottom / 1px 21px no-repeat;\n}\n\n#databasePagina .digidex-profile-mutant {\n  border-color: rgba(255,77,101,.62);\n  color: #ff6e80;\n  background: rgba(98,17,31,.42);\n  box-shadow: inset 0 0 10px rgba(255,50,78,.08);\n}\n
+
+/* =====================================================
+   DIGIDEX PROFILE V7 — TECH FRAMES + TOOLTIPS + MUTANT ALERT
+   IMPORTANT: real CSS newlines (V6 was malformed by literal \\n text).
+===================================================== */
+
+/* --- molduras tecnológicas: mesma linguagem visual da Digidex --- */
+#databasePagina .digidex-profile-portrait,
+#databasePagina .digidex-profile-skill-icon,
+#databasePagina .digidex-evo-node-image,
+#databasePagina .digidex-evo-req-item-icon {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(74, 226, 255, .62);
+  background: rgba(2, 17, 38, .94);
+  box-shadow:
+    inset 0 0 18px rgba(43, 182, 255, .10),
+    0 0 8px rgba(0, 188, 255, .14);
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0 calc(100% - 8px), 0 8px
+  );
+}
+
+#databasePagina .digidex-profile-portrait::before,
+#databasePagina .digidex-profile-skill-icon::before,
+#databasePagina .digidex-evo-node-image::before,
+#databasePagina .digidex-evo-req-item-icon::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    linear-gradient(#59efff,#59efff) left top / 16px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left top / 2px 16px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 16px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 2px 16px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 16px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 2px 16px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 16px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 2px 16px no-repeat;
+  filter: drop-shadow(0 0 4px rgba(65, 229, 255, .72));
+}
+
+#databasePagina .digidex-profile-portrait::before {
+  inset: 8px;
+  background:
+    linear-gradient(#59efff,#59efff) left top / 28px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left top / 2px 28px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 28px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right top / 2px 28px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 28px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) left bottom / 2px 28px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 28px 2px no-repeat,
+    linear-gradient(#59efff,#59efff) right bottom / 2px 28px no-repeat;
+}
+
+#databasePagina .digidex-profile-portrait img,
+#databasePagina .digidex-profile-skill-icon img,
+#databasePagina .digidex-evo-node-image img,
+#databasePagina .digidex-evo-req-item-icon img {
+  position: relative;
+  z-index: 2;
+}
+
+/* Boxes também recebem cantos tecnológicos visíveis, sem alterar tamanho/layout. */
+#databasePagina .digidex-profile-hero,
+#databasePagina .digidex-profile-section,
+#databasePagina .digidex-evo-column,
+#databasePagina .digidex-evo-target-card,
+#databasePagina .digidex-evo-requirements-box,
+#databasePagina .digidex-evo-req-item {
+  position: relative;
+}
+
+#databasePagina .digidex-profile-hero::after,
+#databasePagina .digidex-profile-section::after,
+#databasePagina .digidex-evo-column::after,
+#databasePagina .digidex-evo-target-card::after,
+#databasePagina .digidex-evo-requirements-box::after,
+#databasePagina .digidex-evo-req-item::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 8;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(83,236,255,.88),rgba(83,236,255,.88)) left top / 18px 1px no-repeat,
+    linear-gradient(rgba(83,236,255,.88),rgba(83,236,255,.88)) left top / 1px 18px no-repeat,
+    linear-gradient(rgba(83,236,255,.55),rgba(83,236,255,.55)) right bottom / 18px 1px no-repeat,
+    linear-gradient(rgba(83,236,255,.55),rgba(83,236,255,.55)) right bottom / 1px 18px no-repeat;
+  filter: drop-shadow(0 0 3px rgba(50, 209, 255, .38));
+}
+
+/* --- Strong / Weak: tooltip precisa escapar das boxes --- */
+#databasePagina .digidex-profile-hero,
+#databasePagina .digidex-profile-relations,
+#databasePagina .digidex-profile-relations > span,
+#databasePagina .digidex-profile-relations b {
+  overflow: visible !important;
+}
+
+#databasePagina .digidex-profile-relations > span {
+  position: relative;
+}
+
+#databasePagina .digidex-profile-relations > span:has(.hg-relation:hover),
+#databasePagina .digidex-profile-relations > span:has(.hg-relation:focus-within) {
+  z-index: 500;
+}
+
+#databasePagina .digidex-profile-relations .hg-relation {
+  z-index: 2;
+}
+
+#databasePagina .digidex-profile-relations .hg-relation-tooltip {
+  min-width: 285px;
+  max-width: 390px;
+  z-index: 99999;
+}
+
+/* --- MUTANT = falhou evolução: vermelho inequívoco --- */
+#databasePagina .card.is-mutant-digidex .card-name,
+#databasePagina .digidex-profile-identity.is-mutant h2,
+#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-copy > strong {
+  color: #ff5369 !important;
+  text-shadow: 0 0 11px rgba(255, 55, 82, .42);
+}
+
+/* Card comum da Digidex: troca a moldura central cyan por vermelho. */
+#databasePagina .card.is-mutant-digidex .card-image::before {
+  border-color: rgba(255, 73, 97, .92) !important;
+  background:
+    linear-gradient(#ff5369,#ff5369) left top / 27px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left top / 2px 27px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 27px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 2px 27px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 27px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 2px 27px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 27px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 2px 27px no-repeat !important;
+  box-shadow:
+    inset 0 0 20px rgba(255, 48, 76, .12),
+    0 0 13px rgba(255, 40, 70, .38) !important;
+  filter: drop-shadow(0 0 6px rgba(255, 54, 83, .70)) !important;
+}
+
+#databasePagina .digidex-profile-portrait.is-mutant,
+#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-image,
+#databasePagina .digidex-evo-target-card.is-mutant .digidex-evo-node-image {
+  border-color: rgba(255, 67, 91, .94) !important;
+  box-shadow:
+    inset 0 0 22px rgba(255, 37, 65, .13),
+    0 0 12px rgba(255, 42, 72, .34) !important;
+}
+
+#databasePagina .digidex-profile-portrait.is-mutant::before,
+#databasePagina .digidex-evo-node.is-mutant .digidex-evo-node-image::before,
+#databasePagina .digidex-evo-target-card.is-mutant .digidex-evo-node-image::before {
+  background:
+    linear-gradient(#ff5369,#ff5369) left top / 18px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left top / 2px 18px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 18px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 2px 18px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 18px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 2px 18px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 18px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 2px 18px no-repeat !important;
+  filter: drop-shadow(0 0 5px rgba(255, 58, 86, .82)) !important;
+}
+
+#databasePagina .digidex-profile-portrait.is-mutant::before {
+  background:
+    linear-gradient(#ff5369,#ff5369) left top / 28px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left top / 2px 28px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 28px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right top / 2px 28px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 28px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) left bottom / 2px 28px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 28px 2px no-repeat,
+    linear-gradient(#ff5369,#ff5369) right bottom / 2px 28px no-repeat !important;
+}
+
+#databasePagina .digidex-evo-target-card.is-mutant {
+  border-color: rgba(255, 63, 88, .62) !important;
+  box-shadow:
+    inset 0 0 25px rgba(255, 45, 72, .075),
+    0 0 8px rgba(255, 41, 70, .12);
+}
+
+#databasePagina .digidex-evo-target-card.is-mutant::after {
+  background:
+    linear-gradient(rgba(255,83,105,.92),rgba(255,83,105,.92)) left top / 18px 1px no-repeat,
+    linear-gradient(rgba(255,83,105,.92),rgba(255,83,105,.92)) left top / 1px 18px no-repeat,
+    linear-gradient(rgba(255,83,105,.64),rgba(255,83,105,.64)) right bottom / 18px 1px no-repeat,
+    linear-gradient(rgba(255,83,105,.64),rgba(255,83,105,.64)) right bottom / 1px 18px no-repeat !important;
+}
+
+#databasePagina .digidex-profile-mutant {
+  border-color: rgba(255, 77, 101, .72) !important;
+  color: #ff6e80 !important;
+  background: rgba(98, 17, 31, .48) !important;
+  box-shadow: inset 0 0 10px rgba(255, 50, 78, .10);
+}
