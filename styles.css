@@ -18231,3 +18231,48 @@ body.hg-display-scaled footer {
   background: rgba(98, 17, 31, .48) !important;
   box-shadow: inset 0 0 10px rgba(255, 50, 78, .10);
 }
+
+
+/* =====================================================
+   DIGIDEX PROFILE V8 — ROUND ITEM FRAME + SKILL ICON FALLBACK
+===================================================== */
+
+/* Item de evolução: a moldura acompanha o círculo do ícone, sem quadrado tech. */
+#databasePagina .digidex-evo-req-item-icon {
+  clip-path: none !important;
+  border-radius: 50% !important;
+  overflow: hidden;
+  border: 1px solid rgba(83, 236, 255, .72) !important;
+  background: radial-gradient(circle at 50% 45%, rgba(35, 205, 255, .14), rgba(2, 17, 38, .94) 70%) !important;
+  box-shadow:
+    inset 0 0 10px rgba(43, 182, 255, .12),
+    0 0 7px rgba(0, 205, 255, .18) !important;
+}
+
+#databasePagina .digidex-evo-req-item-icon::before {
+  inset: 2px !important;
+  border: 1px solid rgba(94, 239, 255, .65);
+  border-radius: 50%;
+  background: none !important;
+  filter: drop-shadow(0 0 3px rgba(65, 229, 255, .45)) !important;
+}
+
+#databasePagina .digidex-evo-req-item-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Se até o fallback externo falhar, nunca mostra o ALT gigante quebrando a box. */
+#databasePagina .digidex-profile-skill-icon.image-failed::after {
+  content: "✦";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  color: #67eaff;
+  font-size: 18px;
+  text-shadow: 0 0 8px rgba(73, 226, 255, .65);
+}

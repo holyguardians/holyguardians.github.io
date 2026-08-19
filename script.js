@@ -3832,24 +3832,33 @@ function fallbackSourceSkillEvolution(skill) {
     513702: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_2.png",
     513703: "https://dsrworldwiki.com/assets/skills/Imperialdramon_Dragonmode_Infected_3.png"
   };
-  if (mapa[id]) return mapa[id];
+
+  let origem = mapa[id] || "";
+
+  if (!origem) {
+    /*
+     * A MASTER guarda os ícones live como PVP_ASSETS/skill/*.webp.
+     * Quando algum WEBP ainda não existe no Git, a fonte DSR possui
+     * o equivalente PNG com o mesmo basename.
+     */
+    const bruto = String(skill && skill.icon || "").trim();
+    if (!bruto) return "";
+
+    let arquivo = bruto.split("/").pop().split("?")[0].split("#")[0];
+    if (!arquivo) return "";
+    arquivo = arquivo.replace(/\.(webp|jpg|jpeg)$/i, ".png");
+
+    origem = "https://dsrworldwiki.com/assets/skills/" + encodeURIComponent(arquivo)
+      .replace(/%28/g, "(")
+      .replace(/%29/g, ")");
+  }
 
   /*
-   * A MASTER guarda os ícones live como PVP_ASSETS/skill/*.webp.
-   * Se um desses arquivos ainda não existir no GitHub, a fonte DSR usa
-   * o mesmo basename em /assets/skills/*.png. Assim o perfil não fica
-   * com ALT quebrado só porque um WEBP local está ausente.
+   * A origem externa pode bloquear hotlink direto. O proxy fica SOMENTE
+   * como fallback dos ícones ausentes; o Git continua sendo a primeira fonte.
    */
-  const bruto = String(skill && skill.icon || "").trim();
-  if (!bruto) return "";
-
-  let arquivo = bruto.split("/").pop().split("?")[0].split("#")[0];
-  if (!arquivo) return "";
-  arquivo = arquivo.replace(/\.(webp|jpg|jpeg)$/i, ".png");
-
-  return "https://dsrworldwiki.com/assets/skills/" + encodeURIComponent(arquivo)
-    .replace(/%28/g, "(")
-    .replace(/%29/g, ")");
+  return "https://images.weserv.nl/?url=" + encodeURIComponent(origem) +
+    "&w=96&h=96&fit=contain&output=webp";
 }
 
 function renderImagemEvolution(src, alt, fallback) {
@@ -3857,10 +3866,13 @@ function renderImagemEvolution(src, alt, fallback) {
   const reserva = String(fallback || "").trim();
   if (!principal && !reserva) return "?";
   const inicial = principal || reserva;
-  const onerror = reserva && reserva !== inicial
-    ? ` onerror="this.onerror=null;this.src='${escaparHtml(reserva)}'"`
-    : "";
-  return `<img src="${escaparHtml(inicial)}" alt="${escaparHtml(alt || "")}" loading="lazy"${onerror}>`;
+  const textoAlt = escaparHtml(alt || "");
+
+  if (reserva && reserva !== inicial) {
+    return `<img src="${escaparHtml(inicial)}" alt="${textoAlt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=function(){this.style.display='none';this.parentElement.classList.add('image-failed')};this.src='${escaparHtml(reserva)}'">`;
+  }
+
+  return `<img src="${escaparHtml(inicial)}" alt="${textoAlt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.parentElement.classList.add('image-failed')">`;
 }
 
 function fallbackDigimonEvolution(nome) {
