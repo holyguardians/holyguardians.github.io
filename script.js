@@ -12320,6 +12320,7 @@ let sorteioLiveSession = null;
 let sorteioLivePollTimer = null;
 let sorteioLivePollBusy = false;
 let sorteioLiveRemovedIds = new Set();
+let sorteioLiveLastError = "";
 
 let sorteioParticipantes = [];
 let sorteioHistorico = [];
@@ -12391,12 +12392,17 @@ function sorteioSalvarLiveLocal(){
 }
 
 async function sorteioLiveRequest(path,options){
-  const opts=Object.assign({method:"GET",headers:{}},options||{});
+  const opts=Object.assign({method:"GET",headers:{},mode:"cors",cache:"no-store"},options||{});
   if(opts.body&&typeof opts.body!=="string"){
     opts.headers=Object.assign({},opts.headers,{"Content-Type":"application/json"});
     opts.body=JSON.stringify(opts.body);
   }
-  const response=await fetch(HG_SORTEIO_LIVE_API+path,opts);
+  let response;
+  try{
+    response=await fetch(HG_SORTEIO_LIVE_API+path,opts);
+  }catch(erro){
+    throw new Error("O navegador não conseguiu alcançar o Evil Guardians. Verifique o Worker/CORS e tente novamente.");
+  }
   let data=null;
   try{data=await response.json()}catch(erro){}
   if(!response.ok||!data||data.ok===false){
@@ -12524,9 +12530,13 @@ function sorteioAtualizarFonteUI(){
     box.classList.toggle("online",conectado);
     box.classList.toggle("offline",!conectado);
     if(conectado){
+      sorteioLiveLastError="";
       const info=sorteioLiveSession.connections.youtube;
       if(b)b.textContent="EVIL GUARDIANS CONECTADO";
       if(small)small.textContent=(info.title||"YouTube Live")+" · ouvindo "+(sorteioLiveSession.command||"!sorteio");
+    }else if(sorteioLiveLastError){
+      if(b)b.textContent="FALHA AO CONECTAR";
+      if(small)small.textContent=sorteioLiveLastError;
     }else{
       if(b)b.textContent="EVIL GUARDIANS DESCONECTADO";
       if(small)small.textContent="Cole o link de uma live com chat ativo para começar.";
@@ -12610,9 +12620,13 @@ async function sorteioYoutubeConectar(){
 
   const btn=document.getElementById("sorteioYoutubeConnectBtn");
   if(btn){btn.disabled=true;btn.textContent="CONECTANDO...";}
+  sorteioLiveLastError="";
+  sorteioAtualizarFonteUI();
   sorteioDefinirFeedback("Evil Guardians está procurando o chat da live...","info");
 
   try{
+    // Primeiro confirma que o navegador consegue falar com o Worker.
+    await sorteioLiveRequest("/api/health");
     await sorteioLiveGarantirSessao();
     await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{
       method:"POST",
@@ -12622,6 +12636,10 @@ async function sorteioYoutubeConectar(){
       method:"POST",
       body:{url:url}
     });
+    if(!data.session||!data.session.connections||!data.session.connections.youtube||!data.session.connections.youtube.connected){
+      throw new Error("O Worker respondeu, mas não confirmou a conexão com o chat do YouTube.");
+    }
+    sorteioLiveLastError="";
     sorteioAplicarSessaoLive(data.session,true);
     sorteioInscricoesAbertas=!!data.session.accepting;
     sorteioSalvarLiveLocal();
@@ -12629,7 +12647,8 @@ async function sorteioYoutubeConectar(){
     sorteioAtualizarFonteUI();
     sorteioDefinirFeedback("Evil Guardians conectado ao YouTube. Abra as inscrições quando quiser.","ok");
   }catch(erro){
-    sorteioDefinirFeedback(erro.message||"Não foi possível conectar à live.","warn");
+    sorteioLiveLastError=erro&&erro.message?erro.message:"Não foi possível conectar à live.";
+    sorteioDefinirFeedback(sorteioLiveLastError,"warn");
   }finally{
     if(btn)btn.textContent="CONECTAR EVIL GUARDIANS";
     sorteioAtualizarFonteUI();

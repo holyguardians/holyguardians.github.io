@@ -19834,3 +19834,10 @@ body.hg-display-scaled footer {
     grid-template-columns:1fr;
   }
 }
+
+
+/* Evil Guardians: erro de conexão visível no próprio painel */
+#sorteioPagina .sorteio-live-connection.offline:has(b:first-child){}
+#sorteioPagina .sorteio-live-connection.offline b{transition:color .2s ease,text-shadow .2s ease;}
+#sorteioPagina .sorteio-live-connection.offline small{white-space:normal;line-height:1.35;}
+#sorteioPagina .sorteio-live-connection.offline b:not(:empty){max-width:100%;}
