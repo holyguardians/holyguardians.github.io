@@ -12316,6 +12316,7 @@ let sorteioGirando = false;
 let sorteioRotacao = 0;
 let sorteioInicializado = false;
 let sorteioWinnerTimer = null;
+let sorteioVencedorAtualId = "";
 
 const HG_SORTEIO_PALETA = [
   "#0b67b5",
@@ -12611,6 +12612,7 @@ function sorteioRenderHistorico(){
 function sorteioLimparHistorico(){
   if(sorteioGirando)return;
   sorteioHistorico=[];
+  sorteioVencedorAtualId="";
   sorteioSalvarEstado();
   sorteioRenderHistorico();
   const winnerBox=document.getElementById("sorteioWinnerBox");
@@ -12686,6 +12688,7 @@ function sorteioDesenhar(){
   sorteioParticipantes.forEach(function(item,i){
     const inicio=-Math.PI/2+sorteioRotacao+i*angulo;
     const fim=inicio+angulo;
+    const vencedorAtivo=!sorteioGirando&&sorteioVencedorAtualId&&item.id===sorteioVencedorAtualId;
 
     ctx.beginPath();
     ctx.moveTo(0,0);
@@ -12700,17 +12703,38 @@ function sorteioDesenhar(){
     ctx.lineWidth=n>80?0.8:1.7;
     ctx.stroke();
 
+    if(vencedorAtivo){
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,raio,inicio,fim);
+      ctx.closePath();
+      ctx.fillStyle="rgba(255,205,72,.09)";
+      ctx.fill();
+      ctx.strokeStyle="rgba(255,217,110,.98)";
+      ctx.lineWidth=Math.max(3.2,n>80?1.6:3.8);
+      ctx.shadowColor="rgba(255,191,36,.88)";
+      ctx.shadowBlur=16;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // Texto só quando ainda existe espaço útil
     if(n<=120){
       ctx.save();
       ctx.rotate(inicio+angulo/2);
       ctx.textAlign="right";
       ctx.textBaseline="middle";
-      ctx.fillStyle="#f4fbff";
-      ctx.shadowColor="rgba(0,0,0,.9)";
-      ctx.shadowBlur=4;
+      ctx.fillStyle=vencedorAtivo?"#ffe88b":"#f4fbff";
+      ctx.shadowColor=vencedorAtivo?"rgba(255,192,60,.95)":"rgba(0,0,0,.9)";
+      ctx.shadowBlur=vencedorAtivo?10:4;
       ctx.font='700 '+fontSize+'px "Oxanium", Arial, sans-serif';
       ctx.fillText(sorteioAbreviarNome(item.nome,maxChars),raio-28,0);
+      if(vencedorAtivo){
+        ctx.strokeStyle="rgba(255,223,129,.72)";
+        ctx.lineWidth=1;
+        ctx.strokeText(sorteioAbreviarNome(item.nome,maxChars),raio-28,0);
+      }
       ctx.restore();
     }
   });
@@ -12745,6 +12769,7 @@ function sorteioAtualizarTudo(){
 }
 
 function sorteioRegistrarVencedor(participante){
+  sorteioVencedorAtualId=participante&&participante.id?participante.id:"";
   const agora=new Date();
   const hora=agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
   sorteioHistorico.unshift({
@@ -12793,6 +12818,7 @@ function sorteioGirar(){
   }
 
   const total=sorteioParticipantes.length;
+  sorteioVencedorAtualId="";
   const vencedorIndex=sorteioRandomIndex(total);
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;

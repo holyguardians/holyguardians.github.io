@@ -18691,11 +18691,11 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-logo-pointer{
   position:absolute;
   z-index:10;
-  /* Mesmo ângulo de 60° usado pelo cálculo do vencedor: ponta na borda, corpo para fora. */
-  left:75%;
-  top:93.3%;
-  width:30px;
-  height:58px;
+  /* Mesmo ângulo de 60° usado pelo cálculo do vencedor: ponta tocando a borda externa. */
+  left:72.25%;
+  top:88.55%;
+  width:36px;
+  height:66px;
   transform:translateX(-50%) rotate(-30deg);
   transform-origin:50% 0;
   clip-path:polygon(50% 0,100% 38%,68% 38%,68% 100%,32% 100%,32% 38%,0 38%);
@@ -18709,13 +18709,13 @@ body.hg-display-scaled footer {
   content:"";
   position:absolute;
   left:50%;
-  top:14px;
-  width:4px;
-  height:31px;
+  top:16px;
+  width:5px;
+  height:35px;
   transform:translateX(-50%);
   border-radius:999px;
-  background:linear-gradient(180deg,rgba(255,255,220,.92),rgba(255,211,74,.18));
-  box-shadow:0 0 7px rgba(255,221,96,.72);
+  background:linear-gradient(180deg,rgba(255,255,220,.96),rgba(255,211,74,.2));
+  box-shadow:0 0 8px rgba(255,221,96,.82);
 }
 
 #sorteioPagina .sorteio-wheel-stage.girando .sorteio-logo-pointer{
@@ -19122,10 +19122,10 @@ body.hg-display-scaled footer {
   top:2px;
   width:6px;
   height:10px;
-  border-right:2px solid #c8f8ff;
-  border-bottom:2px solid #c8f8ff;
+  border-right:2px solid #41ff84;
+  border-bottom:2px solid #41ff84;
   transform:rotate(45deg);
-  filter:drop-shadow(0 0 3px rgba(77,227,255,.88));
+  filter:drop-shadow(0 0 3px rgba(65,255,132,.92)) drop-shadow(0 0 7px rgba(65,255,132,.58));
 }
 
 #sorteioPagina .sorteio-check > input:focus-visible + .sorteio-check-ui{
