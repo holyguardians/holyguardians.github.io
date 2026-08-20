@@ -12319,6 +12319,9 @@ let sorteioInicializado = false;
 let sorteioWinnerTimer = null;
 let sorteioVencedorAtualId = "";
 let sorteioDigitamaRunId = 0;
+let sorteioDigitamaCache = [];
+let sorteioDigitamaReadyPromise = null;
+let sorteioScrollLock = null;
 
 const HG_SORTEIO_DIGITAMA_FRAMES = [
   "features_assets/sorteio/digitama/digitama_00.png",
@@ -12438,10 +12441,122 @@ function sorteioEsperar(ms){
 }
 
 function sorteioPrecarregarDigitama(){
-  HG_SORTEIO_DIGITAMA_FRAMES.forEach(function(src){
+  if(sorteioDigitamaReadyPromise)return sorteioDigitamaReadyPromise;
+
+  sorteioDigitamaCache=HG_SORTEIO_DIGITAMA_FRAMES.map(function(src){
     const img=new Image();
     img.decoding="async";
     img.src=src;
+    return img;
+  });
+
+  sorteioDigitamaReadyPromise=Promise.all(sorteioDigitamaCache.map(function(img){
+    if(typeof img.decode==="function"){
+      return img.decode().catch(function(){
+        return new Promise(function(resolve){
+          if(img.complete){resolve();return;}
+          img.addEventListener("load",resolve,{once:true});
+          img.addEventListener("error",resolve,{once:true});
+        });
+      });
+    }
+
+    return new Promise(function(resolve){
+      if(img.complete){resolve();return;}
+      img.addEventListener("load",resolve,{once:true});
+      img.addEventListener("error",resolve,{once:true});
+    });
+  })).then(function(){return sorteioDigitamaCache;});
+
+  return sorteioDigitamaReadyPromise;
+}
+
+function sorteioTravarScroll(){
+  if(sorteioScrollLock)return;
+
+  const html=document.documentElement;
+  const body=document.body;
+  const x=window.scrollX||window.pageXOffset||0;
+  const y=window.scrollY||window.pageYOffset||0;
+  const htmlScrollBehavior=html.style.scrollBehavior;
+  const bodyScrollBehavior=body?body.style.scrollBehavior:"";
+  let corrigindo=false;
+
+  html.style.scrollBehavior="auto";
+  if(body)body.style.scrollBehavior="auto";
+
+  function manterPosicao(){
+    if(corrigindo)return;
+    const atualX=window.scrollX||window.pageXOffset||0;
+    const atualY=window.scrollY||window.pageYOffset||0;
+    if(Math.abs(atualX-x)<1&&Math.abs(atualY-y)<1)return;
+    corrigindo=true;
+    window.scrollTo(x,y);
+    requestAnimationFrame(function(){corrigindo=false;});
+  }
+
+  window.addEventListener("scroll",manterPosicao,{passive:true});
+  sorteioScrollLock={
+    x:x,
+    y:y,
+    html:html,
+    body:body,
+    htmlScrollBehavior:htmlScrollBehavior,
+    bodyScrollBehavior:bodyScrollBehavior,
+    manterPosicao:manterPosicao
+  };
+
+  requestAnimationFrame(manterPosicao);
+}
+
+function sorteioLiberarScroll(){
+  const lock=sorteioScrollLock;
+  if(!lock)return;
+
+  window.removeEventListener("scroll",lock.manterPosicao);
+  window.scrollTo(lock.x,lock.y);
+
+  requestAnimationFrame(function(){
+    lock.html.style.scrollBehavior=lock.htmlScrollBehavior;
+    if(lock.body)lock.body.style.scrollBehavior=lock.bodyScrollBehavior;
+  });
+
+  sorteioScrollLock=null;
+}
+
+function sorteioAnimarCanvasGpu(canvas,graus,duracao){
+  if(!canvas)return Promise.resolve();
+
+  canvas.style.transform="rotate(0deg)";
+
+  if(typeof canvas.animate==="function"){
+    const animacao=canvas.animate(
+      [
+        {transform:"rotate(0deg)"},
+        {transform:"rotate("+graus+"deg)"}
+      ],
+      {
+        duration:duracao,
+        easing:"cubic-bezier(.22,1,.36,1)",
+        fill:"forwards"
+      }
+    );
+
+    return animacao.finished.then(function(){
+      return animacao;
+    });
+  }
+
+  return new Promise(function(resolve){
+    const inicioTempo=performance.now();
+    function easeOutQuint(t){return 1-Math.pow(1-t,5);}
+    function frame(agora){
+      const t=Math.min(1,(agora-inicioTempo)/duracao);
+      canvas.style.transform="rotate("+(graus*easeOutQuint(t))+"deg)";
+      if(t<1){requestAnimationFrame(frame);return;}
+      resolve(null);
+    }
+    requestAnimationFrame(frame);
   });
 }
 
@@ -12943,8 +13058,8 @@ function sorteioRegistrarVencedor(participante){
   }
 }
 
-function sorteioGirar(){
-  if(sorteioGirando)return;
+async function sorteioGirar(){
+  if(sorteioGirando||sorteioRevelando)return;
   if(sorteioInscricoesAbertas){
     sorteioDefinirFeedback("Feche as inscrições antes de girar a roleta.","warn");
     return;
@@ -12954,10 +13069,19 @@ function sorteioGirar(){
     return;
   }
 
-  const total=sorteioParticipantes.length;
+  // A viewport fica exatamente onde o usuário iniciou o sorteio.
+  sorteioTravarScroll();
+  sorteioGirando=true;
   sorteioVencedorAtualId="";
   sorteioOcultarVencedor();
   sorteioOcultarDigitama(true);
+  sorteioAtualizarEstadoInscricoes();
+  sorteioDefinirFeedback("Preparando o sorteio...","info");
+
+  // Garante que os cinco PNGs já estejam decodificados antes do giro terminar.
+  try{await sorteioPrecarregarDigitama();}catch(erro){}
+
+  const total=sorteioParticipantes.length;
   const vencedorIndex=sorteioRandomIndex(total);
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
@@ -12971,78 +13095,81 @@ function sorteioGirar(){
   alvo+=Math.PI*2*7;
 
   const duracao=5600;
-  const inicioTempo=performance.now();
-  sorteioGirando=true;
+  const delta=alvo-inicio;
+  const deltaGraus=delta*180/Math.PI;
   const wheelStage=document.querySelector("#sorteioPagina .sorteio-wheel-stage");
+  const canvas=document.getElementById("sorteioCanvas");
+
+  // Desenha UMA vez na posição inicial. Durante o giro, só a GPU transforma o canvas.
+  sorteioDesenhar();
+
   if(wheelStage){
     wheelStage.classList.remove("resultado");
     wheelStage.classList.add("girando");
   }
-  sorteioAtualizarEstadoInscricoes();
   sorteioDefinirFeedback("Sorteando entre "+total+" participantes...","info");
 
-  function easeOutQuint(t){
-    return 1-Math.pow(1-t,5);
+  let animacaoGpu=null;
+
+  try{
+    animacaoGpu=await sorteioAnimarCanvasGpu(canvas,deltaGraus,duracao);
+  }catch(erro){
+    // Se a API de animação for interrompida, concluímos diretamente no alvo calculado.
   }
 
-  function frame(agora){
-    const t=Math.min(1,(agora-inicioTempo)/duracao);
-    sorteioRotacao=inicio+(alvo-inicio)*easeOutQuint(t);
+  sorteioRotacao=((alvo%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  sorteioGirando=false;
+  sorteioRevelando=true;
+  sorteioVencedorAtualId=vencedor.id;
+
+  // Redesenha UMA vez no ângulo final e então remove a transformação temporária.
+  sorteioDesenhar();
+  if(animacaoGpu&&typeof animacaoGpu.cancel==="function")animacaoGpu.cancel();
+  if(canvas)canvas.style.transform="";
+
+  if(wheelStage){
+    wheelStage.classList.remove("girando");
+    wheelStage.classList.add("resultado");
+    clearTimeout(wheelStage._hgResultadoTimer);
+    wheelStage._hgResultadoTimer=setTimeout(function(){
+      wheelStage.classList.remove("resultado");
+    },900);
+  }
+
+  sorteioAtualizarEstadoInscricoes();
+  sorteioDefinirFeedback("O Digitama está reagindo...","info");
+
+  try{
+    await sorteioAnimarDigitama(vencedor);
+    sorteioRegistrarVencedor(vencedor);
+    // Mantém o frame do vencedor congelado após a animação.
     sorteioDesenhar();
 
-    if(t<1){
-      requestAnimationFrame(frame);
-      return;
+    const remover=document.getElementById("sorteioRemoverVencedor");
+    if(remover&&remover.checked){
+      sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
     }
 
-    sorteioRotacao=((alvo%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-    sorteioGirando=false;
-    sorteioRevelando=true;
-    sorteioVencedorAtualId=vencedor.id;
-    if(wheelStage){
-      wheelStage.classList.remove("girando");
-      wheelStage.classList.add("resultado");
-      clearTimeout(wheelStage._hgResultadoTimer);
-      wheelStage._hgResultadoTimer=setTimeout(function(){
-        wheelStage.classList.remove("resultado");
-      },900);
-    }
-
-    // Congela a roleta já com o setor vencedor em dourado durante a eclosão.
-    sorteioDesenhar();
+    sorteioRevelando=false;
+    sorteioSalvarEstado();
+    sorteioRenderParticipantes();
+    sorteioRenderHistorico();
     sorteioAtualizarEstadoInscricoes();
-    sorteioDefinirFeedback("O Digitama está reagindo...","info");
-
-    sorteioAnimarDigitama(vencedor).then(function(){
-      sorteioRegistrarVencedor(vencedor);
-      // Mantém o frame do vencedor congelado após a animação.
-      sorteioDesenhar();
-
-      const remover=document.getElementById("sorteioRemoverVencedor");
-      if(remover&&remover.checked){
-        sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
-      }
-
-      sorteioRevelando=false;
-      sorteioSalvarEstado();
-      sorteioRenderParticipantes();
-      sorteioRenderHistorico();
-      sorteioAtualizarEstadoInscricoes();
-      sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
-    }).catch(function(){
-      // Fallback: mesmo que algum efeito visual falhe, o sorteio sempre conclui.
-      sorteioOcultarDigitama(true);
-      sorteioRegistrarVencedor(vencedor);
-      sorteioDesenhar();
-      sorteioRevelando=false;
-      sorteioSalvarEstado();
-      sorteioRenderHistorico();
-      sorteioAtualizarEstadoInscricoes();
-      sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
-    });
+    sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+  }catch(erro){
+    // Fallback: mesmo que algum efeito visual falhe, o sorteio sempre conclui.
+    sorteioOcultarDigitama(true);
+    sorteioRegistrarVencedor(vencedor);
+    sorteioDesenhar();
+    sorteioRevelando=false;
+    sorteioSalvarEstado();
+    sorteioRenderHistorico();
+    sorteioAtualizarEstadoInscricoes();
+    sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+  }finally{
+    // Só libera depois que todas as mudanças de layout da rodada terminaram.
+    sorteioLiberarScroll();
   }
-
-  requestAnimationFrame(frame);
 }
 
 function inicializarSorteio(){

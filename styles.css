@@ -18543,6 +18543,11 @@ body.hg-display-scaled footer {
   align-items:start;
 }
 
+#sorteioPagina{
+  /* Evita o Chrome reajustar a viewport quando lista/histórico/overlay mudam no fim do sorteio. */
+  overflow-anchor:none;
+}
+
 #sorteioPagina .sorteio-wheel-panel,
 #sorteioPagina .sorteio-control-card{
   border:1px solid rgba(54,162,239,.38);
@@ -18644,8 +18649,14 @@ body.hg-display-scaled footer {
   height:auto;
   aspect-ratio:1 / 1;
   border-radius:50%;
+  transform-origin:50% 50%;
+  backface-visibility:hidden;
   filter:drop-shadow(0 15px 24px rgba(0,0,0,.42));
   transition:filter .32s ease,opacity .32s ease;
+}
+
+#sorteioPagina .sorteio-wheel-stage.girando #sorteioCanvas{
+  will-change:transform;
 }
 
 #sorteioPagina .sorteio-wheel-core{
