@@ -12313,10 +12313,20 @@ let sorteioParticipantes = [];
 let sorteioHistorico = [];
 let sorteioInscricoesAbertas = true;
 let sorteioGirando = false;
+let sorteioRevelando = false;
 let sorteioRotacao = 0;
 let sorteioInicializado = false;
 let sorteioWinnerTimer = null;
 let sorteioVencedorAtualId = "";
+let sorteioDigitamaRunId = 0;
+
+const HG_SORTEIO_DIGITAMA_FRAMES = [
+  "features_assets/sorteio/digitama/digitama_00.png",
+  "features_assets/sorteio/digitama/digitama_01.png",
+  "features_assets/sorteio/digitama/digitama_02.png",
+  "features_assets/sorteio/digitama/digitama_03.png",
+  "features_assets/sorteio/digitama/digitama_04.png"
+];
 
 const HG_SORTEIO_PALETA = [
   "#0b67b5",
@@ -12423,6 +12433,114 @@ function sorteioOcultarVencedor(){
   }
 }
 
+function sorteioEsperar(ms){
+  return new Promise(function(resolve){setTimeout(resolve,ms)});
+}
+
+function sorteioPrecarregarDigitama(){
+  HG_SORTEIO_DIGITAMA_FRAMES.forEach(function(src){
+    const img=new Image();
+    img.decoding="async";
+    img.src=src;
+  });
+}
+
+function sorteioOcultarDigitama(imediato){
+  sorteioDigitamaRunId++;
+  const overlay=document.getElementById("sorteioDigitamaReveal");
+  const wheelStage=document.querySelector("#sorteioPagina .sorteio-wheel-stage");
+  const nome=document.getElementById("sorteioDigitamaName");
+  if(overlay){
+    overlay.classList.remove("ativa","saindo","fase-0","fase-1","fase-2","fase-3","fase-4","nome-visivel");
+    overlay.setAttribute("aria-hidden","true");
+    if(imediato)overlay.style.transition="none";
+    requestAnimationFrame(function(){if(overlay)overlay.style.transition=""});
+  }
+  if(nome){
+    const strong=nome.querySelector("strong");
+    if(strong)strong.textContent="";
+  }
+  if(wheelStage)wheelStage.classList.remove("digitama-ativo");
+}
+
+function sorteioDefinirFaseDigitama(numero){
+  const overlay=document.getElementById("sorteioDigitamaReveal");
+  const frame=document.getElementById("sorteioDigitamaFrame");
+  if(!overlay||!frame)return;
+  [0,1,2,3,4].forEach(function(n){overlay.classList.remove("fase-"+n)});
+  frame.src=HG_SORTEIO_DIGITAMA_FRAMES[numero]||HG_SORTEIO_DIGITAMA_FRAMES[0];
+  void overlay.offsetWidth;
+  overlay.classList.add("fase-"+numero);
+}
+
+function sorteioCriarParticulasDigitama(){
+  const area=document.getElementById("sorteioDigitamaSparks");
+  if(!area)return;
+  area.innerHTML="";
+  for(let i=0;i<18;i++){
+    const p=document.createElement("i");
+    const angulo=(i/18)*360+(Math.random()*16-8);
+    const distancia=85+Math.round(Math.random()*105);
+    const atraso=Math.round(Math.random()*150);
+    p.style.setProperty("--r",angulo+"deg");
+    p.style.setProperty("--d",distancia+"px");
+    p.style.setProperty("--delay",atraso+"ms");
+    area.appendChild(p);
+  }
+}
+
+async function sorteioAnimarDigitama(vencedor){
+  const overlay=document.getElementById("sorteioDigitamaReveal");
+  const frame=document.getElementById("sorteioDigitamaFrame");
+  const nome=document.getElementById("sorteioDigitamaName");
+  const wheelStage=document.querySelector("#sorteioPagina .sorteio-wheel-stage");
+  if(!overlay||!frame||!nome||!wheelStage)return;
+
+  const runId=++sorteioDigitamaRunId;
+  const strong=nome.querySelector("strong");
+  if(strong)strong.textContent=vencedor.nome;
+  overlay.classList.remove("saindo","nome-visivel");
+  overlay.setAttribute("aria-hidden","false");
+  wheelStage.classList.add("digitama-ativo");
+  sorteioCriarParticulasDigitama();
+  sorteioDefinirFaseDigitama(0);
+  void overlay.offsetWidth;
+  overlay.classList.add("ativa");
+
+  // ~5 segundos de suspense após a roda parar.
+  await sorteioEsperar(650);
+  if(runId!==sorteioDigitamaRunId)return;
+  sorteioDefinirFeedback("O Digitama começou a rachar...","info");
+  sorteioDefinirFaseDigitama(1);
+
+  await sorteioEsperar(800);
+  if(runId!==sorteioDigitamaRunId)return;
+  sorteioDefinirFaseDigitama(2);
+
+  await sorteioEsperar(850);
+  if(runId!==sorteioDigitamaRunId)return;
+  sorteioDefinirFeedback("Tem alguma coisa saindo daí...","info");
+  sorteioDefinirFaseDigitama(3);
+
+  await sorteioEsperar(900);
+  if(runId!==sorteioDigitamaRunId)return;
+  sorteioDefinirFaseDigitama(4);
+
+  await sorteioEsperar(650);
+  if(runId!==sorteioDigitamaRunId)return;
+  overlay.classList.add("nome-visivel");
+
+  await sorteioEsperar(850);
+  if(runId!==sorteioDigitamaRunId)return;
+  overlay.classList.add("saindo");
+
+  await sorteioEsperar(300);
+  if(runId!==sorteioDigitamaRunId)return;
+  overlay.classList.remove("ativa","saindo","fase-0","fase-1","fase-2","fase-3","fase-4","nome-visivel");
+  overlay.setAttribute("aria-hidden","true");
+  wheelStage.classList.remove("digitama-ativo");
+}
+
 function sorteioDefinirFeedback(texto,tipo){
   const el=document.getElementById("sorteioFeedback");
   if(!el)return;
@@ -12431,7 +12549,7 @@ function sorteioDefinirFeedback(texto,tipo){
   if(texto){
     clearTimeout(el._hgTimer);
     el._hgTimer=setTimeout(function(){
-      if(!sorteioGirando)el.textContent="";
+      if(!sorteioGirando&&!sorteioRevelando)el.textContent="";
     },3500);
   }
 }
@@ -12458,23 +12576,24 @@ function sorteioAtualizarEstadoInscricoes(){
   }
   if(lock){
     lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
-    lock.disabled=sorteioGirando;
+    lock.disabled=sorteioGirando||sorteioRevelando;
   }
 
   controles.forEach(function(el){
-    if(el)el.disabled=!sorteioInscricoesAbertas||sorteioGirando;
+    if(el)el.disabled=!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;
   });
 
-  if(spin)spin.disabled=sorteioGirando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
+  if(spin)spin.disabled=sorteioGirando||sorteioRevelando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
 }
 
 function sorteioAlternarInscricoes(){
-  if(sorteioGirando)return;
+  if(sorteioGirando||sorteioRevelando)return;
   const vaiReabrir=!sorteioInscricoesAbertas;
   sorteioInscricoesAbertas=!sorteioInscricoesAbertas;
   if(vaiReabrir){
     sorteioVencedorAtualId="";
     sorteioOcultarVencedor();
+    sorteioOcultarDigitama(true);
     sorteioDesenhar();
   }
   sorteioAtualizarEstadoInscricoes();
@@ -12573,13 +12692,13 @@ async function sorteioImportarArquivo(file){
 }
 
 function sorteioRemoverParticipante(id){
-  if(!sorteioInscricoesAbertas||sorteioGirando)return;
+  if(!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando)return;
   sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==id});
   sorteioAtualizarTudo();
 }
 
 function sorteioLimparParticipantes(){
-  if(sorteioGirando)return;
+  if(sorteioGirando||sorteioRevelando)return;
   if(!sorteioInscricoesAbertas){
     sorteioDefinirFeedback("Reabra as inscrições antes de alterar a lista.","warn");
     return;
@@ -12629,7 +12748,7 @@ function sorteioRenderHistorico(){
 }
 
 function sorteioLimparHistorico(){
-  if(sorteioGirando)return;
+  if(sorteioGirando||sorteioRevelando)return;
   sorteioHistorico=[];
   sorteioVencedorAtualId="";
   sorteioSalvarEstado();
@@ -12838,6 +12957,7 @@ function sorteioGirar(){
   const total=sorteioParticipantes.length;
   sorteioVencedorAtualId="";
   sorteioOcultarVencedor();
+  sorteioOcultarDigitama(true);
   const vencedorIndex=sorteioRandomIndex(total);
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
@@ -12877,6 +12997,8 @@ function sorteioGirar(){
 
     sorteioRotacao=((alvo%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
     sorteioGirando=false;
+    sorteioRevelando=true;
+    sorteioVencedorAtualId=vencedor.id;
     if(wheelStage){
       wheelStage.classList.remove("girando");
       wheelStage.classList.add("resultado");
@@ -12885,24 +13007,39 @@ function sorteioGirar(){
         wheelStage.classList.remove("resultado");
       },900);
     }
-    sorteioRegistrarVencedor(vencedor);
-    // Redesenha uma vez com o vencedor ainda presente para congelar no canvas
-    // o contorno e o nome dourados antes de qualquer remoção da lista.
+
+    // Congela a roleta já com o setor vencedor em dourado durante a eclosão.
     sorteioDesenhar();
-
-    const remover=document.getElementById("sorteioRemoverVencedor");
-    if(remover&&remover.checked){
-      sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
-    }
-
-    sorteioSalvarEstado();
-    sorteioRenderParticipantes();
-    sorteioRenderHistorico();
-    // Mantém o frame final congelado para a ponta da logo continuar
-    // apontando visualmente para o vencedor. A roleta será redesenhada
-    // quando houver uma nova alteração ou no próximo giro.
     sorteioAtualizarEstadoInscricoes();
-    sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+    sorteioDefinirFeedback("O Digitama está reagindo...","info");
+
+    sorteioAnimarDigitama(vencedor).then(function(){
+      sorteioRegistrarVencedor(vencedor);
+      // Mantém o frame do vencedor congelado após a animação.
+      sorteioDesenhar();
+
+      const remover=document.getElementById("sorteioRemoverVencedor");
+      if(remover&&remover.checked){
+        sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
+      }
+
+      sorteioRevelando=false;
+      sorteioSalvarEstado();
+      sorteioRenderParticipantes();
+      sorteioRenderHistorico();
+      sorteioAtualizarEstadoInscricoes();
+      sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+    }).catch(function(){
+      // Fallback: mesmo que algum efeito visual falhe, o sorteio sempre conclui.
+      sorteioOcultarDigitama(true);
+      sorteioRegistrarVencedor(vencedor);
+      sorteioDesenhar();
+      sorteioRevelando=false;
+      sorteioSalvarEstado();
+      sorteioRenderHistorico();
+      sorteioAtualizarEstadoInscricoes();
+      sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+    });
   }
 
   requestAnimationFrame(frame);
@@ -12914,6 +13051,7 @@ function inicializarSorteio(){
 
   if(!sorteioInicializado){
     sorteioCarregarEstado();
+    sorteioPrecarregarDigitama();
 
     const nomeInput=document.getElementById("sorteioNomeInput");
     if(nomeInput){

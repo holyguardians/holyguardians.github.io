@@ -18645,6 +18645,7 @@ body.hg-display-scaled footer {
   aspect-ratio:1 / 1;
   border-radius:50%;
   filter:drop-shadow(0 15px 24px rgba(0,0,0,.42));
+  transition:filter .32s ease,opacity .32s ease;
 }
 
 #sorteioPagina .sorteio-wheel-core{
@@ -18685,6 +18686,7 @@ body.hg-display-scaled footer {
   object-fit:contain;
   transform:translate(1.5%,6%);
   filter:drop-shadow(0 0 8px rgba(255,196,62,.32)) drop-shadow(0 0 10px rgba(65,211,255,.14));
+  transition:opacity .32s ease,filter .32s ease,transform .32s ease;
 }
 
 /* Pequena seta anexada à ponta inferior-direita real da logo. */
@@ -18735,6 +18737,236 @@ body.hg-display-scaled footer {
   0%{filter:drop-shadow(0 0 5px rgba(255,191,36,.62));}
   38%{filter:drop-shadow(0 0 16px rgba(255,229,120,1));}
   100%{filter:drop-shadow(0 0 6px rgba(255,191,36,.68));}
+}
+
+/* =====================================================
+   SORTEIO — REVELAÇÃO DIGITAMA (~5s)
+===================================================== */
+#sorteioPagina .sorteio-digitama-reveal{
+  position:absolute;
+  z-index:11;
+  inset:4%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  transform:scale(.94);
+  transition:opacity .28s ease,transform .34s ease,visibility .28s ease;
+  isolation:isolate;
+}
+
+#sorteioPagina .sorteio-digitama-reveal.ativa{
+  opacity:1;
+  visibility:visible;
+  transform:scale(1);
+}
+
+#sorteioPagina .sorteio-digitama-reveal.saindo{
+  opacity:0;
+  transform:scale(1.035);
+}
+
+#sorteioPagina .sorteio-digitama-aura{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:55%;
+  aspect-ratio:1 / 1;
+  transform:translate(-50%,-50%) scale(.72);
+  border-radius:50%;
+  opacity:0;
+  background:radial-gradient(circle,rgba(255,242,166,.78) 0%,rgba(255,183,32,.24) 30%,rgba(70,190,255,.08) 53%,transparent 72%);
+  filter:blur(7px);
+  transition:opacity .28s ease,transform .42s cubic-bezier(.2,.8,.2,1);
+}
+
+#sorteioPagina .sorteio-digitama-reveal img{
+  position:relative;
+  z-index:2;
+  width:92%;
+  height:92%;
+  object-fit:contain;
+  user-select:none;
+  mix-blend-mode:screen;
+  filter:drop-shadow(0 0 8px rgba(255,255,255,.08));
+  transform-origin:50% 58%;
+  will-change:transform,filter,opacity;
+}
+
+#sorteioPagina .sorteio-wheel-stage.digitama-ativo #sorteioCanvas{
+  filter:drop-shadow(0 15px 24px rgba(0,0,0,.42)) brightness(.72) saturate(.88);
+}
+
+#sorteioPagina .sorteio-wheel-stage.digitama-ativo .sorteio-wheel-logo{
+  opacity:.22;
+  transform:translate(1.5%,6%) scale(.96);
+  filter:drop-shadow(0 0 5px rgba(255,196,62,.14));
+}
+
+#sorteioPagina .sorteio-wheel-stage.digitama-ativo .sorteio-logo-pointer{
+  filter:drop-shadow(0 0 10px rgba(255,218,80,.92));
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-0 img{
+  animation:sorteioDigitamaEntrada .62s cubic-bezier(.2,.82,.2,1) both;
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-1 img{
+  animation:sorteioDigitamaShakeLeve .72s ease-in-out both;
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-2 img{
+  animation:sorteioDigitamaShakeMedio .82s ease-in-out both;
+  filter:drop-shadow(0 0 10px rgba(255,187,50,.42));
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-2 .sorteio-digitama-aura{
+  opacity:.38;
+  transform:translate(-50%,-50%) scale(.86);
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-3 img{
+  animation:sorteioDigitamaShakeForte .88s ease-in-out both;
+  filter:drop-shadow(0 0 16px rgba(255,184,35,.72)) drop-shadow(0 0 28px rgba(255,229,128,.24));
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-3 .sorteio-digitama-aura{
+  opacity:.7;
+  transform:translate(-50%,-50%) scale(1.02);
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-4 img{
+  animation:sorteioDigitamaBurst .72s cubic-bezier(.1,.75,.2,1) both;
+  filter:drop-shadow(0 0 22px rgba(255,199,50,.92)) drop-shadow(0 0 42px rgba(255,236,155,.42));
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-4 .sorteio-digitama-aura{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1.32);
+  animation:sorteioDigitamaAuraBurst .82s ease-out both;
+}
+
+#sorteioPagina .sorteio-digitama-name{
+  position:absolute;
+  z-index:5;
+  left:50%;
+  top:51%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  max-width:70%;
+  opacity:0;
+  transform:translate(-50%,38px) scale(.78);
+  transition:opacity .34s ease,transform .62s cubic-bezier(.16,.86,.22,1);
+  text-align:center;
+}
+
+#sorteioPagina .sorteio-digitama-name span{
+  font-size:24px;
+  line-height:1;
+  filter:drop-shadow(0 0 8px rgba(255,190,35,.78));
+}
+
+#sorteioPagina .sorteio-digitama-name strong{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#ffe16d;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:clamp(20px,3.5vw,34px);
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:.4px;
+  white-space:nowrap;
+  text-shadow:0 0 6px #ffb600,0 0 14px rgba(255,190,35,.92),0 2px 4px rgba(0,0,0,.95);
+}
+
+#sorteioPagina .sorteio-digitama-reveal.nome-visivel .sorteio-digitama-name{
+  opacity:1;
+  transform:translate(-50%,-4px) scale(1);
+}
+
+#sorteioPagina .sorteio-digitama-sparks{
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:50%;
+  width:1px;
+  height:1px;
+}
+
+#sorteioPagina .sorteio-digitama-sparks i{
+  position:absolute;
+  left:0;
+  top:0;
+  width:5px;
+  height:14px;
+  border-radius:999px;
+  opacity:0;
+  background:linear-gradient(180deg,#fffbd3,#ffd84d 55%,#ff9b00);
+  box-shadow:0 0 8px rgba(255,205,60,.92);
+  transform:translate(-50%,-50%) rotate(var(--r));
+}
+
+#sorteioPagina .sorteio-digitama-reveal.fase-4 .sorteio-digitama-sparks i{
+  animation:sorteioDigitamaSpark .92s ease-out var(--delay) both;
+}
+
+@keyframes sorteioDigitamaEntrada{
+  0%{opacity:0;transform:scale(.7) translateY(16px);}
+  58%{opacity:1;transform:scale(1.035) translateY(-2px);}
+  100%{opacity:1;transform:scale(1) translateY(0);}
+}
+
+@keyframes sorteioDigitamaShakeLeve{
+  0%,100%{transform:translate(0,0) rotate(0deg);}
+  20%{transform:translate(-3px,1px) rotate(-1deg);}
+  42%{transform:translate(3px,-1px) rotate(1deg);}
+  65%{transform:translate(-2px,0) rotate(-.7deg);}
+  82%{transform:translate(2px,1px) rotate(.6deg);}
+}
+
+@keyframes sorteioDigitamaShakeMedio{
+  0%,100%{transform:translate(0,0) rotate(0deg) scale(1);}
+  12%{transform:translate(-5px,1px) rotate(-1.5deg) scale(1.006);}
+  25%{transform:translate(5px,-2px) rotate(1.6deg) scale(1.012);}
+  39%{transform:translate(-6px,2px) rotate(-1.8deg) scale(1.004);}
+  54%{transform:translate(6px,-1px) rotate(1.8deg) scale(1.014);}
+  70%{transform:translate(-4px,1px) rotate(-1.1deg) scale(1.006);}
+  86%{transform:translate(3px,0) rotate(.9deg) scale(1.01);}
+}
+
+@keyframes sorteioDigitamaShakeForte{
+  0%,100%{transform:translate(0,0) rotate(0deg) scale(1);}
+  10%{transform:translate(-8px,2px) rotate(-2.1deg) scale(1.01);}
+  20%{transform:translate(8px,-2px) rotate(2.3deg) scale(1.022);}
+  32%{transform:translate(-9px,1px) rotate(-2.5deg) scale(1.012);}
+  45%{transform:translate(9px,-1px) rotate(2.5deg) scale(1.026);}
+  58%{transform:translate(-7px,2px) rotate(-2deg) scale(1.014);}
+  72%{transform:translate(7px,-2px) rotate(1.8deg) scale(1.022);}
+  86%{transform:translate(-4px,0) rotate(-1deg) scale(1.01);}
+}
+
+@keyframes sorteioDigitamaBurst{
+  0%{opacity:1;transform:scale(.96);}
+  34%{opacity:1;transform:scale(1.055);}
+  68%{opacity:1;transform:scale(1.015);}
+  100%{opacity:.9;transform:scale(1.04);}
+}
+
+@keyframes sorteioDigitamaAuraBurst{
+  0%{filter:blur(7px);}
+  45%{filter:blur(3px);}
+  100%{filter:blur(12px);}
+}
+
+@keyframes sorteioDigitamaSpark{
+  0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r)) translateY(0) scale(.4);}
+  22%{opacity:1;}
+  100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r)) translateY(calc(var(--d) * -1)) scale(1);}
 }
 
 #sorteioPagina .sorteio-winner-box{
@@ -18832,8 +19064,17 @@ body.hg-display-scaled footer {
     transition:none;
   }
   #sorteioPagina .sorteio-wheel-stage.girando .sorteio-logo-pointer,
-  #sorteioPagina .sorteio-wheel-stage.resultado .sorteio-logo-pointer{
-    animation:none;
+  #sorteioPagina .sorteio-wheel-stage.resultado .sorteio-logo-pointer,
+  #sorteioPagina .sorteio-digitama-reveal img,
+  #sorteioPagina .sorteio-digitama-aura,
+  #sorteioPagina .sorteio-digitama-sparks i{
+    animation:none !important;
+  }
+  #sorteioPagina .sorteio-digitama-reveal,
+  #sorteioPagina .sorteio-digitama-name,
+  #sorteioPagina #sorteioCanvas,
+  #sorteioPagina .sorteio-wheel-logo{
+    transition:none !important;
   }
 }
 
@@ -19360,10 +19601,23 @@ body.hg-display-scaled footer {
   }
 
   #sorteioPagina .sorteio-logo-pointer{
-    left:75%;
-    top:93.3%;
-    width:23px;
-    height:44px;
+    left:72.25%;
+    top:88.55%;
+    width:25px;
+    height:47px;
+  }
+
+  #sorteioPagina .sorteio-digitama-reveal{
+    inset:1%;
+  }
+
+  #sorteioPagina .sorteio-digitama-reveal img{
+    width:98%;
+    height:98%;
+  }
+
+  #sorteioPagina .sorteio-digitama-name strong{
+    font-size:clamp(18px,7vw,28px);
   }
 
   #sorteioPagina .sorteio-wheel-actions,
