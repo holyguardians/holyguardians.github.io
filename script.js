@@ -12585,7 +12585,10 @@ function sorteioAtualizarFonteUI(){
     if(duplicados){duplicados.checked=true;duplicados.disabled=true;}
     if(dupTitle)dupTitle.textContent="UMA ENTRADA POR USUÁRIO";
     if(dupDesc)dupDesc.textContent="O Evil Guardians identifica a conta da "+(sorteioFonteAtiva==="youtube"?"YouTube":"Twitch")+" e ignora tentativas repetidas.";
-    if(clearBtn){clearBtn.disabled=true;clearBtn.title="Em live, reabra a rodada para zerar as inscrições.";}
+    if(clearBtn){
+      clearBtn.disabled=sorteioGirando||sorteioRevelando||!sorteioLiveSessionId;
+      clearBtn.title="Limpa os participantes desta rodada sem desconectar o Evil Guardians.";
+    }
   }else{
     if(kicker)kicker.textContent="ENTRADA MANUAL";
     if(title)title.textContent="PARTICIPANTES";
@@ -13375,10 +13378,29 @@ function sorteioRemoverParticipante(id){
   sorteioAtualizarTudo();
 }
 
-function sorteioLimparParticipantes(){
+async function sorteioLimparParticipantes(){
   if(sorteioGirando||sorteioRevelando)return;
-  if(sorteioFonteAtiva!=="manual"){
-    sorteioDefinirFeedback("No modo Live, feche e abra uma nova rodada para zerar as inscrições.","warn");
+  if(sorteioFonteEhLive(sorteioFonteAtiva)){
+    if(!sorteioLiveSessionId){
+      sorteioDefinirFeedback("Conecte o Evil Guardians antes de limpar a rodada.","warn");
+      return;
+    }
+    const btn=document.getElementById("sorteioClearBtn");
+    if(btn)btn.disabled=true;
+    try{
+      const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/clear",{method:"POST"});
+      sorteioLiveRemovedIds.clear();
+      sorteioVencedorAtualId="";
+      sorteioOcultarVencedor();
+      sorteioOcultarDigitama(true);
+      sorteioAplicarSessaoLive(data.session,true);
+      sorteioDefinirFeedback("Lista da "+(sorteioFonteAtiva==="twitch"?"Twitch":"YouTube")+" limpa · conexão mantida.","info");
+    }catch(erro){
+      sorteioDefinirFeedback(erro.message||"Não foi possível limpar a rodada ao vivo.","warn");
+    }finally{
+      sorteioAtualizarFonteUI();
+      sorteioAtualizarEstadoInscricoes();
+    }
     return;
   }
   if(!sorteioInscricoesAbertas){
