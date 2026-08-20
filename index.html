@@ -2324,7 +2324,7 @@
         <div class="sorteio-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
         <h2 class="page-title">SORTEIO</h2>
         <p class="page-subtitle">
-          Monte a lista manualmente ou conecte o Evil Guardians ao YouTube, à Twitch ou à Kick em tempo real.
+          Monte a lista manualmente, conecte uma plataforma individual ou una YouTube, Twitch e Kick no Multi Stream em tempo real.
         </p>
       </div>
 
@@ -2361,6 +2361,11 @@
           <span class="sorteio-source-mark"><img src="kick_icon.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
           <span><b>KICK</b><small>Evil Guardians · disponível</small></span>
         </button>
+
+        <button type="button" class="sorteio-source-btn multi" aria-pressed="false" onclick="sorteioSelecionarFonte('multi')">
+          <span class="sorteio-source-mark">⚡</span>
+          <span><b>MULTI STREAM</b><small>YouTube · Twitch · Kick</small></span>
+        </button>
       </div>
     </div>
 
@@ -2375,6 +2380,11 @@
           <div class="sorteio-participant-counter">
             <span>PARTICIPANTES</span>
             <b id="sorteioTotal">0</b>
+            <div id="sorteioPlatformCounters" class="sorteio-platform-counters" hidden>
+              <span class="youtube" title="YouTube"><img src="youtube.png" alt=""><b id="sorteioTotalYoutube">0</b></span>
+              <span class="twitch" title="Twitch"><img src="twitch.png" alt=""><b id="sorteioTotalTwitch">0</b></span>
+              <span class="kick" title="Kick"><img src="kick_icon.png" alt=""><b id="sorteioTotalKick">0</b></span>
+            </div>
           </div>
         </div>
 
@@ -2425,6 +2435,7 @@
               <small id="sorteioEntryKicker">ENTRADA MANUAL</small>
               <div class="sorteio-entry-title-row">
                 <img id="sorteioEntryPlatformIcon" class="sorteio-entry-platform-icon" src="youtube.png" alt="" aria-hidden="true" hidden>
+                <span id="sorteioEntryMultiIcon" class="sorteio-entry-multi-icon" aria-hidden="true" hidden>⚡</span>
                 <strong id="sorteioEntryTitle">PARTICIPANTES</strong>
               </div>
             </div>
@@ -2533,6 +2544,63 @@
                 <b>EVIL GUARDIANS DESCONECTADO</b>
                 <small>Autorize a Kick para ligar seu canal ao sorteio.</small>
               </div>
+            </div>
+          </div>
+
+          <div id="sorteioMultiPanel" class="sorteio-live-panel sorteio-multi-panel" hidden>
+            <div class="sorteio-multi-note">
+              <span class="sorteio-multi-bolt" aria-hidden="true">⚡</span>
+              <div>
+                <b>MULTI STREAM // LISTA ÚNICA</b>
+                <small>Conecte quantas plataformas quiser. Todos os <strong>!sorteio</strong> entram na mesma roleta em tempo real.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR EM TODAS</span>
+              <input id="sorteioMultiCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-multi-platform-card youtube">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge" aria-hidden="true"><img src="youtube.png" alt=""></span>
+                <div><b>YOUTUBE</b><small id="sorteioMultiYoutubeStatus">DESCONECTADO</small></div>
+              </div>
+              <label class="sorteio-field compact">
+                <span>LINK DA LIVE</span>
+                <input id="sorteioMultiYoutubeUrl" type="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=...">
+              </label>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiYoutubeConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioYoutubeConectar()">CONECTAR</button>
+                <button id="sorteioMultiYoutubeDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioYoutubeDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-platform-card twitch">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+                <div><b>TWITCH</b><small id="sorteioMultiTwitchStatus">DESCONECTADO</small></div>
+              </div>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiTwitchConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioTwitchConectar()">CONECTAR</button>
+                <button id="sorteioMultiTwitchDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioTwitchDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-platform-card kick">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+                <div><b>KICK</b><small id="sorteioMultiKickStatus">DESCONECTADO</small></div>
+              </div>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiKickConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioKickConectar()">CONECTAR</button>
+                <button id="sorteioMultiKickDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioKickDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-summary">
+              <span><b id="sorteioMultiConnectedCount">0</b>/3 PLATAFORMAS CONECTADAS</span>
+              <small>Uma conta pode participar uma vez em cada plataforma.</small>
             </div>
           </div>
 

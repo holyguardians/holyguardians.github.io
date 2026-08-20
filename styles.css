@@ -19944,3 +19944,202 @@ body.hg-display-scaled footer {
   color:#baff9f;
   text-shadow:0 0 9px rgba(83,252,24,.3);
 }
+
+
+/* =====================================================
+   FERRAMENTAS HG — SORTEIO V1.14 / MULTI STREAM
+===================================================== */
+#sorteioPagina .sorteio-source-options{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+
+#sorteioPagina .sorteio-source-btn.multi .sorteio-source-mark{
+  color:#ffe36a;
+  border-color:rgba(255,219,76,.42);
+  background:rgba(255,219,76,.07);
+  text-shadow:0 0 8px rgba(255,219,76,.55);
+}
+
+#sorteioPagina .sorteio-source-btn.multi.ativo{
+  border-color:rgba(255,219,76,.58);
+  background:linear-gradient(135deg,rgba(39,109,180,.34),rgba(84,35,145,.28),rgba(44,118,38,.22));
+  box-shadow:inset 0 0 22px rgba(80,190,255,.08),0 0 18px rgba(255,219,76,.08);
+}
+
+#sorteioPagina .sorteio-entry-multi-icon{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  flex:0 0 20px;
+  color:#ffe36a;
+  font-size:14px;
+  filter:drop-shadow(0 0 7px rgba(255,219,76,.35));
+}
+#sorteioPagina .sorteio-entry-multi-icon[hidden]{display:none !important;}
+
+#sorteioPagina .sorteio-platform-counters{
+  display:flex;
+  justify-content:center;
+  gap:5px;
+  margin-top:5px;
+}
+#sorteioPagina .sorteio-platform-counters[hidden]{display:none !important;}
+#sorteioPagina .sorteio-platform-counters > span{
+  min-width:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:2px 4px;
+  border:1px solid rgba(89,204,255,.2);
+  border-radius:5px;
+  background:rgba(2,13,31,.42);
+}
+#sorteioPagina .sorteio-platform-counters img{
+  width:10px;
+  height:10px;
+  object-fit:contain;
+}
+#sorteioPagina .sorteio-platform-counters b{
+  font-size:7px;
+  line-height:1;
+  color:#cdefff;
+}
+
+#sorteioPagina .sorteio-multi-panel{
+  gap:11px;
+}
+#sorteioPagina .sorteio-multi-note{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:12px 13px;
+  border:1px solid rgba(255,218,73,.24);
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(12,70,124,.16),rgba(72,30,126,.12),rgba(30,104,27,.09));
+  box-shadow:inset 0 0 22px rgba(72,197,255,.035);
+}
+#sorteioPagina .sorteio-multi-bolt{
+  width:31px;
+  height:31px;
+  display:grid;
+  place-items:center;
+  flex:0 0 31px;
+  border:1px solid rgba(255,222,84,.38);
+  border-radius:8px;
+  background:rgba(255,218,73,.06);
+  color:#ffe36a;
+  font-size:17px;
+  text-shadow:0 0 9px rgba(255,218,73,.55);
+}
+#sorteioPagina .sorteio-multi-note b{
+  display:block;
+  color:#f4fbff;
+  font-size:11px;
+  letter-spacing:.06em;
+}
+#sorteioPagina .sorteio-multi-note small{
+  display:block;
+  margin-top:3px;
+  color:#789ab8;
+  font-size:8px;
+  line-height:1.35;
+}
+#sorteioPagina .sorteio-multi-note small strong{
+  color:#dff8ff;
+}
+
+#sorteioPagina .sorteio-multi-platform-card{
+  padding:11px;
+  border:1px solid rgba(77,164,220,.23);
+  border-radius:9px;
+  background:linear-gradient(145deg,rgba(5,23,49,.84),rgba(4,15,33,.7));
+}
+#sorteioPagina .sorteio-multi-platform-card.youtube{border-color:rgba(255,69,83,.20);}
+#sorteioPagina .sorteio-multi-platform-card.twitch{border-color:rgba(145,70,255,.23);}
+#sorteioPagina .sorteio-multi-platform-card.kick{border-color:rgba(83,252,24,.22);}
+
+#sorteioPagina .sorteio-multi-platform-head{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:9px;
+}
+#sorteioPagina .sorteio-multi-platform-head > div{
+  min-width:0;
+}
+#sorteioPagina .sorteio-multi-platform-head b,
+#sorteioPagina .sorteio-multi-platform-head small{
+  display:block;
+}
+#sorteioPagina .sorteio-multi-platform-head b{
+  color:#eef9ff;
+  font-size:10px;
+  letter-spacing:.055em;
+}
+#sorteioPagina .sorteio-multi-platform-head small{
+  margin-top:2px;
+  color:#607f9b;
+  font-size:7px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#sorteioPagina .sorteio-multi-platform-head small.online{
+  color:#65efaf;
+}
+
+#sorteioPagina .sorteio-field.compact{
+  margin-bottom:9px;
+}
+#sorteioPagina .sorteio-field.compact span{
+  font-size:7px;
+}
+
+#sorteioPagina .sorteio-multi-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 11px;
+  border:1px dashed rgba(84,205,255,.24);
+  border-radius:8px;
+  background:rgba(4,18,40,.52);
+}
+#sorteioPagina .sorteio-multi-summary span{
+  color:#9bdfff;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+#sorteioPagina .sorteio-multi-summary span b{
+  color:#ffe36a;
+  font-size:11px;
+}
+#sorteioPagina .sorteio-multi-summary small{
+  color:#6889a5;
+  font-size:7px;
+  text-align:right;
+}
+
+@media(max-width:1320px){
+  #sorteioPagina .sorteio-source-options{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:1120px){
+  #sorteioPagina .sorteio-source-options{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:540px){
+  #sorteioPagina .sorteio-source-options{
+    grid-template-columns:1fr 1fr;
+  }
+  #sorteioPagina .sorteio-multi-summary{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #sorteioPagina .sorteio-multi-summary small{text-align:left;}
+}
