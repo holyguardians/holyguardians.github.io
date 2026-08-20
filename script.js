@@ -12320,6 +12320,10 @@ let sorteioLiveSession = null;
 let sorteioLivePollTimer = null;
 let sorteioLivePollBusy = false;
 let sorteioLiveSyncTimer = null;
+let sorteioLiveSocket = null;
+let sorteioLiveSocketSessionId = "";
+let sorteioLiveSocketReconnectTimer = null;
+let sorteioLiveSocketManualClose = false;
 let sorteioLiveRemovedIds = new Set();
 let sorteioLiveLastError = "";
 
@@ -12431,11 +12435,72 @@ async function sorteioLiveRequest(path,options){
   return data;
 }
 
+
+function sorteioLiveWsUrl(sessionId){
+  const base=HG_SORTEIO_LIVE_API.replace(/^http:/i,"ws:").replace(/^https:/i,"wss:");
+  return base+"/api/session/"+encodeURIComponent(sessionId)+"/ws";
+}
+
+function sorteioFecharSocketLive(manual){
+  if(sorteioLiveSocketReconnectTimer){clearTimeout(sorteioLiveSocketReconnectTimer);sorteioLiveSocketReconnectTimer=null;}
+  sorteioLiveSocketManualClose=manual!==false;
+  const ws=sorteioLiveSocket;
+  sorteioLiveSocket=null;
+  sorteioLiveSocketSessionId="";
+  if(ws){try{ws.close(1000,"source-change")}catch(erro){}}
+}
+
+function sorteioAgendarReconnectSocket(){
+  if(sorteioLiveSocketReconnectTimer||sorteioLiveSocketManualClose)return;
+  if(!sorteioFonteEhLive(sorteioFonteAtiva)||!sorteioLiveSessionId)return;
+  sorteioLiveSocketReconnectTimer=setTimeout(function(){
+    sorteioLiveSocketReconnectTimer=null;
+    sorteioConectarSocketLive(true);
+  },1200);
+}
+
+function sorteioConectarSocketLive(force){
+  if(!sorteioFonteEhLive(sorteioFonteAtiva)||!sorteioLiveSessionId)return;
+  const id=String(sorteioLiveSessionId);
+  if(!force&&sorteioLiveSocket&&sorteioLiveSocketSessionId===id&&(sorteioLiveSocket.readyState===WebSocket.OPEN||sorteioLiveSocket.readyState===WebSocket.CONNECTING))return;
+  if(sorteioLiveSocket){try{sorteioLiveSocket.close(1000,"reconnect")}catch(erro){}}
+  sorteioLiveSocketManualClose=false;
+  sorteioLiveSocketSessionId=id;
+  let ws;
+  try{ws=new WebSocket(sorteioLiveWsUrl(id));}catch(erro){sorteioAgendarReconnectSocket();return;}
+  sorteioLiveSocket=ws;
+  ws.onopen=function(){
+    if(sorteioLiveSocket!==ws)return;
+    sorteioLiveLastError="";
+  };
+  ws.onmessage=function(event){
+    if(sorteioLiveSocket!==ws)return;
+    let payload=null;
+    try{payload=JSON.parse(event.data)}catch(erro){return;}
+    if(!payload||payload.type!=="session"||!payload.session)return;
+    const antes=sorteioParticipantes.length;
+    const fonteAntes=sorteioFonteAtiva;
+    sorteioAplicarSessaoLive(payload.session,true);
+    const novos=Math.max(0,sorteioParticipantes.length-antes);
+    if(novos>0&&fonteAntes===sorteioFonteAtiva){
+      const plataforma=sorteioFonteAtiva==="twitch"?"Twitch":(sorteioFonteAtiva==="youtube"?"YouTube":"live");
+      sorteioDefinirFeedback(novos+" participante(s) entrou(aram) pela "+plataforma+".","ok");
+    }
+  };
+  ws.onerror=function(){};
+  ws.onclose=function(){
+    if(sorteioLiveSocket===ws)sorteioLiveSocket=null;
+    if(sorteioLiveSocketSessionId===id)sorteioLiveSocketSessionId="";
+    sorteioAgendarReconnectSocket();
+  };
+}
+
 async function sorteioLiveGarantirSessao(){
   if(sorteioLiveSessionId){
     try{
       const atual=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
       sorteioLiveSession=atual.session;
+      sorteioConectarSocketLive(false);
       return sorteioLiveSessionId;
     }catch(erro){
       sorteioLiveSessionId="";
@@ -12447,6 +12512,7 @@ async function sorteioLiveGarantirSessao(){
   sorteioLiveSessionId=criado.session.id;
   sorteioLiveRemovedIds.clear();
   sorteioSalvarLiveLocal();
+  sorteioConectarSocketLive(false);
   return sorteioLiveSessionId;
 }
 
@@ -12597,6 +12663,7 @@ async function sorteioSelecionarFonte(fonte){
   sorteioOcultarDigitama(true);
 
   if(nova==="manual"){
+    sorteioFecharSocketLive(true);
     sorteioParticipantes=sorteioManualParticipantes.map(function(item){return Object.assign({},item)});
     sorteioInscricoesAbertas=sorteioManualInscricoesAbertas;
     sorteioAtualizarTudo();sorteioAtualizarFonteUI();sorteioSalvarLiveLocal();
@@ -12613,9 +12680,8 @@ async function sorteioSelecionarFonte(fonte){
     try{
       const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
       sorteioAplicarSessaoLive(data.session,true);
-      if(sorteioInscricoesAbertas&&sorteioPlataformaConectada(nova)){
-        if(nova==="youtube")sorteioIniciarPollingYoutube(500); else sorteioIniciarSyncTwitch(500);
-      }
+      sorteioConectarSocketLive(false);
+      if(sorteioInscricoesAbertas&&sorteioPlataformaConectada(nova)&&nova==="youtube")sorteioIniciarPollingYoutube(500);
     }catch(erro){
       sorteioLiveSessionId="";sorteioLiveSession=null;sorteioSalvarLiveLocal();sorteioAtualizarFonteUI();
     }
@@ -12644,6 +12710,7 @@ async function sorteioYoutubeConectar(){
   try{
     await sorteioLiveRequest("/api/health");
     await sorteioLiveGarantirSessao();
+    sorteioConectarSocketLive(false);
     await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{method:"POST",body:{command:command,platforms:{youtube:true,twitch:false,kick:false}}});
     const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/youtube/connect",{method:"POST",body:{url:url}});
     if(!data.session||!data.session.connections||!data.session.connections.youtube||!data.session.connections.youtube.connected)throw new Error("O Worker não confirmou a conexão com o chat do YouTube.");
@@ -12688,6 +12755,7 @@ async function sorteioTwitchConectar(){
   try{
     await sorteioLiveRequest("/api/health");
     await sorteioLiveGarantirSessao();
+    sorteioConectarSocketLive(false);
     await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{method:"POST",body:{command:command,platforms:{youtube:false,twitch:true,kick:false}}});
     const authUrl=HG_SORTEIO_LIVE_API+"/auth/twitch/start?session="+encodeURIComponent(sorteioLiveSessionId);
     try{popup.location.href=authUrl;}catch(erro){throw new Error("Não foi possível abrir a autorização da Twitch.");}
@@ -12731,14 +12799,20 @@ async function sorteioTwitchDesconectar(){
   if(sorteioGirando||sorteioRevelando)return;
   sorteioPararPollingLive();
   try{
-    if(sorteioLiveSessionId&&sorteioInscricoesAbertas)await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
-  }catch(erro){}
-  // O EventSub antigo continua apontando para a sessão fechada e é inofensivo; a próxima conexão cria uma sessão limpa.
-  sorteioLiveSessionId="";sorteioLiveSession=null;sorteioLiveRemovedIds.clear();sorteioParticipantes=[];sorteioInscricoesAbertas=false;sorteioLiveLastError="";
-  sorteioSalvarLiveLocal();sorteioAtualizarTudo();sorteioAtualizarFonteUI();
-  sorteioDefinirFeedback("Twitch desconectada desta sessão do sorteio.","info");
+    if(!sorteioLiveSessionId)return;
+    if(sorteioInscricoesAbertas)await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/twitch/disconnect",{method:"POST"});
+    sorteioAplicarSessaoLive(data.session,true);
+    sorteioParticipantes=[];
+    sorteioInscricoesAbertas=false;
+    sorteioLiveRemovedIds.clear();
+    sorteioLiveLastError="";
+    sorteioSalvarLiveLocal();
+    sorteioAtualizarTudo();
+    sorteioAtualizarFonteUI();
+    sorteioDefinirFeedback("Twitch desconectada desta sessão do sorteio.","info");
+  }catch(erro){sorteioDefinirFeedback(erro.message||"Falha ao desconectar a Twitch.","warn");}
 }
-
 function sorteioAgendarYoutubePoll(ms){
   if(sorteioLivePollTimer){clearTimeout(sorteioLivePollTimer);sorteioLivePollTimer=null;}
   if(sorteioFonteAtiva!=="youtube"||!sorteioInscricoesAbertas||!sorteioYoutubeConectado())return;
@@ -12787,11 +12861,10 @@ async function sorteioRestaurarLive(){
   try{
     const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
     sorteioAplicarSessaoLive(data.session,true);
-    if(sorteioInscricoesAbertas&&sorteioPlataformaConectada(sorteioFonteAtiva)){
-      if(sorteioFonteAtiva==="youtube")sorteioIniciarPollingYoutube(300);else sorteioIniciarSyncTwitch(300);
-    }
+    sorteioConectarSocketLive(false);
+    if(sorteioInscricoesAbertas&&sorteioPlataformaConectada(sorteioFonteAtiva)&&sorteioFonteAtiva==="youtube")sorteioIniciarPollingYoutube(300);
   }catch(erro){
-    sorteioLiveSessionId="";sorteioLiveSession=null;sorteioParticipantes=[];sorteioInscricoesAbertas=false;sorteioSalvarLiveLocal();sorteioAtualizarTudo();sorteioAtualizarFonteUI();
+    sorteioFecharSocketLive(true);sorteioLiveSessionId="";sorteioLiveSession=null;sorteioParticipantes=[];sorteioInscricoesAbertas=false;sorteioSalvarLiveLocal();sorteioAtualizarTudo();sorteioAtualizarFonteUI();
   }
 }
 
@@ -13190,8 +13263,9 @@ async function sorteioAlternarInscricoes(){
         await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{method:"POST",body:{command:command,platforms:platforms}});
         const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/open",{method:"POST"});
         sorteioAplicarSessaoLive(data.session,true);
+        sorteioConectarSocketLive(false);
         sorteioDefinirFeedback("Inscrições abertas · Evil Guardians ouvindo "+command+" na "+(plataforma==="youtube"?"YouTube":"Twitch")+".","ok");
-        if(plataforma==="youtube")await sorteioYoutubePoll(true);else sorteioIniciarSyncTwitch(350);
+        if(plataforma==="youtube")await sorteioYoutubePoll(true);
       }
     }catch(erro){sorteioDefinirFeedback(erro.message||"Não foi possível alterar a rodada ao vivo.","warn");}
     finally{sorteioAtualizarEstadoInscricoes();}
