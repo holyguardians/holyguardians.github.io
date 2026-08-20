@@ -12315,6 +12315,7 @@ let sorteioInscricoesAbertas = true;
 let sorteioGirando = false;
 let sorteioRotacao = 0;
 let sorteioInicializado = false;
+let sorteioWinnerTimer = null;
 
 const HG_SORTEIO_PALETA = [
   "#0b67b5",
@@ -12796,7 +12797,9 @@ function sorteioGirar(){
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
   const inicio=sorteioRotacao;
-  let alvo=-(vencedorIndex+.5)*angulo;
+  // O indicador agora fica na ponta inferior da logo (6 horas).
+  // Centro do setor vencedor: -PI/2 + rotacao + (index+.5)*angulo = PI/2.
+  let alvo=Math.PI-(vencedorIndex+.5)*angulo;
 
   while(alvo<=inicio)alvo+=Math.PI*2;
   alvo+=Math.PI*2*7;
@@ -12804,6 +12807,11 @@ function sorteioGirar(){
   const duracao=5600;
   const inicioTempo=performance.now();
   sorteioGirando=true;
+  const wheelStage=document.querySelector("#sorteioPagina .sorteio-wheel-stage");
+  if(wheelStage){
+    wheelStage.classList.remove("resultado");
+    wheelStage.classList.add("girando");
+  }
   sorteioAtualizarEstadoInscricoes();
   sorteioDefinirFeedback("Sorteando entre "+total+" participantes...","info");
 
@@ -12823,6 +12831,14 @@ function sorteioGirar(){
 
     sorteioRotacao=((alvo%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
     sorteioGirando=false;
+    if(wheelStage){
+      wheelStage.classList.remove("girando");
+      wheelStage.classList.add("resultado");
+      clearTimeout(wheelStage._hgResultadoTimer);
+      wheelStage._hgResultadoTimer=setTimeout(function(){
+        wheelStage.classList.remove("resultado");
+      },900);
+    }
     sorteioRegistrarVencedor(vencedor);
 
     const remover=document.getElementById("sorteioRemoverVencedor");
@@ -12833,7 +12849,9 @@ function sorteioGirar(){
     sorteioSalvarEstado();
     sorteioRenderParticipantes();
     sorteioRenderHistorico();
-    sorteioDesenhar();
+    // Mantém o frame final congelado para a ponta da logo continuar
+    // apontando visualmente para o vencedor. A roleta será redesenhada
+    // quando houver uma nova alteração ou no próximo giro.
     sorteioAtualizarEstadoInscricoes();
     sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
   }
