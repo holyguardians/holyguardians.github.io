@@ -12694,6 +12694,7 @@ async function sorteioTwitchConectar(){
     sorteioDefinirFeedback("Autorize o Evil Guardians na janela da Twitch...","info");
     const inicio=Date.now();
     let conectado=false;
+    let popupFechadoEm=0;
     while(Date.now()-inicio<120000){
       await new Promise(function(resolve){setTimeout(resolve,1200)});
       try{
@@ -12701,10 +12702,19 @@ async function sorteioTwitchConectar(){
         sorteioAplicarSessaoLive(data.session,false);
         if(sorteioTwitchConectado()){conectado=true;break;}
       }catch(erro){}
-      if(popup.closed&&Date.now()-inicio>4000)break;
+
+      // A página de callback da Twitch fecha sozinha após concluir o OAuth.
+      // KV é eventualmente consistente, então não podemos interpretar o popup fechado
+      // como falha imediata: continuamos sincronizando por alguns segundos.
+      let popupFechado=false;
+      try{popupFechado=!!popup.closed}catch(erro){}
+      if(popupFechado){
+        if(!popupFechadoEm)popupFechadoEm=Date.now();
+        if(Date.now()-popupFechadoEm>18000)break;
+      }
     }
     try{if(!popup.closed&&conectado)popup.close();}catch(erro){}
-    if(!conectado)throw new Error("A autorização da Twitch não foi concluída. Tente conectar novamente.");
+    if(!conectado)throw new Error("A Twitch autorizou a janela, mas o site não conseguiu sincronizar a sessão a tempo. Tente conectar novamente.");
     sorteioAplicarSessaoLive(sorteioLiveSession,true);sorteioSalvarLiveLocal();sorteioAtualizarEstadoInscricoes();
     sorteioDefinirFeedback("Evil Guardians conectado à Twitch. Abra as inscrições quando quiser.","ok");
   }catch(erro){
