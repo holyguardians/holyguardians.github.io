@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-10">
+  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-10-1-icons">
 </head>
 <body>
 
@@ -2348,17 +2348,17 @@
         </button>
 
         <button type="button" class="sorteio-source-btn youtube" aria-pressed="false" onclick="sorteioSelecionarFonte('youtube')">
-          <span class="sorteio-source-mark">▶</span>
+          <span class="sorteio-source-mark"><img src="youtube.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
           <span><b>YOUTUBE</b><small>Evil Guardians · disponível</small></span>
         </button>
 
         <button type="button" class="sorteio-source-btn twitch" disabled title="Integração com live será adicionada na próxima etapa">
-          <span class="sorteio-source-mark">◈</span>
+          <span class="sorteio-source-mark"><img src="twitch.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
           <span><b>TWITCH</b><small>Live · em breve</small></span>
         </button>
 
         <button type="button" class="sorteio-source-btn kick" disabled title="Integração com live será adicionada na próxima etapa">
-          <span class="sorteio-source-mark">K</span>
+          <span class="sorteio-source-mark"><img src="kick_icon.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
           <span><b>KICK</b><small>Live · em breve</small></span>
         </button>
       </div>
@@ -2423,7 +2423,10 @@
           <div class="sorteio-control-title">
             <div>
               <small id="sorteioEntryKicker">ENTRADA MANUAL</small>
-              <strong id="sorteioEntryTitle">PARTICIPANTES</strong>
+              <div class="sorteio-entry-title-row">
+                <img id="sorteioEntryPlatformIcon" class="sorteio-entry-platform-icon" src="youtube.png" alt="" aria-hidden="true" hidden>
+                <strong id="sorteioEntryTitle">PARTICIPANTES</strong>
+              </div>
             </div>
             <span id="sorteioEntryState" class="sorteio-entry-badge aberto">ABERTO</span>
           </div>
@@ -2466,6 +2469,7 @@
             </div>
 
             <div id="sorteioLiveConnection" class="sorteio-live-connection offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge" aria-hidden="true"><img src="youtube.png" alt=""></span>
               <span class="sorteio-live-dot"></span>
               <div>
                 <b>EVIL GUARDIANS DESCONECTADO</b>
@@ -2636,6 +2640,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260820-sorteio-v1-10"></script>
+<script src="script.js?v=20260820-sorteio-v1-10-1-icons"></script>
 </body>
 </html>

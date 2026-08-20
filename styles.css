@@ -18536,6 +18536,24 @@ body.hg-display-scaled footer {
   font-weight:900;
 }
 
+#sorteioPagina .sorteio-source-icon{
+  display:block;
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 5px rgba(74,211,255,.16));
+}
+
+#sorteioPagina .sorteio-source-btn.youtube .sorteio-source-icon{
+  width:19px;
+  height:19px;
+}
+
+#sorteioPagina .sorteio-source-btn.twitch .sorteio-source-icon,
+#sorteioPagina .sorteio-source-btn.kick .sorteio-source-icon{
+  opacity:.9;
+}
+
 #sorteioPagina .sorteio-main-grid{
   display:grid;
   grid-template-columns:minmax(0,1.34fr) minmax(390px,.66fr);
@@ -19654,6 +19672,25 @@ body.hg-display-scaled footer {
 /* =====================================================
    FREATURES — SORTEIO V1.10 / EVIL GUARDIANS YOUTUBE
 ===================================================== */
+#sorteioPagina .sorteio-entry-title-row{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:18px;
+}
+
+#sorteioPagina .sorteio-entry-platform-icon{
+  width:19px;
+  height:19px;
+  object-fit:contain;
+  flex:0 0 19px;
+  filter:drop-shadow(0 0 7px rgba(255,61,76,.18));
+}
+
+#sorteioPagina .sorteio-entry-platform-icon[hidden]{
+  display:none !important;
+}
+
 #sorteioPagina .sorteio-live-panel[hidden],
 #sorteioPagina #sorteioManualPanel[hidden]{
   display:none !important;
@@ -19673,7 +19710,7 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-live-connection{
   position:relative;
   display:grid;
-  grid-template-columns:12px minmax(0,1fr);
+  grid-template-columns:30px 12px minmax(0,1fr);
   align-items:center;
   gap:11px;
   min-height:62px;
@@ -19682,6 +19719,30 @@ body.hg-display-scaled footer {
   border-radius:9px;
   background:linear-gradient(135deg,rgba(4,20,43,.88),rgba(5,15,34,.74));
   overflow:hidden;
+}
+
+#sorteioPagina .sorteio-live-platform-badge{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,78,92,.22);
+  border-radius:7px;
+  background:rgba(255,31,52,.045);
+  box-shadow:inset 0 0 10px rgba(255,62,79,.025);
+}
+
+#sorteioPagina .sorteio-live-platform-badge img{
+  display:block;
+  width:19px;
+  height:19px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 5px rgba(255,76,91,.22));
+}
+
+#sorteioPagina .sorteio-live-connection.online .sorteio-live-platform-badge{
+  border-color:rgba(56,255,157,.28);
+  box-shadow:inset 0 0 11px rgba(56,255,157,.035),0 0 9px rgba(56,255,157,.045);
 }
 
 #sorteioPagina .sorteio-live-connection::after{

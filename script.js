@@ -12473,6 +12473,7 @@ function sorteioAtualizarFonteUI(){
   const youtubePanel=document.getElementById("sorteioYoutubePanel");
   const kicker=document.getElementById("sorteioEntryKicker");
   const title=document.getElementById("sorteioEntryTitle");
+  const platformIcon=document.getElementById("sorteioEntryPlatformIcon");
   const duplicados=document.getElementById("sorteioBloquearDuplicados");
   const dupTitle=document.getElementById("sorteioDuplicateTitle");
   const dupDesc=document.getElementById("sorteioDuplicateDesc");
@@ -12493,6 +12494,7 @@ function sorteioAtualizarFonteUI(){
   if(sorteioFonteAtiva==="youtube"){
     if(kicker)kicker.textContent="EVIL GUARDIANS LIVE";
     if(title)title.textContent="YOUTUBE";
+    if(platformIcon){platformIcon.src="youtube.png";platformIcon.hidden=false;}
     if(duplicados){duplicados.checked=true;duplicados.disabled=true;}
     if(dupTitle)dupTitle.textContent="UMA ENTRADA POR USUÁRIO";
     if(dupDesc)dupDesc.textContent="O Evil Guardians identifica a conta do YouTube e ignora tentativas repetidas.";
@@ -12500,6 +12502,7 @@ function sorteioAtualizarFonteUI(){
   }else{
     if(kicker)kicker.textContent="ENTRADA MANUAL";
     if(title)title.textContent="PARTICIPANTES";
+    if(platformIcon)platformIcon.hidden=true;
     if(duplicados){duplicados.disabled=false;duplicados.checked=sorteioManualBloquearDuplicados;}
     if(dupTitle)dupTitle.textContent="UMA ENTRADA POR NOME";
     if(dupDesc)dupDesc.textContent="Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.";
@@ -12581,16 +12584,29 @@ async function sorteioSelecionarFonte(fonte){
   }
 }
 
+function sorteioNormalizarYoutubeUrl(valor){
+  let raw=String(valor||"").trim();
+  if(!raw)return "";
+  // ID puro do vídeo continua válido para o Worker.
+  if(/^[A-Za-z0-9_-]{11}$/.test(raw))return raw;
+  // Usuários normalmente colam youtube.com/... ou www.youtube.com/... sem protocolo.
+  if(!/^https?:\/\//i.test(raw)&&/^(?:www\.)?(?:youtube\.com|youtu\.be)\//i.test(raw)){
+    raw="https://"+raw;
+  }
+  return raw;
+}
+
 async function sorteioYoutubeConectar(){
   if(sorteioGirando||sorteioRevelando)return;
   const urlInput=document.getElementById("sorteioYoutubeUrl");
   const commandInput=document.getElementById("sorteioLiveCommand");
-  const url=urlInput?urlInput.value.trim():"";
+  const url=sorteioNormalizarYoutubeUrl(urlInput?urlInput.value:"");
   const command=(commandInput?commandInput.value.trim():"")||"!sorteio";
   if(!url){
     sorteioDefinirFeedback("Cole o link da live do YouTube antes de conectar.","warn");
     return;
   }
+  if(urlInput&&urlInput.value.trim()!==url)urlInput.value=url;
 
   const btn=document.getElementById("sorteioYoutubeConnectBtn");
   if(btn){btn.disabled=true;btn.textContent="CONECTANDO...";}
