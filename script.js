@@ -12612,10 +12612,16 @@ function sorteioLimparHistorico(){
   sorteioHistorico=[];
   sorteioSalvarEstado();
   sorteioRenderHistorico();
+  const winnerBox=document.getElementById("sorteioWinnerBox");
   const nome=document.getElementById("sorteioWinnerName");
   const meta=document.getElementById("sorteioWinnerMeta");
-  if(nome)nome.textContent="Aguardando sorteio...";
-  if(meta)meta.textContent="Adicione participantes e feche as inscrições para girar.";
+  if(nome)nome.textContent="";
+  if(meta)meta.textContent="";
+  if(winnerBox){
+    winnerBox.classList.remove("reveal");
+    winnerBox.classList.add("hide");
+    winnerBox.setAttribute("aria-hidden","true");
+  }
 }
 
 function sorteioAbreviarNome(nome,max){
@@ -12751,13 +12757,27 @@ function sorteioRegistrarVencedor(participante){
   const winnerBox=document.getElementById("sorteioWinnerBox");
   const nome=document.getElementById("sorteioWinnerName");
   const meta=document.getElementById("sorteioWinnerMeta");
+
+  if(nome)nome.textContent=participante.nome;
+  if(meta)meta.textContent="MANUAL · "+hora;
+
   if(winnerBox){
-    winnerBox.classList.remove("reveal");
+    if(sorteioWinnerTimer){
+      clearTimeout(sorteioWinnerTimer);
+      sorteioWinnerTimer=null;
+    }
+
+    winnerBox.classList.remove("reveal","hide");
+    winnerBox.setAttribute("aria-hidden","false");
     void winnerBox.offsetWidth;
     winnerBox.classList.add("reveal");
+
+    sorteioWinnerTimer=setTimeout(function(){
+      winnerBox.classList.remove("reveal");
+      winnerBox.classList.add("hide");
+      winnerBox.setAttribute("aria-hidden","true");
+    },4800);
   }
-  if(nome)nome.textContent=participante.nome;
-  if(meta)meta.textContent="VENCEDOR · MANUAL · "+hora;
 }
 
 function sorteioGirar(){
