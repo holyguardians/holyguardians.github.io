@@ -12302,8 +12302,8 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 
 /* =====================================================
-   FREATURES — SORTEIO V1
-   Manual + anti-duplicação + histórico local
+   FERRAMENTAS HG — SORTEIO
+   Manual + YouTube + Twitch + Kick + realtime
 ===================================================== */
 
 const HG_SORTEIO_STORAGE_KEY = "hgSorteioManualV1";
@@ -12369,7 +12369,7 @@ function sorteioOrigemLabel(origem){
 }
 
 function sorteioFonteEhLive(fonte){
-  return fonte==="youtube"||fonte==="twitch";
+  return fonte==="youtube"||fonte==="twitch"||fonte==="kick";
 }
 
 function sorteioPlataformaConectada(fonte){
@@ -12379,6 +12379,21 @@ function sorteioPlataformaConectada(fonte){
 
 function sorteioYoutubeConectado(){return sorteioPlataformaConectada("youtube");}
 function sorteioTwitchConectado(){return sorteioPlataformaConectada("twitch");}
+function sorteioKickConectado(){return sorteioPlataformaConectada("kick");}
+
+function sorteioNomePlataforma(fonte){
+  if(fonte==="youtube")return "YouTube";
+  if(fonte==="twitch")return "Twitch";
+  if(fonte==="kick")return "Kick";
+  return "Live";
+}
+
+function sorteioCommandInputId(fonte){
+  if(fonte==="youtube")return "sorteioLiveCommand";
+  if(fonte==="twitch")return "sorteioTwitchCommand";
+  if(fonte==="kick")return "sorteioKickCommand";
+  return "";
+}
 
 function sorteioCarregarLiveLocal(){
   try{
@@ -12386,14 +12401,16 @@ function sorteioCarregarLiveLocal(){
     if(!salvo)return;
     if(salvo.sessionId)sorteioLiveSessionId=String(salvo.sessionId);
     if(Array.isArray(salvo.removedIds))sorteioLiveRemovedIds=new Set(salvo.removedIds.map(String));
-    if(salvo.source==="youtube"||salvo.source==="twitch")sorteioFonteAtiva=salvo.source;
+    if(salvo.source==="youtube"||salvo.source==="twitch"||salvo.source==="kick")sorteioFonteAtiva=salvo.source;
     const url=document.getElementById("sorteioYoutubeUrl");
     const ytCommand=document.getElementById("sorteioLiveCommand");
     const twCommand=document.getElementById("sorteioTwitchCommand");
+    const kickCommand=document.getElementById("sorteioKickCommand");
     if(url&&salvo.youtubeUrl)url.value=salvo.youtubeUrl;
     const comando=salvo.command||"!sorteio";
     if(ytCommand)ytCommand.value=comando;
     if(twCommand)twCommand.value=comando;
+    if(kickCommand)kickCommand.value=comando;
   }catch(erro){}
 }
 
@@ -12402,8 +12419,10 @@ function sorteioSalvarLiveLocal(){
     const url=document.getElementById("sorteioYoutubeUrl");
     const ytCommand=document.getElementById("sorteioLiveCommand");
     const twCommand=document.getElementById("sorteioTwitchCommand");
+    const kickCommand=document.getElementById("sorteioKickCommand");
     let command="!sorteio";
     if(sorteioFonteAtiva==="twitch"&&twCommand)command=twCommand.value.trim()||"!sorteio";
+    else if(sorteioFonteAtiva==="kick"&&kickCommand)command=kickCommand.value.trim()||"!sorteio";
     else if(ytCommand)command=ytCommand.value.trim()||"!sorteio";
     localStorage.setItem(HG_SORTEIO_LIVE_LOCAL_KEY,JSON.stringify({
       source:sorteioFonteAtiva,
@@ -12483,7 +12502,7 @@ function sorteioConectarSocketLive(force){
     sorteioAplicarSessaoLive(payload.session,true);
     const novos=Math.max(0,sorteioParticipantes.length-antes);
     if(novos>0&&fonteAntes===sorteioFonteAtiva){
-      const plataforma=sorteioFonteAtiva==="twitch"?"Twitch":(sorteioFonteAtiva==="youtube"?"YouTube":"live");
+      const plataforma=sorteioNomePlataforma(sorteioFonteAtiva);
       sorteioDefinirFeedback(novos+" participante(s) entrou(aram) pela "+plataforma+".","ok");
     }
   };
@@ -12556,7 +12575,7 @@ function sorteioAplicarSessaoLive(session,render){
 }
 
 function sorteioAtualizarFonteUI(){
-  const fontes=["manual","youtube","twitch"];
+  const fontes=["manual","youtube","twitch","kick"];
   fontes.forEach(function(fonte){
     const btn=document.querySelector("#sorteioPagina .sorteio-source-btn."+fonte);
     if(btn){btn.classList.toggle("ativo",sorteioFonteAtiva===fonte);btn.setAttribute("aria-pressed",sorteioFonteAtiva===fonte?"true":"false");}
@@ -12565,9 +12584,11 @@ function sorteioAtualizarFonteUI(){
   const manualPanel=document.getElementById("sorteioManualPanel");
   const youtubePanel=document.getElementById("sorteioYoutubePanel");
   const twitchPanel=document.getElementById("sorteioTwitchPanel");
+  const kickPanel=document.getElementById("sorteioKickPanel");
   if(manualPanel)manualPanel.hidden=sorteioFonteAtiva!=="manual";
   if(youtubePanel)youtubePanel.hidden=sorteioFonteAtiva!=="youtube";
   if(twitchPanel)twitchPanel.hidden=sorteioFonteAtiva!=="twitch";
+  if(kickPanel)kickPanel.hidden=sorteioFonteAtiva!=="kick";
 
   const kicker=document.getElementById("sorteioEntryKicker");
   const title=document.getElementById("sorteioEntryTitle");
@@ -12577,14 +12598,17 @@ function sorteioAtualizarFonteUI(){
   const dupDesc=document.getElementById("sorteioDuplicateDesc");
   const clearBtn=document.getElementById("sorteioClearBtn");
 
-  if(sorteioFonteAtiva==="youtube"||sorteioFonteAtiva==="twitch"){
+  if(sorteioFonteEhLive(sorteioFonteAtiva)){
     const nome=sorteioFonteAtiva.toUpperCase();
     if(kicker)kicker.textContent="EVIL GUARDIANS LIVE";
     if(title)title.textContent=nome;
-    if(platformIcon){platformIcon.src=sorteioFonteAtiva==="youtube"?"youtube.png":"twitch.png";platformIcon.hidden=false;}
+    if(platformIcon){
+      platformIcon.src=sorteioFonteAtiva==="youtube"?"youtube.png":(sorteioFonteAtiva==="twitch"?"twitch.png":"kick_icon.png");
+      platformIcon.hidden=false;
+    }
     if(duplicados){duplicados.checked=true;duplicados.disabled=true;}
     if(dupTitle)dupTitle.textContent="UMA ENTRADA POR USUÁRIO";
-    if(dupDesc)dupDesc.textContent="O Evil Guardians identifica a conta da "+(sorteioFonteAtiva==="youtube"?"YouTube":"Twitch")+" e ignora tentativas repetidas.";
+    if(dupDesc)dupDesc.textContent="O Evil Guardians identifica a conta da "+sorteioNomePlataforma(sorteioFonteAtiva)+" e ignora tentativas repetidas.";
     if(clearBtn){
       clearBtn.disabled=sorteioGirando||sorteioRevelando||!sorteioLiveSessionId;
       clearBtn.title="Limpa os participantes desta rodada sem desconectar o Evil Guardians.";
@@ -12644,11 +12668,33 @@ function sorteioAtualizarFonteUI(){
       if(b)b.textContent="EVIL GUARDIANS DESCONECTADO";if(small)small.textContent="Autorize a Twitch para ligar seu canal ao sorteio.";
     }
   }
+
+  const kickConectado=sorteioKickConectado();
+  const kickConnect=document.getElementById("sorteioKickConnectBtn");
+  const kickDisconnect=document.getElementById("sorteioKickDisconnectBtn");
+  const kickCommand=document.getElementById("sorteioKickCommand");
+  const kickBox=document.getElementById("sorteioKickConnection");
+  if(kickConnect)kickConnect.disabled=kickConectado||sorteioGirando||sorteioRevelando;
+  if(kickDisconnect)kickDisconnect.disabled=!kickConectado||sorteioGirando||sorteioRevelando;
+  if(kickCommand)kickCommand.disabled=kickConectado||sorteioGirando||sorteioRevelando;
+  if(kickBox){
+    const b=kickBox.querySelector("b"), small=kickBox.querySelector("small");
+    kickBox.classList.toggle("online",kickConectado);kickBox.classList.toggle("offline",!kickConectado);
+    if(kickConectado){
+      const info=sorteioLiveSession.connections.kick;
+      if(b)b.textContent="EVIL GUARDIANS CONECTADO";
+      if(small)small.textContent=(info.username||"Kick")+" · ouvindo "+(sorteioLiveSession.command||"!sorteio");
+    }else if(sorteioFonteAtiva==="kick"&&sorteioLiveLastError){
+      if(b)b.textContent="FALHA AO CONECTAR";if(small)small.textContent=sorteioLiveLastError;
+    }else{
+      if(b)b.textContent="EVIL GUARDIANS DESCONECTADO";if(small)small.textContent="Autorize a Kick para ligar seu canal ao sorteio.";
+    }
+  }
 }
 
 async function sorteioSelecionarFonte(fonte){
   if(sorteioGirando||sorteioRevelando)return;
-  const nova=(fonte==="youtube"||fonte==="twitch")?fonte:"manual";
+  const nova=(fonte==="youtube"||fonte==="twitch"||fonte==="kick")?fonte:"manual";
   if(nova===sorteioFonteAtiva){sorteioAtualizarFonteUI();return;}
 
   if(sorteioFonteAtiva==="manual"){
@@ -12677,7 +12723,7 @@ async function sorteioSelecionarFonte(fonte){
   sorteioParticipantes=[];
   sorteioInscricoesAbertas=false;
   sorteioAtualizarTudo();sorteioAtualizarFonteUI();sorteioSalvarLiveLocal();
-  sorteioDefinirFeedback((nova==="youtube"?"YouTube":"Twitch")+" selecionado. Conecte o Evil Guardians.","info");
+  sorteioDefinirFeedback(sorteioNomePlataforma(nova)+" selecionado. Conecte o Evil Guardians.","info");
 
   if(sorteioLiveSessionId){
     try{
@@ -12815,6 +12861,84 @@ async function sorteioTwitchDesconectar(){
     sorteioAtualizarFonteUI();
     sorteioDefinirFeedback("Twitch desconectada desta sessão do sorteio.","info");
   }catch(erro){sorteioDefinirFeedback(erro.message||"Falha ao desconectar a Twitch.","warn");}
+}
+
+async function sorteioKickConectar(){
+  if(sorteioGirando||sorteioRevelando)return;
+  const popup=window.open("about:blank","evilGuardiansKick","width=720,height=760,resizable=yes,scrollbars=yes");
+  if(!popup){
+    sorteioLiveLastError="O navegador bloqueou a janela da Kick. Libere pop-ups para este site e tente novamente.";
+    sorteioDefinirFeedback(sorteioLiveLastError,"warn");
+    sorteioAtualizarFonteUI();
+    return;
+  }
+  try{
+    popup.document.title="Evil Guardians · Kick";
+    popup.document.body.style.cssText="margin:0;background:#061933;color:#fff;font-family:Arial,sans-serif;display:grid;place-items:center;height:100vh";
+    popup.document.body.innerHTML='<div style="text-align:center"><b>EVIL GUARDIANS</b><br><small style="color:#8bd96c">Preparando autorização da Kick...</small></div>';
+  }catch(erro){}
+
+  const btn=document.getElementById("sorteioKickConnectBtn");
+  const commandInput=document.getElementById("sorteioKickCommand");
+  const command=(commandInput?commandInput.value.trim():"")||"!sorteio";
+  if(btn){btn.disabled=true;btn.textContent="AGUARDANDO AUTORIZAÇÃO...";}
+  sorteioLiveLastError="";sorteioAtualizarFonteUI();
+  try{
+    await sorteioLiveRequest("/api/health");
+    await sorteioLiveGarantirSessao();
+    sorteioConectarSocketLive(false);
+    await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{method:"POST",body:{command:command,platforms:{youtube:false,twitch:false,kick:true}}});
+    const authUrl=HG_SORTEIO_LIVE_API+"/auth/kick/start?session="+encodeURIComponent(sorteioLiveSessionId);
+    try{popup.location.href=authUrl;}catch(erro){throw new Error("Não foi possível abrir a autorização da Kick.");}
+    sorteioDefinirFeedback("Autorize o Evil Guardians na janela da Kick...","info");
+    const inicio=Date.now();
+    let conectado=false;
+    let popupFechadoEm=0;
+    while(Date.now()-inicio<120000){
+      await new Promise(function(resolve){setTimeout(resolve,900)});
+      try{
+        const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
+        sorteioAplicarSessaoLive(data.session,false);
+        if(sorteioKickConectado()){conectado=true;break;}
+      }catch(erro){}
+      let popupFechado=false;
+      try{popupFechado=!!popup.closed}catch(erro){}
+      if(popupFechado){
+        if(!popupFechadoEm)popupFechadoEm=Date.now();
+        if(Date.now()-popupFechadoEm>12000)break;
+      }
+    }
+    try{if(!popup.closed&&conectado)popup.close();}catch(erro){}
+    if(!conectado)throw new Error("A Kick autorizou a janela, mas o site não conseguiu confirmar a conexão a tempo. Tente conectar novamente.");
+    sorteioAplicarSessaoLive(sorteioLiveSession,true);sorteioSalvarLiveLocal();sorteioAtualizarEstadoInscricoes();
+    sorteioDefinirFeedback("Evil Guardians conectado à Kick e pronto para ouvir o chat. Abra as inscrições quando quiser.","ok");
+  }catch(erro){
+    try{if(!popup.closed)popup.close();}catch(e){}
+    sorteioLiveLastError=erro&&erro.message?erro.message:"Não foi possível conectar à Kick.";
+    sorteioDefinirFeedback(sorteioLiveLastError,"warn");
+  }finally{
+    if(btn)btn.textContent="CONECTAR EVIL GUARDIANS";
+    sorteioAtualizarFonteUI();
+  }
+}
+
+async function sorteioKickDesconectar(){
+  if(sorteioGirando||sorteioRevelando)return;
+  sorteioPararPollingLive();
+  try{
+    if(!sorteioLiveSessionId)return;
+    if(sorteioInscricoesAbertas)await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/kick/disconnect",{method:"POST"});
+    sorteioAplicarSessaoLive(data.session,true);
+    sorteioParticipantes=[];
+    sorteioInscricoesAbertas=false;
+    sorteioLiveRemovedIds.clear();
+    sorteioLiveLastError="";
+    sorteioSalvarLiveLocal();
+    sorteioAtualizarTudo();
+    sorteioAtualizarFonteUI();
+    sorteioDefinirFeedback("Kick desconectada desta sessão do sorteio.","info");
+  }catch(erro){sorteioDefinirFeedback(erro.message||"Falha ao desconectar a Kick.","warn");}
 }
 function sorteioAgendarYoutubePoll(ms){
   if(sorteioLivePollTimer){clearTimeout(sorteioLivePollTimer);sorteioLivePollTimer=null;}
@@ -13216,7 +13340,7 @@ function sorteioAtualizarEstadoInscricoes(){
   const live=sorteioFonteEhLive(sorteioFonteAtiva);
   const conectado=!live||sorteioPlataformaConectada(sorteioFonteAtiva);
   const liveSemConexao=live&&!conectado;
-  const nomePlataforma=sorteioFonteAtiva==="twitch"?"TWITCH":"YOUTUBE";
+  const nomePlataforma=sorteioFonteAtiva==="twitch"?"TWITCH":(sorteioFonteAtiva==="kick"?"KICK":"YOUTUBE");
   const controles=[
     document.getElementById("sorteioNomeInput"),
     document.getElementById("sorteioAddBtn"),
@@ -13247,7 +13371,7 @@ async function sorteioAlternarInscricoes(){
   if(sorteioFonteEhLive(sorteioFonteAtiva)){
     const plataforma=sorteioFonteAtiva;
     if(!sorteioPlataformaConectada(plataforma)||!sorteioLiveSessionId){
-      sorteioDefinirFeedback("Conecte o Evil Guardians à "+(plataforma==="youtube"?"live do YouTube":"Twitch")+" antes de abrir as inscrições.","warn");
+      sorteioDefinirFeedback("Conecte o Evil Guardians à "+(plataforma==="youtube"?"live do YouTube":sorteioNomePlataforma(plataforma))+" antes de abrir as inscrições.","warn");
       return;
     }
     const lock=document.getElementById("sorteioLockBtn");
@@ -13257,17 +13381,21 @@ async function sorteioAlternarInscricoes(){
         sorteioPararPollingLive();
         const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
         sorteioAplicarSessaoLive(data.session,true);
-        sorteioDefinirFeedback("Inscrições encerradas com "+sorteioParticipantes.length+" participante(s) da "+(plataforma==="youtube"?"YouTube":"Twitch")+".","info");
+        sorteioDefinirFeedback("Inscrições encerradas com "+sorteioParticipantes.length+" participante(s) da "+sorteioNomePlataforma(plataforma)+".","info");
       }else{
         sorteioVencedorAtualId="";sorteioOcultarVencedor();sorteioOcultarDigitama(true);sorteioLiveRemovedIds.clear();
-        const commandInput=document.getElementById(plataforma==="youtube"?"sorteioLiveCommand":"sorteioTwitchCommand");
+        const commandInput=document.getElementById(sorteioCommandInputId(plataforma));
         const command=(commandInput?commandInput.value.trim():"")||"!sorteio";
         const platforms={youtube:false,twitch:false,kick:false};platforms[plataforma]=true;
         await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{method:"POST",body:{command:command,platforms:platforms}});
         const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/open",{method:"POST"});
         sorteioAplicarSessaoLive(data.session,true);
         sorteioConectarSocketLive(false);
-        sorteioDefinirFeedback("Inscrições abertas · Evil Guardians ouvindo "+command+" na "+(plataforma==="youtube"?"YouTube":"Twitch")+".","ok");
+        if(plataforma==="kick"&&data.kickChat&&data.kickChat.sent===false){
+          sorteioDefinirFeedback("Inscrições abertas na Kick, mas o aviso no chat falhou: "+(data.kickChat.error||"erro desconhecido")+".","warn");
+        }else{
+          sorteioDefinirFeedback("Inscrições abertas · Evil Guardians ouvindo "+command+" na "+sorteioNomePlataforma(plataforma)+".","ok");
+        }
         if(plataforma==="youtube")await sorteioYoutubePoll(true);
       }
     }catch(erro){sorteioDefinirFeedback(erro.message||"Não foi possível alterar a rodada ao vivo.","warn");}
@@ -13394,7 +13522,7 @@ async function sorteioLimparParticipantes(){
       sorteioOcultarVencedor();
       sorteioOcultarDigitama(true);
       sorteioAplicarSessaoLive(data.session,true);
-      sorteioDefinirFeedback("Lista da "+(sorteioFonteAtiva==="twitch"?"Twitch":"YouTube")+" limpa · conexão mantida.","info");
+      sorteioDefinirFeedback("Lista da "+sorteioNomePlataforma(sorteioFonteAtiva)+" limpa · conexão mantida.","info");
     }catch(erro){
       sorteioDefinirFeedback(erro.message||"Não foi possível limpar a rodada ao vivo.","warn");
     }finally{
@@ -13422,6 +13550,7 @@ function sorteioRenderParticipantes(){
     let texto="Adicione nomes para montar a roleta.";
     if(sorteioFonteAtiva==="youtube")texto=sorteioYoutubeConectado()?"Aguardando alguém mandar "+((sorteioLiveSession&&sorteioLiveSession.command)||"!sorteio")+" no chat.":"Conecte o Evil Guardians a uma live do YouTube.";
     if(sorteioFonteAtiva==="twitch")texto=sorteioTwitchConectado()?"Aguardando alguém mandar "+((sorteioLiveSession&&sorteioLiveSession.command)||"!sorteio")+" no chat da Twitch.":"Conecte o Evil Guardians à Twitch.";
+    if(sorteioFonteAtiva==="kick")texto=sorteioKickConectado()?"Aguardando alguém mandar "+((sorteioLiveSession&&sorteioLiveSession.command)||"!sorteio")+" no chat da Kick.":"Conecte o Evil Guardians à Kick.";
     lista.innerHTML='<div class="sorteio-empty-list"><b>NENHUM PARTICIPANTE</b><span>'+sorteioEscaparHtml(texto)+'</span></div>';
     return;
   }
@@ -13810,6 +13939,8 @@ function inicializarSorteio(){
     if(liveCommand)liveCommand.addEventListener("change",sorteioSalvarLiveLocal);
     const twitchCommand=document.getElementById("sorteioTwitchCommand");
     if(twitchCommand)twitchCommand.addEventListener("change",sorteioSalvarLiveLocal);
+    const kickCommand=document.getElementById("sorteioKickCommand");
+    if(kickCommand)kickCommand.addEventListener("change",sorteioSalvarLiveLocal);
 
     sorteioInicializado=true;
     sorteioCarregarLiveLocal();

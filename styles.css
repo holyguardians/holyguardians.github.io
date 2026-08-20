@@ -18554,6 +18554,17 @@ body.hg-display-scaled footer {
   opacity:.9;
 }
 
+#sorteioPagina .sorteio-source-btn.kick:not(:disabled) .sorteio-source-mark{
+  border-color:rgba(83,252,24,.36);
+  background:rgba(83,252,24,.07);
+}
+
+#sorteioPagina .sorteio-source-btn.kick.ativo{
+  border-color:rgba(83,252,24,.5);
+  background:linear-gradient(135deg,rgba(42,126,17,.26),rgba(8,50,25,.38));
+  box-shadow:inset 0 0 20px rgba(83,252,24,.07),0 0 16px rgba(83,252,24,.07);
+}
+
 #sorteioPagina .sorteio-main-grid{
   display:grid;
   grid-template-columns:minmax(0,1.34fr) minmax(390px,.66fr);
@@ -19884,4 +19895,52 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-live-connection.twitch.online b{
   color:#d9c0ff;
   text-shadow:0 0 9px rgba(145,70,255,.38);
+}
+
+
+/* =====================================================
+   FERRAMENTAS HG — SORTEIO V1.13 / KICK
+===================================================== */
+#sorteioPagina .sorteio-kick-auth-note{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 15px;
+  margin:0 0 15px;
+  border:1px solid rgba(83,252,24,.25);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(48,132,21,.12),rgba(4,20,43,.72));
+  box-shadow:inset 0 0 22px rgba(83,252,24,.035);
+}
+#sorteioPagina .sorteio-kick-auth-note b{
+  display:block;
+  color:#efffe9;
+  font-size:12px;
+  letter-spacing:.055em;
+}
+#sorteioPagina .sorteio-kick-auth-note small{
+  display:block;
+  margin-top:3px;
+  color:#789f8b;
+  line-height:1.35;
+}
+#sorteioPagina .sorteio-live-platform-badge.kick{
+  border-color:rgba(83,252,24,.4);
+  background:rgba(31,100,13,.22);
+  box-shadow:0 0 13px rgba(83,252,24,.1);
+}
+#sorteioPagina .sorteio-live-platform-badge.kick img{
+  filter:drop-shadow(0 0 6px rgba(83,252,24,.28));
+}
+#sorteioPagina .sorteio-live-connection.kick.online{
+  border-color:rgba(83,252,24,.4);
+  box-shadow:inset 0 0 24px rgba(83,252,24,.045),0 0 16px rgba(83,252,24,.07);
+}
+#sorteioPagina .sorteio-live-connection.kick.online .sorteio-live-dot{
+  background:#53fc18;
+  box-shadow:0 0 10px #53fc18,0 0 18px rgba(83,252,24,.55);
+}
+#sorteioPagina .sorteio-live-connection.kick.online b{
+  color:#baff9f;
+  text-shadow:0 0 9px rgba(83,252,24,.3);
 }

@@ -2324,7 +2324,7 @@
         <div class="sorteio-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
         <h2 class="page-title">SORTEIO</h2>
         <p class="page-subtitle">
-          Monte a lista manualmente ou conecte o Evil Guardians ao YouTube ou à Twitch. Kick chega na próxima etapa.
+          Monte a lista manualmente ou conecte o Evil Guardians ao YouTube, à Twitch ou à Kick em tempo real.
         </p>
       </div>
 
@@ -2357,9 +2357,9 @@
           <span><b>TWITCH</b><small>Evil Guardians · disponível</small></span>
         </button>
 
-        <button type="button" class="sorteio-source-btn kick" disabled title="Integração com live será adicionada na próxima etapa">
+        <button type="button" class="sorteio-source-btn kick" aria-pressed="false" onclick="sorteioSelecionarFonte('kick')">
           <span class="sorteio-source-mark"><img src="kick_icon.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
-          <span><b>KICK</b><small>Live · em breve</small></span>
+          <span><b>KICK</b><small>Evil Guardians · disponível</small></span>
         </button>
       </div>
     </div>
@@ -2503,6 +2503,35 @@
               <div>
                 <b>EVIL GUARDIANS DESCONECTADO</b>
                 <small>Autorize a Twitch para ligar seu canal ao sorteio.</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="sorteioKickPanel" class="sorteio-live-panel" hidden>
+            <div class="sorteio-kick-auth-note">
+              <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+              <div>
+                <b>CONEXÃO SEGURA COM A KICK</b>
+                <small>O canal usado será a conta que autorizar o Evil Guardians. Ao conectar e ao abrir o sorteio, ele também avisa no chat.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioKickCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioKickConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioKickConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioKickDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioKickDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioKickConnection" class="sorteio-live-connection kick offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Autorize a Kick para ligar seu canal ao sorteio.</small>
               </div>
             </div>
           </div>
