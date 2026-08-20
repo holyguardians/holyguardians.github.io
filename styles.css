@@ -18690,28 +18690,32 @@ body.hg-display-scaled footer {
 /* Pequena seta anexada à ponta inferior-direita real da logo. */
 #sorteioPagina .sorteio-logo-pointer{
   position:absolute;
-  z-index:5;
-  left:88%;
-  top:115%;
-  width:17px;
-  height:10px;
-  transform:translate(-50%,-50%) rotate(60deg);
-  transform-origin:center;
-  clip-path:polygon(0 20%,100% 50%,0 80%,30% 50%);
-  background:linear-gradient(90deg,rgba(255,191,36,.05) 0%,#ffbf24 58%,#ffe58a 100%);
-  filter:drop-shadow(0 0 5px rgba(255,191,36,.70));
+  z-index:10;
+  /* Mesmo ângulo de 60° usado pelo cálculo do vencedor: ponta na borda, corpo para fora. */
+  left:75%;
+  top:93.3%;
+  width:30px;
+  height:58px;
+  transform:translateX(-50%) rotate(-30deg);
+  transform-origin:50% 0;
+  clip-path:polygon(50% 0,100% 38%,68% 38%,68% 100%,32% 100%,32% 38%,0 38%);
+  background:linear-gradient(180deg,#fff0a0 0%,#ffcf3d 28%,#ffb600 72%,#b87500 100%);
+  border-radius:2px;
+  filter:drop-shadow(0 0 6px rgba(255,191,36,.78)) drop-shadow(0 0 14px rgba(255,168,0,.34));
+  pointer-events:none;
 }
 
 #sorteioPagina .sorteio-logo-pointer::before{
   content:"";
   position:absolute;
-  left:-8px;
-  top:5px;
-  width:13px;
-  height:2px;
+  left:50%;
+  top:14px;
+  width:4px;
+  height:31px;
+  transform:translateX(-50%);
   border-radius:999px;
-  background:linear-gradient(90deg,transparent,#ffbf24);
-  box-shadow:0 0 5px rgba(255,191,36,.48);
+  background:linear-gradient(180deg,rgba(255,255,220,.92),rgba(255,211,74,.18));
+  box-shadow:0 0 7px rgba(255,221,96,.72);
 }
 
 #sorteioPagina .sorteio-wheel-stage.girando .sorteio-logo-pointer{
@@ -19055,22 +19059,89 @@ body.hg-display-scaled footer {
 }
 
 #sorteioPagina .sorteio-check{
-  display:flex;
-  gap:9px;
-  align-items:flex-start;
-  padding:9px 0;
+  position:relative;
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+  padding:11px 2px;
   border-top:1px solid rgba(67,141,202,.13);
   cursor:pointer;
+  user-select:none;
 }
 
-#sorteioPagina .sorteio-check input{
-  width:15px;
-  height:15px;
-  margin:1px 0 0;
-  accent-color:#21bfff;
+/* Checkbox HG: mantemos o input real para acessibilidade e desenhamos o controle tecnológico ao lado. */
+#sorteioPagina .sorteio-check > input{
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:0;
+  opacity:0;
+  pointer-events:none;
 }
 
-#sorteioPagina .sorteio-check span{
+#sorteioPagina .sorteio-check-ui{
+  position:relative;
+  width:19px;
+  height:19px;
+  margin-top:1px;
+  border:1px solid rgba(69,205,255,.62);
+  border-radius:4px;
+  background:linear-gradient(145deg,rgba(8,35,70,.98),rgba(2,14,34,.98));
+  box-shadow:
+    inset 0 0 9px rgba(38,169,255,.10),
+    0 0 0 1px rgba(4,15,34,.8),
+    0 0 7px rgba(37,183,255,.12);
+  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+
+#sorteioPagina .sorteio-check-ui::before,
+#sorteioPagina .sorteio-check-ui::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+}
+
+/* pequenos cantos de interface para casar com as tech-corners do site */
+#sorteioPagina .sorteio-check-ui::before{
+  inset:2px;
+  border-top:1px solid rgba(119,231,255,.16);
+  border-left:1px solid rgba(119,231,255,.16);
+}
+
+#sorteioPagina .sorteio-check > input:checked + .sorteio-check-ui{
+  border-color:#4de3ff;
+  background:linear-gradient(145deg,rgba(7,77,130,.98),rgba(3,36,75,.98));
+  box-shadow:
+    inset 0 0 11px rgba(50,211,255,.20),
+    0 0 8px rgba(48,211,255,.34);
+}
+
+#sorteioPagina .sorteio-check > input:checked + .sorteio-check-ui::after{
+  left:5px;
+  top:2px;
+  width:6px;
+  height:10px;
+  border-right:2px solid #c8f8ff;
+  border-bottom:2px solid #c8f8ff;
+  transform:rotate(45deg);
+  filter:drop-shadow(0 0 3px rgba(77,227,255,.88));
+}
+
+#sorteioPagina .sorteio-check > input:focus-visible + .sorteio-check-ui{
+  outline:2px solid rgba(101,225,255,.75);
+  outline-offset:3px;
+}
+
+#sorteioPagina .sorteio-check:hover .sorteio-check-ui{
+  border-color:#69e9ff;
+  box-shadow:
+    inset 0 0 11px rgba(50,211,255,.15),
+    0 0 10px rgba(48,211,255,.24);
+  transform:translateY(-1px);
+}
+
+#sorteioPagina .sorteio-check-copy{
   min-width:0;
 }
 
@@ -19080,9 +19151,9 @@ body.hg-display-scaled footer {
 }
 
 #sorteioPagina .sorteio-check b{
-  color:#cfe9fb;
+  color:#d8f1ff;
   font-size:7.5px;
-  letter-spacing:.35px;
+  letter-spacing:.4px;
 }
 
 #sorteioPagina .sorteio-check small{
@@ -19289,10 +19360,10 @@ body.hg-display-scaled footer {
   }
 
   #sorteioPagina .sorteio-logo-pointer{
-    left:88%;
-    top:115%;
-    width:14px;
-    height:9px;
+    left:75%;
+    top:93.3%;
+    width:23px;
+    height:44px;
   }
 
   #sorteioPagina .sorteio-wheel-actions,

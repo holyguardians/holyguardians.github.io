@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-4">
+  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-5">
 </head>
 <body>
 
@@ -2384,8 +2384,9 @@
             <div class="sorteio-wheel-core" aria-hidden="true">
               <span class="sorteio-wheel-core-glow"></span>
               <img src="holyguardians_logo.png" alt="" class="sorteio-wheel-logo">
-              <span class="sorteio-logo-pointer"></span>
             </div>
+
+            <span class="sorteio-logo-pointer" aria-hidden="true"></span>
 
             <div id="sorteioWinnerBox" class="sorteio-winner-box" aria-live="polite" aria-hidden="true">
               <small><span class="sorteio-winner-crown" aria-hidden="true">👑</span> VENCEDOR DO SORTEIO</small>
@@ -2438,7 +2439,8 @@
 
           <label class="sorteio-check">
             <input id="sorteioBloquearDuplicados" type="checkbox" checked onchange="sorteioSalvarEstado()">
-            <span>
+            <span class="sorteio-check-ui" aria-hidden="true"></span>
+            <span class="sorteio-check-copy">
               <b>UMA ENTRADA POR NOME</b>
               <small>Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.</small>
             </span>
@@ -2446,7 +2448,8 @@
 
           <label class="sorteio-check">
             <input id="sorteioRemoverVencedor" type="checkbox" checked onchange="sorteioSalvarEstado()">
-            <span>
+            <span class="sorteio-check-ui" aria-hidden="true"></span>
+            <span class="sorteio-check-copy">
               <b>REMOVER VENCEDOR APÓS SORTEAR</b>
               <small>Útil para várias rodadas seguidas.</small>
             </span>
