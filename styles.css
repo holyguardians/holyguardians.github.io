@@ -19650,3 +19650,126 @@ body.hg-display-scaled footer {
     animation:none;
   }
 }
+
+/* =====================================================
+   FREATURES — SORTEIO V1.10 / EVIL GUARDIANS YOUTUBE
+===================================================== */
+#sorteioPagina .sorteio-live-panel[hidden],
+#sorteioPagina #sorteioManualPanel[hidden]{
+  display:none !important;
+}
+
+#sorteioPagina .sorteio-live-panel{
+  display:grid;
+  gap:14px;
+}
+
+#sorteioPagina .sorteio-live-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);
+  gap:10px;
+}
+
+#sorteioPagina .sorteio-live-connection{
+  position:relative;
+  display:grid;
+  grid-template-columns:12px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  min-height:62px;
+  padding:11px 13px;
+  border:1px solid rgba(75,164,215,.26);
+  border-radius:9px;
+  background:linear-gradient(135deg,rgba(4,20,43,.88),rgba(5,15,34,.74));
+  overflow:hidden;
+}
+
+#sorteioPagina .sorteio-live-connection::after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0 0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(69,214,255,.5),transparent);
+  opacity:.45;
+}
+
+#sorteioPagina .sorteio-live-connection b,
+#sorteioPagina .sorteio-live-connection small{
+  display:block;
+  min-width:0;
+}
+
+#sorteioPagina .sorteio-live-connection b{
+  color:#dff9ff;
+  font-size:11px;
+  letter-spacing:.055em;
+}
+
+#sorteioPagina .sorteio-live-connection small{
+  margin-top:3px;
+  color:#6388a8;
+  font-size:9px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#sorteioPagina .sorteio-live-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#6f7c8b;
+  box-shadow:0 0 0 3px rgba(111,124,139,.08);
+}
+
+#sorteioPagina .sorteio-live-connection.online{
+  border-color:rgba(50,255,157,.34);
+  box-shadow:inset 0 0 22px rgba(19,188,126,.045);
+}
+
+#sorteioPagina .sorteio-live-connection.online .sorteio-live-dot{
+  background:#38ff9d;
+  box-shadow:0 0 7px rgba(56,255,157,.95),0 0 15px rgba(56,255,157,.42);
+}
+
+#sorteioPagina .sorteio-live-connection.online b{
+  color:#70ffc0;
+  text-shadow:0 0 8px rgba(56,255,157,.22);
+}
+
+#sorteioPagina .sorteio-source-btn.youtube:not(:disabled) .sorteio-source-mark{
+  color:#ff6b76;
+  border-color:rgba(255,74,88,.34);
+  background:rgba(255,34,54,.07);
+}
+
+#sorteioPagina .sorteio-source-btn.youtube.ativo{
+  border-color:rgba(72,210,255,.56);
+  background:linear-gradient(135deg,rgba(9,99,159,.28),rgba(8,44,91,.38));
+  box-shadow:inset 0 0 20px rgba(24,174,255,.09),0 0 16px rgba(20,135,255,.08);
+}
+
+#sorteioPagina .sorteio-live-user-mark{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border:1px solid rgba(65,255,132,.35);
+  border-radius:6px;
+  color:#41ff84;
+  background:rgba(24,143,91,.08);
+  box-shadow:inset 0 0 10px rgba(65,255,132,.04),0 0 8px rgba(65,255,132,.05);
+  font-size:12px;
+  text-shadow:0 0 6px rgba(65,255,132,.8);
+}
+
+#sorteioPagina .sorteio-clear-btn:disabled{
+  opacity:.34;
+  cursor:not-allowed;
+}
+
+@media (max-width:720px){
+  #sorteioPagina .sorteio-live-actions{
+    grid-template-columns:1fr;
+  }
+}

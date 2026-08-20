@@ -12308,6 +12308,18 @@ document.addEventListener("DOMContentLoaded",function(){
 
 const HG_SORTEIO_STORAGE_KEY = "hgSorteioManualV1";
 const HG_SORTEIO_HISTORY_KEY = "hgSorteioHistoryV1";
+const HG_SORTEIO_LIVE_LOCAL_KEY = "hgSorteioLiveV1";
+const HG_SORTEIO_LIVE_API = "https://evil-guardians-live.hiltongiuseppechiarelo.workers.dev";
+
+let sorteioFonteAtiva = "manual";
+let sorteioManualParticipantes = [];
+let sorteioManualInscricoesAbertas = true;
+let sorteioManualBloquearDuplicados = true;
+let sorteioLiveSessionId = "";
+let sorteioLiveSession = null;
+let sorteioLivePollTimer = null;
+let sorteioLivePollBusy = false;
+let sorteioLiveRemovedIds = new Set();
 
 let sorteioParticipantes = [];
 let sorteioHistorico = [];
@@ -12341,6 +12353,341 @@ const HG_SORTEIO_PALETA = [
   "#44207f",
   "#0e5f69"
 ];
+
+function sorteioOrigemLabel(origem){
+  const valor=String(origem||"manual").toLowerCase();
+  if(valor==="youtube")return "YOUTUBE";
+  if(valor==="twitch")return "TWITCH";
+  if(valor==="kick")return "KICK";
+  return "MANUAL";
+}
+
+function sorteioCarregarLiveLocal(){
+  try{
+    const salvo=JSON.parse(localStorage.getItem(HG_SORTEIO_LIVE_LOCAL_KEY)||"null");
+    if(!salvo)return;
+    if(salvo.sessionId)sorteioLiveSessionId=String(salvo.sessionId);
+    if(Array.isArray(salvo.removedIds))sorteioLiveRemovedIds=new Set(salvo.removedIds.map(String));
+    if(salvo.source==="youtube")sorteioFonteAtiva="youtube";
+    const url=document.getElementById("sorteioYoutubeUrl");
+    const command=document.getElementById("sorteioLiveCommand");
+    if(url&&salvo.youtubeUrl)url.value=salvo.youtubeUrl;
+    if(command&&salvo.command)command.value=salvo.command;
+  }catch(erro){}
+}
+
+function sorteioSalvarLiveLocal(){
+  try{
+    const url=document.getElementById("sorteioYoutubeUrl");
+    const command=document.getElementById("sorteioLiveCommand");
+    localStorage.setItem(HG_SORTEIO_LIVE_LOCAL_KEY,JSON.stringify({
+      source:sorteioFonteAtiva,
+      sessionId:sorteioLiveSessionId,
+      youtubeUrl:url?url.value.trim():"",
+      command:command?command.value.trim()||"!sorteio":"!sorteio",
+      removedIds:Array.from(sorteioLiveRemovedIds)
+    }));
+  }catch(erro){}
+}
+
+async function sorteioLiveRequest(path,options){
+  const opts=Object.assign({method:"GET",headers:{}},options||{});
+  if(opts.body&&typeof opts.body!=="string"){
+    opts.headers=Object.assign({},opts.headers,{"Content-Type":"application/json"});
+    opts.body=JSON.stringify(opts.body);
+  }
+  const response=await fetch(HG_SORTEIO_LIVE_API+path,opts);
+  let data=null;
+  try{data=await response.json()}catch(erro){}
+  if(!response.ok||!data||data.ok===false){
+    throw new Error((data&&data.error)||("Evil Guardians respondeu HTTP "+response.status+"."));
+  }
+  return data;
+}
+
+async function sorteioLiveGarantirSessao(){
+  if(sorteioLiveSessionId){
+    try{
+      const atual=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
+      sorteioLiveSession=atual.session;
+      return sorteioLiveSessionId;
+    }catch(erro){
+      sorteioLiveSessionId="";
+      sorteioLiveSession=null;
+    }
+  }
+  const criado=await sorteioLiveRequest("/api/session/create",{method:"POST"});
+  sorteioLiveSession=criado.session;
+  sorteioLiveSessionId=criado.session.id;
+  sorteioLiveRemovedIds.clear();
+  sorteioSalvarLiveLocal();
+  return sorteioLiveSessionId;
+}
+
+function sorteioPararPollingLive(){
+  if(sorteioLivePollTimer){
+    clearTimeout(sorteioLivePollTimer);
+    sorteioLivePollTimer=null;
+  }
+}
+
+function sorteioAplicarSessaoLive(session,render){
+  if(!session)return;
+  sorteioLiveSession=session;
+  sorteioLiveSessionId=session.id||sorteioLiveSessionId;
+  if(sorteioFonteAtiva!=="youtube"){
+    sorteioSalvarLiveLocal();
+    return;
+  }
+  sorteioInscricoesAbertas=!!session.accepting;
+  const removidos=sorteioLiveRemovedIds;
+  sorteioParticipantes=(Array.isArray(session.participants)?session.participants:[])
+    .filter(function(item){return item&&item.nome&&!removidos.has(String(item.id||""))})
+    .map(function(item){
+      return {
+        id:String(item.id||sorteioGerarId()),
+        nome:String(item.nome||"").trim().slice(0,80),
+        origem:item.origem||item.platform||"youtube",
+        platform:item.platform||"youtube",
+        avatar:item.avatar||"",
+        userId:item.userId||""
+      };
+    });
+  sorteioSalvarLiveLocal();
+  if(render!==false){
+    sorteioRenderParticipantes();
+    sorteioDesenhar();
+    sorteioAtualizarEstadoInscricoes();
+    sorteioAtualizarFonteUI();
+  }
+}
+
+function sorteioYoutubeConectado(){
+  return !!(sorteioLiveSession&&sorteioLiveSession.connections&&sorteioLiveSession.connections.youtube&&sorteioLiveSession.connections.youtube.connected);
+}
+
+function sorteioAtualizarFonteUI(){
+  const manualBtn=document.querySelector("#sorteioPagina .sorteio-source-btn.manual");
+  const youtubeBtn=document.querySelector("#sorteioPagina .sorteio-source-btn.youtube");
+  const manualPanel=document.getElementById("sorteioManualPanel");
+  const youtubePanel=document.getElementById("sorteioYoutubePanel");
+  const kicker=document.getElementById("sorteioEntryKicker");
+  const title=document.getElementById("sorteioEntryTitle");
+  const duplicados=document.getElementById("sorteioBloquearDuplicados");
+  const dupTitle=document.getElementById("sorteioDuplicateTitle");
+  const dupDesc=document.getElementById("sorteioDuplicateDesc");
+  const clearBtn=document.getElementById("sorteioClearBtn");
+  const conectado=sorteioYoutubeConectado();
+
+  if(manualBtn){
+    manualBtn.classList.toggle("ativo",sorteioFonteAtiva==="manual");
+    manualBtn.setAttribute("aria-pressed",sorteioFonteAtiva==="manual"?"true":"false");
+  }
+  if(youtubeBtn){
+    youtubeBtn.classList.toggle("ativo",sorteioFonteAtiva==="youtube");
+    youtubeBtn.setAttribute("aria-pressed",sorteioFonteAtiva==="youtube"?"true":"false");
+  }
+  if(manualPanel)manualPanel.hidden=sorteioFonteAtiva!=="manual";
+  if(youtubePanel)youtubePanel.hidden=sorteioFonteAtiva!=="youtube";
+
+  if(sorteioFonteAtiva==="youtube"){
+    if(kicker)kicker.textContent="EVIL GUARDIANS LIVE";
+    if(title)title.textContent="YOUTUBE";
+    if(duplicados){duplicados.checked=true;duplicados.disabled=true;}
+    if(dupTitle)dupTitle.textContent="UMA ENTRADA POR USUÁRIO";
+    if(dupDesc)dupDesc.textContent="O Evil Guardians identifica a conta do YouTube e ignora tentativas repetidas.";
+    if(clearBtn){clearBtn.disabled=true;clearBtn.title="Em live, reabra a rodada para zerar as inscrições.";}
+  }else{
+    if(kicker)kicker.textContent="ENTRADA MANUAL";
+    if(title)title.textContent="PARTICIPANTES";
+    if(duplicados){duplicados.disabled=false;duplicados.checked=sorteioManualBloquearDuplicados;}
+    if(dupTitle)dupTitle.textContent="UMA ENTRADA POR NOME";
+    if(dupDesc)dupDesc.textContent="Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.";
+    if(clearBtn){clearBtn.disabled=false;clearBtn.title="";}
+  }
+
+  const connectBtn=document.getElementById("sorteioYoutubeConnectBtn");
+  const disconnectBtn=document.getElementById("sorteioYoutubeDisconnectBtn");
+  const urlInput=document.getElementById("sorteioYoutubeUrl");
+  const commandInput=document.getElementById("sorteioLiveCommand");
+  const box=document.getElementById("sorteioLiveConnection");
+  if(connectBtn)connectBtn.disabled=conectado||sorteioGirando||sorteioRevelando;
+  if(disconnectBtn)disconnectBtn.disabled=!conectado||sorteioGirando||sorteioRevelando;
+  if(urlInput)urlInput.disabled=conectado||sorteioGirando||sorteioRevelando;
+  if(commandInput)commandInput.disabled=conectado||sorteioGirando||sorteioRevelando;
+  if(box){
+    const b=box.querySelector("b");
+    const small=box.querySelector("small");
+    box.classList.toggle("online",conectado);
+    box.classList.toggle("offline",!conectado);
+    if(conectado){
+      const info=sorteioLiveSession.connections.youtube;
+      if(b)b.textContent="EVIL GUARDIANS CONECTADO";
+      if(small)small.textContent=(info.title||"YouTube Live")+" · ouvindo "+(sorteioLiveSession.command||"!sorteio");
+    }else{
+      if(b)b.textContent="EVIL GUARDIANS DESCONECTADO";
+      if(small)small.textContent="Cole o link de uma live com chat ativo para começar.";
+    }
+  }
+}
+
+async function sorteioSelecionarFonte(fonte){
+  if(sorteioGirando||sorteioRevelando)return;
+  const nova=fonte==="youtube"?"youtube":"manual";
+  if(nova===sorteioFonteAtiva){
+    sorteioAtualizarFonteUI();
+    return;
+  }
+
+  if(sorteioFonteAtiva==="manual"){
+    sorteioManualParticipantes=sorteioParticipantes.map(function(item){return Object.assign({},item)});
+    sorteioManualInscricoesAbertas=sorteioInscricoesAbertas;
+    const duplicados=document.getElementById("sorteioBloquearDuplicados");
+    if(duplicados)sorteioManualBloquearDuplicados=duplicados.checked;
+  }
+
+  sorteioPararPollingLive();
+  sorteioFonteAtiva=nova;
+  sorteioVencedorAtualId="";
+  sorteioOcultarVencedor();
+  sorteioOcultarDigitama(true);
+
+  if(nova==="manual"){
+    sorteioParticipantes=sorteioManualParticipantes.map(function(item){return Object.assign({},item)});
+    sorteioInscricoesAbertas=sorteioManualInscricoesAbertas;
+    sorteioAtualizarTudo();
+    sorteioAtualizarFonteUI();
+    sorteioDefinirFeedback("Modo manual ativado.","info");
+    return;
+  }
+
+  sorteioParticipantes=[];
+  sorteioInscricoesAbertas=false;
+  sorteioAtualizarTudo();
+  sorteioAtualizarFonteUI();
+  sorteioDefinirFeedback("YouTube selecionado. Conecte o Evil Guardians à live.","info");
+
+  if(sorteioLiveSessionId){
+    try{
+      const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
+      sorteioAplicarSessaoLive(data.session,true);
+      if(sorteioInscricoesAbertas&&sorteioYoutubeConectado())sorteioIniciarPollingYoutube(500);
+    }catch(erro){
+      sorteioLiveSessionId="";
+      sorteioLiveSession=null;
+      sorteioSalvarLiveLocal();
+      sorteioAtualizarFonteUI();
+    }
+  }
+}
+
+async function sorteioYoutubeConectar(){
+  if(sorteioGirando||sorteioRevelando)return;
+  const urlInput=document.getElementById("sorteioYoutubeUrl");
+  const commandInput=document.getElementById("sorteioLiveCommand");
+  const url=urlInput?urlInput.value.trim():"";
+  const command=(commandInput?commandInput.value.trim():"")||"!sorteio";
+  if(!url){
+    sorteioDefinirFeedback("Cole o link da live do YouTube antes de conectar.","warn");
+    return;
+  }
+
+  const btn=document.getElementById("sorteioYoutubeConnectBtn");
+  if(btn){btn.disabled=true;btn.textContent="CONECTANDO...";}
+  sorteioDefinirFeedback("Evil Guardians está procurando o chat da live...","info");
+
+  try{
+    await sorteioLiveGarantirSessao();
+    await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{
+      method:"POST",
+      body:{command:command,platforms:{youtube:true}}
+    });
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/youtube/connect",{
+      method:"POST",
+      body:{url:url}
+    });
+    sorteioAplicarSessaoLive(data.session,true);
+    sorteioInscricoesAbertas=!!data.session.accepting;
+    sorteioSalvarLiveLocal();
+    sorteioAtualizarEstadoInscricoes();
+    sorteioAtualizarFonteUI();
+    sorteioDefinirFeedback("Evil Guardians conectado ao YouTube. Abra as inscrições quando quiser.","ok");
+  }catch(erro){
+    sorteioDefinirFeedback(erro.message||"Não foi possível conectar à live.","warn");
+  }finally{
+    if(btn)btn.textContent="CONECTAR EVIL GUARDIANS";
+    sorteioAtualizarFonteUI();
+  }
+}
+
+async function sorteioYoutubeDesconectar(){
+  if(!sorteioLiveSessionId||sorteioGirando||sorteioRevelando)return;
+  sorteioPararPollingLive();
+  try{
+    if(sorteioInscricoesAbertas){
+      await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
+    }
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/youtube/disconnect",{method:"POST"});
+    sorteioAplicarSessaoLive(data.session,true);
+    sorteioParticipantes=[];
+    sorteioInscricoesAbertas=false;
+    sorteioAtualizarTudo();
+    sorteioAtualizarFonteUI();
+    sorteioDefinirFeedback("Evil Guardians desconectado do YouTube.","info");
+  }catch(erro){
+    sorteioDefinirFeedback(erro.message||"Falha ao desconectar.","warn");
+  }
+}
+
+function sorteioAgendarYoutubePoll(ms){
+  sorteioPararPollingLive();
+  if(sorteioFonteAtiva!=="youtube"||!sorteioInscricoesAbertas||!sorteioYoutubeConectado())return;
+  const atraso=Math.max(1000,Number(ms||2500));
+  sorteioLivePollTimer=setTimeout(function(){sorteioYoutubePoll(false)},atraso);
+}
+
+async function sorteioYoutubePoll(somentePrime){
+  if(sorteioLivePollBusy||sorteioFonteAtiva!=="youtube"||!sorteioLiveSessionId||!sorteioInscricoesAbertas||!sorteioYoutubeConectado())return;
+  sorteioLivePollBusy=true;
+  try{
+    const antes=sorteioParticipantes.length;
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/youtube/poll",{method:"POST"});
+    sorteioAplicarSessaoLive(data.session,true);
+    const novos=Math.max(0,sorteioParticipantes.length-antes);
+    if(!somentePrime&&novos>0){
+      sorteioDefinirFeedback(novos+" participante(s) entrou(aram) pelo YouTube.","ok");
+    }
+    sorteioAgendarYoutubePoll(data.pollingIntervalMillis||2500);
+  }catch(erro){
+    sorteioDefinirFeedback("YouTube: "+(erro.message||"falha ao ler o chat")+". Tentando novamente...","warn");
+    sorteioAgendarYoutubePoll(5000);
+  }finally{
+    sorteioLivePollBusy=false;
+  }
+}
+
+function sorteioIniciarPollingYoutube(ms){
+  sorteioAgendarYoutubePoll(ms||250);
+}
+
+async function sorteioRestaurarLive(){
+  sorteioCarregarLiveLocal();
+  sorteioAtualizarFonteUI();
+  if(sorteioFonteAtiva!=="youtube"||!sorteioLiveSessionId)return;
+  try{
+    const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/state");
+    sorteioAplicarSessaoLive(data.session,true);
+    if(sorteioInscricoesAbertas&&sorteioYoutubeConectado())sorteioIniciarPollingYoutube(300);
+  }catch(erro){
+    sorteioLiveSessionId="";
+    sorteioLiveSession=null;
+    sorteioParticipantes=[];
+    sorteioInscricoesAbertas=false;
+    sorteioSalvarLiveLocal();
+    sorteioAtualizarTudo();
+    sorteioAtualizarFonteUI();
+  }
+}
 
 function sorteioNormalizarNome(nome){
   return String(nome||"")
@@ -12392,12 +12739,15 @@ function sorteioCarregarEstado(){
           };
         });
     }
+    sorteioManualParticipantes=sorteioParticipantes.map(function(item){return Object.assign({},item)});
     const duplicados=document.getElementById("sorteioBloquearDuplicados");
     const remover=document.getElementById("sorteioRemoverVencedor");
-    if(duplicados&&salvo&&typeof salvo.bloquearDuplicados==="boolean")duplicados.checked=salvo.bloquearDuplicados;
+    if(salvo&&typeof salvo.bloquearDuplicados==="boolean")sorteioManualBloquearDuplicados=salvo.bloquearDuplicados;
+    if(duplicados)duplicados.checked=sorteioManualBloquearDuplicados;
     if(remover&&salvo&&typeof salvo.removerVencedor==="boolean")remover.checked=salvo.removerVencedor;
   }catch(erro){
     sorteioParticipantes=[];
+    sorteioManualParticipantes=[];
   }
 
   try{
@@ -12412,12 +12762,18 @@ function sorteioSalvarEstado(){
   try{
     const duplicados=document.getElementById("sorteioBloquearDuplicados");
     const remover=document.getElementById("sorteioRemoverVencedor");
+    if(sorteioFonteAtiva==="manual"){
+      sorteioManualParticipantes=sorteioParticipantes.map(function(item){return Object.assign({},item)});
+      sorteioManualInscricoesAbertas=sorteioInscricoesAbertas;
+      if(duplicados)sorteioManualBloquearDuplicados=duplicados.checked;
+    }
     localStorage.setItem(HG_SORTEIO_STORAGE_KEY,JSON.stringify({
-      participantes:sorteioParticipantes,
-      bloquearDuplicados:duplicados?duplicados.checked:true,
+      participantes:sorteioManualParticipantes,
+      bloquearDuplicados:sorteioManualBloquearDuplicados,
       removerVencedor:remover?remover.checked:true
     }));
     localStorage.setItem(HG_SORTEIO_HISTORY_KEY,JSON.stringify(sorteioHistorico.slice(0,20)));
+    sorteioSalvarLiveLocal();
   }catch(erro){
     /* A roleta continua funcionando mesmo com storage bloqueado. */
   }
@@ -12675,6 +13031,7 @@ function sorteioAtualizarEstadoInscricoes(){
   const badge=document.getElementById("sorteioEntryState");
   const lock=document.getElementById("sorteioLockBtn");
   const spin=document.getElementById("sorteioSpinBtn");
+  const liveSemConexao=sorteioFonteAtiva==="youtube"&&!sorteioYoutubeConectado();
   const controles=[
     document.getElementById("sorteioNomeInput"),
     document.getElementById("sorteioAddBtn"),
@@ -12683,28 +13040,71 @@ function sorteioAtualizarEstadoInscricoes(){
     document.getElementById("sorteioImportBtn")
   ];
 
-  if(status)status.textContent=sorteioInscricoesAbertas?"INSCRIÇÕES ABERTAS":"INSCRIÇÕES ENCERRADAS";
-  if(dot)dot.className=sorteioInscricoesAbertas?"aberto":"fechado";
+  if(status){
+    status.textContent=liveSemConexao?"AGUARDANDO YOUTUBE":(sorteioInscricoesAbertas?"INSCRIÇÕES ABERTAS":"INSCRIÇÕES ENCERRADAS");
+  }
+  if(dot)dot.className=sorteioInscricoesAbertas&&!liveSemConexao?"aberto":"fechado";
   if(badge){
-    badge.textContent=sorteioInscricoesAbertas?"ABERTO":"FECHADO";
-    badge.className="sorteio-entry-badge "+(sorteioInscricoesAbertas?"aberto":"fechado");
+    badge.textContent=liveSemConexao?"OFFLINE":(sorteioInscricoesAbertas?"ABERTO":"FECHADO");
+    badge.className="sorteio-entry-badge "+(sorteioInscricoesAbertas&&!liveSemConexao?"aberto":"fechado");
   }
   if(lock){
-    lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
-    lock.disabled=sorteioGirando||sorteioRevelando;
+    if(sorteioFonteAtiva==="youtube")lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"ABRIR INSCRIÇÕES";
+    else lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
+    lock.disabled=sorteioGirando||sorteioRevelando||liveSemConexao;
   }
 
   controles.forEach(function(el){
-    if(el)el.disabled=!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;
+    if(el)el.disabled=sorteioFonteAtiva!=="manual"||!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;
   });
 
   if(spin)spin.disabled=sorteioGirando||sorteioRevelando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
+  sorteioAtualizarFonteUI();
 }
 
-function sorteioAlternarInscricoes(){
+async function sorteioAlternarInscricoes(){
   if(sorteioGirando||sorteioRevelando)return;
+
+  if(sorteioFonteAtiva==="youtube"){
+    if(!sorteioYoutubeConectado()||!sorteioLiveSessionId){
+      sorteioDefinirFeedback("Conecte o Evil Guardians à live antes de abrir as inscrições.","warn");
+      return;
+    }
+    const lock=document.getElementById("sorteioLockBtn");
+    if(lock)lock.disabled=true;
+    try{
+      if(sorteioInscricoesAbertas){
+        sorteioPararPollingLive();
+        const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/close",{method:"POST"});
+        sorteioAplicarSessaoLive(data.session,true);
+        sorteioDefinirFeedback("Inscrições encerradas com "+sorteioParticipantes.length+" participante(s) do YouTube.","info");
+      }else{
+        sorteioVencedorAtualId="";
+        sorteioOcultarVencedor();
+        sorteioOcultarDigitama(true);
+        sorteioLiveRemovedIds.clear();
+        const commandInput=document.getElementById("sorteioLiveCommand");
+        const command=(commandInput?commandInput.value.trim():"")||"!sorteio";
+        await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/config",{
+          method:"POST",body:{command:command,platforms:{youtube:true}}
+        });
+        const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/open",{method:"POST"});
+        sorteioAplicarSessaoLive(data.session,true);
+        sorteioDefinirFeedback("Inscrições abertas · Evil Guardians ouvindo "+command+" no YouTube.","ok");
+        // Primeira leitura apenas posiciona o cursor no fim do chat atual.
+        await sorteioYoutubePoll(true);
+      }
+    }catch(erro){
+      sorteioDefinirFeedback(erro.message||"Não foi possível alterar a rodada ao vivo.","warn");
+    }finally{
+      sorteioAtualizarEstadoInscricoes();
+    }
+    return;
+  }
+
   const vaiReabrir=!sorteioInscricoesAbertas;
   sorteioInscricoesAbertas=!sorteioInscricoesAbertas;
+  sorteioManualInscricoesAbertas=sorteioInscricoesAbertas;
   if(vaiReabrir){
     sorteioVencedorAtualId="";
     sorteioOcultarVencedor();
@@ -12718,9 +13118,11 @@ function sorteioAlternarInscricoes(){
       :"Lista congelada com "+sorteioParticipantes.length+" participante(s).",
     sorteioInscricoesAbertas?"ok":"info"
   );
+  sorteioSalvarEstado();
 }
 
 function sorteioAdicionarParticipante(nome,origem){
+  if(sorteioFonteAtiva!=="manual")return {ok:false,motivo:"fonte"};
   const limpo=String(nome||"").trim().replace(/\s+/g," ");
   if(!limpo)return {ok:false,motivo:"vazio"};
   if(!sorteioInscricoesAbertas)return {ok:false,motivo:"fechado"};
@@ -12808,12 +13210,17 @@ async function sorteioImportarArquivo(file){
 
 function sorteioRemoverParticipante(id){
   if(!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando)return;
+  if(sorteioFonteAtiva!=="manual")return;
   sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==id});
   sorteioAtualizarTudo();
 }
 
 function sorteioLimparParticipantes(){
   if(sorteioGirando||sorteioRevelando)return;
+  if(sorteioFonteAtiva!=="manual"){
+    sorteioDefinirFeedback("No modo Live, feche e abra uma nova rodada para zerar as inscrições.","warn");
+    return;
+  }
   if(!sorteioInscricoesAbertas){
     sorteioDefinirFeedback("Reabra as inscrições antes de alterar a lista.","warn");
     return;
@@ -12830,15 +13237,21 @@ function sorteioRenderParticipantes(){
   if(!lista)return;
 
   if(!sorteioParticipantes.length){
-    lista.innerHTML='<div class="sorteio-empty-list"><b>NENHUM PARTICIPANTE</b><span>Adicione nomes para montar a roleta.</span></div>';
+    const texto=sorteioFonteAtiva==="youtube"
+      ?(sorteioYoutubeConectado()?"Aguardando alguém mandar "+((sorteioLiveSession&&sorteioLiveSession.command)||"!sorteio")+" no chat.":"Conecte o Evil Guardians a uma live do YouTube.")
+      :"Adicione nomes para montar a roleta.";
+    lista.innerHTML='<div class="sorteio-empty-list"><b>NENHUM PARTICIPANTE</b><span>'+sorteioEscaparHtml(texto)+'</span></div>';
     return;
   }
 
   lista.innerHTML=sorteioParticipantes.map(function(item,index){
+    const origem=sorteioOrigemLabel(item.origem||item.platform);
+    const botao=sorteioFonteAtiva==="manual"
+      ?'<button type="button" data-sorteio-remove="'+sorteioEscaparHtml(item.id)+'" aria-label="Remover '+sorteioEscaparHtml(item.nome)+'" '+(!sorteioInscricoesAbertas?'disabled':'')+'>×</button>'
+      :'<span class="sorteio-live-user-mark" title="Entrada validada pelo Evil Guardians">✓</span>';
     return '<div class="sorteio-participant-row">'+
       '<span class="sorteio-participant-index">'+String(index+1).padStart(2,"0")+'</span>'+
-      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>MANUAL</small></div>'+
-      '<button type="button" data-sorteio-remove="'+sorteioEscaparHtml(item.id)+'" aria-label="Remover '+sorteioEscaparHtml(item.nome)+'" '+(!sorteioInscricoesAbertas?'disabled':'')+'>×</button>'+
+      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>'+origem+'</small></div>'+botao+
     '</div>';
   }).join("");
 
@@ -12857,7 +13270,7 @@ function sorteioRenderHistorico(){
   lista.innerHTML=sorteioHistorico.slice(0,8).map(function(item,index){
     return '<div class="sorteio-history-row">'+
       '<span>#'+String(sorteioHistorico.length-index).padStart(2,"0")+'</span>'+
-      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>'+sorteioEscaparHtml(item.hora||"")+' · MANUAL</small></div>'+
+      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>'+sorteioEscaparHtml(item.hora||"")+' · '+sorteioOrigemLabel(item.origem)+'</small></div>'+
     '</div>';
   }).join("");
 }
@@ -13030,7 +13443,7 @@ function sorteioRegistrarVencedor(participante){
   const hora=agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
   sorteioHistorico.unshift({
     nome:participante.nome,
-    origem:participante.origem||"manual",
+    origem:participante.origem||participante.platform||"manual",
     hora:hora,
     at:agora.toISOString()
   });
@@ -13041,7 +13454,7 @@ function sorteioRegistrarVencedor(participante){
   const meta=document.getElementById("sorteioWinnerMeta");
 
   if(nome)nome.textContent=participante.nome;
-  if(meta)meta.textContent="MANUAL · "+hora;
+  if(meta)meta.textContent=sorteioOrigemLabel(participante.origem||participante.platform)+" · "+hora;
 
   if(winnerBox){
     if(sorteioWinnerTimer){
@@ -13147,6 +13560,7 @@ async function sorteioGirar(){
 
     const remover=document.getElementById("sorteioRemoverVencedor");
     if(remover&&remover.checked){
+      if(sorteioFonteAtiva==="youtube")sorteioLiveRemovedIds.add(String(vencedor.id));
       sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
     }
 
@@ -13200,8 +13614,31 @@ function inicializarSorteio(){
       });
     }
 
+    const youtubeUrl=document.getElementById("sorteioYoutubeUrl");
+    if(youtubeUrl){
+      youtubeUrl.addEventListener("keydown",function(event){
+        if(event.key==="Enter"){
+          event.preventDefault();
+          sorteioYoutubeConectar();
+        }
+      });
+      youtubeUrl.addEventListener("change",sorteioSalvarLiveLocal);
+    }
+    const liveCommand=document.getElementById("sorteioLiveCommand");
+    if(liveCommand)liveCommand.addEventListener("change",sorteioSalvarLiveLocal);
+
     sorteioInicializado=true;
+    sorteioCarregarLiveLocal();
   }
 
+  if(sorteioFonteAtiva==="manual"){
+    sorteioParticipantes=sorteioManualParticipantes.map(function(item){return Object.assign({},item)});
+    sorteioInscricoesAbertas=sorteioManualInscricoesAbertas;
+  }else{
+    sorteioParticipantes=[];
+    sorteioInscricoesAbertas=false;
+  }
   sorteioAtualizarTudo();
+  sorteioAtualizarFonteUI();
+  if(sorteioFonteAtiva==="youtube")sorteioRestaurarLive();
 }

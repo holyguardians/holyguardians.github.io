@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-9">
+  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-10">
 </head>
 <body>
 
@@ -2324,7 +2324,7 @@
         <div class="sorteio-kicker">HOLY GUARDIANS // FREATURES</div>
         <h2 class="page-title">SORTEIO</h2>
         <p class="page-subtitle">
-          Monte a lista manualmente agora. YouTube, Twitch e Kick usarão a mesma roleta nas próximas etapas.
+          Monte a lista manualmente ou conecte o Evil Guardians a uma live do YouTube. Twitch e Kick chegam nas próximas etapas.
         </p>
       </div>
 
@@ -2342,14 +2342,14 @@
       </div>
 
       <div class="sorteio-source-options">
-        <button type="button" class="sorteio-source-btn manual ativo" aria-pressed="true">
+        <button type="button" class="sorteio-source-btn manual ativo" aria-pressed="true" onclick="sorteioSelecionarFonte('manual')">
           <span class="sorteio-source-mark">✎</span>
           <span><b>MANUAL</b><small>Disponível agora</small></span>
         </button>
 
-        <button type="button" class="sorteio-source-btn youtube" disabled title="Integração com live será adicionada na próxima etapa">
+        <button type="button" class="sorteio-source-btn youtube" aria-pressed="false" onclick="sorteioSelecionarFonte('youtube')">
           <span class="sorteio-source-mark">▶</span>
-          <span><b>YOUTUBE</b><small>Live · em breve</small></span>
+          <span><b>YOUTUBE</b><small>Evil Guardians · disponível</small></span>
         </button>
 
         <button type="button" class="sorteio-source-btn twitch" disabled title="Integração com live será adicionada na próxima etapa">
@@ -2422,37 +2422,64 @@
         <section class="sorteio-control-card tech-corners">
           <div class="sorteio-control-title">
             <div>
-              <small>ENTRADA MANUAL</small>
-              <strong>PARTICIPANTES</strong>
+              <small id="sorteioEntryKicker">ENTRADA MANUAL</small>
+              <strong id="sorteioEntryTitle">PARTICIPANTES</strong>
             </div>
             <span id="sorteioEntryState" class="sorteio-entry-badge aberto">ABERTO</span>
           </div>
 
-          <label class="sorteio-field">
-            <span>ADICIONAR UM NOME</span>
-            <div class="sorteio-inline-input">
-              <input id="sorteioNomeInput" type="text" maxlength="80" autocomplete="off" placeholder="Ex: GrimSleep">
-              <button id="sorteioAddBtn" type="button" onclick="sorteioAdicionarNome()">+</button>
+          <div id="sorteioManualPanel">
+            <label class="sorteio-field">
+              <span>ADICIONAR UM NOME</span>
+              <div class="sorteio-inline-input">
+                <input id="sorteioNomeInput" type="text" maxlength="80" autocomplete="off" placeholder="Ex: GrimSleep">
+                <button id="sorteioAddBtn" type="button" onclick="sorteioAdicionarNome()">+</button>
+              </div>
+            </label>
+
+            <label class="sorteio-field">
+              <span>COLAR UMA LISTA</span>
+              <textarea id="sorteioListaInput" rows="5" placeholder="Um nome por linha, vírgula ou ponto e vírgula..."></textarea>
+            </label>
+
+            <div class="sorteio-import-actions">
+              <button id="sorteioAddListBtn" type="button" class="sorteio-mini-btn" onclick="sorteioAdicionarLista()">ADICIONAR LISTA</button>
+              <button id="sorteioImportBtn" type="button" class="sorteio-mini-btn ghost" onclick="document.getElementById('sorteioImportFile').click()">IMPORTAR TXT/CSV</button>
+              <input id="sorteioImportFile" type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="sorteioImportarArquivo(this.files && this.files[0])">
             </div>
-          </label>
+          </div>
 
-          <label class="sorteio-field">
-            <span>COLAR UMA LISTA</span>
-            <textarea id="sorteioListaInput" rows="5" placeholder="Um nome por linha, vírgula ou ponto e vírgula..."></textarea>
-          </label>
+          <div id="sorteioYoutubePanel" class="sorteio-live-panel" hidden>
+            <label class="sorteio-field">
+              <span>LINK DA LIVE DO YOUTUBE</span>
+              <input id="sorteioYoutubeUrl" type="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=...">
+            </label>
 
-          <div class="sorteio-import-actions">
-            <button id="sorteioAddListBtn" type="button" class="sorteio-mini-btn" onclick="sorteioAdicionarLista()">ADICIONAR LISTA</button>
-            <button id="sorteioImportBtn" type="button" class="sorteio-mini-btn ghost" onclick="document.getElementById('sorteioImportFile').click()">IMPORTAR TXT/CSV</button>
-            <input id="sorteioImportFile" type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="sorteioImportarArquivo(this.files && this.files[0])">
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioLiveCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioYoutubeConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioYoutubeConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioYoutubeDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioYoutubeDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioLiveConnection" class="sorteio-live-connection offline" aria-live="polite">
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Cole o link de uma live com chat ativo para começar.</small>
+              </div>
+            </div>
           </div>
 
           <label class="sorteio-check">
             <input id="sorteioBloquearDuplicados" type="checkbox" checked onchange="sorteioSalvarEstado()">
             <span class="sorteio-check-ui" aria-hidden="true"></span>
             <span class="sorteio-check-copy">
-              <b>UMA ENTRADA POR NOME</b>
-              <small>Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.</small>
+              <b id="sorteioDuplicateTitle">UMA ENTRADA POR NOME</b>
+              <small id="sorteioDuplicateDesc">Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.</small>
             </span>
           </label>
 
@@ -2609,6 +2636,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260820-sorteio-v1-9"></script>
+<script src="script.js?v=20260820-sorteio-v1-10"></script>
 </body>
 </html>
