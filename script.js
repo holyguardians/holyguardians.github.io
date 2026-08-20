@@ -12410,6 +12410,19 @@ function sorteioSalvarEstado(){
   }
 }
 
+function sorteioOcultarVencedor(){
+  const winnerBox=document.getElementById("sorteioWinnerBox");
+  if(sorteioWinnerTimer){
+    clearTimeout(sorteioWinnerTimer);
+    sorteioWinnerTimer=null;
+  }
+  if(winnerBox){
+    winnerBox.classList.remove("reveal");
+    winnerBox.classList.add("hide");
+    winnerBox.setAttribute("aria-hidden","true");
+  }
+}
+
 function sorteioDefinirFeedback(texto,tipo){
   const el=document.getElementById("sorteioFeedback");
   if(!el)return;
@@ -12457,7 +12470,13 @@ function sorteioAtualizarEstadoInscricoes(){
 
 function sorteioAlternarInscricoes(){
   if(sorteioGirando)return;
+  const vaiReabrir=!sorteioInscricoesAbertas;
   sorteioInscricoesAbertas=!sorteioInscricoesAbertas;
+  if(vaiReabrir){
+    sorteioVencedorAtualId="";
+    sorteioOcultarVencedor();
+    sorteioDesenhar();
+  }
   sorteioAtualizarEstadoInscricoes();
   sorteioDefinirFeedback(
     sorteioInscricoesAbertas
@@ -12709,13 +12728,16 @@ function sorteioDesenhar(){
       ctx.moveTo(0,0);
       ctx.arc(0,0,raio,inicio,fim);
       ctx.closePath();
-      ctx.fillStyle="rgba(255,205,72,.09)";
+      ctx.fillStyle="rgba(255,205,72,.16)";
+      ctx.shadowColor="rgba(255,191,36,.45)";
+      ctx.shadowBlur=18;
       ctx.fill();
-      ctx.strokeStyle="rgba(255,217,110,.98)";
-      ctx.lineWidth=Math.max(3.2,n>80?1.6:3.8);
-      ctx.shadowColor="rgba(255,191,36,.88)";
-      ctx.shadowBlur=16;
+      ctx.strokeStyle="#ffd85a";
+      ctx.lineWidth=Math.max(5,n>80?2.4:6);
+      ctx.shadowColor="rgba(255,191,36,1)";
+      ctx.shadowBlur=26;
       ctx.stroke();
+      ctx.shadowBlur=0;
       ctx.restore();
     }
 
@@ -12725,9 +12747,9 @@ function sorteioDesenhar(){
       ctx.rotate(inicio+angulo/2);
       ctx.textAlign="right";
       ctx.textBaseline="middle";
-      ctx.fillStyle=vencedorAtivo?"#ffe88b":"#f4fbff";
-      ctx.shadowColor=vencedorAtivo?"rgba(255,192,60,.95)":"rgba(0,0,0,.9)";
-      ctx.shadowBlur=vencedorAtivo?10:4;
+      ctx.fillStyle=vencedorAtivo?"#fff1a0":"#f4fbff";
+      ctx.shadowColor=vencedorAtivo?"rgba(255,191,36,1)":"rgba(0,0,0,.9)";
+      ctx.shadowBlur=vencedorAtivo?15:4;
       ctx.font='700 '+fontSize+'px "Oxanium", Arial, sans-serif';
       ctx.fillText(sorteioAbreviarNome(item.nome,maxChars),raio-28,0);
       if(vencedorAtivo){
@@ -12798,11 +12820,7 @@ function sorteioRegistrarVencedor(participante){
     void winnerBox.offsetWidth;
     winnerBox.classList.add("reveal");
 
-    sorteioWinnerTimer=setTimeout(function(){
-      winnerBox.classList.remove("reveal");
-      winnerBox.classList.add("hide");
-      winnerBox.setAttribute("aria-hidden","true");
-    },4800);
+    /* A box permanece visível até um novo giro ou a reabertura das inscrições. */
   }
 }
 
@@ -12819,6 +12837,7 @@ function sorteioGirar(){
 
   const total=sorteioParticipantes.length;
   sorteioVencedorAtualId="";
+  sorteioOcultarVencedor();
   const vencedorIndex=sorteioRandomIndex(total);
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
@@ -12867,6 +12886,9 @@ function sorteioGirar(){
       },900);
     }
     sorteioRegistrarVencedor(vencedor);
+    // Redesenha uma vez com o vencedor ainda presente para congelar no canvas
+    // o contorno e o nome dourados antes de qualquer remoção da lista.
+    sorteioDesenhar();
 
     const remover=document.getElementById("sorteioRemoverVencedor");
     if(remover&&remover.checked){
