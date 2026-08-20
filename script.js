@@ -12726,11 +12726,11 @@ function sorteioDesenhar(){
 
   // Anéis internos
   ctx.beginPath();
-  ctx.arc(0,0,raio*.25,0,Math.PI*2);
+  ctx.arc(0,0,raio*.30,0,Math.PI*2);
   ctx.fillStyle="#06152d";
   ctx.fill();
-  ctx.strokeStyle="rgba(151,97,255,.85)";
-  ctx.lineWidth=3;
+  ctx.strokeStyle="rgba(78,171,230,.28)";
+  ctx.lineWidth=2;
   ctx.stroke();
 
   ctx.restore();
@@ -12797,9 +12797,10 @@ function sorteioGirar(){
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
   const inicio=sorteioRotacao;
-  // O indicador agora fica na ponta inferior da logo (6 horas).
-  // Centro do setor vencedor: -PI/2 + rotacao + (index+.5)*angulo = PI/2.
-  let alvo=Math.PI-(vencedorIndex+.5)*angulo;
+  // A ponta inferior-direita real da logo é o indicador (~54° no canvas).
+  // Centro do setor vencedor: -PI/2 + rotacao + (index+.5)*angulo = anguloDoIndicador.
+  const anguloDoIndicador=54*Math.PI/180;
+  let alvo=anguloDoIndicador+Math.PI/2-(vencedorIndex+.5)*angulo;
 
   while(alvo<=inicio)alvo+=Math.PI*2;
   alvo+=Math.PI*2*7;

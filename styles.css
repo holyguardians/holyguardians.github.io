@@ -18617,6 +18617,7 @@ body.hg-display-scaled footer {
   width:min(650px,100%);
   margin:4px auto 8px;
   padding:22px;
+  box-sizing:border-box;
 }
 
 #sorteioPagina .sorteio-wheel-stage::before{
@@ -18631,14 +18632,17 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-wheel-frame{
   position:relative;
   width:100%;
-  aspect-ratio:1/1;
+  max-width:100%;
+  aspect-ratio:1 / 1;
+  margin-inline:auto;
   border-radius:50%;
 }
 
 #sorteioPagina #sorteioCanvas{
   display:block;
   width:100%;
-  height:100%;
+  height:auto;
+  aspect-ratio:1 / 1;
   border-radius:50%;
   filter:drop-shadow(0 15px 24px rgba(0,0,0,.42));
 }
@@ -18648,64 +18652,66 @@ body.hg-display-scaled footer {
   z-index:9;
   left:50%;
   top:50%;
-  width:22%;
-  aspect-ratio:1/1;
+  width:27%;
+  aspect-ratio:1 / 1;
   transform:translate(-50%,-50%);
   display:flex;
   align-items:center;
   justify-content:center;
   overflow:visible;
-  border:2px solid rgba(125,226,255,.68);
+  border:0;
   border-radius:50%;
-  background:radial-gradient(circle,#0d2b55 0%,#06152d 65%,#030b17 100%);
-  box-shadow:0 0 18px rgba(49,198,255,.34),inset 0 0 18px rgba(132,83,255,.18);
+  background:radial-gradient(circle,#0b2549 0%,#06152d 68%,#030b17 100%);
+  box-shadow:0 0 17px rgba(49,198,255,.20),inset 0 0 18px rgba(132,83,255,.12);
   pointer-events:none;
 }
 
+/* O fundo central termina praticamente na borda circular dourada da própria logo. */
 #sorteioPagina .sorteio-wheel-core-glow{
   position:absolute;
-  inset:-8%;
+  inset:-2%;
   border-radius:50%;
-  background:radial-gradient(circle,rgba(62,205,255,.18),rgba(126,66,255,.08) 48%,transparent 72%);
-  box-shadow:0 0 18px rgba(57,202,255,.15);
+  background:radial-gradient(circle,rgba(62,205,255,.10),rgba(126,66,255,.045) 54%,transparent 74%);
+  box-shadow:0 0 13px rgba(57,202,255,.10);
 }
 
+/* A arte é maior que o miolo: o aro dourado vira a borda visual do centro e a lança sai dele. */
 #sorteioPagina .sorteio-wheel-logo{
   position:relative;
   z-index:3;
-  width:160%;
-  height:160%;
+  width:210%;
+  height:210%;
   max-width:none;
   object-fit:contain;
-  transform:translateY(9%);
-  filter:drop-shadow(0 0 8px rgba(255,196,62,.30)) drop-shadow(0 0 10px rgba(65,211,255,.19));
+  transform:translate(1.5%,5%);
+  filter:drop-shadow(0 0 8px rgba(255,196,62,.32)) drop-shadow(0 0 10px rgba(65,211,255,.14));
 }
 
-/* A própria logo vira a agulha da roleta: a seta nasce na ponta inferior. */
+/* Pequena seta anexada à ponta inferior-direita real da logo. */
 #sorteioPagina .sorteio-logo-pointer{
   position:absolute;
-  z-index:4;
-  left:50%;
-  bottom:-43%;
-  width:0;
-  height:0;
-  transform:translateX(-50%);
-  border-left:8px solid transparent;
-  border-right:8px solid transparent;
-  border-top:15px solid #ffbf24;
-  filter:drop-shadow(0 0 5px rgba(255,191,36,.75));
+  z-index:5;
+  left:106%;
+  top:119%;
+  width:20px;
+  height:12px;
+  transform:translate(-50%,-50%) rotate(54deg);
+  transform-origin:center;
+  clip-path:polygon(0 20%,100% 50%,0 80%,30% 50%);
+  background:linear-gradient(90deg,rgba(255,191,36,.05) 0%,#ffbf24 58%,#ffe58a 100%);
+  filter:drop-shadow(0 0 5px rgba(255,191,36,.70));
 }
 
 #sorteioPagina .sorteio-logo-pointer::before{
   content:"";
   position:absolute;
-  left:-2px;
-  bottom:10px;
-  width:4px;
-  height:18px;
+  left:-8px;
+  top:5px;
+  width:13px;
+  height:2px;
   border-radius:999px;
-  background:linear-gradient(180deg,rgba(255,224,119,.08),#ffbf24);
-  box-shadow:0 0 7px rgba(255,191,36,.55);
+  background:linear-gradient(90deg,transparent,#ffbf24);
+  box-shadow:0 0 5px rgba(255,191,36,.48);
 }
 
 #sorteioPagina .sorteio-wheel-stage.girando .sorteio-logo-pointer{
@@ -18717,14 +18723,14 @@ body.hg-display-scaled footer {
 }
 
 @keyframes sorteioPointerPulse{
-  0%,100%{filter:drop-shadow(0 0 4px rgba(255,191,36,.55));}
-  50%{filter:drop-shadow(0 0 9px rgba(255,214,85,.98));}
+  0%,100%{filter:drop-shadow(0 0 4px rgba(255,191,36,.52));}
+  50%{filter:drop-shadow(0 0 9px rgba(255,214,85,.96));}
 }
 
 @keyframes sorteioPointerWinner{
-  0%{filter:drop-shadow(0 0 5px rgba(255,191,36,.65));}
+  0%{filter:drop-shadow(0 0 5px rgba(255,191,36,.62));}
   38%{filter:drop-shadow(0 0 16px rgba(255,229,120,1));}
-  100%{filter:drop-shadow(0 0 6px rgba(255,191,36,.7));}
+  100%{filter:drop-shadow(0 0 6px rgba(255,191,36,.68));}
 }
 
 #sorteioPagina .sorteio-winner-box{
@@ -18780,6 +18786,15 @@ body.hg-display-scaled footer {
   font-size:7px;
   font-weight:900;
   letter-spacing:1.5px;
+}
+
+#sorteioPagina .sorteio-winner-crown{
+  display:inline-block;
+  margin-right:4px;
+  font-size:12px;
+  line-height:1;
+  vertical-align:-2px;
+  filter:drop-shadow(0 0 4px rgba(255,191,36,.45));
 }
 
 #sorteioPagina .sorteio-winner-box strong{
@@ -19265,14 +19280,19 @@ body.hg-display-scaled footer {
   }
 
   #sorteioPagina .sorteio-wheel-core{
-    width:23%;
+    width:27%;
+  }
+
+  #sorteioPagina .sorteio-wheel-logo{
+    width:208%;
+    height:208%;
   }
 
   #sorteioPagina .sorteio-logo-pointer{
-    bottom:-40%;
-    border-left-width:7px;
-    border-right-width:7px;
-    border-top-width:13px;
+    left:106%;
+    top:119%;
+    width:17px;
+    height:10px;
   }
 
   #sorteioPagina .sorteio-wheel-actions,
