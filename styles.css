@@ -19841,3 +19841,47 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-live-connection.offline b{transition:color .2s ease,text-shadow .2s ease;}
 #sorteioPagina .sorteio-live-connection.offline small{white-space:normal;line-height:1.35;}
 #sorteioPagina .sorteio-live-connection.offline b:not(:empty){max-width:100%;}
+
+/* =====================================================
+   FERRAMENTAS HG — SORTEIO V1.11 / TWITCH
+===================================================== */
+#sorteioPagina .sorteio-twitch-auth-note{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 15px;
+  margin:0 0 15px;
+  border:1px solid rgba(145,70,255,.24);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(100,35,180,.12),rgba(4,20,43,.72));
+  box-shadow:inset 0 0 22px rgba(145,70,255,.04);
+}
+#sorteioPagina .sorteio-twitch-auth-note b{
+  display:block;
+  color:#f3eaff;
+  font-size:12px;
+  letter-spacing:.055em;
+}
+#sorteioPagina .sorteio-twitch-auth-note small{
+  display:block;
+  margin-top:3px;
+  color:#789ac0;
+  line-height:1.35;
+}
+#sorteioPagina .sorteio-live-platform-badge.twitch{
+  border-color:rgba(145,70,255,.42);
+  background:rgba(74,22,126,.24);
+  box-shadow:0 0 13px rgba(145,70,255,.13);
+}
+#sorteioPagina .sorteio-live-connection.twitch.online{
+  border-color:rgba(145,70,255,.42);
+  box-shadow:inset 0 0 24px rgba(145,70,255,.06),0 0 16px rgba(145,70,255,.08);
+}
+#sorteioPagina .sorteio-live-connection.twitch.online .sorteio-live-dot{
+  background:#a970ff;
+  box-shadow:0 0 10px #9146ff,0 0 18px rgba(145,70,255,.65);
+}
+#sorteioPagina .sorteio-live-connection.twitch.online b{
+  color:#d9c0ff;
+  text-shadow:0 0 9px rgba(145,70,255,.38);
+}

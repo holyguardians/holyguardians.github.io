@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-10-1-connectfix">
+  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-11-twitch">
 </head>
 <body>
 
@@ -125,7 +125,7 @@
       <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
         onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
         <span class="features-nav-icon" aria-hidden="true">✦</span>
-        <span>Freatures</span>
+        <span>Ferramentas HG</span>
         <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
       </button>
 
@@ -2314,17 +2314,17 @@
 </section>
 
 <!-- =====================================================
-     FREATURES — SORTEIO
+     FERRAMENTAS HG — SORTEIO
 ===================================================== -->
 
 <section id="sorteioPagina" class="pagina">
   <div class="sorteio-wrap">
     <div class="sorteio-hero">
       <div>
-        <div class="sorteio-kicker">HOLY GUARDIANS // FREATURES</div>
+        <div class="sorteio-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
         <h2 class="page-title">SORTEIO</h2>
         <p class="page-subtitle">
-          Monte a lista manualmente ou conecte o Evil Guardians a uma live do YouTube. Twitch e Kick chegam nas próximas etapas.
+          Monte a lista manualmente ou conecte o Evil Guardians ao YouTube ou à Twitch. Kick chega na próxima etapa.
         </p>
       </div>
 
@@ -2352,9 +2352,9 @@
           <span><b>YOUTUBE</b><small>Evil Guardians · disponível</small></span>
         </button>
 
-        <button type="button" class="sorteio-source-btn twitch" disabled title="Integração com live será adicionada na próxima etapa">
+        <button type="button" class="sorteio-source-btn twitch" aria-pressed="false" onclick="sorteioSelecionarFonte('twitch')">
           <span class="sorteio-source-mark"><img src="twitch.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
-          <span><b>TWITCH</b><small>Live · em breve</small></span>
+          <span><b>TWITCH</b><small>Evil Guardians · disponível</small></span>
         </button>
 
         <button type="button" class="sorteio-source-btn kick" disabled title="Integração com live será adicionada na próxima etapa">
@@ -2474,6 +2474,35 @@
               <div>
                 <b>EVIL GUARDIANS DESCONECTADO</b>
                 <small>Cole o link de uma live com chat ativo para começar.</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="sorteioTwitchPanel" class="sorteio-live-panel" hidden>
+            <div class="sorteio-twitch-auth-note">
+              <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+              <div>
+                <b>CONEXÃO SEGURA COM A TWITCH</b>
+                <small>O canal usado será a conta que autorizar o Evil Guardians na janela oficial da Twitch.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioTwitchCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioTwitchConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioTwitchConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioTwitchDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioTwitchDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioTwitchConnection" class="sorteio-live-connection twitch offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Autorize a Twitch para ligar seu canal ao sorteio.</small>
               </div>
             </div>
           </div>
@@ -2640,6 +2669,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260820-sorteio-v1-10-1-connectfix"></script>
+<script src="script.js?v=20260820-sorteio-v1-11-twitch"></script>
 </body>
 </html>
