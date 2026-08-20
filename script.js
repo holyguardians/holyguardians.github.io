@@ -1816,9 +1816,15 @@ function aplicarEstadoSiteHeader(recolhido, persistir = true) {
     const dropdown = document.getElementById("pvpNavDropdown");
     const pvpMenu = document.getElementById("pvpNavMenu");
     const pvpButton = document.getElementById("btnPvp");
+    const featuresDropdown = document.getElementById("featuresNavDropdown");
+    const featuresMenu = document.getElementById("featuresNavMenu");
+    const featuresButton = document.getElementById("btnFeatures");
     if (dropdown) dropdown.classList.remove("aberto", "open");
     if (pvpMenu) pvpMenu.classList.remove("aberto", "open");
     if (pvpButton) pvpButton.setAttribute("aria-expanded", "false");
+    if (featuresDropdown) featuresDropdown.classList.remove("aberto", "open");
+    if (featuresMenu) featuresMenu.classList.remove("aberto", "open");
+    if (featuresButton) featuresButton.setAttribute("aria-expanded", "false");
   }
 
   if (persistir) {
@@ -1949,6 +1955,7 @@ function mostrarPagina(
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
+      sorteioPagina: "sorteio",
       socialPagina: "comunidade"
     };
 
@@ -1994,6 +2001,7 @@ function abrirPaginaPelaUrl() {
     calculadora: { pagina: "calculadoraPagina", botao: "btnCalculadora" },
     "raid-boss": { pagina: "raidBossPagina", botao: "btnRaidBoss" },
     "dekyu-treasure": { pagina: "dekyuTreasurePagina", botao: "btnDekyuTreasure" },
+    sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
     social: { pagina: "socialPagina", botao: "btnSocial" },
     comunidade: { pagina: "socialPagina", botao: "btnSocial" }
   };
@@ -9457,6 +9465,7 @@ document.addEventListener(
     inicializarFechamentoFiltrosDigidex();
     inicializarDigivolution();
     inicializarStatusSimulator();
+    inicializarSorteio();
     abrirPaginaPelaUrl();
 
     carregarDigivolutions();
@@ -9924,8 +9933,44 @@ function pvpMetaIconsHtml(digi){
 }
 
 
-function fecharPvpNavMenu(){const d=document.getElementById("pvpNavDropdown");if(d)d.classList.remove("aberto")}
-function togglePvpNavMenu(event){if(event){event.preventDefault();event.stopPropagation()}const d=document.getElementById("pvpNavDropdown");if(d)d.classList.toggle("aberto")}
+function fecharFeaturesNavMenu(){
+  const dropdown=document.getElementById("featuresNavDropdown");
+  const button=document.getElementById("btnFeatures");
+  if(dropdown)dropdown.classList.remove("aberto");
+  if(button)button.setAttribute("aria-expanded","false");
+}
+function toggleFeaturesNavMenu(event){
+  if(event){event.preventDefault();event.stopPropagation()}
+  const dropdown=document.getElementById("featuresNavDropdown");
+  const button=document.getElementById("btnFeatures");
+  if(!dropdown)return;
+  const abrir=!dropdown.classList.contains("aberto");
+  fecharPvpNavMenu();
+  dropdown.classList.toggle("aberto",abrir);
+  if(button)button.setAttribute("aria-expanded",abrir?"true":"false");
+}
+function abrirSorteio(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("sorteioPagina",document.getElementById("btnFeatures"));
+  inicializarSorteio();
+}
+
+function fecharPvpNavMenu(){
+  const d=document.getElementById("pvpNavDropdown");
+  const b=document.getElementById("btnPvp");
+  if(d)d.classList.remove("aberto");
+  if(b)b.setAttribute("aria-expanded","false");
+}
+function togglePvpNavMenu(event){
+  if(event){event.preventDefault();event.stopPropagation()}
+  fecharFeaturesNavMenu();
+  const d=document.getElementById("pvpNavDropdown");
+  const b=document.getElementById("btnPvp");
+  if(!d)return;
+  const abrir=!d.classList.contains("aberto");
+  d.classList.toggle("aberto",abrir);
+  if(b)b.setAttribute("aria-expanded",abrir?"true":"false");
+}
 function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}
 function pvpFecharStageMenu(){const el=document.getElementById("pvpStageSelect");if(el)el.classList.remove("aberto")}
 function pvpStageTexto(stage){return String(stage||"Mega").toUpperCase()+" · LV. "+(PVP_STAGE_LEVEL[stage]||100)}
@@ -10316,10 +10361,11 @@ function exportarTimePvp(){
 
 document.addEventListener("click",function(event){
   const dropdown=document.getElementById("pvpNavDropdown");if(dropdown&&!dropdown.contains(event.target))fecharPvpNavMenu();
+  const featuresDropdown=document.getElementById("featuresNavDropdown");if(featuresDropdown&&!featuresDropdown.contains(event.target))fecharFeaturesNavMenu();
   const stage=document.getElementById("pvpStageSelect");if(stage&&!stage.contains(event.target))pvpFecharStageMenu();
   const overlay=document.getElementById("pvpPickerOverlay");if(overlay&&event.target===overlay)pvpFecharPicker()
 });
-document.addEventListener("keydown",function(event){if(event.key==="Escape"){fecharPvpNavMenu();pvpFecharStageMenu();pvpFecharPicker()}});
+document.addEventListener("keydown",function(event){if(event.key==="Escape"){fecharPvpNavMenu();fecharFeaturesNavMenu();pvpFecharStageMenu();pvpFecharPicker()}});
 document.addEventListener("DOMContentLoaded",function(){pvpCriarSlots();pvpCarregarDatabase()});
 
 
@@ -12254,3 +12300,556 @@ document.addEventListener("DOMContentLoaded",function(){
   const nick=document.getElementById("pvpMatchNick");if(nick)nick.value=localStorage.getItem(PVP_MATCH_NICK_KEY)||"";
   pvpMatchAtualizarServerHint();
 });
+
+/* =====================================================
+   FREATURES — SORTEIO V1
+   Manual + anti-duplicação + histórico local
+===================================================== */
+
+const HG_SORTEIO_STORAGE_KEY = "hgSorteioManualV1";
+const HG_SORTEIO_HISTORY_KEY = "hgSorteioHistoryV1";
+
+let sorteioParticipantes = [];
+let sorteioHistorico = [];
+let sorteioInscricoesAbertas = true;
+let sorteioGirando = false;
+let sorteioRotacao = 0;
+let sorteioInicializado = false;
+
+const HG_SORTEIO_PALETA = [
+  "#0b67b5",
+  "#163f91",
+  "#5f2ba8",
+  "#08798f",
+  "#8a6518",
+  "#174f7f",
+  "#44207f",
+  "#0e5f69"
+];
+
+function sorteioNormalizarNome(nome){
+  return String(nome||"")
+    .trim()
+    .replace(/\s+/g," ")
+    .toLocaleLowerCase("pt-BR");
+}
+
+function sorteioEscaparHtml(texto){
+  return String(texto||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function sorteioGerarId(){
+  if(window.crypto&&crypto.getRandomValues){
+    const buffer=new Uint32Array(2);
+    crypto.getRandomValues(buffer);
+    return "p_"+buffer[0].toString(36)+buffer[1].toString(36);
+  }
+  return "p_"+Date.now().toString(36)+Math.random().toString(36).slice(2);
+}
+
+function sorteioRandomIndex(max){
+  if(max<=1)return 0;
+  if(window.crypto&&crypto.getRandomValues){
+    const limite=Math.floor(0x100000000/max)*max;
+    const b=new Uint32Array(1);
+    do{crypto.getRandomValues(b)}while(b[0]>=limite);
+    return b[0]%max;
+  }
+  return Math.floor(Math.random()*max);
+}
+
+function sorteioCarregarEstado(){
+  try{
+    const salvo=JSON.parse(localStorage.getItem(HG_SORTEIO_STORAGE_KEY)||"null");
+    if(salvo&&Array.isArray(salvo.participantes)){
+      sorteioParticipantes=salvo.participantes
+        .filter(function(item){return item&&item.nome})
+        .map(function(item){
+          return {
+            id:item.id||sorteioGerarId(),
+            nome:String(item.nome).trim(),
+            origem:item.origem||"manual"
+          };
+        });
+    }
+    const duplicados=document.getElementById("sorteioBloquearDuplicados");
+    const remover=document.getElementById("sorteioRemoverVencedor");
+    if(duplicados&&salvo&&typeof salvo.bloquearDuplicados==="boolean")duplicados.checked=salvo.bloquearDuplicados;
+    if(remover&&salvo&&typeof salvo.removerVencedor==="boolean")remover.checked=salvo.removerVencedor;
+  }catch(erro){
+    sorteioParticipantes=[];
+  }
+
+  try{
+    const historico=JSON.parse(localStorage.getItem(HG_SORTEIO_HISTORY_KEY)||"[]");
+    sorteioHistorico=Array.isArray(historico)?historico.slice(0,20):[];
+  }catch(erro){
+    sorteioHistorico=[];
+  }
+}
+
+function sorteioSalvarEstado(){
+  try{
+    const duplicados=document.getElementById("sorteioBloquearDuplicados");
+    const remover=document.getElementById("sorteioRemoverVencedor");
+    localStorage.setItem(HG_SORTEIO_STORAGE_KEY,JSON.stringify({
+      participantes:sorteioParticipantes,
+      bloquearDuplicados:duplicados?duplicados.checked:true,
+      removerVencedor:remover?remover.checked:true
+    }));
+    localStorage.setItem(HG_SORTEIO_HISTORY_KEY,JSON.stringify(sorteioHistorico.slice(0,20)));
+  }catch(erro){
+    /* A roleta continua funcionando mesmo com storage bloqueado. */
+  }
+}
+
+function sorteioDefinirFeedback(texto,tipo){
+  const el=document.getElementById("sorteioFeedback");
+  if(!el)return;
+  el.textContent=texto||"";
+  el.className="sorteio-feedback"+(tipo?" "+tipo:"");
+  if(texto){
+    clearTimeout(el._hgTimer);
+    el._hgTimer=setTimeout(function(){
+      if(!sorteioGirando)el.textContent="";
+    },3500);
+  }
+}
+
+function sorteioAtualizarEstadoInscricoes(){
+  const status=document.getElementById("sorteioStatusTopo");
+  const dot=document.getElementById("sorteioStatusDot");
+  const badge=document.getElementById("sorteioEntryState");
+  const lock=document.getElementById("sorteioLockBtn");
+  const spin=document.getElementById("sorteioSpinBtn");
+  const controles=[
+    document.getElementById("sorteioNomeInput"),
+    document.getElementById("sorteioAddBtn"),
+    document.getElementById("sorteioListaInput"),
+    document.getElementById("sorteioAddListBtn"),
+    document.getElementById("sorteioImportBtn")
+  ];
+
+  if(status)status.textContent=sorteioInscricoesAbertas?"INSCRIÇÕES ABERTAS":"INSCRIÇÕES ENCERRADAS";
+  if(dot)dot.className=sorteioInscricoesAbertas?"aberto":"fechado";
+  if(badge){
+    badge.textContent=sorteioInscricoesAbertas?"ABERTO":"FECHADO";
+    badge.className="sorteio-entry-badge "+(sorteioInscricoesAbertas?"aberto":"fechado");
+  }
+  if(lock){
+    lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
+    lock.disabled=sorteioGirando;
+  }
+
+  controles.forEach(function(el){
+    if(el)el.disabled=!sorteioInscricoesAbertas||sorteioGirando;
+  });
+
+  if(spin)spin.disabled=sorteioGirando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
+}
+
+function sorteioAlternarInscricoes(){
+  if(sorteioGirando)return;
+  sorteioInscricoesAbertas=!sorteioInscricoesAbertas;
+  sorteioAtualizarEstadoInscricoes();
+  sorteioDefinirFeedback(
+    sorteioInscricoesAbertas
+      ?"Inscrições reabertas. Você pode adicionar ou remover participantes."
+      :"Lista congelada com "+sorteioParticipantes.length+" participante(s).",
+    sorteioInscricoesAbertas?"ok":"info"
+  );
+}
+
+function sorteioAdicionarParticipante(nome,origem){
+  const limpo=String(nome||"").trim().replace(/\s+/g," ");
+  if(!limpo)return {ok:false,motivo:"vazio"};
+  if(!sorteioInscricoesAbertas)return {ok:false,motivo:"fechado"};
+
+  const bloquear=document.getElementById("sorteioBloquearDuplicados");
+  if(!bloquear||bloquear.checked){
+    const chave=sorteioNormalizarNome(limpo);
+    const existe=sorteioParticipantes.some(function(item){
+      return sorteioNormalizarNome(item.nome)===chave;
+    });
+    if(existe)return {ok:false,motivo:"duplicado"};
+  }
+
+  sorteioParticipantes.push({
+    id:sorteioGerarId(),
+    nome:limpo.slice(0,80),
+    origem:origem||"manual"
+  });
+  return {ok:true};
+}
+
+function sorteioAdicionarNome(){
+  const input=document.getElementById("sorteioNomeInput");
+  if(!input)return;
+  const resultado=sorteioAdicionarParticipante(input.value,"manual");
+
+  if(resultado.ok){
+    input.value="";
+    sorteioAtualizarTudo();
+    sorteioDefinirFeedback("Participante adicionado à roleta.","ok");
+    input.focus();
+  }else if(resultado.motivo==="duplicado"){
+    sorteioDefinirFeedback("Esse nome já está participando. Entrada duplicada ignorada.","warn");
+  }else if(resultado.motivo==="fechado"){
+    sorteioDefinirFeedback("As inscrições estão encerradas. Reabra para adicionar nomes.","warn");
+  }
+}
+
+function sorteioExtrairNomes(texto){
+  return String(texto||"")
+    .split(/[\n\r,;]+/)
+    .map(function(nome){return nome.trim().replace(/\s+/g," ")})
+    .filter(Boolean);
+}
+
+function sorteioAdicionarLista(){
+  const input=document.getElementById("sorteioListaInput");
+  if(!input)return;
+  const nomes=sorteioExtrairNomes(input.value);
+  if(!nomes.length){
+    sorteioDefinirFeedback("Cole pelo menos um nome antes de adicionar a lista.","warn");
+    return;
+  }
+
+  let adicionados=0;
+  let duplicados=0;
+  nomes.forEach(function(nome){
+    const result=sorteioAdicionarParticipante(nome,"manual");
+    if(result.ok)adicionados++;
+    else if(result.motivo==="duplicado")duplicados++;
+  });
+
+  input.value="";
+  sorteioAtualizarTudo();
+  sorteioDefinirFeedback(
+    adicionados+" participante(s) adicionado(s)"+(duplicados?" · "+duplicados+" duplicado(s) ignorado(s)":"")+".",
+    "ok"
+  );
+}
+
+async function sorteioImportarArquivo(file){
+  if(!file)return;
+  try{
+    const texto=await file.text();
+    const input=document.getElementById("sorteioListaInput");
+    if(input)input.value=texto;
+    sorteioAdicionarLista();
+  }catch(erro){
+    sorteioDefinirFeedback("Não foi possível ler esse arquivo.","warn");
+  }finally{
+    const fileInput=document.getElementById("sorteioImportFile");
+    if(fileInput)fileInput.value="";
+  }
+}
+
+function sorteioRemoverParticipante(id){
+  if(!sorteioInscricoesAbertas||sorteioGirando)return;
+  sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==id});
+  sorteioAtualizarTudo();
+}
+
+function sorteioLimparParticipantes(){
+  if(sorteioGirando)return;
+  if(!sorteioInscricoesAbertas){
+    sorteioDefinirFeedback("Reabra as inscrições antes de alterar a lista.","warn");
+    return;
+  }
+  sorteioParticipantes=[];
+  sorteioAtualizarTudo();
+  sorteioDefinirFeedback("Lista de participantes limpa.","info");
+}
+
+function sorteioRenderParticipantes(){
+  const lista=document.getElementById("sorteioParticipants");
+  const total=document.getElementById("sorteioTotal");
+  if(total)total.textContent=String(sorteioParticipantes.length);
+  if(!lista)return;
+
+  if(!sorteioParticipantes.length){
+    lista.innerHTML='<div class="sorteio-empty-list"><b>NENHUM PARTICIPANTE</b><span>Adicione nomes para montar a roleta.</span></div>';
+    return;
+  }
+
+  lista.innerHTML=sorteioParticipantes.map(function(item,index){
+    return '<div class="sorteio-participant-row">'+
+      '<span class="sorteio-participant-index">'+String(index+1).padStart(2,"0")+'</span>'+
+      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>MANUAL</small></div>'+
+      '<button type="button" data-sorteio-remove="'+sorteioEscaparHtml(item.id)+'" aria-label="Remover '+sorteioEscaparHtml(item.nome)+'" '+(!sorteioInscricoesAbertas?'disabled':'')+'>×</button>'+
+    '</div>';
+  }).join("");
+
+  lista.querySelectorAll("[data-sorteio-remove]").forEach(function(btn){
+    btn.addEventListener("click",function(){sorteioRemoverParticipante(btn.dataset.sorteioRemove)});
+  });
+}
+
+function sorteioRenderHistorico(){
+  const lista=document.getElementById("sorteioHistory");
+  if(!lista)return;
+  if(!sorteioHistorico.length){
+    lista.innerHTML='<div class="sorteio-empty-history">Nenhum sorteio realizado nesta sessão.</div>';
+    return;
+  }
+  lista.innerHTML=sorteioHistorico.slice(0,8).map(function(item,index){
+    return '<div class="sorteio-history-row">'+
+      '<span>#'+String(sorteioHistorico.length-index).padStart(2,"0")+'</span>'+
+      '<div><strong>'+sorteioEscaparHtml(item.nome)+'</strong><small>'+sorteioEscaparHtml(item.hora||"")+' · MANUAL</small></div>'+
+    '</div>';
+  }).join("");
+}
+
+function sorteioLimparHistorico(){
+  if(sorteioGirando)return;
+  sorteioHistorico=[];
+  sorteioSalvarEstado();
+  sorteioRenderHistorico();
+  const nome=document.getElementById("sorteioWinnerName");
+  const meta=document.getElementById("sorteioWinnerMeta");
+  if(nome)nome.textContent="Aguardando sorteio...";
+  if(meta)meta.textContent="Adicione participantes e feche as inscrições para girar.";
+}
+
+function sorteioAbreviarNome(nome,max){
+  const texto=String(nome||"");
+  if(texto.length<=max)return texto;
+  return texto.slice(0,Math.max(1,max-1))+"…";
+}
+
+function sorteioDesenhar(){
+  const canvas=document.getElementById("sorteioCanvas");
+  if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2;
+  const raio=Math.min(w,h)*0.445;
+
+  ctx.clearRect(0,0,w,h);
+
+  // Halo externo
+  const halo=ctx.createRadialGradient(cx,cy,raio*.72,cx,cy,raio*1.13);
+  halo.addColorStop(0,"rgba(30,185,255,0)");
+  halo.addColorStop(.72,"rgba(38,171,255,.10)");
+  halo.addColorStop(1,"rgba(142,83,255,0)");
+  ctx.fillStyle=halo;
+  ctx.beginPath();
+  ctx.arc(cx,cy,raio*1.12,0,Math.PI*2);
+  ctx.fill();
+
+  if(!sorteioParticipantes.length){
+    ctx.save();
+    ctx.translate(cx,cy);
+    const grad=ctx.createRadialGradient(0,0,40,0,0,raio);
+    grad.addColorStop(0,"#0c2347");
+    grad.addColorStop(1,"#061226");
+    ctx.fillStyle=grad;
+    ctx.strokeStyle="rgba(76,211,255,.55)";
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.arc(0,0,raio,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle="#7edfff";
+    ctx.font='700 28px "Oxanium", Arial, sans-serif';
+    ctx.textAlign="center";
+    ctx.fillText("ADICIONE PARTICIPANTES",0,-16);
+    ctx.fillStyle="#789ab8";
+    ctx.font='500 18px "Oxanium", Arial, sans-serif';
+    ctx.fillText("para montar a roleta",0,22);
+    ctx.restore();
+    return;
+  }
+
+  const n=sorteioParticipantes.length;
+  const angulo=Math.PI*2/n;
+  const fontSize=n<=8?24:n<=16?19:n<=28?15:n<=50?12:10;
+  const maxChars=n<=10?18:n<=24?13:n<=50?9:6;
+
+  ctx.save();
+  ctx.translate(cx,cy);
+
+  sorteioParticipantes.forEach(function(item,i){
+    const inicio=-Math.PI/2+sorteioRotacao+i*angulo;
+    const fim=inicio+angulo;
+
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0,raio,inicio,fim);
+    ctx.closePath();
+
+    const cor=HG_SORTEIO_PALETA[i%HG_SORTEIO_PALETA.length];
+    ctx.fillStyle=cor;
+    ctx.fill();
+
+    ctx.strokeStyle="rgba(150,229,255,.52)";
+    ctx.lineWidth=n>80?0.8:1.7;
+    ctx.stroke();
+
+    // Texto só quando ainda existe espaço útil
+    if(n<=120){
+      ctx.save();
+      ctx.rotate(inicio+angulo/2);
+      ctx.textAlign="right";
+      ctx.textBaseline="middle";
+      ctx.fillStyle="#f4fbff";
+      ctx.shadowColor="rgba(0,0,0,.9)";
+      ctx.shadowBlur=4;
+      ctx.font='700 '+fontSize+'px "Oxanium", Arial, sans-serif';
+      ctx.fillText(sorteioAbreviarNome(item.nome,maxChars),raio-28,0);
+      ctx.restore();
+    }
+  });
+
+  ctx.beginPath();
+  ctx.arc(0,0,raio,0,Math.PI*2);
+  ctx.strokeStyle="rgba(107,224,255,.9)";
+  ctx.lineWidth=5;
+  ctx.shadowColor="rgba(50,194,255,.55)";
+  ctx.shadowBlur=15;
+  ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // Anéis internos
+  ctx.beginPath();
+  ctx.arc(0,0,raio*.25,0,Math.PI*2);
+  ctx.fillStyle="#06152d";
+  ctx.fill();
+  ctx.strokeStyle="rgba(151,97,255,.85)";
+  ctx.lineWidth=3;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function sorteioAtualizarTudo(){
+  sorteioRenderParticipantes();
+  sorteioRenderHistorico();
+  sorteioDesenhar();
+  sorteioAtualizarEstadoInscricoes();
+  sorteioSalvarEstado();
+}
+
+function sorteioRegistrarVencedor(participante){
+  const agora=new Date();
+  const hora=agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  sorteioHistorico.unshift({
+    nome:participante.nome,
+    origem:participante.origem||"manual",
+    hora:hora,
+    at:agora.toISOString()
+  });
+  sorteioHistorico=sorteioHistorico.slice(0,20);
+
+  const winnerBox=document.getElementById("sorteioWinnerBox");
+  const nome=document.getElementById("sorteioWinnerName");
+  const meta=document.getElementById("sorteioWinnerMeta");
+  if(winnerBox){
+    winnerBox.classList.remove("reveal");
+    void winnerBox.offsetWidth;
+    winnerBox.classList.add("reveal");
+  }
+  if(nome)nome.textContent=participante.nome;
+  if(meta)meta.textContent="VENCEDOR · MANUAL · "+hora;
+}
+
+function sorteioGirar(){
+  if(sorteioGirando)return;
+  if(sorteioInscricoesAbertas){
+    sorteioDefinirFeedback("Feche as inscrições antes de girar a roleta.","warn");
+    return;
+  }
+  if(sorteioParticipantes.length<2){
+    sorteioDefinirFeedback("Adicione pelo menos 2 participantes.","warn");
+    return;
+  }
+
+  const total=sorteioParticipantes.length;
+  const vencedorIndex=sorteioRandomIndex(total);
+  const vencedor=sorteioParticipantes[vencedorIndex];
+  const angulo=Math.PI*2/total;
+  const inicio=sorteioRotacao;
+  let alvo=-(vencedorIndex+.5)*angulo;
+
+  while(alvo<=inicio)alvo+=Math.PI*2;
+  alvo+=Math.PI*2*7;
+
+  const duracao=5600;
+  const inicioTempo=performance.now();
+  sorteioGirando=true;
+  sorteioAtualizarEstadoInscricoes();
+  sorteioDefinirFeedback("Sorteando entre "+total+" participantes...","info");
+
+  function easeOutQuint(t){
+    return 1-Math.pow(1-t,5);
+  }
+
+  function frame(agora){
+    const t=Math.min(1,(agora-inicioTempo)/duracao);
+    sorteioRotacao=inicio+(alvo-inicio)*easeOutQuint(t);
+    sorteioDesenhar();
+
+    if(t<1){
+      requestAnimationFrame(frame);
+      return;
+    }
+
+    sorteioRotacao=((alvo%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+    sorteioGirando=false;
+    sorteioRegistrarVencedor(vencedor);
+
+    const remover=document.getElementById("sorteioRemoverVencedor");
+    if(remover&&remover.checked){
+      sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==vencedor.id});
+    }
+
+    sorteioSalvarEstado();
+    sorteioRenderParticipantes();
+    sorteioRenderHistorico();
+    sorteioDesenhar();
+    sorteioAtualizarEstadoInscricoes();
+    sorteioDefinirFeedback("Vencedor definido: "+vencedor.nome+".","ok");
+  }
+
+  requestAnimationFrame(frame);
+}
+
+function inicializarSorteio(){
+  const pagina=document.getElementById("sorteioPagina");
+  if(!pagina)return;
+
+  if(!sorteioInicializado){
+    sorteioCarregarEstado();
+
+    const nomeInput=document.getElementById("sorteioNomeInput");
+    if(nomeInput){
+      nomeInput.addEventListener("keydown",function(event){
+        if(event.key==="Enter"){
+          event.preventDefault();
+          sorteioAdicionarNome();
+        }
+      });
+    }
+
+    const listaInput=document.getElementById("sorteioListaInput");
+    if(listaInput){
+      listaInput.addEventListener("keydown",function(event){
+        if((event.ctrlKey||event.metaKey)&&event.key==="Enter"){
+          event.preventDefault();
+          sorteioAdicionarLista();
+        }
+      });
+    }
+
+    sorteioInicializado=true;
+  }
+
+  sorteioAtualizarTudo();
+}

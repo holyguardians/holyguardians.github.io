@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260819-community-alo-v1">
+  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1">
 </head>
 <body>
 
@@ -120,6 +120,19 @@
       <img src="dekyu_treasure.png" alt="">
       <span>Dekyu Treasure</span>
     </button>
+
+    <div class="nav-dropdown features-nav-dropdown" id="featuresNavDropdown">
+      <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
+        onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+        <span class="features-nav-icon" aria-hidden="true">✦</span>
+        <span>Freatures</span>
+        <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+      </button>
+
+      <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
+        <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+      </div>
+    </div>
 
     <button id="btnSocial" class="nav-button"
       onclick="mostrarPagina('socialPagina', this)">
@@ -2301,6 +2314,182 @@
 </section>
 
 <!-- =====================================================
+     FREATURES — SORTEIO
+===================================================== -->
+
+<section id="sorteioPagina" class="pagina">
+  <div class="sorteio-wrap">
+    <div class="sorteio-hero">
+      <div>
+        <div class="sorteio-kicker">HOLY GUARDIANS // FREATURES</div>
+        <h2 class="page-title">SORTEIO</h2>
+        <p class="page-subtitle">
+          Monte a lista manualmente agora. YouTube, Twitch e Kick usarão a mesma roleta nas próximas etapas.
+        </p>
+      </div>
+
+      <div class="sorteio-status-card">
+        <small>STATUS DA SESSÃO</small>
+        <strong id="sorteioStatusTopo">INSCRIÇÕES ABERTAS</strong>
+        <span id="sorteioStatusDot" class="aberto"></span>
+      </div>
+    </div>
+
+    <div class="sorteio-source-strip tech-corners">
+      <div class="sorteio-source-copy">
+        <small>FONTE DOS PARTICIPANTES</small>
+        <strong>ESCOLHA COMO ALIMENTAR A ROLETA</strong>
+      </div>
+
+      <div class="sorteio-source-options">
+        <button type="button" class="sorteio-source-btn manual ativo" aria-pressed="true">
+          <span class="sorteio-source-mark">✎</span>
+          <span><b>MANUAL</b><small>Disponível agora</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn youtube" disabled title="Integração com live será adicionada na próxima etapa">
+          <span class="sorteio-source-mark">▶</span>
+          <span><b>YOUTUBE</b><small>Live · em breve</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn twitch" disabled title="Integração com live será adicionada na próxima etapa">
+          <span class="sorteio-source-mark">◈</span>
+          <span><b>TWITCH</b><small>Live · em breve</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn kick" disabled title="Integração com live será adicionada na próxima etapa">
+          <span class="sorteio-source-mark">K</span>
+          <span><b>KICK</b><small>Live · em breve</small></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sorteio-main-grid">
+      <section class="sorteio-wheel-panel tech-corners">
+        <div class="sorteio-panel-head">
+          <div>
+            <small>ROLETA HG</small>
+            <strong>SORTEIO ATUAL</strong>
+          </div>
+
+          <div class="sorteio-participant-counter">
+            <span>PARTICIPANTES</span>
+            <b id="sorteioTotal">0</b>
+          </div>
+        </div>
+
+        <div class="sorteio-wheel-stage">
+          <div class="sorteio-pointer" aria-hidden="true"></div>
+
+          <div class="sorteio-wheel-frame">
+            <canvas id="sorteioCanvas" width="720" height="720" aria-label="Roleta de participantes"></canvas>
+            <div class="sorteio-wheel-core" aria-hidden="true">
+              <span>HG</span>
+              <small>RNG</small>
+            </div>
+          </div>
+        </div>
+
+        <div id="sorteioWinnerBox" class="sorteio-winner-box" aria-live="polite">
+          <small>ÚLTIMO RESULTADO</small>
+          <strong id="sorteioWinnerName">Aguardando sorteio...</strong>
+          <span id="sorteioWinnerMeta">Adicione participantes e feche as inscrições para girar.</span>
+        </div>
+
+        <div class="sorteio-wheel-actions">
+          <button id="sorteioLockBtn" type="button" class="sorteio-btn secondary" onclick="sorteioAlternarInscricoes()">
+            FECHAR INSCRIÇÕES
+          </button>
+          <button id="sorteioSpinBtn" type="button" class="sorteio-btn primary" onclick="sorteioGirar()" disabled>
+            GIRAR ROLETA
+          </button>
+        </div>
+
+        <div id="sorteioFeedback" class="sorteio-feedback" aria-live="polite"></div>
+      </section>
+
+      <aside class="sorteio-control-column">
+        <section class="sorteio-control-card tech-corners">
+          <div class="sorteio-control-title">
+            <div>
+              <small>ENTRADA MANUAL</small>
+              <strong>PARTICIPANTES</strong>
+            </div>
+            <span id="sorteioEntryState" class="sorteio-entry-badge aberto">ABERTO</span>
+          </div>
+
+          <label class="sorteio-field">
+            <span>ADICIONAR UM NOME</span>
+            <div class="sorteio-inline-input">
+              <input id="sorteioNomeInput" type="text" maxlength="80" autocomplete="off" placeholder="Ex: GrimSleep">
+              <button id="sorteioAddBtn" type="button" onclick="sorteioAdicionarNome()">+</button>
+            </div>
+          </label>
+
+          <label class="sorteio-field">
+            <span>COLAR UMA LISTA</span>
+            <textarea id="sorteioListaInput" rows="5" placeholder="Um nome por linha, vírgula ou ponto e vírgula..."></textarea>
+          </label>
+
+          <div class="sorteio-import-actions">
+            <button id="sorteioAddListBtn" type="button" class="sorteio-mini-btn" onclick="sorteioAdicionarLista()">ADICIONAR LISTA</button>
+            <button id="sorteioImportBtn" type="button" class="sorteio-mini-btn ghost" onclick="document.getElementById('sorteioImportFile').click()">IMPORTAR TXT/CSV</button>
+            <input id="sorteioImportFile" type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="sorteioImportarArquivo(this.files && this.files[0])">
+          </div>
+
+          <label class="sorteio-check">
+            <input id="sorteioBloquearDuplicados" type="checkbox" checked onchange="sorteioSalvarEstado()">
+            <span>
+              <b>UMA ENTRADA POR NOME</b>
+              <small>Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.</small>
+            </span>
+          </label>
+
+          <label class="sorteio-check">
+            <input id="sorteioRemoverVencedor" type="checkbox" checked onchange="sorteioSalvarEstado()">
+            <span>
+              <b>REMOVER VENCEDOR APÓS SORTEAR</b>
+              <small>Útil para várias rodadas seguidas.</small>
+            </span>
+          </label>
+        </section>
+
+        <section class="sorteio-control-card sorteio-participants-card tech-corners">
+          <div class="sorteio-control-title compact">
+            <div>
+              <small>LISTA ATUAL</small>
+              <strong>PARTICIPANTES VÁLIDOS</strong>
+            </div>
+            <button id="sorteioClearBtn" type="button" class="sorteio-clear-btn" onclick="sorteioLimparParticipantes()">LIMPAR</button>
+          </div>
+
+          <div id="sorteioParticipants" class="sorteio-participants-list">
+            <div class="sorteio-empty-list">
+              <b>NENHUM PARTICIPANTE</b>
+              <span>Adicione nomes para montar a roleta.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sorteio-control-card sorteio-history-card tech-corners">
+          <div class="sorteio-control-title compact">
+            <div>
+              <small>HISTÓRICO LOCAL</small>
+              <strong>ÚLTIMOS VENCEDORES</strong>
+            </div>
+            <button type="button" class="sorteio-clear-btn" onclick="sorteioLimparHistorico()">LIMPAR</button>
+          </div>
+
+          <div id="sorteioHistory" class="sorteio-history-list">
+            <div class="sorteio-empty-history">Nenhum sorteio realizado nesta sessão.</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
      COMUNIDADE
 ===================================================== -->
 
@@ -2408,6 +2597,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260818-digidex-requirement-percent-v9"></script>
+<script src="script.js?v=20260820-sorteio-v1"></script>
 </body>
 </html>
