@@ -18326,7 +18326,7 @@ body.hg-display-scaled footer {
 }
 
 #sorteioPagina .sorteio-wrap{
-  width:min(1480px,calc(100% - 44px));
+  width:min(1600px,calc(100% - 36px));
   margin:0 auto;
   padding:34px 0 54px;
 }
@@ -18538,7 +18538,7 @@ body.hg-display-scaled footer {
 
 #sorteioPagina .sorteio-main-grid{
   display:grid;
-  grid-template-columns:minmax(0,1.28fr) minmax(340px,.72fr);
+  grid-template-columns:minmax(0,1.34fr) minmax(390px,.66fr);
   gap:20px;
   align-items:start;
 }
@@ -18614,9 +18614,9 @@ body.hg-display-scaled footer {
 
 #sorteioPagina .sorteio-wheel-stage{
   position:relative;
-  width:min(650px,100%);
+  width:min(760px,100%);
   margin:4px auto 8px;
-  padding:22px;
+  padding:12px;
   box-sizing:border-box;
 }
 
@@ -18652,7 +18652,7 @@ body.hg-display-scaled footer {
   z-index:9;
   left:50%;
   top:50%;
-  width:27%;
+  width:25%;
   aspect-ratio:1 / 1;
   transform:translate(-50%,-50%);
   display:flex;
@@ -18661,29 +18661,29 @@ body.hg-display-scaled footer {
   overflow:visible;
   border:0;
   border-radius:50%;
-  background:radial-gradient(circle,#0b2549 0%,#06152d 68%,#030b17 100%);
-  box-shadow:0 0 17px rgba(49,198,255,.20),inset 0 0 18px rgba(132,83,255,.12);
+  background:transparent;
+  box-shadow:none;
   pointer-events:none;
 }
 
 /* O fundo central termina praticamente na borda circular dourada da própria logo. */
 #sorteioPagina .sorteio-wheel-core-glow{
   position:absolute;
-  inset:-2%;
+  inset:0;
   border-radius:50%;
-  background:radial-gradient(circle,rgba(62,205,255,.10),rgba(126,66,255,.045) 54%,transparent 74%);
-  box-shadow:0 0 13px rgba(57,202,255,.10);
+  background:transparent;
+  box-shadow:none;
 }
 
 /* A arte é maior que o miolo: o aro dourado vira a borda visual do centro e a lança sai dele. */
 #sorteioPagina .sorteio-wheel-logo{
   position:relative;
   z-index:3;
-  width:210%;
-  height:210%;
+  width:145%;
+  height:145%;
   max-width:none;
   object-fit:contain;
-  transform:translate(1.5%,5%);
+  transform:translate(1.5%,6%);
   filter:drop-shadow(0 0 8px rgba(255,196,62,.32)) drop-shadow(0 0 10px rgba(65,211,255,.14));
 }
 
@@ -18691,11 +18691,11 @@ body.hg-display-scaled footer {
 #sorteioPagina .sorteio-logo-pointer{
   position:absolute;
   z-index:5;
-  left:106%;
-  top:119%;
-  width:20px;
-  height:12px;
-  transform:translate(-50%,-50%) rotate(54deg);
+  left:88%;
+  top:115%;
+  width:17px;
+  height:10px;
+  transform:translate(-50%,-50%) rotate(60deg);
   transform-origin:center;
   clip-path:polygon(0 20%,100% 50%,0 80%,30% 50%);
   background:linear-gradient(90deg,rgba(255,191,36,.05) 0%,#ffbf24 58%,#ffe58a 100%);
@@ -19253,7 +19253,7 @@ body.hg-display-scaled footer {
   }
 
   #sorteioPagina .sorteio-wheel-stage{
-    width:min(600px,100%);
+    width:min(680px,100%);
   }
 }
 
@@ -19280,19 +19280,19 @@ body.hg-display-scaled footer {
   }
 
   #sorteioPagina .sorteio-wheel-core{
-    width:27%;
+    width:25%;
   }
 
   #sorteioPagina .sorteio-wheel-logo{
-    width:208%;
-    height:208%;
+    width:145%;
+    height:145%;
   }
 
   #sorteioPagina .sorteio-logo-pointer{
-    left:106%;
-    top:119%;
-    width:17px;
-    height:10px;
+    left:88%;
+    top:115%;
+    width:14px;
+    height:9px;
   }
 
   #sorteioPagina .sorteio-wheel-actions,

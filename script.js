@@ -12726,7 +12726,7 @@ function sorteioDesenhar(){
 
   // Anéis internos
   ctx.beginPath();
-  ctx.arc(0,0,raio*.30,0,Math.PI*2);
+  ctx.arc(0,0,raio*.25,0,Math.PI*2);
   ctx.fillStyle="#06152d";
   ctx.fill();
   ctx.strokeStyle="rgba(78,171,230,.28)";
@@ -12797,9 +12797,9 @@ function sorteioGirar(){
   const vencedor=sorteioParticipantes[vencedorIndex];
   const angulo=Math.PI*2/total;
   const inicio=sorteioRotacao;
-  // A ponta inferior-direita real da logo é o indicador (~54° no canvas).
+  // A ponta inferior-direita real da logo é o indicador (~60° no canvas).
   // Centro do setor vencedor: -PI/2 + rotacao + (index+.5)*angulo = anguloDoIndicador.
-  const anguloDoIndicador=54*Math.PI/180;
+  const anguloDoIndicador=60*Math.PI/180;
   let alvo=anguloDoIndicador+Math.PI/2-(vencedorIndex+.5)*angulo;
 
   while(alvo<=inicio)alvo+=Math.PI*2;
