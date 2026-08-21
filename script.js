@@ -15792,12 +15792,25 @@ function hgIniciarImpmonLiveRunner() {
     return;
   }
 
+  const consultarMonitor = function() {
+    return new Promise(function(resolve, reject) {
+      const callback = "__hgLiveMonitor_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      const timer = setTimeout(function() { limpar(); reject(new Error("Monitor indisponível")); }, 12000);
+      function limpar() {
+        clearTimeout(timer);
+        script.remove();
+        try { delete window[callback]; } catch { window[callback] = undefined; }
+      }
+      window[callback] = function(data) { limpar(); resolve(data); };
+      script.onerror = function() { limpar(); reject(new Error("Monitor indisponível")); };
+      script.src = HG_LIVE_MONITOR_URL + "?callback=" + encodeURIComponent(callback) + "&_=" + Date.now();
+      document.head.appendChild(script);
+    });
+  };
+
   const atualizar = function() {
-    fetch(HG_LIVE_MONITOR_URL, { cache: "no-store" })
-      .then(function(response) {
-        if (!response.ok) throw new Error("Monitor indisponível");
-        return response.json();
-      })
+    consultarMonitor()
       .then(function(data) {
         hgMostrarImpmonLive(Array.isArray(data && data.lives) ? data.lives : [], true);
       })
