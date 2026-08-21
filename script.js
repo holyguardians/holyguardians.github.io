@@ -1791,75 +1791,134 @@ function inicializarHgDisplaySettings() {
 }
 
 /* =====================================================
-   HEADER RECOLHÍVEL — LOGO COMO CONTROLE
+   HEADER RESPONSIVO — DESKTOP + MENU MOBILE
 ===================================================== */
 
-const HG_HEADER_COLLAPSE_KEY = "hgHeaderCollapsed";
+const HG_SITE_NAV_BREAKPOINT = 1100;
 
-function aplicarEstadoSiteHeader(recolhido, persistir = true) {
-  const topbar = document.querySelector(".topbar");
-  const toggle = document.getElementById("headerToggle");
-  const menu = document.getElementById("siteNavMenu");
+function hgSiteNavCompacto() {
+  return window.innerWidth <= HG_SITE_NAV_BREAKPOINT;
+}
 
-  if (!topbar || !toggle || !menu) return;
+function hgTituloPaginaHeader(id) {
+  const titulos = {
+    homePagina: "HOME",
+    databasePagina: "DIGIDEX",
+    digivolutionPagina: "DIGIVOLUTION",
+    comparacaoPagina: "COMPARAÇÃO",
+    builderPagina: "TEAM BUILDER",
+    statusSimulatorPagina: "STATUS SIMULATOR",
+    elementosPagina: "ELEMENTOS",
+    pvpPagina: "PVP",
+    calculadoraPagina: "CALCULADORA",
+    raidBossPagina: "RAID BOSS",
+    dekyuTreasurePagina: "DEKYU TREASURE",
+    tierListPagina: "TIER LIST DSR",
+    sorteioPagina: "SORTEIO",
+    socialPagina: "COMUNIDADE"
+  };
+  return titulos[id] || "HOLY GUARDIANS";
+}
 
-  const fechado = Boolean(recolhido);
-  topbar.classList.toggle("header-collapsed", fechado);
+function hgAtualizarTituloHeader(id) {
+  const titulo = document.getElementById("hgMobilePageTitle");
+  if (titulo) titulo.textContent = hgTituloPaginaHeader(id);
 
-  toggle.setAttribute("aria-expanded", fechado ? "false" : "true");
-  toggle.setAttribute("aria-label", fechado ? "Expandir menu" : "Recolher menu");
-  toggle.setAttribute("title", fechado ? "Expandir menu" : "Recolher menu");
-  menu.setAttribute("aria-hidden", fechado ? "true" : "false");
-
-  /* Garante que o submenu PvP não fique logicamente aberto atrás do header. */
-  if (fechado) {
-    fecharPvpNavMenu();
-    fecharFeaturesNavMenu();
-  }
-
-  if (persistir) {
-    try {
-      localStorage.setItem(HG_HEADER_COLLAPSE_KEY, fechado ? "1" : "0");
-    } catch (erro) {
-      /* O header continua funcionando mesmo se o storage estiver bloqueado. */
-    }
+  const more = document.getElementById("moreNavMenu");
+  const btnMore = document.getElementById("btnMore");
+  if (btnMore && more) {
+    btnMore.classList.toggle(
+      "ativo-submenu",
+      Boolean(more.querySelector(".nav-button.ativo"))
+    );
   }
 }
 
-function toggleSiteHeader(event) {
+function abrirMobileSiteNav() {
+  const topbar = document.getElementById("siteTopbar") || document.querySelector(".topbar");
+  const toggle = document.getElementById("hgMobileNavToggle");
+  const shell = document.getElementById("siteNavShell");
+  const backdrop = document.getElementById("hgSiteNavBackdrop");
+
+  if (!topbar || !toggle || !shell || !hgSiteNavCompacto()) return;
+
+  if (backdrop) backdrop.hidden = false;
+  topbar.classList.add("mobile-nav-open");
+  document.body.classList.add("hg-site-nav-open");
+  toggle.setAttribute("aria-expanded", "true");
+  toggle.setAttribute("aria-label", "Fechar navegação");
+  shell.setAttribute("aria-hidden", "false");
+}
+
+function fecharMobileSiteNav(fecharSubmenus = true) {
+  const topbar = document.getElementById("siteTopbar") || document.querySelector(".topbar");
+  const toggle = document.getElementById("hgMobileNavToggle");
+  const shell = document.getElementById("siteNavShell");
+  const backdrop = document.getElementById("hgSiteNavBackdrop");
+
+  if (topbar) topbar.classList.remove("mobile-nav-open");
+  document.body.classList.remove("hg-site-nav-open");
+
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Abrir navegação");
+  }
+  if (shell) shell.setAttribute("aria-hidden", hgSiteNavCompacto() ? "true" : "false");
+  if (backdrop) backdrop.hidden = true;
+
+  if (fecharSubmenus) {
+    if (typeof fecharPvpNavMenu === "function") fecharPvpNavMenu();
+    if (typeof fecharFeaturesNavMenu === "function") fecharFeaturesNavMenu();
+    if (typeof fecharMoreNavMenu === "function") fecharMoreNavMenu();
+  }
+}
+
+function toggleMobileSiteNav(event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  /* Se o painel de tela estiver aberto, fecha antes de recolher a navegação. */
-  if (typeof fecharHgDisplaySettings === "function") {
-    fecharHgDisplaySettings();
-  }
+  if (typeof fecharHgDisplaySettings === "function") fecharHgDisplaySettings();
 
-  const topbar = document.querySelector(".topbar");
+  const topbar = document.getElementById("siteTopbar") || document.querySelector(".topbar");
   if (!topbar) return;
 
-  aplicarEstadoSiteHeader(!topbar.classList.contains("header-collapsed"));
+  if (topbar.classList.contains("mobile-nav-open")) fecharMobileSiteNav();
+  else abrirMobileSiteNav();
+}
+
+/* Alias mantido para não quebrar versões antigas que ainda possam chamar a função. */
+function toggleSiteHeader(event) {
+  toggleMobileSiteNav(event);
 }
 
 function inicializarSiteHeaderRecolhivel() {
-  const toggle = document.getElementById("headerToggle");
-  if (!toggle) return;
+  const shell = document.getElementById("siteNavShell");
+  const titulo = document.getElementById("hgMobilePageTitle");
+  if (!shell) return;
 
-  let recolhido = false;
-  try {
-    recolhido = localStorage.getItem(HG_HEADER_COLLAPSE_KEY) === "1";
-  } catch (erro) {
-    recolhido = false;
-  }
+  shell.setAttribute("aria-hidden", hgSiteNavCompacto() ? "true" : "false");
+  if (titulo && !titulo.textContent.trim()) titulo.textContent = "HOME";
 
-  aplicarEstadoSiteHeader(recolhido, false);
+  window.addEventListener("resize", function() {
+    const topbar = document.getElementById("siteTopbar") || document.querySelector(".topbar");
+    if (!topbar) return;
 
-  toggle.addEventListener("keydown", function(event) {
-    if (event.key === "Enter" || event.key === " ") {
-      toggleSiteHeader(event);
+    if (!hgSiteNavCompacto()) {
+      fecharMobileSiteNav(false);
+      shell.setAttribute("aria-hidden", "false");
+    } else if (!topbar.classList.contains("mobile-nav-open")) {
+      shell.setAttribute("aria-hidden", "true");
     }
+
+    if (typeof hgPosicionarMenuNavAberto === "function") hgPosicionarMenuNavAberto();
+  }, { passive: true });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key !== "Escape") return;
+    fecharMobileSiteNav();
+    if (typeof fecharHgDisplaySettings === "function") fecharHgDisplaySettings();
   });
 }
 
@@ -1937,6 +1996,14 @@ function mostrarPagina(
         "ativo"
       );
 
+  }
+
+  hgAtualizarTituloHeader(id);
+
+  if (hgSiteNavCompacto()) {
+    fecharMobileSiteNav();
+  } else {
+    if (typeof fecharMoreNavMenu === "function") fecharMoreNavMenu();
   }
 
 
@@ -9967,6 +10034,12 @@ function hgPosicionarMenuNavAberto() {
   const atual = hgNavDropdownAberto;
   if (!atual || !document.body.contains(atual.menu) || !document.body.contains(atual.button)) return;
 
+  if (typeof hgSiteNavCompacto === "function" && hgSiteNavCompacto()) {
+    atual.menu.style.removeProperty("--hg-nav-dropdown-x");
+    atual.menu.style.removeProperty("--hg-nav-dropdown-y");
+    return;
+  }
+
   const botao = atual.button.getBoundingClientRect();
   const largura = Math.max(205, atual.menu.getBoundingClientRect().width || 205);
   const margem = 8;
@@ -10026,6 +10099,7 @@ function toggleFeaturesNavMenu(event){
   const abrir=!dropdown.classList.contains("aberto");
   if (abrir) {
     fecharPvpNavMenu();
+    fecharMoreNavMenu();
     hgAbrirMenuNav("featuresNavDropdown", "featuresNavMenu", "btnFeatures");
   } else {
     fecharFeaturesNavMenu();
@@ -10052,9 +10126,27 @@ function togglePvpNavMenu(event){
   const abrir=!dropdown.classList.contains("aberto");
   if (abrir) {
     fecharFeaturesNavMenu();
+    fecharMoreNavMenu();
     hgAbrirMenuNav("pvpNavDropdown", "pvpNavMenu", "btnPvp");
   } else {
     fecharPvpNavMenu();
+  }
+}
+
+function fecharMoreNavMenu(){
+  hgFecharMenuNav("moreNavDropdown", "moreNavMenu", "btnMore");
+}
+function toggleMoreNavMenu(event){
+  if(event){event.preventDefault();event.stopPropagation()}
+  const dropdown=document.getElementById("moreNavDropdown");
+  if(!dropdown)return;
+  const abrir=!dropdown.classList.contains("aberto");
+  if(abrir){
+    fecharPvpNavMenu();
+    fecharFeaturesNavMenu();
+    hgAbrirMenuNav("moreNavDropdown","moreNavMenu","btnMore");
+  }else{
+    fecharMoreNavMenu();
   }
 }
 function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}

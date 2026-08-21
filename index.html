@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-live-monitor-v3">
+  <link rel="stylesheet" href="styles.css?v=20260821-header-responsive-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -59,133 +59,187 @@
 </head>
 <body>
 
-<nav class="topbar">
+<nav class="topbar hg-main-header" id="siteTopbar">
 
-  <div
-    id="headerToggle"
-    class="brand"
-    role="button"
-    tabindex="0"
-    aria-controls="siteNavMenu"
-    aria-expanded="true"
-    aria-label="Recolher menu"
-    title="Recolher menu"
-    onclick="toggleSiteHeader(event)"
+  <button
+    id="headerBrand"
+    class="brand hg-header-brand"
+    type="button"
+    aria-label="Ir para Home"
+    title="Holy Guardians"
+    onclick="mostrarPagina('homePagina', document.getElementById('btnHome'))"
   >
     <span class="brand-logo-shell" aria-hidden="true">
       <img id="headerLogoGlow" class="brand-logo brand-logo-glow" src="" alt="">
       <img id="headerLogo" class="brand-logo brand-logo-main" src="" alt="Holy Guardians">
     </span>
-    <span class="header-collapse-indicator" aria-hidden="true"></span>
-  </div>
+    <span class="hg-brand-wordmark" aria-hidden="true">
+      <span>HOLY //</span>
+      <b>GUARDIANS</b>
+    </span>
+  </button>
 
-  <div class="nav-menu" id="siteNavMenu">
+  <div class="hg-mobile-page-title" id="hgMobilePageTitle" aria-live="polite">HOME</div>
 
-    <button id="btnHome" class="nav-button ativo"
-      onclick="mostrarPagina('homePagina', this)">
-      <img id="navIconHome" alt="">
-      <span>Home</span>
-    </button>
+  <button
+    id="hgMobileNavToggle"
+    class="hg-mobile-nav-toggle"
+    type="button"
+    aria-label="Abrir navegação"
+    aria-controls="siteNavShell"
+    aria-expanded="false"
+    onclick="toggleMobileSiteNav(event)"
+  >
+    <span></span><span></span><span></span>
+  </button>
 
-    <button id="btnDatabase" class="nav-button"
-      onclick="mostrarPagina('databasePagina', this)">
-      <img id="navIconDigidex" alt="">
-      <span>DIGIDEX</span>
-    </button>
-
-    <button id="btnComparacao" class="nav-button"
-      onclick="mostrarPagina('comparacaoPagina', this)">
-      <img id="navIconComparacao" alt="">
-      <span>COMPARAÇÃO</span>
-    </button>
-
-    <button id="btnBuilder" class="nav-button"
-      onclick="mostrarPagina('builderPagina', this)">
-      <img id="navIconBuilder" alt="">
-      <span>Team Builder</span>
-    </button>
-
-    <button id="btnStatusSimulator" class="nav-button"
-      onclick="mostrarPagina('statusSimulatorPagina', this)">
-      <img src="icon_status_simulator.png" alt="">
-      <span>Status Simulator</span>
-    </button>
-
-    <button id="btnElementos" class="nav-button"
-      onclick="mostrarPagina('elementosPagina', this)">
-      <img id="navIconElementos" alt="">
-      <span>Elementos</span>
-    </button>
-
-    <div class="nav-dropdown pvp-nav-dropdown" id="pvpNavDropdown">
-      <button id="btnPvp" class="nav-button nav-button-dropdown" type="button"
-        onclick="togglePvpNavMenu(event)">
-        <img id="navIconPvp" alt="">
-        <span>PvP</span>
-        <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
-      </button>
-
-      <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
-        <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
-        <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
-                <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+  <div class="hg-nav-shell" id="siteNavShell">
+    <div class="hg-nav-panel-head">
+      <div>
+        <small>HOLY GUARDIANS //</small>
+        <strong>NAVEGAÇÃO</strong>
       </div>
+      <button type="button" aria-label="Fechar navegação" onclick="fecharMobileSiteNav()">×</button>
     </div>
 
-    <button id="btnCalculadora" class="nav-button"
-      onclick="mostrarPagina('calculadoraPagina', this)">
-      <img id="navIconCalculadora" alt="">
-      <span>Calculadora</span>
-    </button>
+    <div class="nav-menu" id="siteNavMenu">
 
-    <button id="btnRaidBoss" class="nav-button"
-      onclick="mostrarPagina('raidBossPagina', this)">
-      <img src="icon_raid.png" alt="">
-      <span>Raid Boss</span>
-    </button>
-
-    <button id="btnDekyuTreasure" class="nav-button"
-      onclick="mostrarPagina('dekyuTreasurePagina', this)">
-      <img src="dekyu_treasure.png" alt="">
-      <span>Dekyu Treasure</span>
-    </button>
-
-    <div class="nav-dropdown features-nav-dropdown" id="featuresNavDropdown">
-      <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
-        onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
-        <span class="features-nav-icon" aria-hidden="true">🔧</span>
-        <span>Ferramentas HG</span>
-        <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+      <button id="btnHome" class="nav-button ativo"
+        onclick="mostrarPagina('homePagina', this)">
+        <img id="navIconHome" alt="">
+        <span>Home</span>
       </button>
 
-      <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
-        <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
-        <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
+      <button id="btnDatabase" class="nav-button"
+        onclick="mostrarPagina('databasePagina', this)">
+        <img id="navIconDigidex" alt="">
+        <span>DIGIDEX</span>
+      </button>
+
+      <button id="btnBuilder" class="nav-button"
+        onclick="mostrarPagina('builderPagina', this)">
+        <img id="navIconBuilder" alt="">
+        <span>Team Builder</span>
+      </button>
+
+      <button id="btnElementos" class="nav-button"
+        onclick="mostrarPagina('elementosPagina', this)">
+        <img id="navIconElementos" alt="">
+        <span>Elementos</span>
+      </button>
+
+      <button id="btnCalculadora" class="nav-button"
+        onclick="mostrarPagina('calculadoraPagina', this)">
+        <img id="navIconCalculadora" alt="">
+        <span>Calculadora</span>
+      </button>
+
+      <div class="nav-dropdown pvp-nav-dropdown" id="pvpNavDropdown">
+        <button id="btnPvp" class="nav-button nav-button-dropdown" type="button"
+          onclick="togglePvpNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <img id="navIconPvp" alt="">
+          <span>PvP</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
+          <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+        </div>
       </div>
+
+      <div class="nav-dropdown features-nav-dropdown" id="featuresNavDropdown">
+        <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
+          onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <span class="features-nav-icon" aria-hidden="true">✦</span>
+          <span>Features</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
+          <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+          <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
+        </div>
+      </div>
+
+      <button id="btnSocial" class="nav-button"
+        onclick="mostrarPagina('socialPagina', this)">
+        <img id="navIconSocial" alt="">
+        <span>Comunidade</span>
+      </button>
+
+      <div class="nav-dropdown nav-more-dropdown" id="moreNavDropdown">
+        <button id="btnMore" class="nav-button nav-button-dropdown hg-nav-more-trigger" type="button"
+          onclick="toggleMoreNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <span class="hg-more-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Mais</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu nav-more-menu" id="moreNavMenu" role="menu">
+          <div class="hg-nav-more-heading">
+            <small>MAIS FERRAMENTAS //</small>
+            <strong>ATALHOS HG</strong>
+          </div>
+
+          <button id="btnDigivolution" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('digivolutionPagina', this)">
+            <img id="navIconDigivolution" src="icon_digivolution.png" alt="">
+            <span>DIGIVOLUTION</span>
+          </button>
+
+          <button id="btnComparacao" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('comparacaoPagina', this)">
+            <img id="navIconComparacao" alt="">
+            <span>COMPARAÇÃO</span>
+          </button>
+
+          <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('statusSimulatorPagina', this)">
+            <img src="icon_status_simulator.png" alt="">
+            <span>Status Simulator</span>
+          </button>
+
+          <button id="btnRaidBoss" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('raidBossPagina', this)">
+            <img src="icon_raid.png" alt="">
+            <span>Raid Boss</span>
+          </button>
+
+          <button id="btnDekyuTreasure" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('dekyuTreasurePagina', this)">
+            <img src="dekyu_treasure.png" alt="">
+            <span>Dekyu Treasure</span>
+          </button>
+
+          <button
+            id="btnDisplaySettings"
+            class="nav-button hg-display-settings-trigger hg-more-nav-item"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="hgDisplaySettingsPanel"
+            aria-label="Ajuste de tela"
+            title="Ajuste de tela"
+            onclick="toggleHgDisplaySettings(event)"
+          >
+            <span class="hg-display-settings-gear" aria-hidden="true">⚙</span>
+            <span>Ajuste de Tela</span>
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <button id="btnSocial" class="nav-button"
-      onclick="mostrarPagina('socialPagina', this)">
-      <img id="navIconSocial" alt="">
-      <span>Comunidade</span>
-    </button>
-
-    <button
-      id="btnDisplaySettings"
-      class="nav-button hg-display-settings-trigger"
-      type="button"
-      aria-haspopup="dialog"
-      aria-expanded="false"
-      aria-controls="hgDisplaySettingsPanel"
-      aria-label="Ajuste de tela"
-      title="Ajuste de tela"
-      onclick="toggleHgDisplaySettings(event)"
-    >
-      <span class="hg-display-settings-gear" aria-hidden="true">⚙</span>
-    </button>
-
+    <div class="hg-nav-panel-foot">
+      <span>HG SYSTEM // ONLINE</span>
+      <button type="button" onclick="fecharMobileSiteNav()">× FECHAR MENU</button>
+    </div>
   </div>
 </nav>
+
+<div id="hgSiteNavBackdrop" class="hg-site-nav-backdrop" onclick="fecharMobileSiteNav()" hidden></div>
 
 <div
   id="hgDisplaySettingsPanel"
@@ -2927,6 +2981,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-live-monitor-v4"></script>
+<script src="script.js?v=20260821-header-responsive-v1"></script>
 </body>
 </html>
