@@ -15753,7 +15753,10 @@ else hgAtivarArrasteMenuPrincipal();
 
 /* Impmon Live Runner. O futuro Worker chamará hgMostrarImpmonLive(dados). */
 let hgImpmonLiveTimer = null;
-function hgMostrarImpmonLive(lives) {
+let hgImpmonLiveMonitorTimer = null;
+const HG_LIVE_MONITOR_URL = "https://evil-guardians-live-monitor.hiltongiusseppechiarelo.workers.dev/lives";
+
+function hgMostrarImpmonLive(lives, manterVisivel) {
   const lista = Array.isArray(lives) ? lives.filter(Boolean) : [];
   if (!lista.length) return hgOcultarImpmonLive();
   const primeira = typeof lista[0] === "string" ? { nome: lista[0], url: "#comunidade" } : lista[0];
@@ -15767,7 +15770,7 @@ function hgMostrarImpmonLive(lives) {
   caixa.hidden = false;
   caixa.classList.remove("hg-impmon-saindo");
   clearTimeout(hgImpmonLiveTimer);
-  hgImpmonLiveTimer = setTimeout(hgOcultarImpmonLive, 18000);
+  if (!manterVisivel) hgImpmonLiveTimer = setTimeout(hgOcultarImpmonLive, 18000);
 }
 function hgOcultarImpmonLive() {
   clearTimeout(hgImpmonLiveTimer);
@@ -15786,7 +15789,26 @@ function hgIniciarImpmonLiveRunner() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("impmon-demo") === "1") {
     setTimeout(function() { hgMostrarImpmonLive([{ nome: "LIVE HG — TESTE", url: "#comunidade" }]); }, 650);
+    return;
   }
+
+  const atualizar = function() {
+    fetch(HG_LIVE_MONITOR_URL, { cache: "no-store" })
+      .then(function(response) {
+        if (!response.ok) throw new Error("Monitor indisponível");
+        return response.json();
+      })
+      .then(function(data) {
+        hgMostrarImpmonLive(Array.isArray(data && data.lives) ? data.lives : [], true);
+      })
+      .catch(function() {
+        /* Falha silenciosa: o site continua normal e tenta novamente depois. */
+      });
+  };
+
+  atualizar();
+  clearInterval(hgImpmonLiveMonitorTimer);
+  hgImpmonLiveMonitorTimer = setInterval(atualizar, 90000);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgIniciarImpmonLiveRunner);
 else hgIniciarImpmonLiveRunner();
