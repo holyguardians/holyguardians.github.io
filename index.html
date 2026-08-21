@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-digidex-filters-v5">
+  <link rel="stylesheet" href="styles.css?v=20260821-tier-dmo-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -160,6 +160,7 @@
         <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
           <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
           <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
+          <button type="button" role="menuitem" onclick="abrirTierListDmo()">TIER LIST DMO</button>
         </div>
       </div>
 
@@ -2554,6 +2555,130 @@
   <button id="tierListStreamExit" type="button" class="tierlist-stream-exit" onclick="tierListAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
 </section>
 
+
+<section id="tierListDmoPagina" class="pagina">
+  <div class="tierlist-wrap">
+    <header class="tierlist-hero tierlist-dmo-hero">
+      <div>
+        <div class="tierlist-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
+        <h1>TIER LIST DMO</h1>
+        <p>Monte sua Tier List com os Digimons de rank U, SSS+ e SSS do DMO. Pesquise por nome, filtre por rank ou adicione seu próprio ícone sem depender de atualização do site.</p>
+      </div>
+      <div class="tierlist-hero-badge tierlist-dmo-badge" aria-hidden="true">
+        <span>DMO</span>
+        <strong>U</strong>
+        <span>SSS+</span>
+      </div>
+    </header>
+
+    <section class="tierlist-toolbar tech-corners" data-html2canvas-ignore="true">
+      <label class="tierlist-field tierlist-title-field">
+        <span>TÍTULO DA TIER LIST</span>
+        <input id="tierListDmoTitleInput" type="text" maxlength="70" value="TIER LIST DMO" autocomplete="off" oninput="tierListDmoAtualizarTitulo(this.value, this)">
+      </label>
+
+      <div class="tierlist-toolbar-actions">
+        <button type="button" class="tierlist-action primary" onclick="tierListDmoAdicionarTier()"><span>＋</span> ADICIONAR TIER</button>
+        <button type="button" class="tierlist-action upload" onclick="tierListDmoAbrirUpload()"><span>⬆</span> ADICIONAR ÍCONE</button>
+        <button type="button" class="tierlist-action" onclick="tierListDmoAlternarModoStream()"><span>◉</span> MODO STREAM</button>
+        <button type="button" class="tierlist-action export" id="tierListDmoExportBtn" onclick="tierListDmoExportarPng()"><span>▣</span> EXPORTAR PNG</button>
+        <button type="button" class="tierlist-action danger" onclick="tierListDmoResetar()"><span>↺</span> RESETAR</button>
+      </div>
+    </section>
+
+    <section id="tierListDmoExportArea" class="tierlist-export-area tech-corners">
+      <div class="tierlist-export-head">
+        <div class="tierlist-export-brand">
+          <span class="tierlist-export-logo-shell"><img src="holyguardians_logo.png" alt="Holy Guardians"></span>
+          <div>
+            <small>HOLY GUARDIANS // DMO TOOLS</small>
+            <strong id="tierListDmoBoardTitle" class="tierlist-board-title-editable" contenteditable="true" spellcheck="false" role="textbox" aria-label="Título da Tier List" title="Clique para editar o título desta sessão" oninput="tierListDmoAtualizarTitulo(this.textContent, this)" onkeydown="tierListDmoTituloKeydown(event, this)" onblur="tierListDmoTituloBlur(this)">TIER LIST DMO</strong>
+          </div>
+        </div>
+        <div class="tierlist-export-signature">holyguardians.github.io</div>
+      </div>
+
+      <div id="tierListDmoRows" class="tierlist-rows" aria-live="polite"></div>
+    </section>
+
+    <section class="tierlist-pool-panel tech-corners">
+      <div class="tierlist-pool-head">
+        <div>
+          <small>CATÁLOGO DMO</small>
+          <strong>U • SSS+ • SSS // ARRASTE PARA A TIER DESEJADA</strong>
+        </div>
+        <div class="tierlist-pool-count"><b id="tierListDmoPoolVisible">0</b><span>/</span><em id="tierListDmoPoolTotal">0</em></div>
+      </div>
+
+      <div class="tierlist-filters tierlist-dmo-filters" data-html2canvas-ignore="true">
+        <label class="tierlist-search">
+          <span class="tierlist-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="5.75"></circle><path d="M14.8 14.8L20 20"></path></svg></span>
+          <input id="tierListDmoSearch" type="search" autocomplete="off" placeholder="Procurar Digimon por nome..." oninput="tierListDmoAplicarFiltros()">
+        </label>
+
+        <div class="tierlist-dmo-ranks" role="group" aria-label="Filtrar por rank">
+          <button type="button" class="ativo" data-rank="" onclick="tierListDmoSelecionarRank('', this)">ALL <small>56</small></button>
+          <button type="button" data-rank="U" onclick="tierListDmoSelecionarRank('U', this)">U <small>22</small></button>
+          <button type="button" data-rank="SSS+" onclick="tierListDmoSelecionarRank('SSS+', this)">SSS+ <small>17</small></button>
+          <button type="button" data-rank="SSS" onclick="tierListDmoSelecionarRank('SSS', this)">SSS <small>17</small></button>
+          <button type="button" data-rank="CUSTOM" onclick="tierListDmoSelecionarRank('CUSTOM', this)">CUSTOM</button>
+        </div>
+
+        <button type="button" class="tierlist-clear-filter" onclick="tierListDmoLimparFiltros()">LIMPAR FILTROS</button>
+      </div>
+
+      <div id="tierListDmoPool" class="tierlist-digi-zone tierlist-pool" data-zone="pool"></div>
+      <div id="tierListDmoEmpty" class="tierlist-empty" hidden>Nenhum Digimon corresponde aos filtros.</div>
+    </section>
+
+    <div class="tierlist-tip" data-html2canvas-ignore="true">
+      <span>💡</span>
+      <p><strong>Dica:</strong> o catálogo base usa os ranks U, SSS+ e SSS. Ícones adicionados por você ficam salvos somente neste navegador e também funcionam no Modo Stream.</p>
+    </div>
+  </div>
+
+  <button id="tierListDmoStreamExit" type="button" class="tierlist-stream-exit" onclick="tierListDmoAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+
+  <input id="tierListDmoUploadInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onchange="tierListDmoReceberArquivo(this.files && this.files[0])">
+
+  <div id="tierListDmoUploadModal" class="tierlist-dmo-upload-modal" hidden>
+    <div class="tierlist-dmo-upload-backdrop" onclick="tierListDmoFecharUpload()"></div>
+    <section class="tierlist-dmo-upload-card tech-corners" role="dialog" aria-modal="true" aria-labelledby="tierListDmoUploadTitle">
+      <div class="tierlist-dmo-upload-head">
+        <div>
+          <small>HOLY GUARDIANS // DMO</small>
+          <strong id="tierListDmoUploadTitle">ADICIONAR ÍCONE</strong>
+        </div>
+        <button type="button" onclick="tierListDmoFecharUpload()" aria-label="Fechar">×</button>
+      </div>
+      <div class="tierlist-dmo-upload-body">
+        <div class="tierlist-dmo-upload-preview">
+          <img id="tierListDmoUploadPreview" alt="Prévia do ícone" hidden>
+          <span id="tierListDmoUploadPreviewEmpty">PNG / JPG / WEBP</span>
+        </div>
+        <label>
+          <span>NOME DO DIGIMON</span>
+          <input id="tierListDmoUploadName" type="text" maxlength="60" placeholder="Ex.: Omegamon Alter-S" autocomplete="off">
+        </label>
+        <label>
+          <span>RANK</span>
+          <select id="tierListDmoUploadRank">
+            <option value="U">U</option>
+            <option value="SSS+">SSS+</option>
+            <option value="SSS">SSS</option>
+            <option value="CUSTOM" selected>CUSTOM</option>
+          </select>
+        </label>
+        <p>O arquivo é reduzido automaticamente e salvo apenas no navegador deste dispositivo.</p>
+      </div>
+      <div class="tierlist-dmo-upload-actions">
+        <button type="button" class="tierlist-action" onclick="tierListDmoFecharUpload()">CANCELAR</button>
+        <button type="button" class="tierlist-action primary" onclick="tierListDmoConfirmarUpload()">ADICIONAR</button>
+      </div>
+    </section>
+  </div>
+</section>
+
 <section id="sorteioPagina" class="pagina">
   <div class="sorteio-wrap">
     <div class="sorteio-hero">
@@ -3031,6 +3156,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-digidex-filters-v5"></script>
+<script src="script.js?v=20260821-tier-dmo-v1"></script>
 </body>
 </html>
