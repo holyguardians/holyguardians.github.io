@@ -15721,38 +15721,59 @@ function hgAtivarArrasteMenuPrincipal() {
 
   let ativo = false;
   let arrastou = false;
+  let ponteiroAtivo = null;
   let inicioX = 0;
   let inicioScroll = 0;
   let bloquearCliqueAte = 0;
+  let scrollPendente = 0;
+  let frameDeScroll = 0;
+
+  const aplicarScrollPendente = function() {
+    frameDeScroll = 0;
+    menu.scrollLeft = scrollPendente;
+  };
 
   menu.addEventListener("pointerdown", function(event) {
-    if (event.button !== 0 || event.target.closest(".nav-dropdown-menu")) return;
+    if (event.button !== 0 || !event.isPrimary || event.target.closest(".nav-dropdown-menu")) return;
     ativo = true;
     arrastou = false;
+    ponteiroAtivo = event.pointerId;
     inicioX = event.clientX;
     inicioScroll = menu.scrollLeft;
+    /* Continua recebendo os movimentos mesmo se o cursor sair da barra. */
+    menu.setPointerCapture?.(event.pointerId);
   });
 
   menu.addEventListener("pointermove", function(event) {
-    if (!ativo) return;
+    if (!ativo || event.pointerId !== ponteiroAtivo) return;
     const distancia = event.clientX - inicioX;
-    /* Um clique pode variar alguns pixels. Só vira arrasto após movimento claro. */
-    if (Math.abs(distancia) > 12) {
+    /* Um clique pode variar alguns pixels. Depois disso, vira um arrasto real. */
+    if (Math.abs(distancia) > 7) {
+      event.preventDefault();
       arrastou = true;
       menu.classList.add("nav-menu-dragging");
-      menu.scrollLeft = inicioScroll - distancia;
+      scrollPendente = inicioScroll - distancia;
+      if (!frameDeScroll) frameDeScroll = requestAnimationFrame(aplicarScrollPendente);
     }
   });
 
   const encerrar = function(event) {
-    if (!ativo) return;
+    if (!ativo || (event?.pointerId != null && event.pointerId !== ponteiroAtivo)) return;
+    if (frameDeScroll) {
+      cancelAnimationFrame(frameDeScroll);
+      frameDeScroll = 0;
+      menu.scrollLeft = scrollPendente;
+    }
     if (arrastou) bloquearCliqueAte = Date.now() + 180;
+    if (menu.hasPointerCapture?.(ponteiroAtivo)) menu.releasePointerCapture(ponteiroAtivo);
     ativo = false;
+    ponteiroAtivo = null;
     menu.classList.remove("nav-menu-dragging");
   };
   menu.addEventListener("pointerup", encerrar);
   menu.addEventListener("pointercancel", encerrar);
   document.addEventListener("pointerup", encerrar);
+  menu.addEventListener("dragstart", function(event) { event.preventDefault(); });
   menu.addEventListener("click", function(event) {
     if (Date.now() < bloquearCliqueAte) {
       event.preventDefault();

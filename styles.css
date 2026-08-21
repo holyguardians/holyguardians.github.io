@@ -16168,10 +16168,14 @@ body.pvp-modal-open{overflow:hidden}
   cursor: grab;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto !important;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
 }
 .topbar:not(.header-collapsed) .nav-menu::-webkit-scrollbar { display: none; }
 .topbar:not(.header-collapsed) .nav-menu.nav-menu-dragging { cursor: grabbing; user-select: none; }
-.topbar:not(.header-collapsed) .nav-menu > * { flex: 0 0 auto; }
+.topbar:not(.header-collapsed) .nav-menu > * { flex: 0 0 auto; user-select: none; -webkit-user-select: none; }
 
 /* Os painéis de PvP/Ferramentas são levados para um portal no <body> pelo JS.
    Assim, abrir uma lista não muda o overflow do scroller nem zera seu scrollLeft. */
