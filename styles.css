@@ -12723,7 +12723,7 @@ body.modal-open { overflow: hidden; }
 
 .raid-header {
   display: grid;
-  grid-template-columns: minmax(340px, 1fr) minmax(300px, 520px) auto;
+  grid-template-columns: minmax(300px, 1fr) minmax(280px, 520px) auto auto;
   align-items: flex-end;
   gap: 30px;
   margin-bottom: 24px;
@@ -12766,6 +12766,30 @@ body.modal-open { overflow: hidden; }
 }
 
 .raid-controls { display: flex; align-items: center; gap: 12px; }
+
+.hg-discord-bot-link {
+  position: relative;
+  width: 82px;
+  min-width: 82px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid rgba(198, 45, 68, .34);
+  border-radius: 15px;
+  color: #ffc6cd;
+  text-decoration: none;
+  background: radial-gradient(circle at 50% 38%, rgba(178, 28, 50, .19), rgba(6, 13, 28, .94) 69%);
+  box-shadow: inset 0 0 18px rgba(180, 30, 53, .08), 0 0 16px rgba(23, 142, 255, .06);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.hg-discord-bot-link img { width: 47px; height: 47px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); }
+.hg-discord-bot-link span { font-size: 7px; line-height: 1.05; font-weight: 1000; letter-spacing: .08em; text-align: center; }
+.hg-discord-bot-link:hover,
+.hg-discord-bot-link:focus-visible { transform: translateY(-3px) scale(1.04); border-color: rgba(255, 71, 91, .9); color: #fff; background: radial-gradient(circle at 50% 40%, rgba(255, 43, 71, .35), rgba(24, 6, 14, .96) 70%); box-shadow: 0 0 11px rgba(255, 42, 67, .78), 0 0 34px rgba(231, 27, 54, .5), inset 0 0 22px rgba(255, 88, 108, .16); }
+.hg-discord-bot-link:focus-visible { outline: 2px solid #ff6476; outline-offset: 3px; }
 
 .raid-alarm-control,
 .raid-notice-control {
@@ -13013,6 +13037,7 @@ body.modal-open { overflow: hidden; }
 }
 
 .dekyu-header-icon img { width: 76px; height: 76px; object-fit: contain; }
+.dekyu-discord-bot-link { margin-left: -10px; }
 
 .dekyu-controls {
   display: grid;
@@ -21344,3 +21369,23 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
   #tierListPagina .tierlist-tier-name--compact{font-size:20px;}
   #tierListPagina .tierlist-tier-name--tiny{font-size:16px;line-height:1.08;}
 }
+
+/* Selects próprios para não herdar o menu cinza padrão do navegador. */
+#tierListPagina .tierlist-custom-filter { position: relative; }
+#tierListPagina .tierlist-native-select { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+#tierListPagina .tierlist-select-trigger {
+  width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; border: 1px solid rgba(84, 176, 235, .34); border-radius: 11px;
+  color: #f1fbff; background: linear-gradient(135deg, rgba(7, 27, 48, .96), rgba(2, 10, 22, .96));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.018), 0 0 0 1px rgba(44, 155, 220, .03); cursor: pointer;
+  font: inherit; font-size: 11px; font-weight: 900; text-align: left; transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+#tierListPagina .tierlist-select-trigger b { font: inherit; }
+#tierListPagina .tierlist-select-trigger i { width: 8px; height: 8px; margin-right: 2px; border-right: 2px solid #73cfff; border-bottom: 2px solid #73cfff; transform: rotate(45deg) translateY(-2px); transition: transform .16s ease; }
+#tierListPagina .tierlist-custom-filter.aberto .tierlist-select-trigger { border-color: rgba(102, 216, 255, .9); background: linear-gradient(135deg, rgba(10, 42, 70, .98), rgba(3, 16, 32, .98)); box-shadow: 0 0 0 3px rgba(63, 183, 255, .13), inset 0 0 16px rgba(58, 180, 245, .06); }
+#tierListPagina .tierlist-custom-filter.aberto .tierlist-select-trigger i { transform: rotate(225deg) translateY(-1px); }
+#tierListPagina .tierlist-select-options { position: absolute; z-index: 120; top: calc(100% + 7px); right: 0; left: 0; display: none; padding: 6px; border: 1px solid rgba(84, 193, 251, .45); border-radius: 11px; background: linear-gradient(180deg, rgba(9, 30, 54, .99), rgba(2, 11, 24, .99)); box-shadow: 0 18px 35px rgba(0,0,0,.46), 0 0 20px rgba(42, 167, 245, .12); }
+#tierListPagina .tierlist-custom-filter.aberto .tierlist-select-options { display: grid; gap: 3px; }
+#tierListPagina .tierlist-select-option { width: 100%; min-height: 31px; padding: 0 9px; border: 0; border-radius: 7px; color: #ccecff; background: transparent; cursor: pointer; font: inherit; font-size: 10px; font-weight: 900; letter-spacing: .03em; text-align: left; }
+#tierListPagina .tierlist-select-option:hover, #tierListPagina .tierlist-select-option:focus-visible { color: #fff; outline: none; background: linear-gradient(90deg, rgba(57, 186, 255, .27), rgba(59, 118, 255, .1)); }
+#tierListPagina .tierlist-select-option.selecionado { color: #07131f; background: linear-gradient(90deg, #78d8ff, #46a9ff); }

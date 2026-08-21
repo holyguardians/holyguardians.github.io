@@ -2201,6 +2201,11 @@
           <input id="raidNoticeMinutes" type="number" min="1" max="60" value="5">
         </label>
       </div>
+
+      <a class="hg-discord-bot-link" href="https://discord.com/oauth2/authorize?client_id=1537618369564381214&permissions=2147503104&integration_type=0&scope=bot+applications.commands" target="_blank" rel="noopener noreferrer" aria-label="Adicionar Evil Guardians ao seu Discord" title="Adicionar Evil Guardians ao seu Discord">
+        <img src="evilguardians_logo.png" alt="Evil Guardians">
+        <span>ADICIONAR<br>BOT</span>
+      </a>
     </div>
 
     <div class="raid-time-strip">
@@ -2256,6 +2261,11 @@
       <div class="dekyu-header-icon" aria-hidden="true">
         <img src="dekyu_treasure.png" alt="">
       </div>
+
+      <a class="hg-discord-bot-link dekyu-discord-bot-link" href="https://discord.com/oauth2/authorize?client_id=1537618369564381214&permissions=2147503104&integration_type=0&scope=bot+applications.commands" target="_blank" rel="noopener noreferrer" aria-label="Adicionar Evil Guardians ao seu Discord" title="Adicionar Evil Guardians ao seu Discord">
+        <img src="evilguardians_logo.png" alt="Evil Guardians">
+        <span>ADICIONAR<br>BOT</span>
+      </a>
     </header>
 
     <div class="dekyu-dashboard">
@@ -2377,20 +2387,22 @@
           <input id="tierListSearch" type="search" autocomplete="off" placeholder="Procurar Digimon..." oninput="tierListAplicarFiltros()">
         </label>
 
-        <label class="tierlist-filter-field">
+        <div class="tierlist-filter-field tierlist-custom-filter" data-tier-filter="tierListStageFilter">
           <span>STAGE</span>
-          <select id="tierListStageFilter" onchange="tierListAplicarFiltros()">
+          <select id="tierListStageFilter" class="tierlist-native-select" tabindex="-1" onchange="tierListAplicarFiltros()">
             <option value="">TODOS</option>
             <option value="ROOKIE">ROOKIE</option>
             <option value="CHAMPION">CHAMPION</option>
             <option value="ULTIMATE">ULTIMATE</option>
             <option value="MEGA">MEGA</option>
           </select>
-        </label>
+          <button type="button" class="tierlist-select-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="tierListAlternarFiltroCustom(this)"><b>TODOS</b><i aria-hidden="true"></i></button>
+          <div class="tierlist-select-options" role="listbox"></div>
+        </div>
 
-        <label class="tierlist-filter-field">
+        <div class="tierlist-filter-field tierlist-custom-filter" data-tier-filter="tierListTypeFilter">
           <span>TYPE</span>
-          <select id="tierListTypeFilter" onchange="tierListAplicarFiltros()">
+          <select id="tierListTypeFilter" class="tierlist-native-select" tabindex="-1" onchange="tierListAplicarFiltros()">
             <option value="">TODOS</option>
             <option value="VACCINE">VACCINE</option>
             <option value="VIRUS">VIRUS</option>
@@ -2398,7 +2410,9 @@
             <option value="FREE">FREE</option>
             <option value="UNKNOWN">UNKNOWN</option>
           </select>
-        </label>
+          <button type="button" class="tierlist-select-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="tierListAlternarFiltroCustom(this)"><b>TODOS</b><i aria-hidden="true"></i></button>
+          <div class="tierlist-select-options" role="listbox"></div>
+        </div>
 
         <button type="button" class="tierlist-clear-filter" onclick="tierListLimparFiltros()">LIMPAR FILTROS</button>
       </div>

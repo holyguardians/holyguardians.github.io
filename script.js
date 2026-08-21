@@ -12733,8 +12733,57 @@ function tierListLimparFiltros() {
   if (busca) busca.value = "";
   if (stage) stage.value = "";
   if (type) type.value = "";
+  tierListSincronizarFiltrosCustom();
   tierListAplicarFiltros();
 }
+
+function tierListSincronizarFiltrosCustom() {
+  document.querySelectorAll("#tierListPagina .tierlist-custom-filter").forEach(function(campo) {
+    const select = document.getElementById(campo.dataset.tierFilter || "");
+    const trigger = campo.querySelector(".tierlist-select-trigger");
+    const lista = campo.querySelector(".tierlist-select-options");
+    if (!select || !trigger || !lista) return;
+
+    const selecionado = select.options[select.selectedIndex];
+    trigger.querySelector("b").textContent = selecionado ? selecionado.textContent : "TODOS";
+    lista.innerHTML = Array.from(select.options).map(function(opcao) {
+      const ativa = opcao.value === select.value ? " selecionado" : "";
+      return '<button type="button" role="option" aria-selected="' + (opcao.value === select.value ? "true" : "false") + '" class="tierlist-select-option' + ativa + '" data-value="' + escaparHtml(opcao.value) + '" onclick="tierListEscolherFiltroCustom(this)">' + escaparHtml(opcao.textContent) + '</button>';
+    }).join("");
+  });
+}
+
+function tierListAlternarFiltroCustom(botao) {
+  const campo = botao && botao.closest(".tierlist-custom-filter");
+  if (!campo) return;
+  const vaiAbrir = !campo.classList.contains("aberto");
+  document.querySelectorAll("#tierListPagina .tierlist-custom-filter.aberto").forEach(function(outro) {
+    outro.classList.remove("aberto");
+    outro.querySelector(".tierlist-select-trigger")?.setAttribute("aria-expanded", "false");
+  });
+  campo.classList.toggle("aberto", vaiAbrir);
+  botao.setAttribute("aria-expanded", vaiAbrir ? "true" : "false");
+}
+
+function tierListEscolherFiltroCustom(opcao) {
+  const campo = opcao && opcao.closest(".tierlist-custom-filter");
+  const select = campo && document.getElementById(campo.dataset.tierFilter || "");
+  if (!campo || !select) return;
+  select.value = String(opcao.dataset.value || "");
+  campo.classList.remove("aberto");
+  campo.querySelector(".tierlist-select-trigger")?.setAttribute("aria-expanded", "false");
+  tierListSincronizarFiltrosCustom();
+  tierListAplicarFiltros();
+}
+
+document.addEventListener("click", function(event) {
+  if (!event.target.closest("#tierListPagina .tierlist-custom-filter")) {
+    document.querySelectorAll("#tierListPagina .tierlist-custom-filter.aberto").forEach(function(campo) {
+      campo.classList.remove("aberto");
+      campo.querySelector(".tierlist-select-trigger")?.setAttribute("aria-expanded", "false");
+    });
+  }
+});
 
 function tierListAtualizarTitulo(valor, origem) {
   tierListLerEstado();
@@ -13078,6 +13127,7 @@ function inicializarTierListDsr() {
 
   if (Array.isArray(database) && database.length) tierListSincronizarDatabase();
   else tierListRenderizar();
+  tierListSincronizarFiltrosCustom();
 }
 
 /* =====================================================
