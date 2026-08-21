@@ -1,0 +1,18 @@
+HOLY GUARDIANS — STATUS EFFECT ICONS
+
+effect_stun.png = STUN
+effect_freeze.png = FREEZE
+effect_petrify.png = PETRIFY
+effect_charm.png = CHARM
+effect_confusion.png = CONFUSION
+effect_sleep.png = ETERNAL SLEEP / SLEEP
+effect_paralysis.png = PARALYSIS
+effect_seal.png = SEAL
+effect_pressure.png = PRESSURE
+effect_isolation.png = ISOLATION
+effect_vacuum.png = VACUUM
+effect_submerge.png = SUBMERGE
+effect_metallization.png = METALLIZATION
+effect_panic.png = PANIC
+effect_sniper.png = SNIPER MISSILE
+effect_puppet.png = PUPPET
