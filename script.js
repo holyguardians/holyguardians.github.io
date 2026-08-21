@@ -15756,17 +15756,93 @@ let hgImpmonLiveTimer = null;
 let hgImpmonLiveMonitorTimer = null;
 const HG_LIVE_MONITOR_URL = "https://evil-guardians-live-monitor.hiltongiuseppechiarelo.workers.dev/lives";
 
+function hgNormalizarLiveImpmon(live) {
+  if (typeof live === "string") {
+    return { nome: live, url: "#comunidade", provider: "" };
+  }
+  live = live || {};
+  return {
+    nome: live.nome || live.name || "Streamer HG",
+    url: live.url || "#comunidade",
+    provider: String(live.provider || live.platform || "").trim().toLowerCase()
+  };
+}
+
+function hgNomeProviderImpmon(provider) {
+  if (provider === "youtube") return "YOUTUBE";
+  if (provider === "kick") return "KICK";
+  if (provider === "twitch") return "TWITCH";
+  return "LIVE";
+}
+
 function hgMostrarImpmonLive(lives, manterVisivel) {
-  const lista = Array.isArray(lives) ? lives.filter(Boolean) : [];
+  const lista = Array.isArray(lives) ? lives.filter(Boolean).map(hgNormalizarLiveImpmon) : [];
   if (!lista.length) return hgOcultarImpmonLive();
-  const primeira = typeof lista[0] === "string" ? { nome: lista[0], url: "#comunidade" } : lista[0];
-  const nomes = lista.map(function(live) { return typeof live === "string" ? live : (live.nome || live.name || "Streamer HG"); }).join(" • ");
+
   const caixa = document.getElementById("hgImpmonLive");
+  const card = document.getElementById("hgImpmonLiveCard");
   const label = document.getElementById("hgImpmonLiveNames");
-  const link = document.getElementById("hgImpmonLiveLink");
-  if (!caixa || !label || !link) return;
-  label.textContent = nomes;
-  link.href = primeira.url || "#comunidade";
+  const status = document.getElementById("hgImpmonLiveStatus");
+  const hint = document.getElementById("hgImpmonLiveHint");
+  if (!caixa || !card || !label || !status || !hint) return;
+
+  label.replaceChildren();
+  card.classList.remove("hg-impmon-single", "hg-impmon-multi");
+  card.removeAttribute("role");
+  card.removeAttribute("tabindex");
+  card.removeAttribute("data-href");
+  card.onclick = null;
+  card.onkeydown = null;
+
+  if (lista.length === 1) {
+    const live = lista[0];
+    const nome = document.createElement("strong");
+    nome.className = "hg-impmon-single-name";
+    nome.textContent = live.nome;
+    label.appendChild(nome);
+
+    status.textContent = "🔴 AO VIVO AGORA";
+    hint.textContent = "CLIQUE NO IMPMON PARA ASSISTIR";
+    card.classList.add("hg-impmon-single");
+    card.setAttribute("role", "link");
+    card.setAttribute("tabindex", "0");
+    card.dataset.href = live.url;
+    card.onclick = hgAbrirLiveImpmon;
+    card.onkeydown = function(event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        hgAbrirLiveImpmon(event);
+      }
+    };
+  } else {
+    status.textContent = "🔴 " + lista.length + " AO VIVO AGORA";
+    hint.textContent = "CLIQUE NO NOME PARA ASSISTIR";
+    card.classList.add("hg-impmon-multi");
+
+    lista.forEach(function(live) {
+      const link = document.createElement("a");
+      link.className = "hg-impmon-live-name";
+      link.href = live.url || "#comunidade";
+      link.dataset.provider = live.provider || "";
+      if (link.href !== "#comunidade" && live.url !== "#comunidade") {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+
+      const nome = document.createElement("b");
+      nome.textContent = live.nome;
+      const provider = document.createElement("em");
+      provider.className = "hg-impmon-live-provider";
+      provider.textContent = hgNomeProviderImpmon(live.provider);
+
+      link.append(nome, provider);
+      if (live.url === "#comunidade") {
+        link.addEventListener("click", hgAbrirLiveImpmon);
+      }
+      label.appendChild(link);
+    });
+  }
+
   caixa.hidden = false;
   caixa.classList.remove("hg-impmon-saindo");
   clearTimeout(hgImpmonLiveTimer);
@@ -15778,11 +15854,23 @@ function hgOcultarImpmonLive() {
   if (caixa) caixa.hidden = true;
 }
 function hgAbrirLiveImpmon(event) {
-  const link = event && event.currentTarget;
-  const destino = String(link && link.getAttribute("href") || "");
+  const alvo = event && event.currentTarget;
+  const destino = String(
+    (alvo && (alvo.dataset && alvo.dataset.href)) ||
+    (alvo && alvo.getAttribute && alvo.getAttribute("href")) ||
+    ""
+  );
+  if (!destino) return;
+
   if (destino === "#comunidade") {
-    event.preventDefault();
+    if (event) event.preventDefault();
     mostrarPagina("socialPagina", document.getElementById("btnSocial"));
+    return;
+  }
+
+  if (alvo && alvo.id === "hgImpmonLiveCard") {
+    if (event) event.preventDefault();
+    window.open(destino, "_blank", "noopener,noreferrer");
   }
 }
 function hgIniciarImpmonLiveRunner() {

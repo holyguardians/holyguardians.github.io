@@ -27,6 +27,35 @@
 
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=20260821-live-monitor-v3">
+<style id="hgImpmonMultiLiveStyles">
+  #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
+  #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
+  #hgImpmonLiveNames { display: grid; gap: 3px; min-width: 0; }
+  #hgImpmonLiveNames .hg-impmon-single-name {
+    display: block; color: #f7fcff; font-size: 12px; font-weight: 1000; line-height: 1.25; overflow-wrap: anywhere;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    min-width: 0; margin: 0 -5px; padding: 4px 5px; border-radius: 5px;
+    color: #f7fcff; text-decoration: none; font-size: 11px; font-weight: 1000; line-height: 1.15;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name:hover,
+  #hgImpmonLiveNames .hg-impmon-live-name:focus-visible {
+    color: #fff; background: rgba(67, 191, 255, .12); transform: translateX(2px); outline: 0;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #hgImpmonLiveNames .hg-impmon-live-provider {
+    flex: 0 0 auto; font-size: 7px; font-weight: 1000; letter-spacing: .08em; opacity: .88;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="kick"] .hg-impmon-live-provider { color: #8cff57; }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="youtube"] .hg-impmon-live-provider { color: #ff7078; }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="twitch"] .hg-impmon-live-provider { color: #b59cff; }
+  @media (max-width: 600px) {
+    #hgImpmonLiveNames .hg-impmon-single-name { font-size: 10px; }
+    #hgImpmonLiveNames .hg-impmon-live-name { font-size: 9px; }
+  }
+</style>
 </head>
 <body>
 
@@ -2884,19 +2913,20 @@
   Carregando Holy Guardians...
 </div>
 
+
 <div id="hgImpmonLive" class="hg-impmon-live" hidden aria-live="polite">
-  <a id="hgImpmonLiveLink" class="hg-impmon-live-card" href="#comunidade" onclick="hgAbrirLiveImpmon(event)">
+  <div id="hgImpmonLiveCard" class="hg-impmon-live-card">
     <div class="hg-impmon-runner" aria-hidden="true"></div>
     <div class="hg-impmon-sign">
-      <small>🔴 AO VIVO AGORA</small>
-      <strong id="hgImpmonLiveNames">STREAMERS HG</strong>
-      <span>CLIQUE PARA ASSISTIR</span>
+      <small id="hgImpmonLiveStatus">🔴 AO VIVO AGORA</small>
+      <div id="hgImpmonLiveNames">STREAMERS HG</div>
+      <span id="hgImpmonLiveHint">CLIQUE PARA ASSISTIR</span>
     </div>
-  </a>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-live-monitor-v3"></script>
+<script src="script.js?v=20260821-live-monitor-v4"></script>
 </body>
 </html>
