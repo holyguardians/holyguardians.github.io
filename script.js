@@ -8442,18 +8442,34 @@ function atualizarPotentialPlanner() {
     }
   });
 
+  const LIMITE_TETRIS_PERCENTUAL = 64;
+  const LIMITE_TETRIS_CUBOS = 16;
+  const totalPotential = blocos.reduce(function(total, bloco) { return total + Number(bloco.valor || 0); }, 0);
+  const excedeuTetris = totalPotential > LIMITE_TETRIS_PERCENTUAL + 1e-9 || blocos.length > LIMITE_TETRIS_CUBOS;
+  const blocosVisiveis = blocos.slice(0, LIMITE_TETRIS_CUBOS);
+  const espacosVazios = Math.max(0, LIMITE_TETRIS_CUBOS - blocosVisiveis.length);
+
   const reqEl = document.getElementById("potentialRequirements");
   const board = document.getElementById("potentialBoard");
   const cubeTotal = document.getElementById("potentialCubeTotal");
   const result = document.getElementById("potentialResult");
   if (reqEl) reqEl.innerHTML = requisitos.join("") || `<div class="potential-unavailable">Percentuais ainda não validados.</div>`;
-  if (board) board.innerHTML = blocos.map(function(bloco) {
+  if (board) board.innerHTML = blocosVisiveis.map(function(bloco) {
     return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${bloco.stat}</strong><span>${bloco.valor}%</span></div>`;
-  }).join("") || `<div class="potential-board-empty">NENHUM CUBO NECESSÁRIO</div>`;
-  if (board) board.style.setProperty("--tetris-rows", Math.max(1, Math.ceil(blocos.length / 4)));
-  if (cubeTotal) cubeTotal.textContent = `${blocos.length} CUBO${blocos.length === 1 ? "" : "S"}`;
-  if (result) result.textContent = blocos.length > 20 ? "ATENÇÃO: A CONFIGURAÇÃO ULTRAPASSA 20 ESPAÇOS DE POTENCIAL." : `${20 - blocos.length} DE 20 ESPAÇOS LIVRES.`;
-  if (board) board.classList.toggle("potential-overflow", blocos.length > 20);
+  }).join("") + Array.from({ length: espacosVazios }, function() {
+    return `<div class="potential-cube potential-cube-empty" aria-hidden="true"></div>`;
+  }).join("");
+  if (board) board.style.setProperty("--tetris-rows", "4");
+  if (cubeTotal) cubeTotal.textContent = excedeuTetris
+    ? `${LIMITE_TETRIS_CUBOS} / ${blocos.length} CUBOS`
+    : `${blocos.length} / ${LIMITE_TETRIS_CUBOS} CUBOS`;
+  if (result) {
+    result.textContent = excedeuTetris
+      ? "O valor total para evolução excede 64% em tetris, deverá fazer alterações na Baby correction do respectivo digimon ou utilizar cubos de 5% para atingir tais requisitos."
+      : `${LIMITE_TETRIS_CUBOS - blocos.length} DE ${LIMITE_TETRIS_CUBOS} ESPAÇOS LIVRES.`;
+    result.classList.toggle("potential-result-alert", excedeuTetris);
+  }
+  if (board) board.classList.toggle("potential-overflow", excedeuTetris);
 }
 
 

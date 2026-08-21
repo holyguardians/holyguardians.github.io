@@ -12686,14 +12686,15 @@ body {
 .potential-board-panel { min-height: 390px; }
 .potential-board-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .potential-board-head strong { color: #69dcff; font-size: 8px; }
-.potential-board { display: grid; grid-template-columns: repeat(4, minmax(58px, 1fr)); grid-template-rows: repeat(var(--tetris-rows, 1), minmax(0, 1fr)); gap: 6px; align-content: stretch; height: min(520px, calc(94vh - 160px)); min-height: 0; padding: 8px; border: 1px solid rgba(53, 117, 174, .28); border-radius: 8px; background: #030a1b; }
+.potential-board { display: grid; grid-template-columns: repeat(4, minmax(58px, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 6px; align-content: stretch; height: min(430px, calc(94vh - 230px)); min-height: 0; padding: 8px; border: 1px solid rgba(53, 117, 174, .28); border-radius: 8px; background: #030a1b; }
 .potential-cube { min-height: 0; display: grid; place-items: center; align-content: center; gap: 3px; border: 1px solid color-mix(in srgb, var(--cube-color), #fff 16%); border-radius: 6px; background: var(--cube-color); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.78); box-shadow: inset 0 0 16px rgba(255,255,255,.08); }
 .potential-cube strong { font-size: 10px; }
 .potential-cube span { font-size: 8px; font-weight: 800; }
+.potential-cube-empty { border-style: dashed; border-color: rgba(61, 112, 158, .28); background: linear-gradient(135deg, rgba(8, 22, 43, .52), rgba(2, 9, 22, .72)); box-shadow: none; }
 .potential-board-empty { grid-column: 1 / -1; align-self: center; color: #54728a; font-size: 9px; text-align: center; }
 .potential-result { margin-top: 8px; color: #7198b3; font-size: 8px; font-weight: 800; text-align: right; }
 .potential-overflow { border-color: rgba(255, 82, 82, .72); }
-.potential-overflow + .potential-result { color: #ff6b6b; }
+.potential-overflow + .potential-result, .potential-result-alert { color: #ff6b6b; text-align: left; line-height: 1.45; }
 body.modal-open { overflow: hidden; }
 
 @media (max-width: 1050px) {
