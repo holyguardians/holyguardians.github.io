@@ -22679,7 +22679,11 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
   position: absolute;
   z-index: 8;
   left: min(278px, calc(100vw - 52px));
-  bottom: 91px;
+
+  /* Fica presa no topo da placa, mesmo quando entram várias lives. */
+  top: 127px;
+  bottom: auto;
+
   width: 32px;
   height: 38px;
   display: grid;
@@ -22729,6 +22733,7 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
 
 .hg-impmon-live.hg-impmon-minimized .hg-impmon-live-toggle {
   left: 0;
+  top: auto;
   bottom: 0;
   width: 42px;
   height: 46px;
@@ -22747,7 +22752,11 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
 @media (max-width: 600px) {
   .hg-impmon-live-toggle {
     left: min(258px, calc(100vw - 48px));
-    bottom: 79px;
+
+    /* No mobile acompanha o topo da placa reduzida. */
+    top: 98px;
+    bottom: auto;
+
     width: 30px;
     height: 36px;
   }
