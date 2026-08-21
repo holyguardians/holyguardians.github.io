@@ -20234,6 +20234,15 @@ body.hg-display-scaled footer {
 
 #tierListPagina .tierlist-toolbar,
 #tierListPagina .tierlist-export-area,
+#tierListPagina .tierlist-pool-panel {
+  position: relative;
+  border: 1px solid var(--tier-line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(7, 22, 42, .97), rgba(3, 11, 24, .97));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025), 0 18px 44px rgba(0, 0, 0, .24);
+  overflow: hidden;
+}
+
 /* Tooltip detalhada: aparece somente nos cards já colocados em uma tier. */
 .tierlist-digi-tooltip {
   position: fixed;
