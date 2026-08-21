@@ -15626,13 +15626,13 @@ function hgAtivarArrasteMenuPrincipal() {
     arrastou = false;
     inicioX = event.clientX;
     inicioScroll = menu.scrollLeft;
-    menu.setPointerCapture?.(event.pointerId);
   });
 
   menu.addEventListener("pointermove", function(event) {
     if (!ativo) return;
     const distancia = event.clientX - inicioX;
-    if (Math.abs(distancia) > 4) {
+    /* Um clique pode variar alguns pixels. Só vira arrasto após movimento claro. */
+    if (Math.abs(distancia) > 12) {
       arrastou = true;
       menu.classList.add("nav-menu-dragging");
       menu.scrollLeft = inicioScroll - distancia;
@@ -15644,10 +15644,10 @@ function hgAtivarArrasteMenuPrincipal() {
     if (arrastou) bloquearCliqueAte = Date.now() + 180;
     ativo = false;
     menu.classList.remove("nav-menu-dragging");
-    if (event && menu.hasPointerCapture?.(event.pointerId)) menu.releasePointerCapture(event.pointerId);
   };
   menu.addEventListener("pointerup", encerrar);
   menu.addEventListener("pointercancel", encerrar);
+  document.addEventListener("pointerup", encerrar);
   menu.addEventListener("click", function(event) {
     if (Date.now() < bloquearCliqueAte) {
       event.preventDefault();
