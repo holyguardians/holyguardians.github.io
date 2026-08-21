@@ -12402,7 +12402,8 @@ function tierListLerEstado() {
 
   tierListEstado = {
     version: 1,
-    title: String(salvo.title || padrao.title).trim().slice(0, 70) || padrao.title,
+    // O título é propositalmente temporário: ao recarregar a página volta para TIER LIST DSR.
+    title: padrao.title,
     tiers: tiers,
     pool: Array.isArray(salvo.pool) ? salvo.pool.map(String) : []
   };
@@ -12419,7 +12420,8 @@ function tierListSalvarEstado(imediato) {
 
   const gravar = function() {
     try {
-      localStorage.setItem(HG_TIERLIST_STORAGE_KEY, JSON.stringify(tierListEstado));
+      const estadoPersistido = Object.assign({}, tierListEstado, { title: "TIER LIST DSR" });
+      localStorage.setItem(HG_TIERLIST_STORAGE_KEY, JSON.stringify(estadoPersistido));
     } catch (erro) {
       console.warn("Não foi possível salvar a Tier List:", erro);
     }
@@ -12463,7 +12465,15 @@ function tierListMontarCatalogo() {
       icon: especial || String(digi && digi.icon || "").trim() || local,
       fallback: local,
       stage: stage || "",
-      type: type || ""
+      type: type || "",
+      field: String(digi && digi.field || "").trim(),
+      hp: digi && digi.hp != null ? String(digi.hp) : "",
+      sp: digi && digi.sp != null ? String(digi.sp) : "",
+      str: digi && digi.str != null ? String(digi.str) : "",
+      int: digi && digi.int != null ? String(digi.int) : "",
+      def: digi && digi.def != null ? String(digi.def) : "",
+      res: digi && digi.res != null ? String(digi.res) : "",
+      spd: digi && digi.spd != null ? String(digi.spd) : ""
     });
   });
 
@@ -12521,10 +12531,8 @@ function tierListCardHtml(key) {
   if (!digi) return "";
 
   const typeIcon = digi.type && TYPE_ICONS[digi.type] ? TYPE_ICONS[digi.type] : "";
-  const meta = [digi.stage, digi.type].filter(Boolean).join(" · ");
-
   return `
-    <article class="tierlist-digi" data-key="${tierListEscAttr(digi.key)}" data-name="${tierListEscAttr(tierListNormalizarTexto(digi.name))}" data-stage="${tierListEscAttr(digi.stage)}" data-type="${tierListEscAttr(digi.type)}" title="${tierListEscAttr(digi.name)}${meta ? " — " + tierListEscAttr(meta) : ""}">
+    <article class="tierlist-digi" data-key="${tierListEscAttr(digi.key)}" data-name="${tierListEscAttr(tierListNormalizarTexto(digi.name))}" data-stage="${tierListEscAttr(digi.stage)}" data-type="${tierListEscAttr(digi.type)}" onmouseenter="tierListMostrarTooltip(this)" onmouseleave="tierListOcultarTooltip()">
       <button type="button" class="tierlist-card-return" data-html2canvas-ignore="true" aria-label="Voltar ${tierListEscAttr(digi.name)} para disponíveis" onclick="tierListRetornarPool('${tierListEscAttr(digi.key)}', event)">×</button>
       <span class="tierlist-digi-image">
         ${digi.icon ? `<img class="tierlist-digi-img" src="${tierListEscAttr(digi.icon)}" data-fallback="${tierListEscAttr(digi.fallback)}" alt="${tierListEscAttr(digi.name)}" loading="lazy" draggable="false" onerror="tierListImagemErro(this)">` : `<span class="tierlist-no-icon">?</span>`}
@@ -12616,12 +12624,13 @@ function tierListRenderizarPool() {
 }
 
 function tierListRenderizar() {
+  tierListOcultarTooltip();
   tierListLerEstado();
 
   const input = document.getElementById("tierListTitleInput");
   const boardTitle = document.getElementById("tierListBoardTitle");
   if (input && document.activeElement !== input) input.value = tierListEstado.title;
-  if (boardTitle) boardTitle.textContent = tierListEstado.title;
+  if (boardTitle && document.activeElement !== boardTitle) boardTitle.textContent = tierListEstado.title;
 
   tierListRenderizarRows();
   tierListRenderizarPool();
@@ -12656,6 +12665,7 @@ function tierListCriarSortables() {
       filter: ".tierlist-card-return",
       preventOnFilter: false,
       onStart: function() {
+        tierListOcultarTooltip();
         document.body.classList.add("tierlist-drag-active");
       },
       onEnd: function() {
@@ -12726,13 +12736,118 @@ function tierListLimparFiltros() {
   tierListAplicarFiltros();
 }
 
-function tierListAtualizarTitulo(valor) {
+function tierListAtualizarTitulo(valor, origem) {
   tierListLerEstado();
-  const titulo = String(valor || "").replace(/\s+/g, " ").trimStart().slice(0, 70);
+  const titulo = String(valor || "").replace(/[\r\n]+/g, " ").replace(/\s{2,}/g, " ").trimStart().slice(0, 70);
   tierListEstado.title = titulo || "TIER LIST DSR";
+
+  const input = document.getElementById("tierListTitleInput");
   const boardTitle = document.getElementById("tierListBoardTitle");
-  if (boardTitle) boardTitle.textContent = tierListEstado.title;
-  tierListSalvarEstado();
+  if (input && origem !== input) input.value = tierListEstado.title;
+  if (boardTitle && origem !== boardTitle) boardTitle.textContent = tierListEstado.title;
+  // Não salva o título no localStorage: ele é personalizado apenas nesta sessão.
+}
+
+function tierListTituloKeydown(event, elemento) {
+  if (!event) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    if (elemento && elemento.blur) elemento.blur();
+  }
+}
+
+function tierListTituloBlur(elemento) {
+  if (!elemento) return;
+  const texto = String(elemento.textContent || "").replace(/[\r\n]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, 70);
+  elemento.textContent = texto || "TIER LIST DSR";
+  tierListAtualizarTitulo(elemento.textContent, elemento);
+}
+
+function tierListTooltipFieldHtml(field) {
+  const fields = typeof separarFields === "function" ? separarFields(field) : String(field || "").split(/\s+/).filter(Boolean);
+  if (!fields.length) return '<span class="tierlist-tooltip-field-empty">-</span>';
+  return fields.map(function(codigo) {
+    const src = typeof pegarImagemField === "function" ? pegarImagemField(codigo) : "";
+    return '<span class="tierlist-tooltip-field-item">' +
+      (src ? '<img src="' + tierListEscAttr(src) + '" alt="" draggable="false">' : '') +
+      '<b>' + escaparHtml(codigo) + '</b></span>';
+  }).join("");
+}
+
+function tierListTooltipEl() {
+  let tooltip = document.getElementById("tierListDigiTooltip");
+  if (tooltip) return tooltip;
+  tooltip = document.createElement("div");
+  tooltip.id = "tierListDigiTooltip";
+  tooltip.className = "tierlist-digi-tooltip";
+  tooltip.setAttribute("role", "tooltip");
+  tooltip.hidden = true;
+  document.body.appendChild(tooltip);
+  return tooltip;
+}
+
+function tierListMostrarTooltip(card) {
+  if (!card || !card.closest || !card.closest(".tierlist-tier-zone")) {
+    tierListOcultarTooltip();
+    return;
+  }
+
+  const digi = tierListCatalogoMap.get(String(card.dataset && card.dataset.key || ""));
+  if (!digi) return;
+
+  const tooltip = tierListTooltipEl();
+  const typeIcon = digi.type && TYPE_ICONS[digi.type] ? TYPE_ICONS[digi.type] : "";
+  const stat = function(label, value) {
+    return '<span><i>' + label + '</i><b>' + escaparHtml(String(value || "-")) + '</b></span>';
+  };
+
+  tooltip.innerHTML =
+    '<div class="tierlist-tooltip-head">' +
+      (digi.icon ? '<img src="' + tierListEscAttr(digi.icon) + '" data-fallback="' + tierListEscAttr(digi.fallback) + '" alt="" onerror="tierListImagemErroTooltip(this)">' : '') +
+      '<div><strong>' + escaparHtml(digi.name) + '</strong><small>' + escaparHtml([digi.stage, digi.type].filter(Boolean).join(" · ") || "DIGIMON") + '</small></div>' +
+      (typeIcon ? '<img class="tierlist-tooltip-type" src="' + tierListEscAttr(typeIcon) + '" alt="">' : '') +
+    '</div>' +
+    '<div class="tierlist-tooltip-field"><em>FIELD</em><div>' + tierListTooltipFieldHtml(digi.field) + '</div></div>' +
+    '<div class="tierlist-tooltip-stats">' +
+      stat("HP", digi.hp) + stat("SP", digi.sp) + stat("STR", digi.str) + stat("INT", digi.int) +
+      stat("DEF", digi.def) + stat("RES", digi.res) + stat("SPD", digi.spd) +
+    '</div>';
+
+  tooltip.hidden = false;
+  tooltip.classList.add("ativo");
+
+  requestAnimationFrame(function() {
+    if (tooltip.hidden || !card.isConnected) return;
+    const rect = card.getBoundingClientRect();
+    const margem = 10;
+    const largura = tooltip.offsetWidth || 300;
+    const altura = tooltip.offsetHeight || 230;
+    let left = rect.right + margem;
+    if (left + largura > window.innerWidth - 8) left = rect.left - largura - margem;
+    left = Math.max(8, Math.min(left, window.innerWidth - largura - 8));
+    let top = rect.top + rect.height / 2 - altura / 2;
+    top = Math.max(8, Math.min(top, window.innerHeight - altura - 8));
+    tooltip.style.left = Math.round(left) + "px";
+    tooltip.style.top = Math.round(top) + "px";
+  });
+}
+
+function tierListImagemErroTooltip(img) {
+  if (!img) return;
+  const fallback = String(img.dataset && img.dataset.fallback || "").trim();
+  if (!img.dataset.tierFallbackTried && fallback) {
+    img.dataset.tierFallbackTried = "1";
+    img.src = fallback;
+    return;
+  }
+  img.hidden = true;
+}
+
+function tierListOcultarTooltip() {
+  const tooltip = document.getElementById("tierListDigiTooltip");
+  if (!tooltip) return;
+  tooltip.classList.remove("ativo");
+  tooltip.hidden = true;
 }
 
 function tierListNomeKeydown(event, elemento) {

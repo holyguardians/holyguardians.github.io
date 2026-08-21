@@ -20234,6 +20234,154 @@ body.hg-display-scaled footer {
 
 #tierListPagina .tierlist-toolbar,
 #tierListPagina .tierlist-export-area,
+/* Tooltip detalhada: aparece somente nos cards já colocados em uma tier. */
+.tierlist-digi-tooltip {
+  position: fixed;
+  z-index: 999999;
+  width: min(310px, calc(100vw - 16px));
+  padding: 12px;
+  border: 1px solid rgba(84, 200, 255, .38);
+  border-radius: 12px;
+  color: #eaf8ff;
+  background: linear-gradient(180deg, rgba(8, 27, 49, .985), rgba(2, 10, 21, .99));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .48), 0 0 0 1px rgba(63, 174, 238, .06), 0 0 24px rgba(42, 157, 229, .12);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px) scale(.985);
+  transition: opacity .11s ease, transform .11s ease;
+}
+
+.tierlist-digi-tooltip.ativo {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.tierlist-digi-tooltip[hidden] { display: none !important; }
+
+.tierlist-tooltip-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 27px;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(92, 190, 245, .14);
+}
+
+.tierlist-tooltip-head > img:first-child {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 7px rgba(0,0,0,.34));
+}
+
+.tierlist-tooltip-head strong {
+  display: block;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.08;
+  font-weight: 1000;
+  overflow-wrap: anywhere;
+}
+
+.tierlist-tooltip-head small {
+  display: block;
+  margin-top: 4px;
+  color: #7db9dc;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .07em;
+}
+
+.tierlist-tooltip-head .tierlist-tooltip-type {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.tierlist-tooltip-field {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 9px;
+}
+
+.tierlist-tooltip-field > em {
+  color: #67cfff;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 1000;
+  letter-spacing: .1em;
+}
+
+.tierlist-tooltip-field > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tierlist-tooltip-field-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 25px;
+  padding: 3px 6px;
+  border: 1px solid rgba(94, 187, 238, .16);
+  border-radius: 7px;
+  background: rgba(11, 35, 59, .65);
+}
+
+.tierlist-tooltip-field-item img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.tierlist-tooltip-field-item b,
+.tierlist-tooltip-field-empty {
+  color: #d8f3ff;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.tierlist-tooltip-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tierlist-tooltip-stats span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 6px 5px;
+  border: 1px solid rgba(87, 181, 235, .13);
+  border-radius: 7px;
+  text-align: center;
+  background: rgba(6, 22, 39, .8);
+}
+
+.tierlist-tooltip-stats i {
+  color: #6baed2;
+  font-size: 8px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 1000;
+  letter-spacing: .07em;
+}
+
+.tierlist-tooltip-stats b {
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 1000;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #tierListPagina .tierlist-pool-panel {
   position: relative;
   border: 1px solid var(--tier-line);
@@ -20402,6 +20550,25 @@ body.hg-display-scaled footer {
   font-size: clamp(22px, 3vw, 40px);
   line-height: 1;
   overflow-wrap: anywhere;
+}
+
+#tierListPagina .tierlist-board-title-editable {
+  min-width: 170px;
+  padding: 2px 5px 3px;
+  margin-left: -5px;
+  border-radius: 7px;
+  outline: none;
+  cursor: text;
+  transition: background .15s ease, box-shadow .15s ease;
+}
+
+#tierListPagina .tierlist-board-title-editable:hover {
+  background: rgba(83, 197, 255, .06);
+}
+
+#tierListPagina .tierlist-board-title-editable:focus {
+  background: rgba(83, 197, 255, .08);
+  box-shadow: 0 0 0 1px rgba(84, 204, 255, .28), 0 0 20px rgba(48, 162, 255, .08);
 }
 
 #tierListPagina .tierlist-export-signature {
@@ -20760,37 +20927,25 @@ body.hg-display-scaled footer {
 #tierListPagina .tierlist-search-icon {
   position: absolute;
   z-index: 2;
-  left: 14px;
-  top: 50%;
-  width: 15px;
-  height: 15px;
-  transform: translateY(-50%);
+  left: 13px;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
 
-#tierListPagina .tierlist-search-icon::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 9px;
-  height: 9px;
-  border: 2px solid #77bfe6;
-  border-radius: 50%;
-  box-sizing: border-box;
-}
-
-#tierListPagina .tierlist-search-icon::after {
-  content: "";
-  position: absolute;
-  left: 9px;
-  top: 9px;
-  width: 7px;
-  height: 2px;
-  border-radius: 999px;
-  background: #77bfe6;
-  transform: translate(-1px, -1px) rotate(-45deg);
-  transform-origin: left center;
+#tierListPagina .tierlist-search-icon svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  overflow: visible;
+  fill: none;
+  stroke: #77bfe6;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 #tierListPagina .tierlist-search input {

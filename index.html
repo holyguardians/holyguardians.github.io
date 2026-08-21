@@ -2336,7 +2336,7 @@
     <section class="tierlist-toolbar tech-corners" data-html2canvas-ignore="true">
       <label class="tierlist-field tierlist-title-field">
         <span>TÍTULO DA TIER LIST</span>
-        <input id="tierListTitleInput" type="text" maxlength="70" value="TIER LIST DSR" autocomplete="off" oninput="tierListAtualizarTitulo(this.value)">
+        <input id="tierListTitleInput" type="text" maxlength="70" value="TIER LIST DSR" autocomplete="off" oninput="tierListAtualizarTitulo(this.value, this)">
       </label>
 
       <div class="tierlist-toolbar-actions">
@@ -2353,7 +2353,7 @@
           <span class="tierlist-export-logo-shell"><img src="holyguardians_logo.png" alt="Holy Guardians"></span>
           <div>
             <small>HOLY GUARDIANS // DSR TOOLS</small>
-            <strong id="tierListBoardTitle">TIER LIST DSR</strong>
+            <strong id="tierListBoardTitle" class="tierlist-board-title-editable" contenteditable="true" spellcheck="false" role="textbox" aria-label="Título da Tier List" title="Clique para editar o título desta sessão" oninput="tierListAtualizarTitulo(this.textContent, this)" onkeydown="tierListTituloKeydown(event, this)" onblur="tierListTituloBlur(this)">TIER LIST DSR</strong>
           </div>
         </div>
         <div class="tierlist-export-signature">holyguardians.github.io</div>
@@ -2373,7 +2373,7 @@
 
       <div class="tierlist-filters" data-html2canvas-ignore="true">
         <label class="tierlist-search">
-          <span class="tierlist-search-icon" aria-hidden="true"></span>
+          <span class="tierlist-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="5.75"></circle><path d="M14.8 14.8L20 20"></path></svg></span>
           <input id="tierListSearch" type="search" autocomplete="off" placeholder="Procurar Digimon..." oninput="tierListAplicarFiltros()">
         </label>
 
