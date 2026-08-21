@@ -1955,6 +1955,7 @@ function mostrarPagina(
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
+      tierListPagina: "tier-list-dsr",
       sorteioPagina: "sorteio",
       socialPagina: "comunidade"
     };
@@ -2001,6 +2002,7 @@ function abrirPaginaPelaUrl() {
     calculadora: { pagina: "calculadoraPagina", botao: "btnCalculadora" },
     "raid-boss": { pagina: "raidBossPagina", botao: "btnRaidBoss" },
     "dekyu-treasure": { pagina: "dekyuTreasurePagina", botao: "btnDekyuTreasure" },
+    "tier-list-dsr": { pagina: "tierListPagina", botao: "btnFeatures" },
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
     social: { pagina: "socialPagina", botao: "btnSocial" },
     comunidade: { pagina: "socialPagina", botao: "btnSocial" }
@@ -9082,6 +9084,7 @@ function carregarDatabase() {
         inicializarCalculadora();
         renderizarStatusSimulator();
         renderizarRaids();
+        tierListSincronizarDatabase();
 
         // Se a URL for #digidex/<digimon>, restaura o perfil depois que os stats chegaram.
         abrirPaginaPelaUrl();
@@ -9466,6 +9469,7 @@ document.addEventListener(
     inicializarDigivolution();
     inicializarStatusSimulator();
     inicializarSorteio();
+    inicializarTierListDsr();
     abrirPaginaPelaUrl();
 
     carregarDigivolutions();
@@ -9953,6 +9957,11 @@ function abrirSorteio(){
   fecharFeaturesNavMenu();
   mostrarPagina("sorteioPagina",document.getElementById("btnFeatures"));
   inicializarSorteio();
+}
+function abrirTierListDsr(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("tierListPagina",document.getElementById("btnFeatures"));
+  inicializarTierListDsr();
 }
 
 function fecharPvpNavMenu(){
@@ -12300,6 +12309,631 @@ document.addEventListener("DOMContentLoaded",function(){
   const nick=document.getElementById("pvpMatchNick");if(nick)nick.value=localStorage.getItem(PVP_MATCH_NICK_KEY)||"";
   pvpMatchAtualizarServerHint();
 });
+
+/* =====================================================
+   FERRAMENTAS HG — TIER LIST DSR
+   Drag & drop + tiers ilimitadas + exportação PNG
+===================================================== */
+
+const HG_TIERLIST_STORAGE_KEY = "hgTierListDsrV1";
+const HG_TIERLIST_COLORS = ["#ff6262", "#ff9f43", "#ffd84f", "#60d394", "#55b7ff", "#9b7cff", "#ff72c6", "#6fe7dd"];
+
+let tierListEstado = null;
+let tierListCatalogo = [];
+let tierListCatalogoMap = new Map();
+let tierListSortables = [];
+let tierListInicializada = false;
+let tierListStreamAtivo = false;
+let tierListSalvarTimer = null;
+
+function tierListId() {
+  return "tier_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+}
+
+function tierListEstadoPadrao() {
+  return {
+    version: 1,
+    title: "TIER LIST DSR",
+    tiers: [
+      { id: "tier_s", name: "S", color: "#ff6262", items: [] },
+      { id: "tier_a", name: "A", color: "#ff9f43", items: [] },
+      { id: "tier_b", name: "B", color: "#ffd84f", items: [] },
+      { id: "tier_c", name: "C", color: "#60d394", items: [] },
+      { id: "tier_d", name: "D", color: "#55b7ff", items: [] }
+    ],
+    pool: []
+  };
+}
+
+function tierListCorValida(valor, fallback) {
+  const cor = String(valor || "").trim();
+  return /^#[0-9a-f]{6}$/i.test(cor) ? cor : (fallback || "#55b7ff");
+}
+
+function tierListNormalizarTexto(valor) {
+  let texto = String(valor || "").trim().toLowerCase();
+  try { texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (erro) {}
+  return texto.replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function tierListKeyDigi(digi, indice) {
+  const did = digi && digi.did != null ? String(digi.did).trim() : "";
+  if (did) return "did:" + did;
+  const nome = tierListNormalizarTexto(digi && (digi.digimon || digi.name));
+  const stage = normalizarStageDigidex(digi && digi.stage) || "stage";
+  return "name:" + (nome || "digi-" + indice) + ":" + stage;
+}
+
+function tierListLerEstado() {
+  if (tierListEstado) return tierListEstado;
+
+  let salvo = null;
+  try {
+    salvo = JSON.parse(localStorage.getItem(HG_TIERLIST_STORAGE_KEY) || "null");
+  } catch (erro) {}
+
+  const padrao = tierListEstadoPadrao();
+  if (!salvo || typeof salvo !== "object" || !Array.isArray(salvo.tiers) || !salvo.tiers.length) {
+    tierListEstado = padrao;
+    return tierListEstado;
+  }
+
+  const ids = new Set();
+  const tiers = salvo.tiers.map(function(tier, indice) {
+    let id = String(tier && tier.id || "").trim() || tierListId();
+    if (ids.has(id)) id = tierListId();
+    ids.add(id);
+    return {
+      id: id,
+      name: String(tier && tier.name || "TIER " + (indice + 1)).trim().slice(0, 28) || "TIER " + (indice + 1),
+      color: tierListCorValida(tier && tier.color, HG_TIERLIST_COLORS[indice % HG_TIERLIST_COLORS.length]),
+      items: Array.isArray(tier && tier.items) ? tier.items.map(String) : []
+    };
+  });
+
+  tierListEstado = {
+    version: 1,
+    title: String(salvo.title || padrao.title).trim().slice(0, 70) || padrao.title,
+    tiers: tiers,
+    pool: Array.isArray(salvo.pool) ? salvo.pool.map(String) : []
+  };
+
+  return tierListEstado;
+}
+
+function tierListSalvarEstado(imediato) {
+  if (!tierListEstado) return;
+  if (tierListSalvarTimer) {
+    clearTimeout(tierListSalvarTimer);
+    tierListSalvarTimer = null;
+  }
+
+  const gravar = function() {
+    try {
+      localStorage.setItem(HG_TIERLIST_STORAGE_KEY, JSON.stringify(tierListEstado));
+    } catch (erro) {
+      console.warn("Não foi possível salvar a Tier List:", erro);
+    }
+  };
+
+  if (imediato) gravar();
+  else tierListSalvarTimer = setTimeout(gravar, 120);
+}
+
+function tierListIconeLocal(nome) {
+  const slug = typeof builderSlugDigimonExport === "function"
+    ? builderSlugDigimonExport(nome)
+    : tierListNormalizarTexto(nome).replace(/\s+/g, "-");
+  return slug ? "digivolution_assets/digimons/" + slug + ".webp" : "";
+}
+
+function tierListMontarCatalogo() {
+  const mapa = new Map();
+
+  (Array.isArray(database) ? database : []).forEach(function(digi, indice) {
+    const nome = String(digi && (digi.digimon || digi.name) || "").trim();
+    if (!nome) return;
+
+    const stage = normalizarStageDigidex(digi && digi.stage);
+    if (stage && Array.isArray(DIGIDEX_STAGES) && !DIGIDEX_STAGES.includes(stage)) return;
+
+    const key = tierListKeyDigi(digi, indice);
+    if (mapa.has(key)) return;
+
+    const type = normalizarType(digi && digi.type);
+    const local = tierListIconeLocal(nome);
+
+    mapa.set(key, {
+      key: key,
+      name: nome,
+      icon: String(digi && digi.icon || "").trim() || local,
+      fallback: local,
+      stage: stage || "",
+      type: type || ""
+    });
+  });
+
+  tierListCatalogo = Array.from(mapa.values()).sort(function(a, b) {
+    return a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base", numeric: true });
+  });
+  tierListCatalogoMap = new Map(tierListCatalogo.map(function(digi) { return [digi.key, digi]; }));
+}
+
+function tierListSincronizarDatabase() {
+  tierListLerEstado();
+  tierListMontarCatalogo();
+
+  if (!tierListCatalogo.length) {
+    tierListRenderizar();
+    return;
+  }
+
+  const validos = new Set(tierListCatalogo.map(function(digi) { return digi.key; }));
+  const usados = new Set();
+
+  tierListEstado.tiers.forEach(function(tier) {
+    tier.items = tier.items.filter(function(key) {
+      key = String(key);
+      if (!validos.has(key) || usados.has(key)) return false;
+      usados.add(key);
+      return true;
+    });
+  });
+
+  tierListEstado.pool = tierListEstado.pool.filter(function(key) {
+    key = String(key);
+    if (!validos.has(key) || usados.has(key)) return false;
+    usados.add(key);
+    return true;
+  });
+
+  tierListCatalogo.forEach(function(digi) {
+    if (!usados.has(digi.key)) {
+      usados.add(digi.key);
+      tierListEstado.pool.push(digi.key);
+    }
+  });
+
+  tierListSalvarEstado(true);
+  tierListRenderizar();
+}
+
+function tierListEscAttr(valor) {
+  return escaparHtml(String(valor == null ? "" : valor));
+}
+
+function tierListCardHtml(key) {
+  const digi = tierListCatalogoMap.get(String(key));
+  if (!digi) return "";
+
+  const typeIcon = digi.type && TYPE_ICONS[digi.type] ? TYPE_ICONS[digi.type] : "";
+  const meta = [digi.stage, digi.type].filter(Boolean).join(" · ");
+
+  return `
+    <article class="tierlist-digi" data-key="${tierListEscAttr(digi.key)}" data-name="${tierListEscAttr(tierListNormalizarTexto(digi.name))}" data-stage="${tierListEscAttr(digi.stage)}" data-type="${tierListEscAttr(digi.type)}" title="${tierListEscAttr(digi.name)}${meta ? " — " + tierListEscAttr(meta) : ""}">
+      <button type="button" class="tierlist-card-return" data-html2canvas-ignore="true" aria-label="Voltar ${tierListEscAttr(digi.name)} para disponíveis" onclick="tierListRetornarPool('${tierListEscAttr(digi.key)}', event)">×</button>
+      <span class="tierlist-digi-image">
+        ${digi.icon ? `<img class="tierlist-digi-img" src="${tierListEscAttr(digi.icon)}" data-fallback="${tierListEscAttr(digi.fallback)}" alt="${tierListEscAttr(digi.name)}" loading="lazy" draggable="false" onerror="tierListImagemErro(this)">` : `<span class="tierlist-no-icon">?</span>`}
+        ${typeIcon ? `<img class="tierlist-type-mini" src="${tierListEscAttr(typeIcon)}" alt="${tierListEscAttr(digi.type)}" draggable="false">` : ""}
+      </span>
+      <strong>${escaparHtml(digi.name)}</strong>
+      ${digi.stage ? `<small>${escaparHtml(digi.stage)}</small>` : ""}
+    </article>
+  `;
+}
+
+function tierListImagemErro(img) {
+  if (!img) return;
+  const fallback = String(img.dataset && img.dataset.fallback || "").trim();
+  if (!img.dataset.tierFallbackTried && fallback && String(img.src || "").indexOf(fallback) === -1) {
+    img.dataset.tierFallbackTried = "1";
+    img.src = fallback;
+    return;
+  }
+  const shell = img.closest ? img.closest(".tierlist-digi-image") : null;
+  if (shell) {
+    shell.classList.add("sem-icone");
+    if (!shell.querySelector(".tierlist-no-icon")) {
+      const span = document.createElement("span");
+      span.className = "tierlist-no-icon";
+      span.textContent = "?";
+      shell.appendChild(span);
+    }
+  }
+  img.hidden = true;
+}
+
+function tierListRenderizarRows() {
+  const rows = document.getElementById("tierListRows");
+  if (!rows || !tierListEstado) return;
+
+  rows.innerHTML = tierListEstado.tiers.map(function(tier, indice) {
+    const cor = tierListCorValida(tier.color, HG_TIERLIST_COLORS[indice % HG_TIERLIST_COLORS.length]);
+    return `
+      <article class="tierlist-row" data-tier-id="${tierListEscAttr(tier.id)}" style="--tier-color:${cor}">
+        <div class="tierlist-label">
+          <div class="tierlist-tier-name" contenteditable="true" spellcheck="false" role="textbox" aria-label="Nome da tier" oninput="tierListRenomearTier('${tierListEscAttr(tier.id)}', this.textContent)" onkeydown="tierListNomeKeydown(event, this)">${escaparHtml(tier.name)}</div>
+          <div class="tierlist-tier-controls" data-html2canvas-ignore="true">
+            <button type="button" title="Subir tier" aria-label="Subir tier" onclick="tierListMoverTier('${tierListEscAttr(tier.id)}', -1)">↑</button>
+            <button type="button" title="Descer tier" aria-label="Descer tier" onclick="tierListMoverTier('${tierListEscAttr(tier.id)}', 1)">↓</button>
+            <label title="Cor da tier" aria-label="Cor da tier"><input type="color" value="${cor}" onchange="tierListMudarCor('${tierListEscAttr(tier.id)}', this.value)"></label>
+            <button type="button" class="danger" title="Excluir tier" aria-label="Excluir tier" onclick="tierListExcluirTier('${tierListEscAttr(tier.id)}')">×</button>
+          </div>
+        </div>
+        <div class="tierlist-digi-zone tierlist-tier-zone" data-zone="tier" data-tier-id="${tierListEscAttr(tier.id)}">
+          ${tier.items.map(tierListCardHtml).join("")}
+          <div class="tierlist-zone-placeholder">ARRASTE AQUI</div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function tierListRenderizarPool() {
+  const pool = document.getElementById("tierListPool");
+  if (!pool || !tierListEstado) return;
+
+  if (!tierListCatalogo.length) {
+    pool.innerHTML = `<div class="tierlist-loading">Carregando Digimons da database...</div>`;
+    const total = document.getElementById("tierListPoolTotal");
+    const vis = document.getElementById("tierListPoolVisible");
+    if (total) total.textContent = "0";
+    if (vis) vis.textContent = "0";
+    return;
+  }
+
+  pool.innerHTML = tierListEstado.pool.map(tierListCardHtml).join("");
+  tierListAplicarFiltros();
+}
+
+function tierListRenderizar() {
+  tierListLerEstado();
+
+  const input = document.getElementById("tierListTitleInput");
+  const boardTitle = document.getElementById("tierListBoardTitle");
+  if (input && document.activeElement !== input) input.value = tierListEstado.title;
+  if (boardTitle) boardTitle.textContent = tierListEstado.title;
+
+  tierListRenderizarRows();
+  tierListRenderizarPool();
+  tierListCriarSortables();
+}
+
+function tierListDestruirSortables() {
+  tierListSortables.forEach(function(instancia) {
+    try { instancia.destroy(); } catch (erro) {}
+  });
+  tierListSortables = [];
+}
+
+function tierListCriarSortables() {
+  tierListDestruirSortables();
+  if (typeof Sortable === "undefined") return;
+
+  document.querySelectorAll("#tierListPagina .tierlist-digi-zone").forEach(function(zone) {
+    const instancia = Sortable.create(zone, {
+      group: { name: "hg-tier-list-digis", pull: true, put: true },
+      draggable: ".tierlist-digi",
+      animation: 170,
+      ghostClass: "tierlist-drag-ghost",
+      chosenClass: "tierlist-drag-chosen",
+      dragClass: "tierlist-dragging",
+      fallbackOnBody: true,
+      forceFallback: true,
+      delayOnTouchOnly: true,
+      delay: 90,
+      touchStartThreshold: 4,
+      swapThreshold: 0.62,
+      filter: ".tierlist-card-return",
+      preventOnFilter: false,
+      onStart: function() {
+        document.body.classList.add("tierlist-drag-active");
+      },
+      onEnd: function() {
+        document.body.classList.remove("tierlist-drag-active");
+        tierListCapturarOrdemDoDom();
+        tierListSalvarEstado();
+        tierListAplicarFiltros();
+      }
+    });
+    tierListSortables.push(instancia);
+  });
+}
+
+function tierListCapturarOrdemDoDom() {
+  if (!tierListEstado) return;
+
+  tierListEstado.tiers.forEach(function(tier) {
+    const zone = document.querySelector(`#tierListRows .tierlist-tier-zone[data-tier-id="${CSS.escape(tier.id)}"]`);
+    if (!zone) return;
+    tier.items = Array.from(zone.querySelectorAll(":scope > .tierlist-digi")).map(function(card) {
+      return String(card.dataset.key || "");
+    }).filter(Boolean);
+  });
+
+  const pool = document.getElementById("tierListPool");
+  if (pool) {
+    tierListEstado.pool = Array.from(pool.querySelectorAll(":scope > .tierlist-digi")).map(function(card) {
+      return String(card.dataset.key || "");
+    }).filter(Boolean);
+  }
+}
+
+function tierListAplicarFiltros() {
+  const pool = document.getElementById("tierListPool");
+  if (!pool) return;
+
+  const busca = tierListNormalizarTexto(document.getElementById("tierListSearch")?.value || "");
+  const stage = String(document.getElementById("tierListStageFilter")?.value || "").toUpperCase();
+  const type = String(document.getElementById("tierListTypeFilter")?.value || "").toUpperCase();
+  let visiveis = 0;
+  let total = 0;
+
+  Array.from(pool.querySelectorAll(":scope > .tierlist-digi")).forEach(function(card) {
+    total++;
+    const nome = String(card.dataset.name || "");
+    const stageCard = String(card.dataset.stage || "").toUpperCase();
+    const typeCard = String(card.dataset.type || "").toUpperCase();
+    const mostrar = (!busca || nome.includes(busca)) && (!stage || stageCard === stage) && (!type || typeCard === type);
+    card.hidden = !mostrar;
+    if (mostrar) visiveis++;
+  });
+
+  const visibleEl = document.getElementById("tierListPoolVisible");
+  const totalEl = document.getElementById("tierListPoolTotal");
+  const empty = document.getElementById("tierListEmpty");
+  if (visibleEl) visibleEl.textContent = String(visiveis);
+  if (totalEl) totalEl.textContent = String(total);
+  if (empty) empty.hidden = total === 0 || visiveis > 0;
+}
+
+function tierListLimparFiltros() {
+  const busca = document.getElementById("tierListSearch");
+  const stage = document.getElementById("tierListStageFilter");
+  const type = document.getElementById("tierListTypeFilter");
+  if (busca) busca.value = "";
+  if (stage) stage.value = "";
+  if (type) type.value = "";
+  tierListAplicarFiltros();
+}
+
+function tierListAtualizarTitulo(valor) {
+  tierListLerEstado();
+  const titulo = String(valor || "").replace(/\s+/g, " ").trimStart().slice(0, 70);
+  tierListEstado.title = titulo || "TIER LIST DSR";
+  const boardTitle = document.getElementById("tierListBoardTitle");
+  if (boardTitle) boardTitle.textContent = tierListEstado.title;
+  tierListSalvarEstado();
+}
+
+function tierListNomeKeydown(event, elemento) {
+  if (!event) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    if (elemento && elemento.blur) elemento.blur();
+  }
+}
+
+function tierListRenomearTier(id, valor) {
+  tierListLerEstado();
+  const tier = tierListEstado.tiers.find(function(item) { return item.id === id; });
+  if (!tier) return;
+  tier.name = String(valor || "").replace(/[\r\n]+/g, " ").slice(0, 28) || "TIER";
+  tierListSalvarEstado();
+}
+
+function tierListMudarCor(id, cor) {
+  tierListLerEstado();
+  const tier = tierListEstado.tiers.find(function(item) { return item.id === id; });
+  if (!tier) return;
+  tier.color = tierListCorValida(cor, tier.color);
+  const row = document.querySelector(`#tierListRows .tierlist-row[data-tier-id="${CSS.escape(id)}"]`);
+  if (row) row.style.setProperty("--tier-color", tier.color);
+  tierListSalvarEstado();
+}
+
+function tierListAdicionarTier() {
+  tierListLerEstado();
+  const indice = tierListEstado.tiers.length;
+  tierListEstado.tiers.push({
+    id: tierListId(),
+    name: "NOVA TIER",
+    color: HG_TIERLIST_COLORS[indice % HG_TIERLIST_COLORS.length],
+    items: []
+  });
+  tierListSalvarEstado(true);
+  tierListRenderizar();
+  requestAnimationFrame(function() {
+    const rows = document.getElementById("tierListRows");
+    if (rows) rows.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
+function tierListMoverTier(id, direcao) {
+  tierListLerEstado();
+  const atual = tierListEstado.tiers.findIndex(function(item) { return item.id === id; });
+  if (atual < 0) return;
+  const destino = atual + Number(direcao || 0);
+  if (destino < 0 || destino >= tierListEstado.tiers.length) return;
+  const movida = tierListEstado.tiers.splice(atual, 1)[0];
+  tierListEstado.tiers.splice(destino, 0, movida);
+  tierListSalvarEstado(true);
+  tierListRenderizar();
+}
+
+function tierListExcluirTier(id) {
+  tierListLerEstado();
+  if (tierListEstado.tiers.length <= 1) {
+    alert("A Tier List precisa ter pelo menos uma tier.");
+    return;
+  }
+  const indice = tierListEstado.tiers.findIndex(function(item) { return item.id === id; });
+  if (indice < 0) return;
+  const tier = tierListEstado.tiers[indice];
+  if (!confirm(`Excluir a tier \"${tier.name}\"?${tier.items.length ? " Os Digimons dela voltarão para disponíveis." : ""}`)) return;
+  tierListEstado.tiers.splice(indice, 1);
+  tierListEstado.pool = tierListEstado.pool.concat(tier.items);
+  tierListSalvarEstado(true);
+  tierListRenderizar();
+}
+
+function tierListRetornarPool(key, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  tierListLerEstado();
+  const chave = String(key || "");
+  let encontrado = false;
+  tierListEstado.tiers.forEach(function(tier) {
+    const antes = tier.items.length;
+    tier.items = tier.items.filter(function(item) { return item !== chave; });
+    if (tier.items.length !== antes) encontrado = true;
+  });
+  if (encontrado && !tierListEstado.pool.includes(chave)) tierListEstado.pool.push(chave);
+  tierListSalvarEstado(true);
+  tierListRenderizar();
+}
+
+function tierListResetar() {
+  if (!confirm("Resetar a Tier List DSR? As tiers personalizadas e posições salvas neste navegador serão apagadas.")) return;
+  try { localStorage.removeItem(HG_TIERLIST_STORAGE_KEY); } catch (erro) {}
+  tierListEstado = tierListEstadoPadrao();
+  tierListLimparFiltros();
+  tierListSincronizarDatabase();
+}
+
+function tierListAlternarModoStream(forcar) {
+  const pagina = document.getElementById("tierListPagina");
+  const sair = document.getElementById("tierListStreamExit");
+  if (!pagina) return;
+
+  const ativo = typeof forcar === "boolean" ? forcar : !tierListStreamAtivo;
+  tierListStreamAtivo = ativo;
+  pagina.classList.toggle("tierlist-stream-mode", ativo);
+  document.body.classList.toggle("hg-tierlist-stream-body", ativo);
+  if (sair) sair.hidden = !ativo;
+
+  if (ativo) {
+    requestAnimationFrame(function() {
+      const area = document.getElementById("tierListExportArea");
+      if (area) area.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+}
+
+async function tierListTrocarImagensParaExport(container) {
+  if (!container) return function() {};
+  const imagens = Array.from(container.querySelectorAll("img"));
+  const restaurar = [];
+
+  await Promise.all(imagens.map(async function(img) {
+    let candidatos = [];
+    if (img.closest && img.closest(".tierlist-export-logo-shell")) {
+      candidatos = ["holyguardians_logo.png"];
+    } else if (img.classList && img.classList.contains("tierlist-digi-img") && typeof builderCandidatosDigimonExport === "function") {
+      candidatos = builderCandidatosDigimonExport(img);
+    }
+    if (!candidatos.length) return;
+
+    let local = "";
+    for (let i = 0; i < candidatos.length; i++) {
+      if (typeof builderTestarImagemLocal === "function") {
+        local = await builderTestarImagemLocal(candidatos[i]);
+      } else {
+        local = candidatos[i];
+      }
+      if (local) break;
+    }
+    if (!local) return;
+
+    restaurar.push({ img: img, src: img.getAttribute("src") || "", loading: img.getAttribute("loading") });
+    img.removeAttribute("loading");
+    img.src = local;
+    if (typeof builderEsperarImagem === "function") await builderEsperarImagem(img, 1600);
+  }));
+
+  return function() {
+    restaurar.forEach(function(item) {
+      item.img.src = item.src;
+      if (item.loading == null) item.img.removeAttribute("loading");
+      else item.img.setAttribute("loading", item.loading);
+    });
+  };
+}
+
+async function tierListExportarPng() {
+  if (typeof html2canvas !== "function") {
+    alert("O gerador de imagem ainda não carregou. Atualize a página e tente novamente.");
+    return;
+  }
+
+  const area = document.getElementById("tierListExportArea");
+  const pagina = document.getElementById("tierListPagina");
+  const botao = document.getElementById("tierListExportBtn");
+  if (!area || !pagina) return;
+
+  const original = botao ? botao.innerHTML : "";
+  let restaurar = function() {};
+
+  try {
+    if (botao) {
+      botao.disabled = true;
+      botao.innerHTML = "<span>◌</span> GERANDO PNG...";
+    }
+
+    pagina.classList.add("tierlist-exporting");
+    restaurar = await tierListTrocarImagensParaExport(area);
+    if (typeof builderEsperarImagens === "function") await builderEsperarImagens(area);
+    await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
+
+    const canvas = await html2canvas(area, {
+      backgroundColor: "#030914",
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      imageTimeout: 5000,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      windowWidth: Math.max(document.documentElement.clientWidth, area.scrollWidth + 40),
+      windowHeight: Math.max(document.documentElement.clientHeight, area.scrollHeight + 40),
+      ignoreElements: function(element) {
+        return element.hasAttribute && element.hasAttribute("data-html2canvas-ignore");
+      }
+    });
+
+    const blob = await new Promise(function(resolve) { canvas.toBlob(resolve, "image/png", 1); });
+    if (!blob) throw new Error("Não foi possível montar o arquivo PNG.");
+
+    const nome = tierListNormalizarTexto(tierListEstado && tierListEstado.title || "tier-list-dsr").replace(/\s+/g, "_") || "tier_list_dsr";
+    const data = typeof builderDataArquivo === "function" ? builderDataArquivo() : new Date().toISOString().slice(0, 10);
+    builderBaixarBlob(blob, "holy_guardians_" + nome + "_" + data + ".png");
+  } catch (erro) {
+    console.error("Erro ao exportar Tier List:", erro);
+    alert("Não foi possível gerar o PNG da Tier List. Atualize a página e tente novamente.");
+  } finally {
+    try { restaurar(); } catch (erro) {}
+    pagina.classList.remove("tierlist-exporting");
+    if (botao) {
+      botao.disabled = false;
+      botao.innerHTML = original;
+    }
+  }
+}
+
+function inicializarTierListDsr() {
+  if (!document.getElementById("tierListPagina")) return;
+  tierListLerEstado();
+
+  if (!tierListInicializada) {
+    tierListInicializada = true;
+    window.addEventListener("beforeunload", function() { tierListSalvarEstado(true); });
+  }
+
+  if (Array.isArray(database) && database.length) tierListSincronizarDatabase();
+  else tierListRenderizar();
+}
 
 /* =====================================================
    FERRAMENTAS HG — SORTEIO

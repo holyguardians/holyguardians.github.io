@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-sorteio-v1-12-realtime">
+  <link rel="stylesheet" href="styles.css?v=20260820-tierlist-v1-15">
 </head>
 <body>
 
@@ -131,6 +131,7 @@
 
       <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
         <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+        <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
       </div>
     </div>
 
@@ -2317,6 +2318,104 @@
      FERRAMENTAS HG — SORTEIO
 ===================================================== -->
 
+<section id="tierListPagina" class="pagina">
+  <div class="tierlist-wrap">
+    <header class="tierlist-hero">
+      <div>
+        <div class="tierlist-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
+        <h1>TIER LIST DSR</h1>
+        <p>Monte sua própria Tier List com os Digimons da nossa base. Crie quantas tiers quiser, renomeie, escolha as cores e arraste os ícones livremente.</p>
+      </div>
+      <div class="tierlist-hero-badge" aria-hidden="true">
+        <span>DRAG</span>
+        <strong>&amp;</strong>
+        <span>DROP</span>
+      </div>
+    </header>
+
+    <section class="tierlist-toolbar tech-corners" data-html2canvas-ignore="true">
+      <label class="tierlist-field tierlist-title-field">
+        <span>TÍTULO DA TIER LIST</span>
+        <input id="tierListTitleInput" type="text" maxlength="70" value="TIER LIST DSR" autocomplete="off" oninput="tierListAtualizarTitulo(this.value)">
+      </label>
+
+      <div class="tierlist-toolbar-actions">
+        <button type="button" class="tierlist-action primary" onclick="tierListAdicionarTier()"><span>＋</span> ADICIONAR TIER</button>
+        <button type="button" class="tierlist-action" onclick="tierListAlternarModoStream()"><span>◉</span> MODO STREAM</button>
+        <button type="button" class="tierlist-action export" id="tierListExportBtn" onclick="tierListExportarPng()"><span>▣</span> EXPORTAR PNG</button>
+        <button type="button" class="tierlist-action danger" onclick="tierListResetar()"><span>↺</span> RESETAR</button>
+      </div>
+    </section>
+
+    <section id="tierListExportArea" class="tierlist-export-area tech-corners">
+      <div class="tierlist-export-head">
+        <div class="tierlist-export-brand">
+          <span class="tierlist-export-logo-shell"><img src="holyguardians_logo.png" alt="Holy Guardians"></span>
+          <div>
+            <small>HOLY GUARDIANS // DSR TOOLS</small>
+            <strong id="tierListBoardTitle">TIER LIST DSR</strong>
+          </div>
+        </div>
+        <div class="tierlist-export-signature">holyguardians.github.io</div>
+      </div>
+
+      <div id="tierListRows" class="tierlist-rows" aria-live="polite"></div>
+    </section>
+
+    <section class="tierlist-pool-panel tech-corners">
+      <div class="tierlist-pool-head">
+        <div>
+          <small>DIGIMONS DISPONÍVEIS</small>
+          <strong>ARRASTE PARA A TIER DESEJADA</strong>
+        </div>
+        <div class="tierlist-pool-count"><b id="tierListPoolVisible">0</b><span>/</span><em id="tierListPoolTotal">0</em></div>
+      </div>
+
+      <div class="tierlist-filters" data-html2canvas-ignore="true">
+        <label class="tierlist-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="tierListSearch" type="search" autocomplete="off" placeholder="Procurar Digimon..." oninput="tierListAplicarFiltros()">
+        </label>
+
+        <label class="tierlist-filter-field">
+          <span>STAGE</span>
+          <select id="tierListStageFilter" onchange="tierListAplicarFiltros()">
+            <option value="">TODOS</option>
+            <option value="ROOKIE">ROOKIE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="ULTIMATE">ULTIMATE</option>
+            <option value="MEGA">MEGA</option>
+          </select>
+        </label>
+
+        <label class="tierlist-filter-field">
+          <span>TYPE</span>
+          <select id="tierListTypeFilter" onchange="tierListAplicarFiltros()">
+            <option value="">TODOS</option>
+            <option value="VACCINE">VACCINE</option>
+            <option value="VIRUS">VIRUS</option>
+            <option value="DATA">DATA</option>
+            <option value="FREE">FREE</option>
+            <option value="UNKNOWN">UNKNOWN</option>
+          </select>
+        </label>
+
+        <button type="button" class="tierlist-clear-filter" onclick="tierListLimparFiltros()">LIMPAR FILTROS</button>
+      </div>
+
+      <div id="tierListPool" class="tierlist-digi-zone tierlist-pool" data-zone="pool"></div>
+      <div id="tierListEmpty" class="tierlist-empty" hidden>Nenhum Digimon corresponde aos filtros.</div>
+    </section>
+
+    <div class="tierlist-tip" data-html2canvas-ignore="true">
+      <span>💡</span>
+      <p><strong>Dica:</strong> arraste os Digimons entre as tiers ou de volta para a lista. As alterações são salvas automaticamente neste navegador.</p>
+    </div>
+  </div>
+
+  <button id="tierListStreamExit" type="button" class="tierlist-stream-exit" onclick="tierListAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+</section>
+
 <section id="sorteioPagina" class="pagina">
   <div class="sorteio-wrap">
     <div class="sorteio-hero">
@@ -2766,6 +2865,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="script.js?v=20260820-sorteio-v1-12-realtime"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="script.js?v=20260820-tierlist-v1-15"></script>
 </body>
 </html>
