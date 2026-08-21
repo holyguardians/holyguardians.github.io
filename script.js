@@ -15674,3 +15674,43 @@ function hgAtivarArrasteMenuPrincipal() {
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgAtivarArrasteMenuPrincipal);
 else hgAtivarArrasteMenuPrincipal();
+
+/* Impmon Live Runner. O futuro Worker chamará hgMostrarImpmonLive(dados). */
+let hgImpmonLiveTimer = null;
+function hgMostrarImpmonLive(lives) {
+  const lista = Array.isArray(lives) ? lives.filter(Boolean) : [];
+  if (!lista.length) return hgOcultarImpmonLive();
+  const primeira = typeof lista[0] === "string" ? { nome: lista[0], url: "#comunidade" } : lista[0];
+  const nomes = lista.map(function(live) { return typeof live === "string" ? live : (live.nome || live.name || "Streamer HG"); }).join(" • ");
+  const caixa = document.getElementById("hgImpmonLive");
+  const label = document.getElementById("hgImpmonLiveNames");
+  const link = document.getElementById("hgImpmonLiveLink");
+  if (!caixa || !label || !link) return;
+  label.textContent = nomes;
+  link.href = primeira.url || "#comunidade";
+  caixa.hidden = false;
+  caixa.classList.remove("hg-impmon-saindo");
+  clearTimeout(hgImpmonLiveTimer);
+  hgImpmonLiveTimer = setTimeout(hgOcultarImpmonLive, 18000);
+}
+function hgOcultarImpmonLive() {
+  clearTimeout(hgImpmonLiveTimer);
+  const caixa = document.getElementById("hgImpmonLive");
+  if (caixa) caixa.hidden = true;
+}
+function hgAbrirLiveImpmon(event) {
+  const link = event && event.currentTarget;
+  const destino = String(link && link.getAttribute("href") || "");
+  if (destino === "#comunidade") {
+    event.preventDefault();
+    mostrarPagina("socialPagina", document.getElementById("btnSocial"));
+  }
+}
+function hgIniciarImpmonLiveRunner() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("impmon-demo") === "1") {
+    setTimeout(function() { hgMostrarImpmonLive([{ nome: "LIVE HG — TESTE", url: "#comunidade" }]); }, 650);
+  }
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgIniciarImpmonLiveRunner);
+else hgIniciarImpmonLiveRunner();
