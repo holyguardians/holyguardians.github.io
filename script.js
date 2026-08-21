@@ -9951,6 +9951,7 @@ function fecharFeaturesNavMenu(){
   const button=document.getElementById("btnFeatures");
   if(dropdown)dropdown.classList.remove("aberto");
   if(button)button.setAttribute("aria-expanded","false");
+  if(!document.querySelector(".nav-dropdown.aberto")) document.querySelector(".topbar")?.classList.remove("nav-dropdown-open");
 }
 function toggleFeaturesNavMenu(event){
   if(event){event.preventDefault();event.stopPropagation()}
@@ -9961,6 +9962,7 @@ function toggleFeaturesNavMenu(event){
   fecharPvpNavMenu();
   dropdown.classList.toggle("aberto",abrir);
   if(button)button.setAttribute("aria-expanded",abrir?"true":"false");
+  document.querySelector(".topbar")?.classList.toggle("nav-dropdown-open",abrir);
 }
 function abrirSorteio(){
   fecharFeaturesNavMenu();
@@ -9978,6 +9980,7 @@ function fecharPvpNavMenu(){
   const b=document.getElementById("btnPvp");
   if(d)d.classList.remove("aberto");
   if(b)b.setAttribute("aria-expanded","false");
+  if(!document.querySelector(".nav-dropdown.aberto")) document.querySelector(".topbar")?.classList.remove("nav-dropdown-open");
 }
 function togglePvpNavMenu(event){
   if(event){event.preventDefault();event.stopPropagation()}
@@ -9988,6 +9991,7 @@ function togglePvpNavMenu(event){
   const abrir=!d.classList.contains("aberto");
   d.classList.toggle("aberto",abrir);
   if(b)b.setAttribute("aria-expanded",abrir?"true":"false");
+  document.querySelector(".topbar")?.classList.toggle("nav-dropdown-open",abrir);
 }
 function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}
 function pvpFecharStageMenu(){const el=document.getElementById("pvpStageSelect");if(el)el.classList.remove("aberto")}

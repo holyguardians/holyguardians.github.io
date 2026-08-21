@@ -16171,6 +16171,15 @@ body.pvp-modal-open{overflow:hidden}
 .topbar:not(.header-collapsed) .nav-menu.nav-menu-dragging { cursor: grabbing; user-select: none; }
 .topbar:not(.header-collapsed) .nav-menu > * { flex: 0 0 auto; }
 
+/* Ao abrir PvP/Ferramentas, libera o painel flutuante sem desfazer o scroll
+   horizontal no restante do menu. */
+.topbar.nav-dropdown-open,
+.topbar.nav-dropdown-open .nav-menu,
+.topbar:not(.header-collapsed):has(.nav-dropdown:hover),
+.topbar:not(.header-collapsed):has(.nav-dropdown:hover) .nav-menu {
+  overflow: visible !important;
+}
+
 /* Em telas menores a lógica é a mesma, apenas reduzimos um pouco a cápsula. */
 @media (max-width: 700px) {
   .header-collapse-indicator {
