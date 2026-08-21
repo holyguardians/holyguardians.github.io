@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-header-v2">
+  <link rel="stylesheet" href="styles.css?v=20260821-header-v3">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -2969,6 +2969,15 @@
 
 
 <div id="hgImpmonLive" class="hg-impmon-live" hidden aria-live="polite">
+  <button
+    id="hgImpmonLiveToggle"
+    class="hg-impmon-live-toggle"
+    type="button"
+    aria-label="Minimizar aviso de lives"
+    title="Minimizar"
+    aria-expanded="true"
+    onclick="hgAlternarImpmonLive(event)"
+  ><span aria-hidden="true">‹</span></button>
   <div id="hgImpmonLiveCard" class="hg-impmon-live-card">
     <div class="hg-impmon-runner" aria-hidden="true"></div>
     <div class="hg-impmon-sign">
@@ -2981,6 +2990,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-header-responsive-v1"></script>
+<script src="script.js?v=20260821-header-v3"></script>
 </body>
 </html>

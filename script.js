@@ -15867,6 +15867,38 @@ function hgNomeProviderImpmon(provider) {
   return "LIVE";
 }
 
+function hgAtualizarBotaoImpmonLive() {
+  const caixa = document.getElementById("hgImpmonLive");
+  const botao = document.getElementById("hgImpmonLiveToggle");
+  if (!caixa || !botao) return;
+
+  const minimizado = caixa.classList.contains("hg-impmon-minimized");
+  const simbolo = botao.querySelector("span");
+  if (simbolo) simbolo.textContent = minimizado ? "›" : "‹";
+  botao.setAttribute("aria-expanded", minimizado ? "false" : "true");
+  botao.setAttribute("aria-label", minimizado ? "Mostrar aviso de lives" : "Minimizar aviso de lives");
+  botao.title = minimizado ? "Mostrar Impmon" : "Minimizar";
+}
+
+function hgAlternarImpmonLive(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const caixa = document.getElementById("hgImpmonLive");
+  if (!caixa) return;
+
+  caixa.classList.toggle("hg-impmon-minimized");
+  hgAtualizarBotaoImpmonLive();
+}
+
+function hgResetImpmonLiveMinimizado() {
+  const caixa = document.getElementById("hgImpmonLive");
+  if (!caixa) return;
+  caixa.classList.remove("hg-impmon-minimized");
+  hgAtualizarBotaoImpmonLive();
+}
+
 function hgMostrarImpmonLive(lives, manterVisivel) {
   const lista = Array.isArray(lives) ? lives.filter(Boolean).map(hgNormalizarLiveImpmon) : [];
   if (!lista.length) return hgOcultarImpmonLive();
@@ -15937,6 +15969,7 @@ function hgMostrarImpmonLive(lives, manterVisivel) {
 
   caixa.hidden = false;
   caixa.classList.remove("hg-impmon-saindo");
+  hgAtualizarBotaoImpmonLive();
   clearTimeout(hgImpmonLiveTimer);
   if (!manterVisivel) hgImpmonLiveTimer = setTimeout(hgOcultarImpmonLive, 18000);
 }
@@ -16003,5 +16036,12 @@ function hgIniciarImpmonLiveRunner() {
   clearInterval(hgImpmonLiveMonitorTimer);
   hgImpmonLiveMonitorTimer = setInterval(atualizar, 90000);
 }
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgIniciarImpmonLiveRunner);
-else hgIniciarImpmonLiveRunner();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", function() {
+    hgResetImpmonLiveMinimizado();
+    hgIniciarImpmonLiveRunner();
+  });
+} else {
+  hgResetImpmonLiveMinimizado();
+  hgIniciarImpmonLiveRunner();
+}
