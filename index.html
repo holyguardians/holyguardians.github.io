@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-digidex-filters-v1">
+  <link rel="stylesheet" href="styles.css?v=20260821-digidex-filters-v5">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -1237,23 +1237,52 @@
         </div>
       </details>
 
-      <select id="ordenacao" class="filtro-select" onchange="filtrar()">
-        <option value="">ORDEM ALFABÉTICA</option>
-        <option value="STR">MAIOR STR</option>
-        <option value="INT">MAIOR INT</option>
-        <option value="DEF">MAIOR DEF</option>
-        <option value="HP">MAIOR HP</option>
-        <option value="SP">MAIOR SP</option>
-        <option value="RES">MAIOR RES</option>
-        <option value="SPD">MAIOR SPEED</option>
-        <option value="STR_ASC">MENOR STR</option>
-        <option value="INT_ASC">MENOR INT</option>
-        <option value="DEF_ASC">MENOR DEF</option>
-        <option value="HP_ASC">MENOR HP</option>
-        <option value="SP_ASC">MENOR SP</option>
-        <option value="RES_ASC">MENOR RES</option>
-        <option value="SPD_ASC">MENOR SPEED</option>
-      </select>
+      <details id="filtroOrdenacao" class="digidex-filter-menu digidex-sort-menu">
+        <summary>
+          <span id="digidexOrdenacaoLabel">ORDEM ALFABÉTICA</span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-sort-panel">
+          <div class="digidex-filter-title">ORDENAR RESULTADOS</div>
+
+          <div class="digidex-sort-options" role="menu">
+            <button type="button" class="digidex-sort-option ativo" data-sort=""
+              onclick="selecionarOrdenacaoDigidex('', 'ORDEM ALFABÉTICA', this)">ORDEM ALFABÉTICA</button>
+
+            <button type="button" class="digidex-sort-option" data-sort="STR"
+              onclick="selecionarOrdenacaoDigidex('STR', 'MAIOR STR', this)">MAIOR STR</button>
+            <button type="button" class="digidex-sort-option" data-sort="INT"
+              onclick="selecionarOrdenacaoDigidex('INT', 'MAIOR INT', this)">MAIOR INT</button>
+            <button type="button" class="digidex-sort-option" data-sort="DEF"
+              onclick="selecionarOrdenacaoDigidex('DEF', 'MAIOR DEF', this)">MAIOR DEF</button>
+            <button type="button" class="digidex-sort-option" data-sort="HP"
+              onclick="selecionarOrdenacaoDigidex('HP', 'MAIOR HP', this)">MAIOR HP</button>
+            <button type="button" class="digidex-sort-option" data-sort="SP"
+              onclick="selecionarOrdenacaoDigidex('SP', 'MAIOR SP', this)">MAIOR SP</button>
+            <button type="button" class="digidex-sort-option" data-sort="RES"
+              onclick="selecionarOrdenacaoDigidex('RES', 'MAIOR RES', this)">MAIOR RES</button>
+            <button type="button" class="digidex-sort-option" data-sort="SPD"
+              onclick="selecionarOrdenacaoDigidex('SPD', 'MAIOR SPEED', this)">MAIOR SPEED</button>
+
+            <div class="digidex-sort-divider"></div>
+
+            <button type="button" class="digidex-sort-option" data-sort="STR_ASC"
+              onclick="selecionarOrdenacaoDigidex('STR_ASC', 'MENOR STR', this)">MENOR STR</button>
+            <button type="button" class="digidex-sort-option" data-sort="INT_ASC"
+              onclick="selecionarOrdenacaoDigidex('INT_ASC', 'MENOR INT', this)">MENOR INT</button>
+            <button type="button" class="digidex-sort-option" data-sort="DEF_ASC"
+              onclick="selecionarOrdenacaoDigidex('DEF_ASC', 'MENOR DEF', this)">MENOR DEF</button>
+            <button type="button" class="digidex-sort-option" data-sort="HP_ASC"
+              onclick="selecionarOrdenacaoDigidex('HP_ASC', 'MENOR HP', this)">MENOR HP</button>
+            <button type="button" class="digidex-sort-option" data-sort="SP_ASC"
+              onclick="selecionarOrdenacaoDigidex('SP_ASC', 'MENOR SP', this)">MENOR SP</button>
+            <button type="button" class="digidex-sort-option" data-sort="RES_ASC"
+              onclick="selecionarOrdenacaoDigidex('RES_ASC', 'MENOR RES', this)">MENOR RES</button>
+            <button type="button" class="digidex-sort-option" data-sort="SPD_ASC"
+              onclick="selecionarOrdenacaoDigidex('SPD_ASC', 'MENOR SPEED', this)">MENOR SPEED</button>
+          </div>
+        </div>
+      </details>
 
       <button type="button" class="digidex-clear-filters" onclick="limparFiltrosDigidex()">
         LIMPAR FILTROS
@@ -3002,6 +3031,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-digidex-filters-v1"></script>
+<script src="script.js?v=20260821-digidex-filters-v5"></script>
 </body>
 </html>

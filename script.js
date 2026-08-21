@@ -100,6 +100,7 @@ let imagensSite = {};
 
 let filtroTypeSelecionado = "";
 let filtroStagesSelecionados = [];
+let digidexOrdenacaoSelecionada = "";
 
 const DIGIDEX_STAGES = ["ROOKIE", "CHAMPION", "ULTIMATE", "MEGA"];
 
@@ -152,26 +153,63 @@ const DIGIDEX_FIELDS = [
 
 
 const DIGIDEX_STATUS_EFFECTS = [
-  { id: "STUN",          label: "STUN",          mark: "⚡", aliases: ["STUN"] },
-  { id: "FREEZE",        label: "FREEZE",        mark: "❄", aliases: ["FREEZE", "FROZEN"] },
-  { id: "PETRIFY",       label: "PETRIFY",       mark: "◆", aliases: ["PETRIFY", "PETRIFIED", "PETRIFICATION"] },
-  { id: "CHARM",         label: "CHARM",         mark: "♥", aliases: ["CHARM"] },
-  { id: "CONFUSION",     label: "CONFUSION",     mark: "?", aliases: ["CONFUSION", "CONFUSE", "CONFUSED"] },
-  { id: "SLEEP",         label: "SLEEP",         mark: "Z", aliases: ["SLEEP"] },
-  { id: "PARALYSIS",     label: "PARALYSIS",     mark: "ϟ", aliases: ["PARALYSIS", "PARALYZE", "PARALYSED", "PARALYZED", "PARAL"] },
-  { id: "SILENCE",       label: "SILENCE",       mark: "×", aliases: ["SILENCE", "SILENCED"] },
-  { id: "SEAL",          label: "SEAL",          mark: "S", aliases: ["SEAL", "SEALED"] },
-  { id: "PRESSURE",      label: "PRESSURE",      mark: "P", aliases: ["PRESSURE"] },
-  { id: "VACUUM",        label: "VACUUM",        mark: "V", aliases: ["VACUUM"] },
-  { id: "ISOLATION",     label: "ISOLATION",     mark: "I", aliases: ["ISOLATION", "ISOLATE", "ISOLATED"] },
-  { id: "PANIC",         label: "PANIC",         mark: "!", aliases: ["PANIC"] },
-  { id: "METALLIZATION", label: "METALLIZATION", mark: "M", aliases: ["METALLIZATION", "METALLIZE", "METALLIZED"] },
-  { id: "SUBMERGE",      label: "SUBMERGE",      mark: "≈", aliases: ["SUBMERGE", "SUBMERGED"] },
-  { id: "SNIPER",        label: "SNIPER",        mark: "◎", aliases: ["SNIPER"] },
-  { id: "BIND",          label: "BIND",          mark: "B", aliases: ["BIND", "BOUND"] },
-  { id: "BLIND",         label: "BLIND",         mark: "◉", aliases: ["BLIND", "BLINDED"] },
-  { id: "FEAR",          label: "FEAR",          mark: "F", aliases: ["FEAR"] }
+  { id: "STUN",          label: "STUN",          icon: "HG_status_effect_icons/effect_stun.png",          mark: "⚡", aliases: ["STUN"] },
+  { id: "FREEZE",        label: "FREEZE",        icon: "HG_status_effect_icons/effect_freeze.png",        mark: "❄", aliases: ["FREEZE", "FROZEN"] },
+  { id: "PETRIFY",       label: "PETRIFY",       icon: "HG_status_effect_icons/effect_petrify.png",       mark: "◆", aliases: ["PETRIFY", "PETRIFIED", "PETRIFICATION"] },
+  { id: "CHARM",         label: "CHARM",         icon: "HG_status_effect_icons/effect_charm.png",         mark: "♥", aliases: ["CHARM"] },
+  { id: "CONFUSION",     label: "CONFUSION",     icon: "HG_status_effect_icons/effect_confusion.png",     mark: "?", aliases: ["CONFUSION", "CONFUSE", "CONFUSED"] },
+  { id: "SLEEP",         label: "SLEEP",         icon: "HG_status_effect_icons/effect_sleep.png",         mark: "Z", aliases: ["SLEEP", "ETERNAL SLEEP"] },
+  { id: "PARALYSIS",     label: "PARALYSIS",     icon: "HG_status_effect_icons/effect_paralysis.png",     mark: "ϟ", aliases: ["PARALYSIS", "PARALYZE", "PARALYSED", "PARALYZED", "PARAL"] },
+  { id: "SILENCE",       label: "SILENCE",       icon: "HG_status_effect_icons/effect_silence.png",       mark: "×", aliases: ["SILENCE", "SILENCED"] },
+  { id: "SEAL",          label: "SEAL",          icon: "HG_status_effect_icons/effect_seal.png",          mark: "S", aliases: ["SEAL", "SEALED"] },
+  { id: "PRESSURE",      label: "PRESSURE",      icon: "HG_status_effect_icons/effect_pressure.png",      mark: "P", aliases: ["PRESSURE"] },
+  { id: "VACUUM",        label: "VACUUM",        icon: "HG_status_effect_icons/effect_vacuum.png",        mark: "V", aliases: ["VACUUM"] },
+  { id: "ISOLATION",     label: "ISOLATION",     icon: "HG_status_effect_icons/effect_isolation.png",     mark: "I", aliases: ["ISOLATION", "ISOLATE", "ISOLATED"] },
+  { id: "PANIC",         label: "PANIC",         icon: "HG_status_effect_icons/effect_panic.png",         mark: "!", aliases: ["PANIC"] },
+  { id: "METALLIZATION", label: "METALLIZATION", icon: "HG_status_effect_icons/effect_metallization.png", mark: "M", aliases: ["METALLIZATION", "METALLIZE", "METALLIZED"] },
+  { id: "PUPPET",        label: "PUPPET",        icon: "HG_status_effect_icons/effect_puppet.png",        mark: "P", aliases: ["PUPPET", "PUPPETEER", "MARIONETTE"] },
+  { id: "SUBMERGE",      label: "SUBMERGE",      icon: "HG_status_effect_icons/effect_submerge.png",      mark: "≈", aliases: ["SUBMERGE", "SUBMERGED"] },
+  { id: "SNIPER",        label: "SNIPER",        icon: "HG_status_effect_icons/effect_sniper.png",        mark: "◎", aliases: ["SNIPER"] },
+  { id: "BIND",          label: "BIND",          icon: "HG_status_effect_icons/effect_bind.png",          mark: "B", aliases: ["BIND", "BOUND"] },
+  { id: "BLIND",         label: "BLIND",         icon: "HG_status_effect_icons/effect_blind.png",         mark: "◉", aliases: ["BLIND", "BLINDED"] },
+  { id: "FEAR",          label: "FEAR",          icon: "HG_status_effect_icons/effect_fear.png",          mark: "F", aliases: ["FEAR"] }
 ];
+
+function obterIconeStatusEffectDigidex(item) {
+  if (!item || !item.icon) return "";
+
+  const caminho =
+    String(item.icon);
+
+  const nomeArquivo =
+    caminho
+      .split("/")
+      .pop();
+
+  const nomeSemExtensao =
+    nomeArquivo
+      .replace(/\.(png|webp|jpg|jpeg)$/i, "");
+
+  /*
+   * DRIVE:
+   * procura pelo basename (ex.: effect_stun), mesmo que no Drive
+   * esteja dentro de PVP_ASSETS/HG_status_effect_icons.
+   *
+   * MAIN BRANCH:
+   * se a API não retornar o arquivo, usa o caminho organizado
+   * HG_status_effect_icons/effect_stun.png.
+   */
+  if (typeof pegarImagem === "function") {
+    const srcDrive =
+      pegarImagem(nomeSemExtensao);
+
+    if (srcDrive) {
+      return srcDrive;
+    }
+  }
+
+  return caminho;
+}
 
 function normalizarTextoStatusDigidex(valor) {
   return String(valor == null ? "" : valor)
@@ -296,7 +334,15 @@ function montarFiltroStatusEffectsDigidex() {
             onchange="filtrar()"
             ${checked}
           >
-          <span class="digidex-status-effect-mark">${item.mark}</span>
+          <span class="digidex-status-effect-mark">
+            <img
+              src="${obterIconeStatusEffectDigidex(item)}"
+              alt=""
+              loading="lazy"
+              onerror="this.hidden=true;this.nextElementSibling.hidden=false"
+            >
+            <b hidden>${item.mark}</b>
+          </span>
           <span>${item.label}</span>
           <small>${item.total}</small>
         </label>
@@ -616,13 +662,68 @@ function valorPossuiEfeitoDigidex(valor) {
 }
 
 
+function selecionarOrdenacaoDigidex(valor, label, botao) {
+  digidexOrdenacaoSelecionada =
+    String(valor || "");
+
+  const texto =
+    document.getElementById(
+      "digidexOrdenacaoLabel"
+    );
+
+  if (texto) {
+    texto.textContent =
+      label || "ORDEM ALFABÉTICA";
+  }
+
+  document.querySelectorAll(
+    ".digidex-sort-option"
+  ).forEach(function(item) {
+    item.classList.toggle(
+      "ativo",
+      item === botao
+    );
+  });
+
+  const menu =
+    document.getElementById(
+      "filtroOrdenacao"
+    );
+
+  if (menu) {
+    menu.removeAttribute("open");
+  }
+
+  filtrar();
+}
+
+
 function limparFiltrosDigidex() {
 
   const pesquisa = document.getElementById("pesquisa");
-  const ordenacao = document.getElementById("ordenacao");
 
   if (pesquisa) pesquisa.value = "";
-  if (ordenacao) ordenacao.value = "";
+
+  digidexOrdenacaoSelecionada = "";
+
+  const ordenacaoLabel =
+    document.getElementById(
+      "digidexOrdenacaoLabel"
+    );
+
+  if (ordenacaoLabel) {
+    ordenacaoLabel.textContent =
+      "ORDEM ALFABÉTICA";
+  }
+
+  document.querySelectorAll(
+    ".digidex-sort-option"
+  ).forEach(function(item) {
+    item.classList.toggle(
+      "ativo",
+      item.getAttribute("data-sort") === ""
+    );
+  });
 
   filtroTypeSelecionado = "";
   filtroStagesSelecionados = [];
@@ -3315,12 +3416,6 @@ function filtrar() {
       "pesquisa"
     );
 
-  const ordenacao =
-    document.getElementById(
-      "ordenacao"
-    );
-
-
   const texto =
     campo
       ? campo.value.toLowerCase().trim()
@@ -3337,9 +3432,7 @@ function filtrar() {
 
 
   const ordem =
-    ordenacao
-      ? ordenacao.value
-      : "";
+    digidexOrdenacaoSelecionada;
 
 
   const elementosSelecionados =

@@ -22959,3 +22959,146 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
     bottom: 10px;
   }
 }
+
+/* =====================================================
+   DIGIDEX — ORDENAÇÃO HG + STATUS ICONS
+===================================================== */
+
+#databasePagina .digidex-sort-menu > summary {
+  min-height: 46px;
+  border-color: #2b6cae;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 31, 62, .98),
+      rgba(5, 20, 43, .98)
+    );
+}
+
+#databasePagina .digidex-sort-menu[open] > summary {
+  border-color: #37dcff;
+  box-shadow:
+    0 0 0 2px rgba(51,216,255,.09),
+    0 0 13px rgba(0,159,255,.24),
+    inset 0 0 15px rgba(46,188,255,.06);
+}
+
+#databasePagina .digidex-sort-panel {
+  width: 205px;
+  min-width: 205px;
+  max-width: 205px;
+  padding: 8px;
+}
+
+#databasePagina .digidex-sort-options {
+  display: grid;
+  gap: 3px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+#databasePagina .digidex-sort-option {
+  position: relative;
+  min-height: 31px;
+  width: 100%;
+  padding: 6px 25px 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #d9eafd;
+  font-family: "Oxanium", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .15px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color .15s ease,
+    border-color .15s ease,
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+#databasePagina .digidex-sort-option:hover,
+#databasePagina .digidex-sort-option:focus-visible {
+  outline: 0;
+  color: #fff;
+  border-color: rgba(55, 182, 237, .34);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(18, 100, 168, .28),
+      rgba(7, 45, 91, .14)
+    );
+}
+
+#databasePagina .digidex-sort-option.ativo {
+  color: #f5fdff;
+  border-color: rgba(52, 217, 255, .52);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 113, 181, .42),
+      rgba(5, 57, 107, .24)
+    );
+  box-shadow:
+    inset 0 0 12px rgba(50, 199, 255, .07),
+    0 0 8px rgba(39, 194, 255, .09);
+}
+
+#databasePagina .digidex-sort-option.ativo::after {
+  content: "✓";
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #72edff;
+  font-size: 9px;
+  font-weight: 1000;
+  text-shadow: 0 0 7px rgba(72, 226, 255, .62);
+}
+
+#databasePagina .digidex-sort-divider {
+  height: 1px;
+  margin: 4px 3px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(57, 171, 230, .45),
+      transparent
+    );
+}
+
+.digidex-status-effect-mark {
+  overflow: hidden;
+}
+
+.digidex-status-effect-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.digidex-status-effect-mark b {
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #bdf7ff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.digidex-status-effect-mark b:not([hidden]) {
+  display: grid;
+}
+
+@media (max-width: 1240px) {
+  #databasePagina .filtros > .digidex-sort-menu {
+    min-width: 0;
+  }
+}
