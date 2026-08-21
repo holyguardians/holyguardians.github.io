@@ -16184,6 +16184,14 @@ body.pvp-modal-open{overflow:hidden}
   overflow-y: hidden !important;
 }
 
+/* O blur da barra cria um novo contexto para elementos fixed. Quando uma
+   lista abre, ele faria o painel ficar preso e cortado pelo scroller.
+   Desativamos o blur somente durante a abertura: o fundo continua opaco,
+   mas o dropdown pode sair da navbar sem mudar o scroll horizontal. */
+.topbar.nav-dropdown-open {
+  backdrop-filter: none;
+}
+
 /* Impmon Live Runner — o Worker preenche os nomes quando houver live HG. */
 .hg-impmon-live {
   position: fixed;
