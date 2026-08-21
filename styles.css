@@ -13871,8 +13871,7 @@ body.modal-open { overflow: hidden; }
 .nav-button-dropdown{height:100%}.nav-dropdown-chevron{margin-left:-3px;font-size:13px!important;line-height:1;opacity:.72;transition:transform .18s ease}
 .nav-dropdown.aberto .nav-dropdown-chevron{transform:rotate(180deg)}
 .nav-dropdown-menu{position:absolute;z-index:10050;left:50%;top:calc(100% - 4px);transform:translateX(-50%) translateY(7px);min-width:205px;padding:7px;border:1px solid rgba(52,177,255,.58);border-radius:9px;background:linear-gradient(180deg,rgba(6,24,51,.98),rgba(2,12,30,.99));box-shadow:0 18px 34px rgba(0,0,0,.52),0 0 18px rgba(0,142,255,.16),inset 0 0 18px rgba(0,145,255,.06);opacity:0;visibility:hidden;pointer-events:none;transition:.16s ease}
-.nav-dropdown.aberto .nav-dropdown-menu,.nav-dropdown-menu.hg-nav-dropdown-floating.hg-nav-dropdown-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-.nav-dropdown-menu.hg-nav-dropdown-floating{position:fixed;z-index:12100;left:0;top:0;max-width:calc(100vw - 16px);margin:0}
+.nav-dropdown.aberto .nav-dropdown-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);position:fixed;z-index:12100;left:var(--hg-nav-dropdown-x,50vw);top:var(--hg-nav-dropdown-y,80px);max-width:calc(100vw - 16px);margin:0}
 .nav-dropdown-menu::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:linear-gradient(90deg,transparent,#6de9ff,transparent)}
 .nav-dropdown-menu button{width:100%;border:0;border-radius:6px;padding:10px 12px;background:transparent;color:#ccecff;font-family:"Oxanium",Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:.55px;text-align:left;cursor:pointer;transition:.15s ease;white-space:nowrap}
 .nav-dropdown-menu button:hover{color:#fff;background:linear-gradient(90deg,rgba(20,121,218,.52),rgba(20,121,218,.12));box-shadow:inset 2px 0 0 #58dbff}
@@ -16159,6 +16158,7 @@ body.pvp-modal-open{overflow:hidden}
 /* A navegação deixa de apertar os itens: rola na horizontal e aceita arrastar. */
 .topbar:not(.header-collapsed) .nav-menu {
   min-width: 0;
+  transform: none !important;
   justify-content: flex-start !important;
   gap: clamp(8px, .65vw, 16px) !important;
   padding: 10px clamp(24px, 2vw, 46px) 10px clamp(30px, 2.4vw, 54px) !important;

@@ -9952,10 +9952,9 @@ function pvpMetaIconsHtml(digi){
 }
 
 
-/* O menu principal é um scroller horizontal. Dropdowns filhos dele seriam
-   recortados; liberar o overflow, por sua vez, fazia o Chrome resetar o
-   scrollLeft. Este portal mantém a lista no body e a ancora no botão real. */
-let hgNavMenuFlutuante = null;
+/* O menu principal é um scroller horizontal. A lista continua no próprio
+   dropdown; só muda para fixed enquanto aberta, sem mover nenhum nó no DOM. */
+let hgNavDropdownAberto = null;
 
 function hgAtualizarEstadoDropdownNav() {
   document.querySelector(".topbar")?.classList.toggle(
@@ -9964,8 +9963,8 @@ function hgAtualizarEstadoDropdownNav() {
   );
 }
 
-function hgPosicionarMenuNavFlutuante() {
-  const atual = hgNavMenuFlutuante;
+function hgPosicionarMenuNavAberto() {
+  const atual = hgNavDropdownAberto;
   if (!atual || !document.body.contains(atual.menu) || !document.body.contains(atual.button)) return;
 
   const botao = atual.button.getBoundingClientRect();
@@ -9976,30 +9975,8 @@ function hgPosicionarMenuNavFlutuante() {
     Math.min(window.innerWidth - margem - largura / 2, botao.left + botao.width / 2)
   );
 
-  atual.menu.style.left = `${Math.round(centro)}px`;
-  atual.menu.style.top = `${Math.round(botao.bottom - 4)}px`;
-}
-
-function hgPrepararPortalMenuNav() {
-  let portal = document.getElementById("hgNavDropdownPortal");
-  if (!portal) {
-    portal = document.createElement("div");
-    portal.id = "hgNavDropdownPortal";
-    document.body.appendChild(portal);
-  }
-
-  if (portal.dataset.hgNavPortalPronto !== "1") {
-    portal.dataset.hgNavPortalPronto = "1";
-    window.addEventListener("resize", hgPosicionarMenuNavFlutuante);
-    window.addEventListener("scroll", hgPosicionarMenuNavFlutuante, true);
-    document.addEventListener("pointerdown", function(event) {
-      const atual = hgNavMenuFlutuante;
-      if (!atual || atual.menu.contains(event.target) || atual.dropdown.contains(event.target)) return;
-      hgFecharMenuNav(atual.dropdown.id, atual.menu.id, atual.button.id);
-    }, true);
-  }
-
-  return portal;
+  atual.menu.style.setProperty("--hg-nav-dropdown-x", `${Math.round(centro)}px`);
+  atual.menu.style.setProperty("--hg-nav-dropdown-y", `${Math.round(botao.bottom - 4)}px`);
 }
 
 function hgAbrirMenuNav(dropdownId, menuId, buttonId) {
@@ -10008,24 +9985,16 @@ function hgAbrirMenuNav(dropdownId, menuId, buttonId) {
   const button = document.getElementById(buttonId);
   if (!dropdown || !menu || !button) return;
 
-  if (hgNavMenuFlutuante && hgNavMenuFlutuante.menu !== menu) {
-    const atual = hgNavMenuFlutuante;
+  if (hgNavDropdownAberto && hgNavDropdownAberto.menu !== menu) {
+    const atual = hgNavDropdownAberto;
     hgFecharMenuNav(atual.dropdown.id, atual.menu.id, atual.button.id);
   }
 
-  if (!menu._hgNavMenuOrigem) {
-    const marcador = document.createComment("hg-nav-menu-origem");
-    menu.parentNode.insertBefore(marcador, menu);
-    menu._hgNavMenuOrigem = marcador;
-  }
-
-  hgPrepararPortalMenuNav().appendChild(menu);
   dropdown.classList.add("aberto");
   button.setAttribute("aria-expanded", "true");
-  menu.classList.add("hg-nav-dropdown-floating", "hg-nav-dropdown-visible");
-  hgNavMenuFlutuante = { dropdown, menu, button };
+  hgNavDropdownAberto = { dropdown, menu, button };
   hgAtualizarEstadoDropdownNav();
-  requestAnimationFrame(hgPosicionarMenuNavFlutuante);
+  requestAnimationFrame(hgPosicionarMenuNavAberto);
 }
 
 function hgFecharMenuNav(dropdownId, menuId, buttonId) {
@@ -10037,21 +10006,15 @@ function hgFecharMenuNav(dropdownId, menuId, buttonId) {
   if (button) button.setAttribute("aria-expanded", "false");
 
   if (menu) {
-    const marcador = menu._hgNavMenuOrigem;
-    menu.classList.remove("hg-nav-dropdown-visible");
-    if (marcador?.parentNode) {
-      marcador.parentNode.insertBefore(menu, marcador.nextSibling);
-      marcador.remove();
-      delete menu._hgNavMenuOrigem;
-    }
-    menu.classList.remove("hg-nav-dropdown-floating");
-    menu.style.left = "";
-    menu.style.top = "";
+    menu.style.removeProperty("--hg-nav-dropdown-x");
+    menu.style.removeProperty("--hg-nav-dropdown-y");
   }
 
-  if (hgNavMenuFlutuante?.menu === menu) hgNavMenuFlutuante = null;
+  if (hgNavDropdownAberto?.menu === menu) hgNavDropdownAberto = null;
   hgAtualizarEstadoDropdownNav();
 }
+
+window.addEventListener("resize", hgPosicionarMenuNavAberto);
 
 function fecharFeaturesNavMenu(){
   hgFecharMenuNav("featuresNavDropdown", "featuresNavMenu", "btnFeatures");
