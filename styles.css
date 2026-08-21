@@ -12769,6 +12769,8 @@ body.modal-open { overflow: hidden; }
 
 .hg-discord-bot-link {
   position: relative;
+  z-index: 0;
+  isolation: isolate;
   width: 96px;
   min-width: 96px;
   height: 96px;
@@ -12783,7 +12785,36 @@ body.modal-open { overflow: hidden; }
   transition: transform .2s ease;
 }
 
+.hg-discord-bot-link::before,
+.hg-discord-bot-link::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .22s ease, transform .28s ease;
+}
+
+/* Feixes vazando por trás da logo, sem preencher o interior de vermelho. */
+.hg-discord-bot-link::before {
+  inset: -21px;
+  background: repeating-conic-gradient(from 8deg, rgba(255, 35, 59, 0) 0deg 12deg, rgba(255, 35, 59, .62) 15deg 18deg, rgba(255, 35, 59, 0) 23deg 36deg);
+  filter: blur(7px);
+  transform: scale(.68) rotate(-10deg);
+}
+.hg-discord-bot-link::after {
+  inset: -9px;
+  border: 2px solid rgba(255, 50, 70, .8);
+  box-shadow: 0 0 11px rgba(255, 26, 51, .95), 0 0 27px rgba(230, 24, 47, .58), 0 0 47px rgba(213, 19, 45, .26);
+  filter: blur(2px);
+  transform: scale(.78);
+}
+
 .hg-discord-bot-link img {
+  position: relative;
+  z-index: 1;
   width: 90px;
   height: 90px;
   object-fit: contain;
@@ -12795,8 +12826,12 @@ body.modal-open { overflow: hidden; }
 .hg-discord-bot-link span { display: none; }
 .hg-discord-bot-link:hover,
 .hg-discord-bot-link:focus-visible { transform: translateY(-3px) scale(1.06); }
+.hg-discord-bot-link:hover::before,
+.hg-discord-bot-link:focus-visible::before { opacity: .9; transform: scale(1.04) rotate(8deg); }
+.hg-discord-bot-link:hover::after,
+.hg-discord-bot-link:focus-visible::after { opacity: 1; transform: scale(1); }
 .hg-discord-bot-link:hover img,
-.hg-discord-bot-link:focus-visible img { transform: scale(1.07); filter: drop-shadow(0 3px 5px rgba(0,0,0,.42)) drop-shadow(0 -5px 7px rgba(255, 35, 57, .95)) drop-shadow(0 4px 8px rgba(204, 20, 43, .78)); }
+.hg-discord-bot-link:focus-visible img { transform: scale(1.07); filter: drop-shadow(0 3px 5px rgba(0,0,0,.42)) drop-shadow(0 -4px 5px rgba(255, 35, 57, .5)) drop-shadow(0 4px 5px rgba(204, 20, 43, .42)); }
 .hg-discord-bot-link:focus-visible { outline: 2px solid #ff6476; outline-offset: 3px; }
 
 .raid-alarm-control,
