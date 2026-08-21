@@ -15754,7 +15754,7 @@ else hgAtivarArrasteMenuPrincipal();
 /* Impmon Live Runner. O futuro Worker chamará hgMostrarImpmonLive(dados). */
 let hgImpmonLiveTimer = null;
 let hgImpmonLiveMonitorTimer = null;
-const HG_LIVE_MONITOR_URL = "https://evil-guardians-live-monitor.hiltongiusseppechiarelo.workers.dev/lives";
+const HG_LIVE_MONITOR_URL = "https://evil-guardians-live-monitor.hiltongiuseppechiarelo.workers.dev/lives";
 
 function hgMostrarImpmonLive(lives, manterVisivel) {
   const lista = Array.isArray(lives) ? lives.filter(Boolean) : [];
