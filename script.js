@@ -15687,7 +15687,6 @@ function hgAtivarArrasteMenuPrincipal() {
   let ponteiroAtivo = null;
   let inicioX = 0;
   let inicioScroll = 0;
-  let bloquearCliqueAte = 0;
   let scrollPendente = 0;
   let frameDeScroll = 0;
 
@@ -15711,11 +15710,16 @@ function hgAtivarArrasteMenuPrincipal() {
     if (!ativo || event.pointerId !== ponteiroAtivo) return;
     const distancia = event.clientX - inicioX;
     /* Um clique pode variar alguns pixels. Depois disso, vira um arrasto real. */
-    if (Math.abs(distancia) > 7) {
+    const limite = Math.max(0, menu.scrollWidth - menu.clientWidth);
+    const proximoScroll = Math.max(0, Math.min(limite, inicioScroll - distancia));
+
+    /* Só vira arrasto se a barra realmente tiver para onde andar. Isso deixa
+       qualquer botão comum clicável, inclusive nas pontas do menu. */
+    if (Math.abs(proximoScroll - inicioScroll) > 7) {
       event.preventDefault();
       arrastou = true;
       menu.classList.add("nav-menu-dragging");
-      scrollPendente = inicioScroll - distancia;
+      scrollPendente = proximoScroll;
       if (!frameDeScroll) frameDeScroll = requestAnimationFrame(aplicarScrollPendente);
     }
   });
@@ -15727,7 +15731,6 @@ function hgAtivarArrasteMenuPrincipal() {
       frameDeScroll = 0;
       menu.scrollLeft = scrollPendente;
     }
-    if (arrastou) bloquearCliqueAte = Date.now() + 180;
     if (menu.hasPointerCapture?.(ponteiroAtivo)) menu.releasePointerCapture(ponteiroAtivo);
     ativo = false;
     ponteiroAtivo = null;
@@ -15737,12 +15740,6 @@ function hgAtivarArrasteMenuPrincipal() {
   menu.addEventListener("pointercancel", encerrar);
   document.addEventListener("pointerup", encerrar);
   menu.addEventListener("dragstart", function(event) { event.preventDefault(); });
-  menu.addEventListener("click", function(event) {
-    if (Date.now() < bloquearCliqueAte) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }, true);
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgAtivarArrasteMenuPrincipal);
