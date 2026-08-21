@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-header-v3">
+  <link rel="stylesheet" href="styles.css?v=20260821-digidex-filters-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -1109,7 +1109,7 @@
         <button type="button" class="type-filter-btn" title="Free" onclick="selecionarFiltroType('FREE', this)"><img src="type_icons/type_free.png" alt="FREE"></button>
       </div>
 
-      <div class="stage-filter" aria-label="Filtrar por Stage">
+      <div class="stage-filter" aria-label="Filtrar por Stage — permite múltipla seleção">
         <span class="stage-filter-label">STAGE</span>
         <button type="button" class="stage-filter-btn ativo" data-stage="" onclick="selecionarFiltroStage('', this)">
           <strong>ALL</strong><small class="stage-filter-count" data-stage-count="ALL"></small>
@@ -1196,12 +1196,12 @@
 
       <details id="filtroEfeito" class="digidex-filter-menu">
         <summary>
-          <span>EFFECT</span>
+          <span>EFFECT TYPE</span>
           <span id="filtroEfeitoContador" class="digidex-filter-count"></span>
         </summary>
 
         <div class="digidex-filter-panel digidex-effect-panel">
-          <div class="digidex-filter-title">FILTRAR POR EFEITO</div>
+          <div class="digidex-filter-title">TIPO DE EFEITO</div>
 
           <div class="digidex-effect-list">
             <label class="digidex-check-item digidex-effect-item">
@@ -1222,6 +1222,18 @@
               <span>DEF BREAK</span>
             </label>
           </div>
+        </div>
+      </details>
+
+      <details id="filtroStatusEffect" class="digidex-filter-menu">
+        <summary>
+          <span>STATUS EFFECT</span>
+          <span id="filtroStatusEffectContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-status-effect-panel">
+          <div class="digidex-filter-title">EFEITO ESPECÍFICO</div>
+          <div id="filtroStatusEffectsLista" class="digidex-check-list digidex-status-effect-list"></div>
         </div>
       </details>
 
@@ -2990,6 +3002,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-header-v3"></script>
+<script src="script.js?v=20260821-digidex-filters-v1"></script>
 </body>
 </html>

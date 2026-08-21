@@ -99,7 +99,7 @@ let database = [];
 let imagensSite = {};
 
 let filtroTypeSelecionado = "";
-let filtroStageSelecionado = "";
+let filtroStagesSelecionados = [];
 
 const DIGIDEX_STAGES = ["ROOKIE", "CHAMPION", "ULTIMATE", "MEGA"];
 
@@ -149,6 +149,162 @@ const DIGIDEX_FIELDS = [
   "VB",
   "WG"
 ];
+
+
+const DIGIDEX_STATUS_EFFECTS = [
+  { id: "STUN",          label: "STUN",          mark: "⚡", aliases: ["STUN"] },
+  { id: "FREEZE",        label: "FREEZE",        mark: "❄", aliases: ["FREEZE", "FROZEN"] },
+  { id: "PETRIFY",       label: "PETRIFY",       mark: "◆", aliases: ["PETRIFY", "PETRIFIED", "PETRIFICATION"] },
+  { id: "CHARM",         label: "CHARM",         mark: "♥", aliases: ["CHARM"] },
+  { id: "CONFUSION",     label: "CONFUSION",     mark: "?", aliases: ["CONFUSION", "CONFUSE", "CONFUSED"] },
+  { id: "SLEEP",         label: "SLEEP",         mark: "Z", aliases: ["SLEEP"] },
+  { id: "PARALYSIS",     label: "PARALYSIS",     mark: "ϟ", aliases: ["PARALYSIS", "PARALYZE", "PARALYSED", "PARALYZED", "PARAL"] },
+  { id: "SILENCE",       label: "SILENCE",       mark: "×", aliases: ["SILENCE", "SILENCED"] },
+  { id: "SEAL",          label: "SEAL",          mark: "S", aliases: ["SEAL", "SEALED"] },
+  { id: "PRESSURE",      label: "PRESSURE",      mark: "P", aliases: ["PRESSURE"] },
+  { id: "VACUUM",        label: "VACUUM",        mark: "V", aliases: ["VACUUM"] },
+  { id: "ISOLATION",     label: "ISOLATION",     mark: "I", aliases: ["ISOLATION", "ISOLATE", "ISOLATED"] },
+  { id: "PANIC",         label: "PANIC",         mark: "!", aliases: ["PANIC"] },
+  { id: "METALLIZATION", label: "METALLIZATION", mark: "M", aliases: ["METALLIZATION", "METALLIZE", "METALLIZED"] },
+  { id: "SUBMERGE",      label: "SUBMERGE",      mark: "≈", aliases: ["SUBMERGE", "SUBMERGED"] },
+  { id: "SNIPER",        label: "SNIPER",        mark: "◎", aliases: ["SNIPER"] },
+  { id: "BIND",          label: "BIND",          mark: "B", aliases: ["BIND", "BOUND"] },
+  { id: "BLIND",         label: "BLIND",         mark: "◉", aliases: ["BLIND", "BLINDED"] },
+  { id: "FEAR",          label: "FEAR",          mark: "F", aliases: ["FEAR"] }
+];
+
+function normalizarTextoStatusDigidex(valor) {
+  return String(valor == null ? "" : valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+}
+
+function coletarTextoStatusDigidex(digi) {
+  const partes = [];
+
+  function adicionar(valor, profundidade) {
+    if (valor == null || profundidade > 3) return;
+
+    if (
+      typeof valor === "string" ||
+      typeof valor === "number" ||
+      typeof valor === "boolean"
+    ) {
+      partes.push(String(valor));
+      return;
+    }
+
+    if (Array.isArray(valor)) {
+      valor.forEach(function(item) {
+        adicionar(item, profundidade + 1);
+      });
+      return;
+    }
+
+    if (typeof valor === "object") {
+      Object.keys(valor).forEach(function(chave) {
+        if (
+          /cc|status|effect|efeito|type|description|desc/i.test(chave)
+        ) {
+          adicionar(valor[chave], profundidade + 1);
+        }
+      });
+    }
+  }
+
+  adicionar(digi && digi.cc, 0);
+  adicionar(digi && digi.skill1, 0);
+  adicionar(digi && digi.skill2, 0);
+  adicionar(digi && digi.skill3, 0);
+
+  return normalizarTextoStatusDigidex(partes.join(" "));
+}
+
+function digidexTemStatusEffect(digi, id) {
+  const config = DIGIDEX_STATUS_EFFECTS.find(function(item) {
+    return item.id === id;
+  });
+
+  if (!config) return false;
+
+  const texto = coletarTextoStatusDigidex(digi);
+
+  return config.aliases.some(function(alias) {
+    return texto.includes(normalizarTextoStatusDigidex(alias));
+  });
+}
+
+function montarFiltroStatusEffectsDigidex() {
+  const lista =
+    document.getElementById(
+      "filtroStatusEffectsLista"
+    );
+
+  if (!lista) return;
+
+  const selecionados =
+    valoresMarcadosDigidex(
+      ".digidex-status-effect-check"
+    );
+
+  const disponiveis =
+    DIGIDEX_STATUS_EFFECTS
+      .map(function(item) {
+        const total =
+          (Array.isArray(database) ? database : [])
+            .filter(function(digi) {
+              return digidexTemStatusEffect(
+                digi,
+                item.id
+              );
+            })
+            .length;
+
+        return Object.assign(
+          {},
+          item,
+          { total: total }
+        );
+      })
+      .filter(function(item) {
+        return item.total > 0;
+      });
+
+  if (!disponiveis.length) {
+    lista.innerHTML = `
+      <div class="digidex-status-effect-empty">
+        NENHUM SUBTIPO DE CC ENCONTRADO NA DATABASE
+      </div>
+    `;
+    return;
+  }
+
+  lista.innerHTML =
+    disponiveis.map(function(item) {
+      const checked =
+        selecionados.includes(item.id)
+          ? " checked"
+          : "";
+
+      return `
+        <label class="digidex-check-item digidex-status-effect-item">
+          <input
+            class="digidex-status-effect-check"
+            type="checkbox"
+            value="${item.id}"
+            onchange="filtrar()"
+            ${checked}
+          >
+          <span class="digidex-status-effect-mark">${item.mark}</span>
+          <span>${item.label}</span>
+          <small>${item.total}</small>
+        </label>
+      `;
+    }).join("");
+
+  atualizarContadoresFiltrosDigidex();
+}
 
 
 function obterElementosSkill(skill) {
@@ -382,6 +538,11 @@ function atualizarContadoresFiltrosDigidex() {
       ".digidex-effect-check"
     );
 
+  const statusEffectsMarcados =
+    valoresMarcadosDigidex(
+      ".digidex-status-effect-check"
+    );
+
   const skillCount =
     document.getElementById(
       "filtroSkillContador"
@@ -395,6 +556,11 @@ function atualizarContadoresFiltrosDigidex() {
   const efeitoCount =
     document.getElementById(
       "filtroEfeitoContador"
+    );
+
+  const statusEffectCount =
+    document.getElementById(
+      "filtroStatusEffectContador"
     );
 
   if (skillCount) {
@@ -415,6 +581,13 @@ function atualizarContadoresFiltrosDigidex() {
     efeitoCount.textContent =
       efeitosMarcados.length
         ? "(" + efeitosMarcados.length + ")"
+        : "";
+  }
+
+  if (statusEffectCount) {
+    statusEffectCount.textContent =
+      statusEffectsMarcados.length
+        ? "(" + statusEffectsMarcados.length + ")"
         : "";
   }
 
@@ -452,7 +625,7 @@ function limparFiltrosDigidex() {
   if (ordenacao) ordenacao.value = "";
 
   filtroTypeSelecionado = "";
-  filtroStageSelecionado = "";
+  filtroStagesSelecionados = [];
 
   document.querySelectorAll(".type-filter-btn").forEach(function(botao, indice) {
     botao.classList.toggle("ativo", indice === 0);
@@ -463,7 +636,7 @@ function limparFiltrosDigidex() {
   });
 
   document.querySelectorAll(
-    ".digidex-skill-element-check, .digidex-field-check, .digidex-effect-check"
+    ".digidex-skill-element-check, .digidex-field-check, .digidex-effect-check, .digidex-status-effect-check"
   ).forEach(function(input) {
     input.checked = false;
   });
@@ -554,6 +727,7 @@ function montarFiltrosAvancadosDigidex() {
 
   }
 
+  montarFiltroStatusEffectsDigidex();
   atualizarContadoresFiltrosDigidex();
   atualizarBotoesViewDigidex();
 
@@ -1475,15 +1649,49 @@ function normalizarStageDigidex(stage) {
 }
 
 function selecionarFiltroStage(stage, botao) {
-  const normalizado = normalizarStageDigidex(stage);
+  const normalizado =
+    normalizarStageDigidex(stage);
 
-  filtroStageSelecionado =
-    DIGIDEX_STAGES.includes(normalizado)
-      ? normalizado
-      : "";
+  if (!DIGIDEX_STAGES.includes(normalizado)) {
+    filtroStagesSelecionados = [];
+  } else {
+    const indice =
+      filtroStagesSelecionados.indexOf(
+        normalizado
+      );
+
+    if (indice >= 0) {
+      filtroStagesSelecionados.splice(
+        indice,
+        1
+      );
+    } else {
+      filtroStagesSelecionados.push(
+        normalizado
+      );
+    }
+  }
 
   document.querySelectorAll(".stage-filter-btn").forEach(function(item) {
-    item.classList.toggle("ativo", item === botao);
+    const valor =
+      normalizarStageDigidex(
+        item.getAttribute("data-stage")
+      );
+
+    const ativo =
+      valor
+        ? filtroStagesSelecionados.includes(valor)
+        : filtroStagesSelecionados.length === 0;
+
+    item.classList.toggle(
+      "ativo",
+      ativo
+    );
+
+    item.setAttribute(
+      "aria-pressed",
+      ativo ? "true" : "false"
+    );
   });
 
   filtrar();
@@ -3122,8 +3330,8 @@ function filtrar() {
   const tipoSelecionado =
     filtroTypeSelecionado;
 
-  const stageSelecionado =
-    filtroStageSelecionado;
+  const stagesSelecionados =
+    filtroStagesSelecionados.slice();
 
   atualizarContadoresStageDigidex();
 
@@ -3149,6 +3357,12 @@ function filtrar() {
   const efeitosSelecionados =
     valoresMarcadosDigidex(
       ".digidex-effect-check"
+    );
+
+
+  const statusEffectsSelecionados =
+    valoresMarcadosDigidex(
+      ".digidex-status-effect-check"
     );
 
 
@@ -3194,7 +3408,10 @@ function filtrar() {
 
         const stageOk =
           DIGIDEX_STAGES.includes(stage) &&
-          (!stageSelecionado || stage === stageSelecionado);
+          (
+            !stagesSelecionados.length ||
+            stagesSelecionados.includes(stage)
+          );
 
 
         let skillOk = true;
@@ -3285,13 +3502,27 @@ function filtrar() {
         }
 
 
+        let statusEffectOk = true;
+
+        if (statusEffectsSelecionados.length) {
+          statusEffectOk =
+            statusEffectsSelecionados.some(function(statusEffect) {
+              return digidexTemStatusEffect(
+                d,
+                statusEffect
+              );
+            });
+        }
+
+
         return (
           nomeOk &&
           tipoOk &&
           stageOk &&
           skillOk &&
           fieldOk &&
-          efeitoOk
+          efeitoOk &&
+          statusEffectOk
         );
 
       }
@@ -9152,6 +9383,8 @@ function carregarDatabase() {
         database =
           resposta.database ||
           [];
+
+        montarFiltroStatusEffectsDigidex();
 
         if (loading) {
           loading.style.display =
