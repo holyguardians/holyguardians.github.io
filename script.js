@@ -1813,18 +1813,8 @@ function aplicarEstadoSiteHeader(recolhido, persistir = true) {
 
   /* Garante que o submenu PvP não fique logicamente aberto atrás do header. */
   if (fechado) {
-    const dropdown = document.getElementById("pvpNavDropdown");
-    const pvpMenu = document.getElementById("pvpNavMenu");
-    const pvpButton = document.getElementById("btnPvp");
-    const featuresDropdown = document.getElementById("featuresNavDropdown");
-    const featuresMenu = document.getElementById("featuresNavMenu");
-    const featuresButton = document.getElementById("btnFeatures");
-    if (dropdown) dropdown.classList.remove("aberto", "open");
-    if (pvpMenu) pvpMenu.classList.remove("aberto", "open");
-    if (pvpButton) pvpButton.setAttribute("aria-expanded", "false");
-    if (featuresDropdown) featuresDropdown.classList.remove("aberto", "open");
-    if (featuresMenu) featuresMenu.classList.remove("aberto", "open");
-    if (featuresButton) featuresButton.setAttribute("aria-expanded", "false");
+    fecharPvpNavMenu();
+    fecharFeaturesNavMenu();
   }
 
   if (persistir) {
@@ -9962,23 +9952,121 @@ function pvpMetaIconsHtml(digi){
 }
 
 
+/* O menu principal é um scroller horizontal. Dropdowns filhos dele seriam
+   recortados; liberar o overflow, por sua vez, fazia o Chrome resetar o
+   scrollLeft. Este portal mantém a lista no body e a ancora no botão real. */
+let hgNavMenuFlutuante = null;
+
+function hgAtualizarEstadoDropdownNav() {
+  document.querySelector(".topbar")?.classList.toggle(
+    "nav-dropdown-open",
+    Boolean(document.querySelector(".nav-dropdown.aberto"))
+  );
+}
+
+function hgPosicionarMenuNavFlutuante() {
+  const atual = hgNavMenuFlutuante;
+  if (!atual || !document.body.contains(atual.menu) || !document.body.contains(atual.button)) return;
+
+  const botao = atual.button.getBoundingClientRect();
+  const largura = Math.max(205, atual.menu.getBoundingClientRect().width || 205);
+  const margem = 8;
+  const centro = Math.max(
+    margem + largura / 2,
+    Math.min(window.innerWidth - margem - largura / 2, botao.left + botao.width / 2)
+  );
+
+  atual.menu.style.left = `${Math.round(centro)}px`;
+  atual.menu.style.top = `${Math.round(botao.bottom - 4)}px`;
+}
+
+function hgPrepararPortalMenuNav() {
+  let portal = document.getElementById("hgNavDropdownPortal");
+  if (!portal) {
+    portal = document.createElement("div");
+    portal.id = "hgNavDropdownPortal";
+    document.body.appendChild(portal);
+  }
+
+  if (portal.dataset.hgNavPortalPronto !== "1") {
+    portal.dataset.hgNavPortalPronto = "1";
+    window.addEventListener("resize", hgPosicionarMenuNavFlutuante);
+    window.addEventListener("scroll", hgPosicionarMenuNavFlutuante, true);
+    document.addEventListener("pointerdown", function(event) {
+      const atual = hgNavMenuFlutuante;
+      if (!atual || atual.menu.contains(event.target) || atual.dropdown.contains(event.target)) return;
+      hgFecharMenuNav(atual.dropdown.id, atual.menu.id, atual.button.id);
+    }, true);
+  }
+
+  return portal;
+}
+
+function hgAbrirMenuNav(dropdownId, menuId, buttonId) {
+  const dropdown = document.getElementById(dropdownId);
+  const menu = document.getElementById(menuId);
+  const button = document.getElementById(buttonId);
+  if (!dropdown || !menu || !button) return;
+
+  if (hgNavMenuFlutuante && hgNavMenuFlutuante.menu !== menu) {
+    const atual = hgNavMenuFlutuante;
+    hgFecharMenuNav(atual.dropdown.id, atual.menu.id, atual.button.id);
+  }
+
+  if (!menu._hgNavMenuOrigem) {
+    const marcador = document.createComment("hg-nav-menu-origem");
+    menu.parentNode.insertBefore(marcador, menu);
+    menu._hgNavMenuOrigem = marcador;
+  }
+
+  hgPrepararPortalMenuNav().appendChild(menu);
+  dropdown.classList.add("aberto");
+  button.setAttribute("aria-expanded", "true");
+  menu.classList.add("hg-nav-dropdown-floating", "hg-nav-dropdown-visible");
+  hgNavMenuFlutuante = { dropdown, menu, button };
+  hgAtualizarEstadoDropdownNav();
+  requestAnimationFrame(hgPosicionarMenuNavFlutuante);
+}
+
+function hgFecharMenuNav(dropdownId, menuId, buttonId) {
+  const dropdown = document.getElementById(dropdownId);
+  const menu = document.getElementById(menuId);
+  const button = document.getElementById(buttonId);
+
+  if (dropdown) dropdown.classList.remove("aberto");
+  if (button) button.setAttribute("aria-expanded", "false");
+
+  if (menu) {
+    const marcador = menu._hgNavMenuOrigem;
+    menu.classList.remove("hg-nav-dropdown-visible");
+    if (marcador?.parentNode) {
+      marcador.parentNode.insertBefore(menu, marcador.nextSibling);
+      marcador.remove();
+      delete menu._hgNavMenuOrigem;
+    }
+    menu.classList.remove("hg-nav-dropdown-floating");
+    menu.style.left = "";
+    menu.style.top = "";
+  }
+
+  if (hgNavMenuFlutuante?.menu === menu) hgNavMenuFlutuante = null;
+  hgAtualizarEstadoDropdownNav();
+}
+
 function fecharFeaturesNavMenu(){
-  const dropdown=document.getElementById("featuresNavDropdown");
-  const button=document.getElementById("btnFeatures");
-  if(dropdown)dropdown.classList.remove("aberto");
-  if(button)button.setAttribute("aria-expanded","false");
-  if(!document.querySelector(".nav-dropdown.aberto")) document.querySelector(".topbar")?.classList.remove("nav-dropdown-open");
+  hgFecharMenuNav("featuresNavDropdown", "featuresNavMenu", "btnFeatures");
 }
 function toggleFeaturesNavMenu(event){
   if(event){event.preventDefault();event.stopPropagation()}
   const dropdown=document.getElementById("featuresNavDropdown");
-  const button=document.getElementById("btnFeatures");
   if(!dropdown)return;
   const abrir=!dropdown.classList.contains("aberto");
-  fecharPvpNavMenu();
-  dropdown.classList.toggle("aberto",abrir);
-  if(button)button.setAttribute("aria-expanded",abrir?"true":"false");
-  document.querySelector(".topbar")?.classList.toggle("nav-dropdown-open",abrir);
+  if (abrir) {
+    fecharPvpNavMenu();
+    hgAbrirMenuNav("featuresNavDropdown", "featuresNavMenu", "btnFeatures");
+  } else {
+    fecharFeaturesNavMenu();
+  }
 }
 function abrirSorteio(){
   fecharFeaturesNavMenu();
@@ -9992,22 +10080,19 @@ function abrirTierListDsr(){
 }
 
 function fecharPvpNavMenu(){
-  const d=document.getElementById("pvpNavDropdown");
-  const b=document.getElementById("btnPvp");
-  if(d)d.classList.remove("aberto");
-  if(b)b.setAttribute("aria-expanded","false");
-  if(!document.querySelector(".nav-dropdown.aberto")) document.querySelector(".topbar")?.classList.remove("nav-dropdown-open");
+  hgFecharMenuNav("pvpNavDropdown", "pvpNavMenu", "btnPvp");
 }
 function togglePvpNavMenu(event){
   if(event){event.preventDefault();event.stopPropagation()}
-  fecharFeaturesNavMenu();
-  const d=document.getElementById("pvpNavDropdown");
-  const b=document.getElementById("btnPvp");
-  if(!d)return;
-  const abrir=!d.classList.contains("aberto");
-  d.classList.toggle("aberto",abrir);
-  if(b)b.setAttribute("aria-expanded",abrir?"true":"false");
-  document.querySelector(".topbar")?.classList.toggle("nav-dropdown-open",abrir);
+  const dropdown=document.getElementById("pvpNavDropdown");
+  if(!dropdown)return;
+  const abrir=!dropdown.classList.contains("aberto");
+  if (abrir) {
+    fecharFeaturesNavMenu();
+    hgAbrirMenuNav("pvpNavDropdown", "pvpNavMenu", "btnPvp");
+  } else {
+    fecharPvpNavMenu();
+  }
 }
 function pvpToggleStageMenu(event){if(event){event.preventDefault();event.stopPropagation()}const el=document.getElementById("pvpStageSelect");if(el)el.classList.toggle("aberto")}
 function pvpFecharStageMenu(){const el=document.getElementById("pvpStageSelect");if(el)el.classList.remove("aberto")}
@@ -10398,8 +10483,12 @@ function exportarTimePvp(){
 }
 
 document.addEventListener("click",function(event){
-  const dropdown=document.getElementById("pvpNavDropdown");if(dropdown&&!dropdown.contains(event.target))fecharPvpNavMenu();
-  const featuresDropdown=document.getElementById("featuresNavDropdown");if(featuresDropdown&&!featuresDropdown.contains(event.target))fecharFeaturesNavMenu();
+  const dropdown=document.getElementById("pvpNavDropdown");
+  const pvpMenu=document.getElementById("pvpNavMenu");
+  if(dropdown&&!dropdown.contains(event.target)&&!(pvpMenu&&pvpMenu.contains(event.target)))fecharPvpNavMenu();
+  const featuresDropdown=document.getElementById("featuresNavDropdown");
+  const featuresMenu=document.getElementById("featuresNavMenu");
+  if(featuresDropdown&&!featuresDropdown.contains(event.target)&&!(featuresMenu&&featuresMenu.contains(event.target)))fecharFeaturesNavMenu();
   const stage=document.getElementById("pvpStageSelect");if(stage&&!stage.contains(event.target))pvpFecharStageMenu();
   const overlay=document.getElementById("pvpPickerOverlay");if(overlay&&event.target===overlay)pvpFecharPicker()
 });
