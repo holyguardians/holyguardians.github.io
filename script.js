@@ -15696,7 +15696,13 @@ function hgAtivarArrasteMenuPrincipal() {
   };
 
   menu.addEventListener("pointerdown", function(event) {
-    if (event.button !== 0 || !event.isPrimary || event.target.closest(".nav-dropdown-menu")) return;
+    if (
+      event.button !== 0 ||
+      !event.isPrimary ||
+      /* Botões e links nunca entram no gesto de arrastar. Assim o onclick
+         deles continua intacto; o arrasto acontece na área livre da barra. */
+      event.target.closest("button, a, input, select, textarea, .nav-dropdown-menu")
+    ) return;
     ativo = true;
     arrastou = false;
     ponteiroAtivo = event.pointerId;
