@@ -1879,6 +1879,15 @@ function mostrarPagina(
   atualizarUrl = true
 ) {
 
+  /* Se o usuário sair pela URL/voltar do navegador, não deixa o header
+     preso como oculto por um modo stream de outra ferramenta. */
+  if (id !== "sorteioPagina" && document.body.classList.contains("hg-sorteio-stream-body") && typeof sorteioAlternarModoStream === "function") {
+    sorteioAlternarModoStream(false);
+  }
+  if (id !== "tierListPagina" && document.body.classList.contains("hg-tierlist-stream-body") && typeof tierListAlternarModoStream === "function") {
+    tierListAlternarModoStream(false);
+  }
+
   document
     .querySelectorAll(
       ".pagina"
@@ -12385,7 +12394,7 @@ function tierListLerEstado() {
     ids.add(id);
     return {
       id: id,
-      name: String(tier && tier.name || "TIER " + (indice + 1)).trim().slice(0, 28) || "TIER " + (indice + 1),
+      name: String(tier && tier.name || "TIER " + (indice + 1)).trim().slice(0, 36) || "TIER " + (indice + 1),
       color: tierListCorValida(tier && tier.color, HG_TIERLIST_COLORS[indice % HG_TIERLIST_COLORS.length]),
       items: Array.isArray(tier && tier.items) ? tier.items.map(String) : []
     };
@@ -12442,11 +12451,16 @@ function tierListMontarCatalogo() {
 
     const type = normalizarType(digi && digi.type);
     const local = tierListIconeLocal(nome);
+    /* Alguns Digimons possuem grafia/asset excepcional. Reaproveita o mesmo
+       fallback já usado pela Digivolution em vez de fabricar um caminho novo. */
+    const especial = typeof fallbackSourceDigimonEvolution === "function"
+      ? String(fallbackSourceDigimonEvolution(nome) || "").trim()
+      : "";
 
     mapa.set(key, {
       key: key,
       name: nome,
-      icon: String(digi && digi.icon || "").trim() || local,
+      icon: especial || String(digi && digi.icon || "").trim() || local,
       fallback: local,
       stage: stage || "",
       type: type || ""
@@ -12543,6 +12557,21 @@ function tierListImagemErro(img) {
   img.hidden = true;
 }
 
+function tierListClasseNomeTier(valor) {
+  const texto = String(valor || "").replace(/\s+/g, " ").trim();
+  const maiorPalavra = texto.split(" ").reduce(function(max, palavra) {
+    return Math.max(max, palavra.length);
+  }, 0);
+  if (texto.length >= 23 || maiorPalavra >= 15) return "tierlist-tier-name tierlist-tier-name--tiny";
+  if (texto.length >= 12 || maiorPalavra >= 10) return "tierlist-tier-name tierlist-tier-name--compact";
+  return "tierlist-tier-name";
+}
+
+function tierListAtualizarClasseNomeTier(elemento) {
+  if (!elemento) return;
+  elemento.className = tierListClasseNomeTier(elemento.textContent || "");
+}
+
 function tierListRenderizarRows() {
   const rows = document.getElementById("tierListRows");
   if (!rows || !tierListEstado) return;
@@ -12552,7 +12581,7 @@ function tierListRenderizarRows() {
     return `
       <article class="tierlist-row" data-tier-id="${tierListEscAttr(tier.id)}" style="--tier-color:${cor}">
         <div class="tierlist-label">
-          <div class="tierlist-tier-name" contenteditable="true" spellcheck="false" role="textbox" aria-label="Nome da tier" oninput="tierListRenomearTier('${tierListEscAttr(tier.id)}', this.textContent)" onkeydown="tierListNomeKeydown(event, this)">${escaparHtml(tier.name)}</div>
+          <div class="${tierListClasseNomeTier(tier.name)}" contenteditable="true" spellcheck="false" role="textbox" aria-label="Nome da tier" oninput="tierListRenomearTier('${tierListEscAttr(tier.id)}', this.textContent, this)" onkeydown="tierListNomeKeydown(event, this)">${escaparHtml(tier.name)}</div>
           <div class="tierlist-tier-controls" data-html2canvas-ignore="true">
             <button type="button" title="Subir tier" aria-label="Subir tier" onclick="tierListMoverTier('${tierListEscAttr(tier.id)}', -1)">↑</button>
             <button type="button" title="Descer tier" aria-label="Descer tier" onclick="tierListMoverTier('${tierListEscAttr(tier.id)}', 1)">↓</button>
@@ -12714,11 +12743,12 @@ function tierListNomeKeydown(event, elemento) {
   }
 }
 
-function tierListRenomearTier(id, valor) {
+function tierListRenomearTier(id, valor, elemento) {
   tierListLerEstado();
   const tier = tierListEstado.tiers.find(function(item) { return item.id === id; });
   if (!tier) return;
-  tier.name = String(valor || "").replace(/[\r\n]+/g, " ").slice(0, 28) || "TIER";
+  tier.name = String(valor || "").replace(/[\r\n]+/g, " ").replace(/\s{2,}/g, " ").slice(0, 36) || "TIER";
+  tierListAtualizarClasseNomeTier(elemento);
   tierListSalvarEstado();
 }
 
@@ -12974,6 +13004,7 @@ let sorteioDigitamaRunId = 0;
 let sorteioDigitamaCache = [];
 let sorteioDigitamaReadyPromise = null;
 let sorteioScrollLock = null;
+let sorteioStreamAtivo = false;
 
 const HG_SORTEIO_DIGITAMA_FRAMES = [
   "features_assets/sorteio/digitama/digitama_00.png",
@@ -14529,6 +14560,31 @@ async function sorteioGirar(){
     // Só libera depois que todas as mudanças de layout da rodada terminaram.
     sorteioLiberarScroll();
   }
+}
+
+function sorteioAlternarModoStream(forcar) {
+  const pagina = document.getElementById("sorteioPagina");
+  const sair = document.getElementById("sorteioStreamExit");
+  const btn = document.getElementById("sorteioStreamBtn");
+  if (!pagina) return;
+
+  const ativo = typeof forcar === "boolean" ? forcar : !sorteioStreamAtivo;
+  sorteioStreamAtivo = ativo;
+  pagina.classList.toggle("sorteio-stream-mode", ativo);
+  document.body.classList.toggle("hg-sorteio-stream-body", ativo);
+  if (sair) sair.hidden = !ativo;
+  if (btn) {
+    btn.classList.toggle("ativo", ativo);
+    btn.setAttribute("aria-pressed", ativo ? "true" : "false");
+  }
+
+  requestAnimationFrame(function() {
+    sorteioDesenhar();
+    if (ativo) {
+      const painel = pagina.querySelector(".sorteio-wheel-panel");
+      if (painel) painel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
 }
 
 function inicializarSorteio(){

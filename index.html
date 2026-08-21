@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260820-tierlist-v1-15">
+  <link rel="stylesheet" href="styles.css?v=20260820-tierlist-v1-15-1">
 </head>
 <body>
 
@@ -2373,7 +2373,7 @@
 
       <div class="tierlist-filters" data-html2canvas-ignore="true">
         <label class="tierlist-search">
-          <span aria-hidden="true">⌕</span>
+          <span class="tierlist-search-icon" aria-hidden="true"></span>
           <input id="tierListSearch" type="search" autocomplete="off" placeholder="Procurar Digimon..." oninput="tierListAplicarFiltros()">
         </label>
 
@@ -2476,13 +2476,18 @@
             <strong>SORTEIO ATUAL</strong>
           </div>
 
-          <div class="sorteio-participant-counter">
-            <span>PARTICIPANTES</span>
-            <b id="sorteioTotal">0</b>
-            <div id="sorteioPlatformCounters" class="sorteio-platform-counters" hidden>
-              <span class="youtube" title="YouTube"><img src="youtube.png" alt=""><b id="sorteioTotalYoutube">0</b></span>
-              <span class="twitch" title="Twitch"><img src="twitch.png" alt=""><b id="sorteioTotalTwitch">0</b></span>
-              <span class="kick" title="Kick"><img src="kick_icon.png" alt=""><b id="sorteioTotalKick">0</b></span>
+          <div class="sorteio-panel-head-actions">
+            <button id="sorteioStreamBtn" type="button" class="sorteio-stream-btn" aria-pressed="false" onclick="sorteioAlternarModoStream()" title="Exibir a roleta em modo limpo para OBS/stream">
+              <span aria-hidden="true">◉</span> MODO STREAM
+            </button>
+            <div class="sorteio-participant-counter">
+              <span>PARTICIPANTES</span>
+              <b id="sorteioTotal">0</b>
+              <div id="sorteioPlatformCounters" class="sorteio-platform-counters" hidden>
+                <span class="youtube" title="YouTube"><img src="youtube.png" alt=""><b id="sorteioTotalYoutube">0</b></span>
+                <span class="twitch" title="Twitch"><img src="twitch.png" alt=""><b id="sorteioTotalTwitch">0</b></span>
+                <span class="kick" title="Kick"><img src="kick_icon.png" alt=""><b id="sorteioTotalKick">0</b></span>
+              </div>
             </div>
           </div>
         </div>
@@ -2754,6 +2759,7 @@
         </section>
       </aside>
     </div>
+    <button id="sorteioStreamExit" type="button" class="sorteio-stream-exit" onclick="sorteioAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
   </div>
 </section>
 
@@ -2866,6 +2872,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260820-tierlist-v1-15"></script>
+<script src="script.js?v=20260820-tierlist-v1-15-1"></script>
 </body>
 </html>
