@@ -16154,6 +16154,23 @@ body.pvp-modal-open{overflow:hidden}
   z-index: 12010;
 }
 
+/* A navegação deixa de apertar os itens: rola na horizontal e aceita arrastar. */
+.topbar:not(.header-collapsed) .nav-menu {
+  min-width: 0;
+  justify-content: flex-start !important;
+  gap: clamp(8px, .65vw, 16px) !important;
+  padding: 10px clamp(24px, 2vw, 46px) 10px clamp(30px, 2.4vw, 54px) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none;
+  cursor: grab;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.topbar:not(.header-collapsed) .nav-menu::-webkit-scrollbar { display: none; }
+.topbar:not(.header-collapsed) .nav-menu.nav-menu-dragging { cursor: grabbing; user-select: none; }
+.topbar:not(.header-collapsed) .nav-menu > * { flex: 0 0 auto; }
+
 /* Em telas menores a lógica é a mesma, apenas reduzimos um pouco a cápsula. */
 @media (max-width: 700px) {
   .header-collapse-indicator {

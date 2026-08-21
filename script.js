@@ -15602,3 +15602,55 @@ if(document.readyState==="loading"){
 }else{
   setTimeout(sorteioV114BindMultiControls,0);
 }
+
+/* Navegação horizontal: permite clicar e arrastar sem transformar um arrasto
+   em clique acidental de uma aba. */
+function hgAtivarArrasteMenuPrincipal() {
+  const menu = document.getElementById("siteNavMenu");
+  if (!menu || menu.dataset.hgDragReady === "1") return;
+  menu.dataset.hgDragReady = "1";
+
+  let ativo = false;
+  let arrastou = false;
+  let inicioX = 0;
+  let inicioScroll = 0;
+  let bloquearCliqueAte = 0;
+
+  menu.addEventListener("pointerdown", function(event) {
+    if (event.button !== 0 || event.target.closest(".nav-dropdown-menu")) return;
+    ativo = true;
+    arrastou = false;
+    inicioX = event.clientX;
+    inicioScroll = menu.scrollLeft;
+    menu.setPointerCapture?.(event.pointerId);
+  });
+
+  menu.addEventListener("pointermove", function(event) {
+    if (!ativo) return;
+    const distancia = event.clientX - inicioX;
+    if (Math.abs(distancia) > 4) {
+      arrastou = true;
+      menu.classList.add("nav-menu-dragging");
+      menu.scrollLeft = inicioScroll - distancia;
+    }
+  });
+
+  const encerrar = function(event) {
+    if (!ativo) return;
+    if (arrastou) bloquearCliqueAte = Date.now() + 180;
+    ativo = false;
+    menu.classList.remove("nav-menu-dragging");
+    if (event && menu.hasPointerCapture?.(event.pointerId)) menu.releasePointerCapture(event.pointerId);
+  };
+  menu.addEventListener("pointerup", encerrar);
+  menu.addEventListener("pointercancel", encerrar);
+  menu.addEventListener("click", function(event) {
+    if (Date.now() < bloquearCliqueAte) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hgAtivarArrasteMenuPrincipal);
+else hgAtivarArrasteMenuPrincipal();
