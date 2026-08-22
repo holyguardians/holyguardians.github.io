@@ -26316,3 +26316,21 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
     display: none;
   }
 }
+
+/* =====================================================
+   HOME // RAID BOSS — centralização do conteúdo
+   Mantém a distribuição da Home e só centraliza o bloco
+   visual do boss dentro do card do carrossel.
+===================================================== */
+@media (min-width: 761px) {
+  #homePagina .raid-home-body {
+    width: min(100%, 390px);
+    margin-inline: auto;
+    grid-template-columns: 86px minmax(0, 1fr);
+    justify-content: center;
+  }
+
+  #homePagina .raid-home-info {
+    min-width: 0;
+  }
+}
