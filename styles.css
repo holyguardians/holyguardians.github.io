@@ -25571,6 +25571,35 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 }
 
 /* =====================================================
+   HG 2026-08-22 — HEADER EVENT CARDS V2.1
+   Compacta somente a largura dos cards, preservando
+   ícones, fontes, altura e legibilidade internas.
+===================================================== */
+@media (min-width: 1451px) {
+  .hg-header-countdowns {
+    flex: 0 0 330px !important;
+    width: 330px !important;
+    min-width: 330px !important;
+    max-width: 330px !important;
+    grid-template-columns: repeat(2, 161px) !important;
+    justify-content: start !important;
+    gap: 8px !important;
+  }
+}
+
+@media (min-width: 1101px) and (max-width: 1450px) {
+  .hg-header-countdowns {
+    flex-basis: 314px !important;
+    width: 314px !important;
+    min-width: 314px !important;
+    max-width: 314px !important;
+    grid-template-columns: repeat(2, 154px) !important;
+    justify-content: start !important;
+    gap: 6px !important;
+  }
+}
+
+/* =====================================================
    COUNTER FINDER PVP — placeholder temporário
 ===================================================== */
 .counter-finder-dev-wrap {
