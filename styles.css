@@ -25980,3 +25980,47 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   .counter-finder-matchup-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .counter-finder-digi-tooltip { width: min(310px, calc(100vw - 12px)); }
 }
+
+
+/* =====================================================
+   HG 2026-08-22 — COUNTER FINDER STRONG / WEAK FIX
+   Evita que as classes globais .strong/.weak do Team Builder
+   aumentem o padding dos mini ícones no Counter Finder.
+===================================================== */
+.counter-finder-meta-icon.counter-finder-relation-icon.strong,
+.counter-finder-meta-icon.counter-finder-relation-icon.weak {
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  background: rgba(8, 39, 67, .74);
+  box-shadow: none;
+  overflow: hidden;
+  font-size: inherit;
+}
+
+.counter-finder-meta-icon.counter-finder-relation-icon.strong {
+  border: 1px solid rgba(68, 220, 176, .16);
+}
+
+.counter-finder-meta-icon.counter-finder-relation-icon.weak {
+  border: 1px solid rgba(255, 112, 132, .16);
+}
+
+.counter-finder-meta-icon.counter-finder-relation-icon.strong img,
+.counter-finder-meta-icon.counter-finder-relation-icon.weak img {
+  position: static;
+  width: 18px;
+  height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  margin: 0;
+  padding: 0;
+  transform: none;
+  object-fit: contain;
+  display: block;
+}
