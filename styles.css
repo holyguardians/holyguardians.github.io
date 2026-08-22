@@ -26024,3 +26024,141 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   object-fit: contain;
   display: block;
 }
+
+
+/* =====================================================
+   HG 2026-08-22 — EVENT SOUND TOGGLE
+   Boss + Dekyu: digivice sound, 5 min before spawn.
+===================================================== */
+.hg-header-sound-toggle {
+  position: relative;
+  min-width: 0;
+  width: 34px;
+  height: 66px;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 5px 3px;
+  border: 1px solid rgba(77, 178, 225, .24);
+  border-radius: 9px;
+  background: linear-gradient(180deg, rgba(5, 30, 60, .9), rgba(2, 17, 38, .94));
+  color: #6e91aa;
+  font-family: "Oxanium", Arial, sans-serif;
+  cursor: pointer;
+  box-shadow: inset 0 0 15px rgba(48, 171, 226, .035);
+  transition: border-color .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.hg-header-sound-toggle:hover,
+.hg-header-sound-toggle:focus-visible {
+  color: #bcefff;
+  border-color: rgba(78, 216, 255, .55);
+  outline: 0;
+}
+.hg-header-sound-toggle:active { transform: translateY(1px); }
+.hg-header-sound-svg {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+}
+.hg-header-sound-svg svg {
+  width: 21px;
+  height: 21px;
+  overflow: visible;
+}
+.hg-header-sound-speaker {
+  fill: currentColor;
+}
+.hg-header-sound-wave,
+.hg-header-sound-slash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hg-header-sound-wave { display: none; }
+.hg-header-sound-toggle small {
+  color: currentColor;
+  font-size: 5.5px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .08em;
+}
+.hg-header-sound-toggle.is-enabled {
+  color: #63e8ff;
+  border-color: rgba(70, 220, 255, .62);
+  background: linear-gradient(180deg, rgba(7, 58, 97, .92), rgba(2, 25, 53, .96));
+  box-shadow: inset 0 0 18px rgba(43, 209, 255, .11), 0 0 11px rgba(35, 205, 255, .10);
+}
+.hg-header-sound-toggle.is-enabled .hg-header-sound-wave { display: block; }
+.hg-header-sound-toggle.is-enabled .hg-header-sound-slash { display: none; }
+.hg-header-sound-toggle:not(.is-enabled) .hg-header-sound-slash { display: block; }
+.hg-header-sound-toggle.is-playing {
+  animation: hgEventSoundPulse .62s ease-in-out 3;
+}
+@keyframes hgEventSoundPulse {
+  0%, 100% { box-shadow: inset 0 0 18px rgba(43, 209, 255, .11), 0 0 8px rgba(35, 205, 255, .08); }
+  50% { box-shadow: inset 0 0 22px rgba(43, 209, 255, .20), 0 0 20px rgba(35, 205, 255, .35); }
+}
+
+/* Desktop: preserva os dois cards compactos e acrescenta só o botão de som. */
+@media (min-width: 1451px) {
+  .hg-header-countdowns {
+    flex-basis: 372px !important;
+    width: 372px !important;
+    min-width: 372px !important;
+    max-width: 372px !important;
+    grid-template-columns: 161px 161px 34px !important;
+    gap: 8px !important;
+  }
+}
+@media (min-width: 1101px) and (max-width: 1450px) {
+  .hg-header-countdowns {
+    flex-basis: 354px !important;
+    width: 354px !important;
+    min-width: 354px !important;
+    max-width: 354px !important;
+    grid-template-columns: 154px 154px 34px !important;
+    gap: 6px !important;
+  }
+  .hg-header-sound-toggle { width: 34px; height: 62px; }
+}
+
+/* Tablet/mobile: terceira coluna estreita, sem reduzir ícones/fontes dos cards. */
+@media (max-width: 1100px) {
+  .hg-header-countdowns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px !important;
+  }
+  .hg-header-sound-toggle { width: 34px; height: 58px; border-radius: 8px; }
+  .hg-header-sound-svg,
+  .hg-header-sound-svg svg { width: 19px; height: 19px; }
+  .hg-header-sound-toggle small { font-size: 5px; }
+}
+@media (max-width: 520px) {
+  .hg-header-countdowns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 29px !important;
+    gap: 4px !important;
+  }
+  .hg-header-sound-toggle { width: 29px; height: 53px; padding-inline: 2px; }
+  .hg-header-sound-svg,
+  .hg-header-sound-svg svg { width: 17px; height: 17px; }
+  .hg-header-sound-toggle small { font-size: 4.5px; letter-spacing: .04em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hg-header-sound-toggle.is-playing { animation: none; }
+}
+
+.hg-header-event.sound-alert {
+  animation: hgEventCardAlert .62s ease-in-out 3;
+}
+@keyframes hgEventCardAlert {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.28); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hg-header-event.sound-alert { animation: none; }
+}

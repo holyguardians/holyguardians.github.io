@@ -10754,6 +10754,183 @@ function inicializarRaidHomeCarousel() {
   }
 }
 
+
+/* =====================================================
+   HEADER — SOM DE EVENTOS (BOSS + DEKYU)
+   O navegador exige interação do usuário para áudio.
+   Ao ligar, toca uma prévia e salva a preferência local.
+===================================================== */
+const HG_EVENT_SOUND_FILE = "digivicesound.mp3";
+const HG_EVENT_SOUND_STORAGE_KEY = "hg_event_sound_enabled_v1";
+const HG_EVENT_SOUND_NOTIFIED_KEY = "hg_event_sound_notified_v1";
+const HG_EVENT_SOUND_NOTICE_MS = 5 * 60 * 1000;
+
+let hgSomEventosAtivo = false;
+let hgSomEventosAudio = null;
+let hgSomEventosBloqueadoAte = 0;
+let hgSomEventosSuppressAte = 0;
+let hgSomEventosNotificados = Object.create(null);
+
+function carregarHgSomEventosNotificados() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem(HG_EVENT_SOUND_NOTIFIED_KEY) || "{}");
+    const agora = Date.now();
+    Object.keys(salvo || {}).forEach(function(chave) {
+      const quando = Number(salvo[chave]) || 0;
+      if (quando && agora - quando < 36 * 60 * 60 * 1000) hgSomEventosNotificados[chave] = quando;
+    });
+  } catch (erro) {
+    hgSomEventosNotificados = Object.create(null);
+  }
+}
+
+function salvarHgSomEventosNotificados() {
+  try { localStorage.setItem(HG_EVENT_SOUND_NOTIFIED_KEY, JSON.stringify(hgSomEventosNotificados)); } catch (erro) {}
+}
+
+function obterHgSomEventosAudio() {
+  if (!hgSomEventosAudio) {
+    hgSomEventosAudio = new Audio(HG_EVENT_SOUND_FILE);
+    hgSomEventosAudio.preload = "auto";
+    hgSomEventosAudio.volume = 0.86;
+  }
+  return hgSomEventosAudio;
+}
+
+function atualizarBotaoHgSomEventos() {
+  const botao = document.getElementById("hgHeaderSoundToggle");
+  const estado = document.getElementById("hgHeaderSoundState");
+  if (!botao) return;
+  botao.classList.toggle("is-enabled", hgSomEventosAtivo);
+  botao.setAttribute("aria-pressed", hgSomEventosAtivo ? "true" : "false");
+  botao.setAttribute("aria-label", (hgSomEventosAtivo ? "Desligar" : "Ligar") + " som de aviso de Boss e Dekyu");
+  botao.title = (hgSomEventosAtivo ? "Som de eventos ligado" : "Som de eventos desligado") + " · avisa 5 min antes";
+  if (estado) estado.textContent = hgSomEventosAtivo ? "ON" : "OFF";
+}
+
+function animarBotaoHgSomEventos() {
+  const botao = document.getElementById("hgHeaderSoundToggle");
+  if (!botao) return;
+  botao.classList.remove("is-playing");
+  void botao.offsetWidth;
+  botao.classList.add("is-playing");
+  window.setTimeout(function() { botao.classList.remove("is-playing"); }, 2100);
+}
+
+function tocarHgSomEventos(forcar) {
+  if (!forcar && !hgSomEventosAtivo) return Promise.resolve(false);
+  if (!forcar && Date.now() < hgSomEventosBloqueadoAte) return Promise.resolve(false);
+
+  const audio = obterHgSomEventosAudio();
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+  } catch (erro) {}
+
+  let tentativa;
+  try { tentativa = audio.play(); } catch (erro) { tentativa = Promise.reject(erro); }
+
+  return Promise.resolve(tentativa)
+    .then(function() {
+      animarBotaoHgSomEventos();
+      return true;
+    })
+    .catch(function() {
+      /* Se o navegador bloquear autoplay, tentamos de novo depois de interação. */
+      hgSomEventosBloqueadoAte = Date.now() + 30000;
+      return false;
+    });
+}
+
+function eventoHgDentroDaJanela(diff) {
+  return Number.isFinite(diff) && diff > 0 && diff <= HG_EVENT_SOUND_NOTICE_MS;
+}
+
+function chaveHgEventoBoss(raid) {
+  return raid && raid.nextTime ? "boss|" + String(raid.name || "raid") + "|" + raid.nextTime.getTime() : "";
+}
+
+function chaveHgEventoDekyu(proximo) {
+  return proximo && proximo.instante ? "dekyu|" + String(proximo.instante) : "";
+}
+
+function marcarHgEventoComoNotificado(chave) {
+  if (!chave) return;
+  hgSomEventosNotificados[chave] = Date.now();
+  salvarHgSomEventosNotificados();
+}
+
+function marcarEventosHgAtuaisNaJanela() {
+  const agora = Date.now();
+  const boss = Array.isArray(raidEventosAtuais) && raidEventosAtuais.length ? raidEventosAtuais[0] : null;
+  if (boss && eventoHgDentroDaJanela(boss.nextTime - agora)) marcarHgEventoComoNotificado(chaveHgEventoBoss(boss));
+  const dekyu = typeof obterProximoHorarioDekyu === "function" ? obterProximoHorarioDekyu(agora) : null;
+  if (dekyu && eventoHgDentroDaJanela(dekyu.instante - agora)) marcarHgEventoComoNotificado(chaveHgEventoDekyu(dekyu));
+}
+
+function tentarAvisoHgEvento(tipo, chave, diff, alvoCss) {
+  if (!hgSomEventosAtivo || !chave || !eventoHgDentroDaJanela(diff)) return;
+  if (Date.now() < hgSomEventosSuppressAte || hgSomEventosNotificados[chave]) return;
+
+  tocarHgSomEventos(false).then(function(tocou) {
+    if (!tocou) return;
+    marcarHgEventoComoNotificado(chave);
+    const card = document.querySelector(alvoCss);
+    if (card) {
+      card.classList.add("sound-alert");
+      window.setTimeout(function() { card.classList.remove("sound-alert"); }, 2200);
+    }
+  });
+}
+
+function verificarAvisosHgEventos(momento, proximoBoss, proximoDekyu) {
+  if (!hgSomEventosAtivo) return;
+  const agoraMs = momento instanceof Date ? momento.getTime() : Date.now();
+
+  if (proximoBoss && proximoBoss.nextTime) {
+    tentarAvisoHgEvento(
+      "boss",
+      chaveHgEventoBoss(proximoBoss),
+      proximoBoss.nextTime.getTime() - agoraMs,
+      ".hg-header-event-boss"
+    );
+  }
+
+  if (proximoDekyu && proximoDekyu.instante) {
+    tentarAvisoHgEvento(
+      "dekyu",
+      chaveHgEventoDekyu(proximoDekyu),
+      proximoDekyu.instante - agoraMs,
+      ".hg-header-event-dekyu"
+    );
+  }
+}
+
+function alternarHgSomEventos() {
+  hgSomEventosAtivo = !hgSomEventosAtivo;
+  try { localStorage.setItem(HG_EVENT_SOUND_STORAGE_KEY, hgSomEventosAtivo ? "1" : "0"); } catch (erro) {}
+  atualizarBotaoHgSomEventos();
+
+  if (hgSomEventosAtivo) {
+    /* Clique do usuário libera o áudio: toca a amostra imediatamente. */
+    hgSomEventosBloqueadoAte = 0;
+    hgSomEventosSuppressAte = Date.now() + 3500;
+    tocarHgSomEventos(true).then(function(tocou) {
+      if (tocou) marcarEventosHgAtuaisNaJanela();
+    });
+  } else if (hgSomEventosAudio) {
+    try { hgSomEventosAudio.pause(); hgSomEventosAudio.currentTime = 0; } catch (erro) {}
+  }
+}
+
+function inicializarHgSomEventos() {
+  carregarHgSomEventosNotificados();
+  try { hgSomEventosAtivo = localStorage.getItem(HG_EVENT_SOUND_STORAGE_KEY) === "1"; } catch (erro) { hgSomEventosAtivo = false; }
+  atualizarBotaoHgSomEventos();
+  /* Preload sem tocar. O som só é reproduzido após permissão/interação do usuário. */
+  try { obterHgSomEventosAudio().load(); } catch (erro) {}
+}
+
 function atualizarHgHeaderCountdowns(agora) {
   const momento = agora instanceof Date ? agora : new Date();
   const bossName = document.getElementById("hgHeaderBossName");
@@ -10788,6 +10965,8 @@ function atualizarHgHeaderCountdowns(agora) {
     if (dekyuCountdown) dekyuCountdown.textContent = "--:--:--";
     if (dekyuTime) dekyuTime.textContent = "PRÓXIMO --:--";
   }
+
+  verificarAvisosHgEventos(momento, proximoBoss, proximoDekyu);
 }
 
 function obterRelogioBrasilia() {
@@ -11062,6 +11241,7 @@ document.addEventListener(
 
     inicializarSiteHeaderRecolhivel();
     inicializarHgDisplaySettings();
+    inicializarHgSomEventos();
     atualizarBotoesViewDigidex();
     montarFiltrosAvancadosDigidex();
     inicializarFechamentoFiltrosDigidex();
