@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260822-header-compact-v2">
+  <link rel="stylesheet" href="styles.css?v=20260822-counter-finder-v2">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -231,7 +231,7 @@
           <button id="btnCounterFinder" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('counterFinderPagina', this)">
             <span class="hg-counter-nav-icon" aria-hidden="true">⌖</span>
-            <span>COUNTER FINDER PVP</span>
+            <span>COUNTER FINDER</span>
           </button>
 
           <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
@@ -2129,26 +2129,90 @@
 </section>
 
 <!-- =====================================================
-     COUNTER FINDER PVP
+     COUNTER FINDER
 ===================================================== -->
 
 <section id="counterFinderPagina" class="pagina">
-  <div class="internal-wrap counter-finder-dev-wrap">
-    <header class="counter-finder-dev-header">
+  <div class="internal-wrap counter-finder-wrap">
+    <header class="counter-finder-header">
       <div>
-        <div class="counter-finder-kicker">PVP SYSTEM // HOLY GUARDIANS</div>
-        <h2 class="page-title">COUNTER FINDER PVP</h2>
-        <p class="page-subtitle">Ferramenta de análise de matchups para o PvP.</p>
+        <div class="counter-finder-kicker">MATCHUP ANALYSIS // HOLY GUARDIANS</div>
+        <h2 class="page-title">COUNTER FINDER</h2>
+        <p class="page-subtitle">Escolha um Digimon e encontre os melhores matchups usando Skills e status da DATABASE MASTER.</p>
       </div>
+      <div class="counter-finder-source"><i></i><span>FONTE</span><strong>DATABASE MASTER</strong></div>
     </header>
 
-    <div class="counter-finder-dev-card" role="status" aria-live="polite">
-      <span class="counter-finder-dev-symbol" aria-hidden="true">⌖</span>
-      <div>
-        <small>HOLY GUARDIANS // PVP LAB</small>
-        <strong>AINDA ESTÁ EM DESENVOLVIMENTO</strong>
-        <p>Estamos preparando o Counter Finder PVP. Em breve esta ferramenta estará disponível.</p>
-      </div>
+    <div class="counter-finder-rule-strip" aria-label="Regras de Type usadas pelo Counter Finder">
+      <span><b>TYPE DAMAGE</b> vantagem <strong>+25%</strong> · desvantagem <strong>-25%</strong> · neutro <strong>0%</strong></span>
+      <span>DATA &gt; VACCINE &gt; VIRUS &gt; DATA</span>
+      <span>UNKNOWN &gt; DATA / VACCINE / VIRUS · FREE &gt; UNKNOWN</span>
+    </div>
+
+    <div class="counter-finder-layout">
+      <aside class="counter-finder-controls">
+        <div class="counter-finder-control-head">
+          <small>01 // TARGET</small>
+          <strong>QUAL DIGIMON VOCÊ QUER COUNTERAR?</strong>
+        </div>
+
+        <label class="counter-finder-field" for="counterFinderTargetInput">
+          <span>DIGIMON ALVO</span>
+          <div class="counter-finder-search">
+            <input id="counterFinderTargetInput" type="text" autocomplete="off" placeholder="Digite o nome do Digimon..."
+              oninput="counterFinderPesquisarAlvo()" onkeydown="counterFinderTeclaAlvo(event)">
+            <div id="counterFinderSuggestions" class="counter-finder-suggestions" hidden></div>
+          </div>
+        </label>
+
+        <label class="counter-finder-field" for="counterFinderStage">
+          <span>STAGE DOS CANDIDATOS</span>
+          <select id="counterFinderStage" onchange="counterFinderRenderizarResultados()">
+            <option value="MEGA" selected>MEGA</option>
+            <option value="ULTIMATE">ULTIMATE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="ROOKIE">ROOKIE</option>
+            <option value="ALL">TODOS</option>
+          </select>
+        </label>
+
+        <label class="counter-finder-field" for="counterFinderTargetPosition">
+          <span>POSIÇÃO DO ALVO</span>
+          <select id="counterFinderTargetPosition" onchange="counterFinderRenderizarResultados()">
+            <option value="ANY" selected>NÃO DEFINIDA</option>
+            <option value="FRONT">FRONT LINE</option>
+            <option value="BACK">BACK LINE</option>
+          </select>
+        </label>
+
+        <div class="counter-finder-how">
+          <strong>COMO O MATCHUP É LIDO</strong>
+          <p>TYPE usa o modificador real de dano (+25% / -25% / 0%). Skills são analisadas individualmente, incluindo elemento base e conversões, Strong/Weak e seu efeito, SPD, CC, DOT, DEF BREAK e pressão ofensiva nos dois sentidos. O score é um índice comparativo de matchup — não uma porcentagem de vitória.</p>
+        </div>
+      </aside>
+
+      <main class="counter-finder-main">
+        <div id="counterFinderTargetCard" class="counter-finder-target-card">
+          <div class="counter-finder-target-empty">
+            <span>⌖</span>
+            <strong>SELECIONE UM DIGIMON</strong>
+            <small>Os counters aparecerão aqui automaticamente.</small>
+          </div>
+        </div>
+
+        <div class="counter-finder-results-head">
+          <div><small>02 // ANALYSIS</small><strong>MELHORES COUNTERS</strong></div>
+          <span id="counterFinderResultCount">AGUARDANDO ALVO</span>
+        </div>
+
+        <div id="counterFinderResults" class="counter-finder-results">
+          <div class="counter-finder-results-empty">
+            <span>⌁</span>
+            <strong>ESCOLHA UM DIGIMON PARA INICIAR</strong>
+            <small>A análise é feita com os dados da DATABASE MASTER.</small>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 </section>
@@ -3011,6 +3075,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260822-raids-counter-v1"></script>
+<script src="script.js?v=20260822-counter-finder-v2"></script>
 </body>
 </html>

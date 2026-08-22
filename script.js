@@ -2115,7 +2115,7 @@ function hgTituloPaginaHeader(id) {
     databasePagina: "DIGIDEX",
     digivolutionPagina: "DIGIVOLUTION",
     comparacaoPagina: "COMPARAÇÃO",
-    counterFinderPagina: "COUNTER FINDER PVP",
+    counterFinderPagina: "COUNTER FINDER",
     builderPagina: "TEAM BUILDER",
     statusSimulatorPagina: "STATUS SIMULATOR",
     elementosPagina: "ELEMENTOS",
@@ -2313,6 +2313,10 @@ function mostrarPagina(
   }
 
   hgAtualizarTituloHeader(id);
+
+  if (id === "counterFinderPagina" && typeof counterFinderAtivar === "function") {
+    setTimeout(counterFinderAtivar, 0);
+  }
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -8864,16 +8868,14 @@ function atualizarPotentialPlanner() {
 
 
 /* =====================================================
-   COUNTER FINDER — DATABASE MASTER
+   COUNTER FINDER — DATABASE MASTER / MATCHUP ENGINE V2
+   TYPE: +25% vantagem | -25% desvantagem | 0% neutro
 ===================================================== */
 
 let counterFinderTarget = null;
-
-const COUNTER_FINDER_TYPE_ADVANTAGE = {
-  VACCINE: "VIRUS",
-  VIRUS: "DATA",
-  DATA: "VACCINE"
-};
+let counterFinderDataReady = false;
+let counterFinderDataPromise = null;
+let counterFinderListenerReady = false;
 
 function counterFinderNumero(valor) {
   if (valor === null || valor === undefined || valor === "") return 0;
@@ -8881,138 +8883,423 @@ function counterFinderNumero(valor) {
   return Number.isFinite(numero) ? numero : 0;
 }
 
-function counterFinderTemValor(valor) {
-  if (valor === null || valor === undefined) return false;
-  const texto = String(valor).trim().toUpperCase();
-  return Boolean(texto && texto !== "-" && texto !== "NONE" && texto !== "N/A" && texto !== "0" && texto !== "FALSE");
+function counterFinderClamp(valor, minimo, maximo) {
+  return Math.max(minimo, Math.min(maximo, valor));
+}
+
+function counterFinderNome(digi) {
+  return String((digi && (digi.name || digi.digimon)) || "").trim();
+}
+
+function counterFinderStage(digi) {
+  return String((digi && digi.stage) || "").trim().toUpperCase();
+}
+
+function counterFinderType(digi) {
+  return normalizarType((digi && (digi.attribute || digi.type)) || "UNKNOWN") || "UNKNOWN";
+}
+
+function counterFinderStat(digi, stat) {
+  if (!digi) return 0;
+  const chave = String(stat || "").toUpperCase();
+  const direta = digi["base" + chave];
+  if (direta !== undefined && direta !== null && direta !== "") return counterFinderNumero(direta);
+  return counterFinderNumero(digi[chave.toLowerCase()]);
 }
 
 function counterFinderNormalizarElemento(valor) {
   const elemento = normalizarElemento(valor);
-  return elemento === "IRON" ? "STEEL" : elemento;
+  if (elemento === "IRON") return "STEEL";
+  return elemento;
 }
 
-function counterFinderElementos(digi) {
-  if (!digi) return [];
-  const lista = [];
-  [digi.skill1, digi.skill2, digi.skill3].forEach(function(skill) {
-    obterElementosSkill(skill).forEach(function(elemento) {
-      const normalizado = counterFinderNormalizarElemento(elemento);
-      if (normalizado && !lista.includes(normalizado)) lista.push(normalizado);
-    });
-  });
-  return lista;
+function counterFinderTypeModifier(atacante, defensor) {
+  const a = typeof atacante === "string" ? normalizarType(atacante) : counterFinderType(atacante);
+  const d = typeof defensor === "string" ? normalizarType(defensor) : counterFinderType(defensor);
+
+  if (!a || !d || a === d) return 0;
+
+  if (a === "FREE") return d === "UNKNOWN" ? 25 : 0;
+  if (a === "UNKNOWN") {
+    if (d === "FREE") return -25;
+    return ["DATA", "VACCINE", "VIRUS"].includes(d) ? 25 : 0;
+  }
+
+  if (d === "FREE") return 0;
+  if (d === "UNKNOWN") return ["DATA", "VACCINE", "VIRUS"].includes(a) ? -25 : 0;
+
+  const vence = {
+    DATA: "VACCINE",
+    VACCINE: "VIRUS",
+    VIRUS: "DATA"
+  };
+
+  if (vence[a] === d) return 25;
+  if (vence[d] === a) return -25;
+  return 0;
 }
 
-function counterFinderNormalizarRelacao(digi, tipo) {
-  const info = hgRelationData(digi, tipo);
-  return counterFinderNormalizarElemento(info && info.element);
+function counterFinderTypeTexto(modificador) {
+  const valor = Number(modificador) || 0;
+  if (valor > 0) return "+" + valor + "%";
+  if (valor < 0) return valor + "%";
+  return "0%";
+}
+
+function counterFinderTypeClasse(modificador) {
+  const valor = Number(modificador) || 0;
+  return valor > 0 ? "vantagem" : valor < 0 ? "desvantagem" : "neutro";
 }
 
 function counterFinderTypeIcon(tipo) {
   return renderizarTypeIcon(normalizarType(tipo), true);
 }
 
-function counterFinderEhTypeFavoravel(candidato, alvo) {
-  const candidatoType = normalizarType(candidato && candidato.type);
-  const alvoType = normalizarType(alvo && alvo.type);
-  return COUNTER_FINDER_TYPE_ADVANTAGE[candidatoType] === alvoType;
+function counterFinderRelacao(digi, kind) {
+  const isStrong = String(kind || "").toLowerCase() === "strong";
+  let elemento = counterFinderNormalizarElemento(digi && digi[isStrong ? "strong" : "weak"]);
+  let efeito = String((digi && digi[isStrong ? "strongEffect" : "weakEffect"]) || "").trim();
+
+  if ((!elemento || !efeito) && typeof hgRelationData === "function") {
+    const info = hgRelationData(digi, kind);
+    if (!elemento) elemento = counterFinderNormalizarElemento(info && info.element);
+    if (!efeito) efeito = String((info && info.effect) || "").trim();
+  }
+
+  return { element: elemento || "", effect: efeito || "" };
 }
 
-function counterFinderEhTypeDesfavoravel(candidato, alvo) {
-  const candidatoType = normalizarType(candidato && candidato.type);
-  const alvoType = normalizarType(alvo && alvo.type);
-  return COUNTER_FINDER_TYPE_ADVANTAGE[alvoType] === candidatoType;
+function counterFinderSkillElements(skill) {
+  if (!skill) return [];
+  const base = counterFinderNormalizarElemento(skill.attribute || skill.baseElement || skill.base || "");
+  const conversoes = Array.isArray(skill.conversions) ? skill.conversions : [];
+  const lista = [];
+
+  if (base) lista.push({ element: base, base: true });
+  conversoes.forEach(function(valor) {
+    const element = counterFinderNormalizarElemento(valor);
+    if (!element || lista.some(function(item){ return item.element === element; })) return;
+    lista.push({ element: element, base: false });
+  });
+
+  return lista;
+}
+
+function counterFinderElementos(digi) {
+  const lista = [];
+  (Array.isArray(digi && digi.skills) ? digi.skills : []).forEach(function(skill) {
+    counterFinderSkillElements(skill).forEach(function(item) {
+      if (item.element && !lista.includes(item.element)) lista.push(item.element);
+    });
+  });
+  return lista;
+}
+
+function counterFinderSkillEhOfensiva(skill) {
+  if (!skill) return false;
+  const aplica = String(skill.appliesTo || "enemy").trim().toLowerCase();
+  const total = Number(skill.baseTotal);
+  return aplica !== "self" && Number.isFinite(total) && total > 0;
+}
+
+function counterFinderSkillEhMelee(skill) {
+  return /MELEE/i.test(String(skill && skill.scope || ""));
+}
+
+function counterFinderSkillEhRanged(skill) {
+  return /RANGED/i.test(String(skill && skill.scope || ""));
+}
+
+function counterFinderTemEfeito(skill) {
+  return !!(skill && (skill.cc === "YES" || skill.dot === "YES" || skill.defBreak === "YES"));
+}
+
+function counterFinderEfeitoChance(skill) {
+  const chance = Number(skill && skill.effectChance);
+  return Number.isFinite(chance) ? chance : null;
+}
+
+function counterFinderTextoPrimeiraLinhaEfeito(skill) {
+  const raw = String(skill && skill.effectRaw || "").trim();
+  if (!raw) return "";
+  return String(raw.split(/\r?\n/)[0] || "").replace(/\s+Lv\.?\s*\d+.*$/i, "").trim();
+}
+
+function counterFinderCcTipos(skill) {
+  const saida = [];
+  String(skill && skill.ccType || "")
+    .split(/[,/|]+/)
+    .map(function(valor){ return String(valor || "").trim(); })
+    .filter(Boolean)
+    .forEach(function(valor){
+      const key = valor.toUpperCase();
+      if (!saida.some(function(item){ return item.toUpperCase() === key; })) saida.push(valor);
+    });
+
+  counterFinderAttributeEffectMap(skill).forEach(function(item) {
+    if (!item.effect) return;
+    const key = item.effect.toUpperCase();
+    if (!saida.some(function(valor){ return valor.toUpperCase() === key; })) saida.push(item.effect);
+  });
+
+  return saida;
+}
+
+function counterFinderAttributeEffectMap(skill) {
+  const raw = String(skill && skill.attributeEffects || "").trim();
+  if (!raw) return [];
+  return raw.split(";").map(function(parte) {
+    const match = String(parte).match(/^\s*([^→:]+)\s*(?:→|:)\s*(.+?)\s*$/);
+    if (!match) return null;
+    return {
+      element: counterFinderNormalizarElemento(match[1]),
+      effect: String(match[2] || "").trim()
+    };
+  }).filter(Boolean);
+}
+
+function counterFinderSkillEfeitos(skill) {
+  const itens = [];
+  const chance = counterFinderEfeitoChance(skill);
+  const primeiraLinha = counterFinderTextoPrimeiraLinhaEfeito(skill);
+
+  if (skill && skill.cc === "YES") {
+    const tipos = counterFinderCcTipos(skill);
+    itens.push({
+      kind: "CC",
+      label: tipos.length ? tipos.join(" / ") : (primeiraLinha || "CC"),
+      chance: chance
+    });
+  }
+
+  if (skill && skill.dot === "YES") {
+    const mapa = counterFinderAttributeEffectMap(skill);
+    const nomes = mapa.map(function(item){ return item.effect; }).filter(Boolean);
+    itens.push({
+      kind: "DOT",
+      label: nomes.length ? nomes.join(" / ") : (primeiraLinha || "DOT"),
+      chance: chance
+    });
+  }
+
+  if (skill && skill.defBreak === "YES") {
+    const raw = String(skill.effectRaw || "");
+    const queda = raw.match(/Decreases\s+DEF\s+by\s+(\d+(?:\.\d+)?)%/i);
+    itens.push({
+      kind: "DEF BREAK",
+      label: queda ? "DEF -" + queda[1] + "%" : (primeiraLinha || "DEF BREAK"),
+      chance: chance
+    });
+  }
+
+  return itens;
+}
+
+function counterFinderTodosEfeitos(digi) {
+  const itens = [];
+  (Array.isArray(digi && digi.skills) ? digi.skills : []).forEach(function(skill) {
+    counterFinderSkillEfeitos(skill).forEach(function(efeito) {
+      itens.push(Object.assign({
+        slot: Number(skill.slot) || 0,
+        skillName: String(skill.name || ("Skill " + (skill.slot || ""))).trim(),
+        skill: skill
+      }, efeito));
+    });
+  });
+  return itens;
+}
+
+function counterFinderRelationScore(target, skill, elementInfo) {
+  if (!target || !skill || !elementInfo || !elementInfo.element) return { score: 0, text: "" };
+  const weak = counterFinderRelacao(target, "weak");
+  const strong = counterFinderRelacao(target, "strong");
+  const element = elementInfo.element;
+  const fatorBase = elementInfo.base ? 1 : 0.72;
+  const temEfeito = counterFinderTemEfeito(skill);
+
+  if (weak.element && element === weak.element) {
+    const efeito = String(weak.effect || "").toUpperCase();
+    let peso = 6;
+    if (efeito.includes("WEAKNESS")) peso = 10;
+    else if (efeito.includes("CANNOT EVADE")) peso = 7;
+    else if (efeito.includes("EFFECT PROBABILITY")) peso = temEfeito ? 9 : 4;
+    return {
+      score: peso * fatorBase,
+      text: (elementInfo.base ? "Base " : "Conversão ") + element + " explora WEAK " + (weak.effect ? "(" + weak.effect + ")" : "")
+    };
+  }
+
+  if (strong.element && element === strong.element) {
+    const efeito = String(strong.effect || "").toUpperCase();
+    let peso = -5;
+    if (efeito.includes("RESISTANCE")) peso = -8;
+    else if (efeito.includes("EVASION")) peso = -7;
+    else if (efeito.includes("REFLECTION")) peso = -9;
+    return {
+      score: peso * fatorBase,
+      text: (elementInfo.base ? "Base " : "Conversão ") + element + " encontra STRONG " + (strong.effect ? "(" + strong.effect + ")" : "")
+    };
+  }
+
+  return { score: 0, text: "" };
+}
+
+function counterFinderSkillPressure(attacker, defender, skill, element) {
+  if (!counterFinderSkillEhOfensiva(skill)) return 0;
+  const useStr = counterFinderNormalizarElemento(element) === "PHYSICAL";
+  const offense = counterFinderStat(attacker, useStr ? "STR" : "INT");
+  const defense = counterFinderStat(defender, useStr ? "DEF" : "RES");
+  const hp = Math.max(1, counterFinderStat(defender, "HP"));
+  const coef = Number(skill.baseTotal);
+  if (!offense || !Number.isFinite(coef) || coef <= 0) return 0;
+
+  const raw = offense * (coef / 100);
+  const mitigation = offense / (offense + Math.max(1, defense) * 0.72);
+  const typeMult = 1 + counterFinderTypeModifier(attacker, defender) / 100;
+  return Math.max(0, (raw * mitigation * typeMult) / hp);
+}
+
+function counterFinderBestSkill(attacker, defender, options) {
+  const opts = options || {};
+  const targetPosition = String(opts.targetPosition || "ANY").toUpperCase();
+  let melhor = null;
+
+  (Array.isArray(attacker && attacker.skills) ? attacker.skills : []).forEach(function(skill) {
+    if (!counterFinderSkillEhOfensiva(skill)) return;
+
+    counterFinderSkillElements(skill).forEach(function(elementInfo) {
+      const pressure = counterFinderSkillPressure(attacker, defender, skill, elementInfo.element);
+      const rel = counterFinderRelationScore(defender, skill, elementInfo);
+      let posScore = 0;
+      if (targetPosition === "BACK") {
+        if (counterFinderSkillEhRanged(skill)) posScore += 1.5;
+        else if (counterFinderSkillEhMelee(skill)) posScore -= 7;
+      }
+
+      const basePreference = elementInfo.base ? 1.25 : 0;
+      const rankValue = pressure * 100 + rel.score + posScore + basePreference;
+      const item = {
+        skill: skill,
+        element: elementInfo.element,
+        isBase: elementInfo.base,
+        pressure: pressure,
+        relationScore: rel.score,
+        relationText: rel.text,
+        positionScore: posScore,
+        rankValue: rankValue
+      };
+
+      if (!melhor || item.rankValue > melhor.rankValue) melhor = item;
+    });
+  });
+
+  return melhor;
+}
+
+function counterFinderEffectPower(digi) {
+  let cc = 0, dot = 0, defBreak = 0;
+  counterFinderTodosEfeitos(digi).forEach(function(item) {
+    const chance = Number.isFinite(Number(item.chance)) ? Number(item.chance) : 0;
+    if (item.kind === "CC") cc = Math.max(cc, Math.min(4, chance / 18));
+    if (item.kind === "DOT") dot = Math.max(dot, Math.min(2, chance / 32));
+    if (item.kind === "DEF BREAK") defBreak = Math.max(defBreak, Math.min(2, chance / 32));
+  });
+  return cc + dot + defBreak;
 }
 
 function counterFinderScore(candidato, alvo) {
-  let score = 50;
+  const targetPositionEl = document.getElementById("counterFinderTargetPosition");
+  const targetPosition = String(targetPositionEl && targetPositionEl.value || "ANY").toUpperCase();
+  const outType = counterFinderTypeModifier(candidato, alvo);
+  const inType = counterFinderTypeModifier(alvo, candidato);
+  const bestOut = counterFinderBestSkill(candidato, alvo, { targetPosition: targetPosition });
+  const bestIn = counterFinderBestSkill(alvo, candidato, { targetPosition: "ANY" });
+  const outPressure = bestOut ? bestOut.pressure : 0;
+  const inPressure = bestIn ? bestIn.pressure : 0;
+  const spdCandidato = counterFinderStat(candidato, "SPD");
+  const spdAlvo = counterFinderStat(alvo, "SPD");
+  const efeitosCandidato = counterFinderEffectPower(candidato);
+  const efeitosAlvo = counterFinderEffectPower(alvo);
   const motivos = [];
   const riscos = [];
-  const candidatoElementos = counterFinderElementos(candidato);
-  const alvoElementos = counterFinderElementos(alvo);
-  const alvoWeak = counterFinderNormalizarRelacao(alvo, "weak");
-  const alvoStrong = counterFinderNormalizarRelacao(alvo, "strong");
-  const candidatoStrong = counterFinderNormalizarRelacao(candidato, "strong");
-  const candidatoWeak = counterFinderNormalizarRelacao(candidato, "weak");
+  const neutros = [];
 
-  if (counterFinderEhTypeFavoravel(candidato, alvo)) {
-    score += 16;
-    motivos.push("Type favorável contra " + normalizarType(alvo.type));
-  } else if (counterFinderEhTypeDesfavoravel(candidato, alvo)) {
-    score -= 14;
-    riscos.push("Type desfavorável neste matchup");
-  }
+  let score = 50;
+  score += counterFinderClamp((outType - inType) * 0.22, -11, 11);
+  score += counterFinderClamp((outPressure - inPressure) * 65, -12, 12);
+  score += counterFinderClamp(((bestOut ? bestOut.relationScore : 0) - (bestIn ? bestIn.relationScore : 0)) * 0.55, -10, 10);
+  score += counterFinderClamp(efeitosCandidato - efeitosAlvo, -8, 8);
 
-  if (alvoWeak && candidatoElementos.includes(alvoWeak)) {
-    score += 25;
-    motivos.push("Possui Skill " + alvoWeak + " que acerta a Weak do alvo");
-  }
-
-  if (alvoStrong && candidatoElementos.includes(alvoStrong)) {
-    score -= 10;
-    riscos.push("Usa " + alvoStrong + ", elemento em que o alvo é Strong");
-  }
-
-  if (candidatoStrong && alvoElementos.includes(candidatoStrong)) {
-    score += 11;
-    motivos.push("É Strong contra " + candidatoStrong + ", usado pelo alvo");
-  }
-
-  if (candidatoWeak && alvoElementos.includes(candidatoWeak)) {
-    score -= 18;
-    riscos.push("O alvo possui " + candidatoWeak + " e explora sua Weak");
-  }
-
-  const spdCandidato = counterFinderNumero(candidato.spd);
-  const spdAlvo = counterFinderNumero(alvo.spd);
   if (spdCandidato > 0 && spdAlvo > 0) {
-    const diferencaPct = (spdCandidato - spdAlvo) / spdAlvo;
-    const bonusSpd = Math.max(-8, Math.min(8, diferencaPct * 22));
-    score += bonusSpd;
-    if (diferencaPct >= 0.05) motivos.push("SPD superior ao alvo");
-    if (diferencaPct <= -0.08) riscos.push("SPD consideravelmente inferior");
+    const spdDelta = (spdCandidato - spdAlvo) / spdAlvo;
+    score += counterFinderClamp(spdDelta * 30, -8, 8);
   }
 
-  if (counterFinderTemValor(candidato.cc)) {
-    score += 7;
-    motivos.push("Possui controle de grupo (CC)");
-  }
-  if (counterFinderTemValor(candidato.defBreak)) {
-    score += 5;
-    motivos.push("Possui DEF BREAK");
-  }
-  if (counterFinderTemValor(candidato.dot)) {
-    score += 3;
-    motivos.push("Possui dano contínuo (DOT)");
+  if (targetPosition === "BACK") {
+    const ofensivas = (Array.isArray(candidato.skills) ? candidato.skills : []).filter(counterFinderSkillEhOfensiva);
+    const temRanged = ofensivas.some(counterFinderSkillEhRanged);
+    const temMelee = ofensivas.some(counterFinderSkillEhMelee);
+    if (!temRanged && temMelee) score -= 6;
   }
 
-  const str = counterFinderNumero(candidato.str);
-  const intStat = counterFinderNumero(candidato.int);
-  const alvoDef = counterFinderNumero(alvo.def);
-  const alvoRes = counterFinderNumero(alvo.res);
-  const pressaoFisica = str > 0 && alvoDef > 0 ? str / alvoDef : 0;
-  const pressaoMagica = intStat > 0 && alvoRes > 0 ? intStat / alvoRes : 0;
-  const pressao = Math.max(pressaoFisica, pressaoMagica);
-  if (pressao >= 1.18) {
-    score += 6;
-    motivos.push("Boa pressão ofensiva contra DEF/RES do alvo");
-  } else if (pressao > 0 && pressao < 0.78) {
-    score -= 4;
-    riscos.push("Pressão ofensiva baixa contra as defesas do alvo");
+  if (outType > 0) motivos.push("TYPE: causa " + counterFinderTypeTexto(outType) + " de modificador de dano contra " + counterFinderType(alvo));
+  else if (outType < 0) riscos.push("TYPE: causa " + counterFinderTypeTexto(outType) + " de modificador de dano contra " + counterFinderType(alvo));
+  else neutros.push("TYPE ofensivo neutro: 0% de modificador de dano");
+
+  if (inType < 0) motivos.push("TYPE defensivo: o alvo causa " + counterFinderTypeTexto(inType) + " contra este candidato");
+  else if (inType > 0) riscos.push("TYPE defensivo: o alvo causa " + counterFinderTypeTexto(inType) + " contra este candidato");
+
+  if (bestOut) {
+    const prefixo = bestOut.isBase ? "BASE" : "CONVERSÃO";
+    motivos.push("Melhor Skill: S" + (bestOut.skill.slot || "?") + " " + (bestOut.skill.name || "Skill") + " · " + prefixo + " " + bestOut.element + " · coef. " + Number(bestOut.skill.baseTotal || 0) + "%");
+    if (bestOut.relationText && bestOut.relationScore > 0) motivos.push(bestOut.relationText);
+    if (bestOut.relationText && bestOut.relationScore < 0) riscos.push(bestOut.relationText);
   }
 
-  score = Math.max(0, Math.min(100, Math.round(score)));
+  if (bestIn) {
+    if (bestIn.relationText && bestIn.relationScore > 0) riscos.push("Alvo: " + bestIn.relationText);
+    if (bestIn.relationText && bestIn.relationScore < 0) motivos.push("Defesa favorável: " + bestIn.relationText);
+  }
+
+  if (spdCandidato > 0 && spdAlvo > 0) {
+    const diff = spdCandidato - spdAlvo;
+    if (diff > 0) motivos.push("SPD " + spdCandidato + " vs " + spdAlvo + " · tende a agir antes (+" + diff + ")");
+    else if (diff < 0) riscos.push("SPD " + spdCandidato + " vs " + spdAlvo + " · tende a agir depois (" + diff + ")");
+    else neutros.push("SPD empatado em " + spdCandidato);
+  }
+
+  const efeitos = counterFinderTodosEfeitos(candidato);
+  efeitos.slice(0, 4).forEach(function(item) {
+    const chance = Number.isFinite(Number(item.chance)) ? " · " + Number(item.chance) + "%" : "";
+    motivos.push("S" + item.slot + " " + item.skillName + " · " + item.kind + ": " + item.label + chance);
+  });
+
+  const efeitosAlvoLista = counterFinderTodosEfeitos(alvo);
+  if (efeitosAlvoLista.length) {
+    const pior = efeitosAlvoLista.slice().sort(function(a,b){ return (Number(b.chance)||0) - (Number(a.chance)||0); })[0];
+    const chance = Number.isFinite(Number(pior.chance)) ? " · " + Number(pior.chance) + "%" : "";
+    riscos.push("Ameaça do alvo: S" + pior.slot + " " + pior.kind + " — " + pior.label + chance);
+  }
+
+  if (targetPosition === "BACK") {
+    const ofensivas = (Array.isArray(candidato.skills) ? candidato.skills : []).filter(counterFinderSkillEhOfensiva);
+    const temRanged = ofensivas.some(counterFinderSkillEhRanged);
+    const temMelee = ofensivas.some(counterFinderSkillEhMelee);
+    if (!temRanged && temMelee) riscos.push("Alvo em BACK: o candidato depende de Skills Melee enquanto houver Front");
+    else if (temRanged) motivos.push("Alvo em BACK: possui opção Ranged para alcançar a back line");
+  }
+
+  score = Math.round(counterFinderClamp(score, 0, 100));
 
   let classe = "risco";
   let label = "ARRISCADO";
-  if (score >= 78) {
+  if (score >= 72) {
     classe = "elite";
     label = "ÓTIMO MATCHUP";
-  } else if (score >= 64) {
+  } else if (score >= 60) {
     classe = "forte";
     label = "VANTAGEM";
-  } else if (score >= 50) {
+  } else if (score >= 46) {
     classe = "neutro";
     label = "EQUILIBRADO";
   }
@@ -9021,20 +9308,66 @@ function counterFinderScore(candidato, alvo) {
     score: score,
     classe: classe,
     label: label,
-    motivos: motivos.slice(0, 5),
-    riscos: riscos.slice(0, 4),
-    elementos: candidatoElementos
+    motivos: motivos,
+    riscos: riscos,
+    neutros: neutros,
+    elementos: counterFinderElementos(candidato),
+    typeOut: outType,
+    typeIn: inType,
+    bestOut: bestOut,
+    bestIn: bestIn,
+    efeitos: efeitos
   };
 }
 
 function counterFinderListaBase() {
   const seletor = document.getElementById("counterFinderStage");
   const stage = String(seletor && seletor.value || "MEGA").toUpperCase();
-  return (Array.isArray(database) ? database : []).filter(function(digi) {
-    const digiStage = normalizarStageDigidex(digi && digi.stage);
-    if (!DIGIDEX_STAGES.includes(digiStage)) return false;
+  return (Array.isArray(pvpDatabase) ? pvpDatabase : []).filter(function(digi) {
+    const digiStage = counterFinderStage(digi);
     return stage === "ALL" || digiStage === stage;
   });
+}
+
+function counterFinderStatusCarregando(texto) {
+  const lista = document.getElementById("counterFinderResults");
+  const count = document.getElementById("counterFinderResultCount");
+  if (count) count.textContent = "CARREGANDO MASTER";
+  if (lista) {
+    lista.innerHTML = '<div class="counter-finder-results-empty"><span>⌁</span><strong>' + escaparHtml(texto || "CARREGANDO DATABASE MASTER") + '</strong><small>Os dados são os mesmos usados pelas ferramentas PvP da Holy Guardians.</small></div>';
+  }
+}
+
+function counterFinderCarregarDatabase() {
+  if (Array.isArray(pvpDatabase) && pvpDatabase.length) {
+    counterFinderDataReady = true;
+    return Promise.resolve(pvpDatabase);
+  }
+  if (counterFinderDataPromise) return counterFinderDataPromise;
+
+  counterFinderStatusCarregando("CARREGANDO DATABASE MASTER...");
+  counterFinderDataPromise = (typeof pvpCarregarDatabase === "function"
+    ? pvpCarregarDatabase()
+    : fetch(PVP_DATA_URL, { cache: "no-store" }).then(function(resp){ if(!resp.ok) throw new Error("HTTP " + resp.status); return resp.json(); }))
+    .then(function(data) {
+      if (!Array.isArray(pvpDatabase) || !pvpDatabase.length) pvpDatabase = Array.isArray(data) ? data : [];
+      counterFinderDataReady = pvpDatabase.length > 0;
+      counterFinderRenderizarTarget();
+      counterFinderRenderizarResultados();
+      return pvpDatabase;
+    })
+    .catch(function(erro) {
+      console.error("[Counter Finder] Falha ao carregar DATABASE MASTER", erro);
+      counterFinderDataReady = false;
+      const lista = document.getElementById("counterFinderResults");
+      const count = document.getElementById("counterFinderResultCount");
+      if (count) count.textContent = "ERRO NA DATABASE";
+      if (lista) lista.innerHTML = '<div class="counter-finder-results-empty"><span>!</span><strong>NÃO FOI POSSÍVEL CARREGAR A DATABASE MASTER</strong><small>' + escaparHtml(erro && erro.message ? erro.message : String(erro || "Erro")) + '</small></div>';
+      return [];
+    })
+    .finally(function(){ counterFinderDataPromise = null; });
+
+  return counterFinderDataPromise;
 }
 
 function counterFinderPesquisarAlvo() {
@@ -9053,12 +9386,18 @@ function counterFinderPesquisarAlvo() {
     return;
   }
 
-  const resultados = (Array.isArray(database) ? database : [])
+  if (!Array.isArray(pvpDatabase) || !pvpDatabase.length) {
+    box.innerHTML = '<div class="counter-finder-suggestion-empty">Carregando DATABASE MASTER...</div>';
+    box.hidden = false;
+    counterFinderCarregarDatabase().then(function(){ if (input.value.trim()) counterFinderPesquisarAlvo(); });
+    return;
+  }
+
+  const resultados = pvpDatabase
     .filter(function(digi) {
-      const stage = normalizarStageDigidex(digi && digi.stage);
-      return DIGIDEX_STAGES.includes(stage) && String(digi.digimon || "").toLowerCase().includes(termo);
+      return counterFinderNome(digi).toLowerCase().includes(termo);
     })
-    .slice(0, 8);
+    .slice(0, 10);
 
   if (!resultados.length) {
     box.innerHTML = '<div class="counter-finder-suggestion-empty">Nenhum Digimon encontrado.</div>';
@@ -9067,12 +9406,11 @@ function counterFinderPesquisarAlvo() {
   }
 
   box.innerHTML = resultados.map(function(digi) {
-    const nome = String(digi.digimon || "");
-    const codificado = encodeURIComponent(nome);
+    const nome = counterFinderNome(digi);
     return `
-      <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvo(decodeURIComponent('${codificado}'))">
+      <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvoPorId(${Number(digi.did) || 0})">
         ${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="">` : '<span class="counter-finder-suggestion-fallback">◆</span>'}
-        <span><b>${escaparHtml(nome)}</b><small>${escaparHtml(normalizarStageDigidex(digi.stage))} • ${escaparHtml(normalizarType(digi.type))}</small></span>
+        <span><b>${escaparHtml(nome)}</b><small>${escaparHtml(counterFinderStage(digi))} • ${escaparHtml(counterFinderType(digi))}</small></span>
       </button>
     `;
   }).join("");
@@ -9083,25 +9421,24 @@ function counterFinderTeclaAlvo(evento) {
   if (!evento || evento.key !== "Enter") return;
   evento.preventDefault();
   const input = document.getElementById("counterFinderTargetInput");
-  if (!input) return;
+  if (!input || !Array.isArray(pvpDatabase) || !pvpDatabase.length) return;
   const termo = String(input.value || "").trim().toLowerCase();
-  const candidato = (Array.isArray(database) ? database : []).find(function(digi) {
-    return String(digi.digimon || "").trim().toLowerCase() === termo;
-  }) || (Array.isArray(database) ? database : []).find(function(digi) {
-    return String(digi.digimon || "").toLowerCase().includes(termo);
+  const candidato = pvpDatabase.find(function(digi) {
+    return counterFinderNome(digi).toLowerCase() === termo;
+  }) || pvpDatabase.find(function(digi) {
+    return counterFinderNome(digi).toLowerCase().includes(termo);
   });
-  if (candidato) counterFinderSelecionarAlvo(candidato.digimon);
+  if (candidato) counterFinderSelecionarAlvoPorId(candidato.did);
 }
 
-function counterFinderSelecionarAlvo(nome) {
-  const alvoNome = String(nome || "").trim().toLowerCase();
-  counterFinderTarget = (Array.isArray(database) ? database : []).find(function(digi) {
-    return String(digi.digimon || "").trim().toLowerCase() === alvoNome;
+function counterFinderSelecionarAlvoPorId(did) {
+  counterFinderTarget = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(digi) {
+    return Number(digi.did) === Number(did);
   }) || null;
 
   const input = document.getElementById("counterFinderTargetInput");
   const box = document.getElementById("counterFinderSuggestions");
-  if (input && counterFinderTarget) input.value = counterFinderTarget.digimon;
+  if (input && counterFinderTarget) input.value = counterFinderNome(counterFinderTarget);
   if (box) {
     box.innerHTML = "";
     box.hidden = true;
@@ -9111,10 +9448,9 @@ function counterFinderSelecionarAlvo(nome) {
 }
 
 function counterFinderRelacaoMini(digi, kind) {
-  const info = hgRelationData(digi, kind);
-  if (!info || !info.element) return '<span class="counter-finder-empty-value">—</span>';
-  const elemento = counterFinderNormalizarElemento(info.element);
-  return `<span class="counter-finder-relation-mini">${renderizarIconeElemento(elemento)}<b>${escaparHtml(elemento)}</b></span>`;
+  const info = counterFinderRelacao(digi, kind);
+  if (!info.element) return '<span class="counter-finder-empty-value">—</span>';
+  return `<span class="counter-finder-relation-mini">${renderizarIconeElemento(info.element)}<b>${escaparHtml(info.element)}</b>${info.effect ? `<em>${escaparHtml(info.effect)}</em>` : ""}</span>`;
 }
 
 function counterFinderRenderizarTarget() {
@@ -9126,40 +9462,89 @@ function counterFinderRenderizarTarget() {
       <div class="counter-finder-target-empty">
         <span>⌖</span>
         <strong>SELECIONE O DIGIMON INIMIGO</strong>
-        <small>O analisador usará os dados da DATABASE MASTER para buscar os melhores matchups.</small>
+        <small>O analisador lê Skills, efeitos, Strong/Weak, stats e TYPE diretamente da DATABASE MASTER.</small>
       </div>
     `;
     return;
   }
 
   const d = counterFinderTarget;
+  const elementos = counterFinderElementos(d);
+  const effects = counterFinderTodosEfeitos(d);
   card.innerHTML = `
     <div class="counter-finder-target-top">
       <div class="counter-finder-target-icon">
-        ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(d.digimon || "")}">` : '<span>◆</span>'}
+        ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(counterFinderNome(d))}">` : '<span>◆</span>'}
       </div>
       <div class="counter-finder-target-copy">
         <small>ALVO ANALISADO //</small>
-        <h3>${escaparHtml(d.digimon || "-")}</h3>
+        <h3>${escaparHtml(counterFinderNome(d) || "-")}</h3>
         <div class="counter-finder-target-tags">
-          ${counterFinderTypeIcon(d.type)}
-          <span>${escaparHtml(normalizarStageDigidex(d.stage))}</span>
+          ${counterFinderTypeIcon(counterFinderType(d))}
+          <span>${escaparHtml(counterFinderStage(d))}</span>
+          <span>${effects.length} EFEITO${effects.length === 1 ? "" : "S"} MAPEADO${effects.length === 1 ? "" : "S"}</span>
         </div>
       </div>
-      <div class="counter-finder-target-spd"><small>SPD</small><strong>${escaparHtml(d.spd || "-")}</strong></div>
+      <div class="counter-finder-target-spd"><small>SPD</small><strong>${counterFinderStat(d, "SPD") || "-"}</strong></div>
     </div>
     <div class="counter-finder-target-relations">
       <div><small>STRONG</small>${counterFinderRelacaoMini(d, "strong")}</div>
       <div><small>WEAK</small>${counterFinderRelacaoMini(d, "weak")}</div>
-      <div class="counter-finder-target-elements"><small>ELEMENTOS DAS SKILLS</small><span>${counterFinderElementos(d).map(function(el){ return renderizarIconeElemento(el); }).join("") || "—"}</span></div>
+      <div class="counter-finder-target-elements"><small>ELEMENTOS DISPONÍVEIS</small><span>${elementos.map(function(el){ return renderizarIconeElemento(el); }).join("") || "—"}</span></div>
     </div>
   `;
+}
+
+function counterFinderTypeDuelHtml(candidato, alvo, analise) {
+  return `
+    <div class="counter-finder-type-duel">
+      <div class="${counterFinderTypeClasse(analise.typeOut)}"><small>${escaparHtml(counterFinderType(candidato))} → ${escaparHtml(counterFinderType(alvo))}</small><strong>${counterFinderTypeTexto(analise.typeOut)}</strong><span>DANO</span></div>
+      <div class="${counterFinderTypeClasse(analise.typeIn)}"><small>${escaparHtml(counterFinderType(alvo))} → ${escaparHtml(counterFinderType(candidato))}</small><strong>${counterFinderTypeTexto(analise.typeIn)}</strong><span>DANO</span></div>
+    </div>
+  `;
+}
+
+function counterFinderBestSkillHtml(best) {
+  if (!best || !best.skill) return '<div class="counter-finder-best-skill empty">SEM SKILL OFENSIVA MAPEADA</div>';
+  const skill = best.skill;
+  const efeitos = counterFinderSkillEfeitos(skill);
+  return `
+    <div class="counter-finder-best-skill">
+      ${skill.icon ? `<img src="${escaparHtml(skill.icon)}" alt="">` : ""}
+      <div>
+        <small>MELHOR OPÇÃO OFENSIVA</small>
+        <strong>S${Number(skill.slot) || "?"} · ${escaparHtml(skill.name || "Skill")}</strong>
+        <span>${best.isBase ? "BASE" : "CONVERSÃO"} ${escaparHtml(best.element)} · ${Number(skill.baseTotal || 0)}% · ${escaparHtml(skill.scope || "-")}</span>
+      </div>
+      ${efeitos.length ? `<em>${efeitos.map(function(e){ return escaparHtml(e.kind); }).join(" · ")}</em>` : ""}
+    </div>
+  `;
+}
+
+function counterFinderEffectsHtml(efeitos) {
+  if (!efeitos || !efeitos.length) return '<div class="counter-finder-effects-empty">SEM CC / DOT / DEF BREAK MAPEADO</div>';
+  return `<div class="counter-finder-effects-list">${efeitos.slice(0, 4).map(function(item) {
+    const chance = Number.isFinite(Number(item.chance)) ? Number(item.chance) + "%" : "—";
+    return `<span><b>S${item.slot} · ${escaparHtml(item.kind)}</b><small>${escaparHtml(item.label)} · ${chance}</small></span>`;
+  }).join("")}</div>`;
 }
 
 function counterFinderRenderizarResultados() {
   const lista = document.getElementById("counterFinderResults");
   const count = document.getElementById("counterFinderResultCount");
   if (!lista || !count) return;
+
+  if (!counterFinderDataReady && (!Array.isArray(pvpDatabase) || !pvpDatabase.length)) {
+    count.textContent = "DATABASE MASTER";
+    lista.innerHTML = `
+      <div class="counter-finder-results-empty">
+        <span>⌁</span>
+        <strong>DATABASE MASTER PRONTA PARA CARREGAR</strong>
+        <small>Abra ou pesquise um Digimon para iniciar a análise.</small>
+      </div>
+    `;
+    return;
+  }
 
   if (!counterFinderTarget) {
     count.textContent = "AGUARDANDO ALVO";
@@ -9173,17 +9558,13 @@ function counterFinderRenderizarResultados() {
     return;
   }
 
-  const alvoNome = String(counterFinderTarget.digimon || "").trim().toLowerCase();
+  const alvoDid = Number(counterFinderTarget.did);
   const resultados = counterFinderListaBase()
-    .filter(function(digi) {
-      return String(digi.digimon || "").trim().toLowerCase() !== alvoNome;
-    })
-    .map(function(digi) {
-      return { digi: digi, analise: counterFinderScore(digi, counterFinderTarget) };
-    })
+    .filter(function(digi) { return Number(digi.did) !== alvoDid; })
+    .map(function(digi) { return { digi: digi, analise: counterFinderScore(digi, counterFinderTarget) }; })
     .sort(function(a, b) {
       if (b.analise.score !== a.analise.score) return b.analise.score - a.analise.score;
-      return counterFinderNumero(b.digi.spd) - counterFinderNumero(a.digi.spd);
+      return counterFinderStat(b.digi, "SPD") - counterFinderStat(a.digi, "SPD");
     })
     .slice(0, 12);
 
@@ -9197,42 +9578,36 @@ function counterFinderRenderizarResultados() {
   lista.innerHTML = resultados.map(function(item, indice) {
     const d = item.digi;
     const a = item.analise;
-    const nomeCodificado = encodeURIComponent(String(d.digimon || ""));
-    const motivos = a.motivos.length
-      ? a.motivos.map(function(texto){ return `<li class="positivo"><span>✓</span>${escaparHtml(texto)}</li>`; }).join("")
-      : '<li class="neutro"><span>•</span>Sem bônus decisivo identificado.</li>';
-    const riscos = a.riscos.map(function(texto){ return `<li class="negativo"><span>!</span>${escaparHtml(texto)}</li>`; }).join("");
+    const nomeCodificado = encodeURIComponent(counterFinderNome(d));
+    const motivos = a.motivos.slice(0, 6).map(function(texto){ return `<li class="positivo"><span>✓</span>${escaparHtml(texto)}</li>`; }).join("");
+    const riscos = a.riscos.slice(0, 5).map(function(texto){ return `<li class="negativo"><span>!</span>${escaparHtml(texto)}</li>`; }).join("");
+    const neutros = a.neutros.slice(0, 2).map(function(texto){ return `<li class="neutro"><span>•</span>${escaparHtml(texto)}</li>`; }).join("");
+
     return `
       <article class="counter-finder-result counter-finder-${a.classe}">
         <div class="counter-finder-rank">#${indice + 1}</div>
         <div class="counter-finder-score"><strong>${a.score}</strong><small>/ 100</small><span>${a.label}</span></div>
         <div class="counter-finder-result-head">
           <div class="counter-finder-result-icon">
-            ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(d.digimon || "")}">` : '<span>◆</span>'}
+            ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(counterFinderNome(d))}">` : '<span>◆</span>'}
           </div>
           <div>
-            <h3>${escaparHtml(d.digimon || "-")}</h3>
-            <div class="counter-finder-result-tags">
-              ${counterFinderTypeIcon(d.type)}
-              <span>${escaparHtml(normalizarStageDigidex(d.stage))}</span>
-            </div>
+            <h3>${escaparHtml(counterFinderNome(d) || "-")}</h3>
+            <div class="counter-finder-result-tags">${counterFinderTypeIcon(counterFinderType(d))}<span>${escaparHtml(counterFinderStage(d))}</span></div>
           </div>
         </div>
-        <div class="counter-finder-elements">
-          <small>SKILLS</small>
-          <div>${a.elementos.map(function(el){ return renderizarIconeElemento(el); }).join("") || '<span class="counter-finder-empty-value">—</span>'}</div>
-        </div>
+        ${counterFinderTypeDuelHtml(d, counterFinderTarget, a)}
+        ${counterFinderBestSkillHtml(a.bestOut)}
         <div class="counter-finder-stats">
-          <span><small>STR</small><b>${escaparHtml(d.str || "-")}</b></span>
-          <span><small>INT</small><b>${escaparHtml(d.int || "-")}</b></span>
-          <span><small>DEF</small><b>${escaparHtml(d.def || "-")}</b></span>
-          <span><small>RES</small><b>${escaparHtml(d.res || "-")}</b></span>
-          <span><small>SPD</small><b>${escaparHtml(d.spd || "-")}</b></span>
+          <span><small>HP</small><b>${counterFinderStat(d, "HP") || "-"}</b></span>
+          <span><small>STR</small><b>${counterFinderStat(d, "STR") || "-"}</b></span>
+          <span><small>INT</small><b>${counterFinderStat(d, "INT") || "-"}</b></span>
+          <span><small>DEF/RES</small><b>${counterFinderStat(d, "DEF") || "-"}/${counterFinderStat(d, "RES") || "-"}</b></span>
+          <span><small>SPD</small><b>${counterFinderStat(d, "SPD") || "-"}</b></span>
         </div>
-        <ul class="counter-finder-reasons">${motivos}${riscos}</ul>
-        <button class="counter-finder-open" type="button" onclick="counterFinderAbrirDigidex(decodeURIComponent('${nomeCodificado}'))">
-          ABRIR NA DIGIDEX <span>→</span>
-        </button>
+        ${counterFinderEffectsHtml(a.efeitos)}
+        <ul class="counter-finder-reasons">${motivos}${riscos}${neutros}</ul>
+        <button class="counter-finder-open" type="button" onclick="counterFinderAbrirDigidex(decodeURIComponent('${nomeCodificado}'))">ABRIR NA DIGIDEX <span>→</span></button>
       </article>
     `;
   }).join("");
@@ -9246,20 +9621,26 @@ function counterFinderAbrirDigidex(nome) {
 function counterFinderSincronizarDatabase() {
   counterFinderRenderizarTarget();
   counterFinderRenderizarResultados();
-  const input = document.getElementById("counterFinderTargetInput");
-  if (input && input.value) counterFinderPesquisarAlvo();
+}
+
+function counterFinderAtivar() {
+  counterFinderCarregarDatabase();
 }
 
 function inicializarCounterFinder() {
   counterFinderRenderizarTarget();
   counterFinderRenderizarResultados();
-  document.addEventListener("click", function(evento) {
-    const box = document.getElementById("counterFinderSuggestions");
-    const wrap = document.querySelector(".counter-finder-search");
-    if (!box || !wrap || wrap.contains(evento.target)) return;
-    box.hidden = true;
-  });
+  if (!counterFinderListenerReady) {
+    counterFinderListenerReady = true;
+    document.addEventListener("click", function(evento) {
+      const box = document.getElementById("counterFinderSuggestions");
+      const wrap = document.querySelector(".counter-finder-search");
+      if (!box || !wrap || wrap.contains(evento.target)) return;
+      box.hidden = true;
+    });
+  }
 }
+
 
 /* =====================================================
    RAID BOSS — AGENDA KST
