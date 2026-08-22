@@ -26162,3 +26162,157 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 @media (prefers-reduced-motion: reduce) {
   .hg-header-event.sound-alert { animation: none; }
 }
+
+/* =====================================================
+   HG 2026-08-22 — COUNTER FINDER VISUAL V3
+   Mascote no header + cantos tecnológicos + Digivolution oculta no menu.
+===================================================== */
+
+/* Mantém a rota/página disponível para integrações da Digidex, mas remove o atalho duplicado do menu. */
+#btnDigivolution[hidden] {
+  display: none !important;
+}
+
+/* Mascote do Counter Finder no cabeçalho. */
+.counter-finder-header {
+  align-items: center;
+}
+
+.counter-finder-header-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.counter-finder-header-icon-shell {
+  position: relative;
+  flex: 0 0 118px;
+  width: 118px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  margin: -12px 10px -12px auto;
+  pointer-events: none;
+}
+
+.counter-finder-header-icon-shell::before {
+  content: "";
+  position: absolute;
+  inset: 17px 8px 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(43, 207, 255, .14), rgba(52, 77, 255, .045) 50%, transparent 72%);
+  filter: blur(1px);
+}
+
+.counter-finder-header-icon {
+  position: relative;
+  z-index: 2;
+  width: 106px;
+  height: 106px;
+  display: block;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 8px rgba(51, 220, 255, .30))
+    drop-shadow(0 8px 12px rgba(0, 0, 0, .34));
+}
+
+/* Linguagem de borda tecnológica da HG: canto ciano superior esquerdo + canto roxo inferior direito. */
+.counter-finder-header,
+.counter-finder-rule-strip,
+.counter-finder-controls,
+.counter-finder-target-card,
+.counter-finder-how,
+.counter-finder-results > .counter-finder-results-empty,
+.counter-finder-result,
+.counter-finder-type-duel > div,
+.counter-finder-best-skill,
+.counter-finder-matchup-strip > span,
+.counter-finder-source {
+  position: relative;
+  isolation: isolate;
+}
+
+.counter-finder-header::after,
+.counter-finder-rule-strip::after,
+.counter-finder-controls::after,
+.counter-finder-target-card::after,
+.counter-finder-how::after,
+.counter-finder-results > .counter-finder-results-empty::after,
+.counter-finder-result::after,
+.counter-finder-type-duel > div::after,
+.counter-finder-best-skill::after,
+.counter-finder-matchup-strip > span::after,
+.counter-finder-source::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 8;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(83,236,255,.92), rgba(83,236,255,.92)) left top / 18px 1px no-repeat,
+    linear-gradient(rgba(83,236,255,.92), rgba(83,236,255,.92)) left top / 1px 18px no-repeat,
+    linear-gradient(rgba(159,101,255,.74), rgba(159,101,255,.74)) right bottom / 18px 1px no-repeat,
+    linear-gradient(rgba(159,101,255,.74), rgba(159,101,255,.74)) right bottom / 1px 18px no-repeat;
+  filter:
+    drop-shadow(0 0 3px rgba(50, 209, 255, .36))
+    drop-shadow(0 0 3px rgba(146, 77, 255, .18));
+}
+
+/* Boxes principais ganham corte sutil, sem alterar dimensões internas. */
+.counter-finder-header,
+.counter-finder-controls,
+.counter-finder-target-card,
+.counter-finder-result {
+  clip-path: polygon(
+    9px 0, calc(100% - 9px) 0, 100% 9px,
+    100% calc(100% - 9px), calc(100% - 9px) 100%,
+    9px 100%, 0 calc(100% - 9px), 0 9px
+  );
+}
+
+/* A linha luminosa original do header continua visível acima dos novos cantos. */
+.counter-finder-header::before {
+  z-index: 9;
+}
+
+@media (max-width: 900px) {
+  .counter-finder-header-icon-shell {
+    flex-basis: 88px;
+    width: 88px;
+    height: 82px;
+    margin: -7px 0 -7px auto;
+  }
+
+  .counter-finder-header-icon {
+    width: 82px;
+    height: 82px;
+  }
+}
+
+@media (max-width: 620px) {
+  .counter-finder-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 70px;
+    gap: 8px;
+  }
+
+  .counter-finder-header-copy {
+    min-width: 0;
+  }
+
+  .counter-finder-header-icon-shell {
+    grid-column: 2;
+    grid-row: 1;
+    width: 70px;
+    height: 68px;
+    margin: 0;
+  }
+
+  .counter-finder-header-icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .counter-finder-source {
+    display: none;
+  }
+}
