@@ -25358,3 +25358,300 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
     max-height: calc(100dvh - 96px) !important;
   }
 }
+
+
+/* =====================================================
+   HG 2026-08-22 — HEADER EVENT CARDS V2
+   Boss + Dekyu lado a lado, maiores e com ícones reais.
+===================================================== */
+.hg-header-countdowns {
+  flex: 0 0 clamp(390px, 27vw, 510px) !important;
+  width: clamp(390px, 27vw, 510px) !important;
+  min-width: 390px !important;
+  max-width: 510px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  margin: 0 4px !important;
+}
+
+.hg-header-event {
+  position: relative !important;
+  min-width: 0 !important;
+  height: 66px !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 3px !important;
+  padding: 7px 10px 8px !important;
+  overflow: hidden !important;
+  border-radius: 9px !important;
+  text-align: left !important;
+}
+
+.hg-header-event::before {
+  width: 3px !important;
+}
+
+.hg-header-event-label {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  color: #75b4d2;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .11em;
+  line-height: 1.05;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hg-header-event-body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.hg-header-event-icon-shell {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(65, 201, 255, .24);
+  border-radius: 9px;
+  background: radial-gradient(circle, rgba(43, 177, 238, .14), rgba(3, 22, 47, .4));
+  box-shadow: inset 0 0 13px rgba(45, 191, 255, .055);
+}
+
+.hg-header-event-icon {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.34));
+}
+
+.hg-header-event-info {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.hg-header-event-info > b {
+  display: block;
+  overflow: hidden;
+  color: #f0fbff;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.08;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hg-header-event-info > strong {
+  color: #63e8ff;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .025em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 9px rgba(64, 216, 255, .18);
+}
+
+.hg-header-event-dekyu .hg-header-event-label { color: #b99ae5; }
+.hg-header-event-dekyu .hg-header-event-icon-shell {
+  border-color: rgba(178, 102, 255, .26);
+  background: radial-gradient(circle, rgba(158, 79, 255, .14), rgba(20, 12, 49, .42));
+}
+.hg-header-event-dekyu .hg-header-event-info > strong { color: #d0adff; }
+.hg-header-event.is-soon .hg-header-event-info > strong { color: #ffd45c; }
+
+/* Notebook: mantém os dois cards grandes, mas sem esmagar a navegação. */
+@media (min-width: 1101px) and (max-width: 1450px) {
+  .hg-header-countdowns {
+    flex-basis: 360px !important;
+    width: 360px !important;
+    min-width: 360px !important;
+    max-width: 360px !important;
+    gap: 6px !important;
+    margin-inline: 0 !important;
+  }
+  .hg-header-event {
+    height: 62px !important;
+    padding: 6px 8px 7px !important;
+  }
+  .hg-header-event-body { grid-template-columns: 37px minmax(0, 1fr); gap: 7px; }
+  .hg-header-event-icon-shell { width: 37px; height: 37px; }
+  .hg-header-event-icon { width: 31px; height: 31px; }
+  .hg-header-event-label { font-size: 6.3px; }
+  .hg-header-event-info > b { font-size: 7.8px; }
+  .hg-header-event-info > strong { font-size: 12px; }
+}
+
+/* Tablet/mobile: cria uma faixa larga real abaixo da marca, sempre 2 colunas. */
+@media (max-width: 1100px) {
+  :root { --hg-header-h: 132px !important; }
+
+  .topbar.hg-main-header,
+  .topbar.hg-main-header.header-collapsed {
+    height: 132px !important;
+    min-height: 132px !important;
+    padding-bottom: 70px !important;
+  }
+
+  .hg-header-countdowns {
+    position: absolute !important;
+    z-index: 4 !important;
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 0 !important;
+  }
+
+  .hg-header-event {
+    height: 58px !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 2px !important;
+    padding: 5px 8px 6px !important;
+    border-radius: 8px !important;
+  }
+
+  .hg-header-event-label { display: block !important; font-size: 6.4px !important; }
+  .hg-header-event-body { grid-template-columns: 36px minmax(0, 1fr); gap: 7px; }
+  .hg-header-event-icon-shell { width: 36px; height: 36px; }
+  .hg-header-event-icon { width: 30px; height: 30px; }
+  .hg-header-event-info > b { font-size: 7.6px !important; line-height: 1.05; }
+  .hg-header-event-info > strong { font-size: 12px !important; }
+  .hg-mobile-page-title { transform: none !important; }
+
+  .hg-site-nav-backdrop { inset: 132px 0 0 !important; }
+  .topbar.hg-main-header .hg-nav-shell,
+  .topbar.hg-main-header.header-collapsed .hg-nav-shell {
+    top: 140px !important;
+    max-height: calc(100dvh - 152px) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  :root { --hg-header-h: 124px !important; }
+  .topbar.hg-main-header,
+  .topbar.hg-main-header.header-collapsed {
+    height: 124px !important;
+    min-height: 124px !important;
+    padding-bottom: 64px !important;
+  }
+  .hg-header-countdowns { left: 7px !important; right: 7px !important; gap: 5px !important; bottom: 7px !important; }
+  .hg-header-event { height: 53px !important; padding: 4px 6px 5px !important; }
+  .hg-header-event-label { font-size: 5.6px !important; letter-spacing: .07em; }
+  .hg-header-event-body { grid-template-columns: 31px minmax(0, 1fr); gap: 5px; }
+  .hg-header-event-icon-shell { width: 31px; height: 31px; border-radius: 7px; }
+  .hg-header-event-icon { width: 26px; height: 26px; }
+  .hg-header-event-info > b { max-width: none !important; font-size: 6.5px !important; }
+  .hg-header-event-info > strong { font-size: 9.5px !important; }
+  .hg-site-nav-backdrop { inset: 124px 0 0 !important; }
+  .topbar.hg-main-header .hg-nav-shell,
+  .topbar.hg-main-header.header-collapsed .hg-nav-shell {
+    top: 132px !important;
+    max-height: calc(100dvh - 140px) !important;
+  }
+}
+
+/* =====================================================
+   COUNTER FINDER PVP — placeholder temporário
+===================================================== */
+.counter-finder-dev-wrap {
+  width: min(100% - 28px, 1320px);
+  margin: 0 auto;
+  padding: 28px 0 86px;
+}
+
+.counter-finder-dev-header {
+  margin-bottom: 18px;
+  padding: 22px 24px;
+  border: 1px solid rgba(64, 191, 255, .24);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(5, 25, 55, .94), rgba(9, 12, 38, .92));
+  box-shadow: inset 0 0 26px rgba(38, 161, 255, .045);
+}
+
+.counter-finder-dev-card {
+  min-height: 330px;
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 34px 42px;
+  border: 1px solid rgba(82, 210, 255, .3);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 16% 50%, rgba(38, 177, 255, .11), transparent 28%),
+    linear-gradient(145deg, rgba(4, 23, 51, .96), rgba(3, 12, 31, .98));
+  box-shadow: inset 0 0 34px rgba(35, 145, 225, .055), 0 18px 48px rgba(0,0,0,.22);
+}
+
+.counter-finder-dev-symbol {
+  width: 82px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(76, 215, 255, .38);
+  border-radius: 18px;
+  color: #66e6ff;
+  background: rgba(6, 47, 87, .38);
+  box-shadow: inset 0 0 22px rgba(45, 188, 255, .08), 0 0 20px rgba(43, 190, 255, .08);
+  font-size: 48px;
+  line-height: 1;
+}
+
+.counter-finder-dev-card > div { min-width: 0; }
+.counter-finder-dev-card small {
+  display: block;
+  margin-bottom: 7px;
+  color: #58d9ff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+.counter-finder-dev-card strong {
+  display: block;
+  color: #f3fbff;
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: 900;
+  letter-spacing: .035em;
+}
+.counter-finder-dev-card p {
+  max-width: 720px;
+  margin: 10px 0 0;
+  color: #8aabc2;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 680px) {
+  .counter-finder-dev-wrap { width: min(100% - 16px, 1320px); padding-top: 16px; }
+  .counter-finder-dev-header { padding: 17px; }
+  .counter-finder-dev-card {
+    min-height: 280px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 15px;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .counter-finder-dev-symbol { width: 68px; height: 68px; font-size: 38px; }
+  .counter-finder-dev-card p { font-size: 10px; }
+}

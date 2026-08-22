@@ -83,22 +83,31 @@
     <button class="hg-header-event hg-header-event-boss" type="button"
       onclick="mostrarPagina('raidBossPagina', document.getElementById('btnRaidBoss'))"
       title="Abrir Raid Boss">
-      <span class="hg-header-event-mark" aria-hidden="true">⚔</span>
-      <span class="hg-header-event-copy">
-        <small>PRÓXIMO BOSS</small>
-        <b id="hgHeaderBossName">CARREGANDO...</b>
+      <small class="hg-header-event-label">PRÓXIMO BOSS</small>
+      <span class="hg-header-event-body">
+        <span class="hg-header-event-icon-shell" aria-hidden="true">
+          <img id="hgHeaderBossIcon" class="hg-header-event-icon" src="icon_raid.png" alt="">
+        </span>
+        <span class="hg-header-event-info">
+          <b id="hgHeaderBossName">CARREGANDO...</b>
+          <strong id="hgHeaderBossCountdown">--:--:--</strong>
+        </span>
       </span>
-      <strong id="hgHeaderBossCountdown">--:--:--</strong>
     </button>
+
     <button class="hg-header-event hg-header-event-dekyu" type="button"
       onclick="mostrarPagina('dekyuTreasurePagina', document.getElementById('btnDekyuTreasure'))"
       title="Abrir Dekyu Treasure">
-      <span class="hg-header-event-mark" aria-hidden="true">◆</span>
-      <span class="hg-header-event-copy">
-        <small>DEKYU</small>
-        <b id="hgHeaderDekyuTime">PRÓXIMO --:--</b>
+      <small class="hg-header-event-label">DEKYU TREASURE</small>
+      <span class="hg-header-event-body">
+        <span class="hg-header-event-icon-shell" aria-hidden="true">
+          <img class="hg-header-event-icon" src="dekyu_treasure.png" alt="">
+        </span>
+        <span class="hg-header-event-info">
+          <b id="hgHeaderDekyuTime">PRÓXIMO --:--</b>
+          <strong id="hgHeaderDekyuCountdown">--:--:--</strong>
+        </span>
       </span>
-      <strong id="hgHeaderDekyuCountdown">--:--:--</strong>
     </button>
   </div>
 
@@ -222,7 +231,7 @@
           <button id="btnCounterFinder" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('counterFinderPagina', this)">
             <span class="hg-counter-nav-icon" aria-hidden="true">⌖</span>
-            <span>COUNTER FINDER</span>
+            <span>COUNTER FINDER PVP</span>
           </button>
 
           <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
@@ -2120,61 +2129,26 @@
 </section>
 
 <!-- =====================================================
-     COUNTER FINDER
+     COUNTER FINDER PVP
 ===================================================== -->
 
 <section id="counterFinderPagina" class="pagina">
-  <div class="internal-wrap counter-finder-wrap">
-    <header class="counter-finder-header">
+  <div class="internal-wrap counter-finder-dev-wrap">
+    <header class="counter-finder-dev-header">
       <div>
-        <div class="counter-finder-kicker">MATCHUP ANALYSIS // HOLY GUARDIANS</div>
-        <h2 class="page-title">COUNTER FINDER</h2>
-        <p class="page-subtitle">Escolha um Digimon e encontre os melhores matchups usando os dados da DATABASE MASTER.</p>
+        <div class="counter-finder-kicker">PVP SYSTEM // HOLY GUARDIANS</div>
+        <h2 class="page-title">COUNTER FINDER PVP</h2>
+        <p class="page-subtitle">Ferramenta de análise de matchups para o PvP.</p>
       </div>
-      <div class="counter-finder-source"><i></i><span>FONTE</span><strong>DATABASE MASTER</strong></div>
     </header>
-    <div class="counter-finder-layout">
-      <aside class="counter-finder-controls">
-        <div class="counter-finder-control-head">
-          <small>01 // TARGET</small>
-          <strong>QUAL DIGIMON VOCÊ QUER COUNTERAR?</strong>
-        </div>
-        <label class="counter-finder-field" for="counterFinderTargetInput">
-          <span>DIGIMON ALVO</span>
-          <div class="counter-finder-search">
-            <input id="counterFinderTargetInput" type="text" autocomplete="off" placeholder="Digite o nome do Digimon..."
-              oninput="counterFinderPesquisarAlvo()" onkeydown="counterFinderTeclaAlvo(event)">
-            <div id="counterFinderSuggestions" class="counter-finder-suggestions" hidden></div>
-          </div>
-        </label>
-        <label class="counter-finder-field" for="counterFinderStage">
-          <span>STAGE DOS CANDIDATOS</span>
-          <select id="counterFinderStage" onchange="counterFinderRenderizarResultados()">
-            <option value="MEGA" selected>MEGA</option>
-            <option value="ULTIMATE">ULTIMATE</option>
-            <option value="CHAMPION">CHAMPION</option>
-            <option value="ROOKIE">ROOKIE</option>
-            <option value="ALL">TODOS</option>
-          </select>
-        </label>
-        <div class="counter-finder-how">
-          <strong>COMO O SCORE É MONTADO</strong>
-          <p>O ranking cruza Type, elementos das Skills, Strong/Weak, SPD, CC, DOT, DEF BREAK e pressão ofensiva. O score é um índice de matchup — não uma porcentagem de vitória.</p>
-        </div>
-      </aside>
-      <main class="counter-finder-main">
-        <div id="counterFinderTargetCard" class="counter-finder-target-card">
-          <div class="counter-finder-empty-icon">⌖</div>
-          <div><strong>SELECIONE UM DIGIMON</strong><small>Os counters aparecerão aqui automaticamente.</small></div>
-        </div>
-        <div class="counter-finder-results-head">
-          <div><small>02 // ANALYSIS</small><strong>MELHORES COUNTERS</strong></div>
-          <span id="counterFinderResultCount">AGUARDANDO ALVO</span>
-        </div>
-        <div id="counterFinderResults" class="counter-finder-results">
-          <div class="counter-finder-empty">Escolha um Digimon acima para iniciar a análise da DATABASE MASTER.</div>
-        </div>
-      </main>
+
+    <div class="counter-finder-dev-card" role="status" aria-live="polite">
+      <span class="counter-finder-dev-symbol" aria-hidden="true">⌖</span>
+      <div>
+        <small>HOLY GUARDIANS // PVP LAB</small>
+        <strong>AINDA ESTÁ EM DESENVOLVIMENTO</strong>
+        <p>Estamos preparando o Counter Finder PVP. Em breve esta ferramenta estará disponível.</p>
+      </div>
     </div>
   </div>
 </section>

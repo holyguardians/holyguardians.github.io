@@ -2115,7 +2115,7 @@ function hgTituloPaginaHeader(id) {
     databasePagina: "DIGIDEX",
     digivolutionPagina: "DIGIVOLUTION",
     comparacaoPagina: "COMPARAÇÃO",
-    counterFinderPagina: "COUNTER FINDER",
+    counterFinderPagina: "COUNTER FINDER PVP",
     builderPagina: "TEAM BUILDER",
     statusSimulatorPagina: "STATUS SIMULATOR",
     elementosPagina: "ELEMENTOS",
@@ -10157,11 +10157,19 @@ function inicializarRaidHomeCarousel() {
 function atualizarHgHeaderCountdowns(agora) {
   const momento = agora instanceof Date ? agora : new Date();
   const bossName = document.getElementById("hgHeaderBossName");
+  const bossIcon = document.getElementById("hgHeaderBossIcon");
   const bossCountdown = document.getElementById("hgHeaderBossCountdown");
   const bossButton = document.querySelector(".hg-header-event-boss");
   const proximoBoss = Array.isArray(raidEventosAtuais) && raidEventosAtuais.length ? raidEventosAtuais[0] : null;
 
   if (bossName) bossName.textContent = proximoBoss ? String(proximoBoss.name || "RAID BOSS") : "CARREGANDO...";
+  if (bossIcon) {
+    bossIcon.src = proximoBoss && proximoBoss.iconPath ? proximoBoss.iconPath : "icon_raid.png";
+    bossIcon.onerror = function() {
+      this.onerror = null;
+      this.src = "icon_raid.png";
+    };
+  }
   if (bossCountdown) {
     const diffBoss = proximoBoss ? proximoBoss.nextTime - momento : 0;
     bossCountdown.textContent = proximoBoss ? formatarRaidContagem(diffBoss) : "--:--:--";
