@@ -9409,7 +9409,7 @@ function counterFinderPesquisarAlvo() {
     const nome = counterFinderNome(digi);
     return `
       <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvoPorId(${Number(digi.did) || 0})">
-        ${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="">` : '<span class="counter-finder-suggestion-fallback">◆</span>'}
+        ${counterFinderImagemDigiHtml(digi, nome)}
         <span><b>${escaparHtml(nome)}</b><small>${escaparHtml(counterFinderStage(digi))} • ${escaparHtml(counterFinderType(digi))}</small></span>
       </button>
     `;
@@ -9445,6 +9445,71 @@ function counterFinderSelecionarAlvoPorId(did) {
   }
   counterFinderRenderizarTarget();
   counterFinderRenderizarResultados();
+}
+
+function counterFinderFallbackDigimon(digi) {
+  const nome = counterFinderNome(digi);
+
+  /* 1) Primeiro reaproveita a mesma fonte/fallback já usada pela Digidex. */
+  if (typeof fallbackDigimonEvolution === "function") {
+    const existente = fallbackDigimonEvolution(nome);
+    if (existente) {
+      if (/^https?:\/\/dsrworldwiki\.com\//i.test(existente)) {
+        return "https://images.weserv.nl/?url=" + encodeURIComponent(existente) +
+          "&w=160&h=160&fit=contain&output=webp";
+      }
+      return existente;
+    }
+  }
+
+  if (typeof pegarImagem === "function") {
+    const drive = pegarImagem(nome);
+    if (drive) return drive;
+  }
+
+  /* 2) Último fallback: asset equivalente da DSR Wiki via proxy.
+     Só é usado quando o ícone da MASTER/Git e o Drive falharem. */
+  const slug = String(nome || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  if (!slug) return "";
+
+  const origem = "https://dsrworldwiki.com/assets/digimons/" + slug + ".png";
+  return "https://images.weserv.nl/?url=" + encodeURIComponent(origem) +
+    "&w=160&h=160&fit=contain&output=webp";
+}
+
+function counterFinderImagemDigiHtml(digi, alt) {
+  if (!digi) return '<span class="counter-finder-image-fallback">◆</span>';
+  const fallback = counterFinderFallbackDigimon(digi);
+
+  if (typeof renderImagemEvolution === "function") {
+    return renderImagemEvolution(digi.icon, alt || counterFinderNome(digi), fallback);
+  }
+
+  const src = String(digi.icon || fallback || "").trim();
+  return src
+    ? `<img src="${escaparHtml(src)}" alt="${escaparHtml(alt || counterFinderNome(digi))}">`
+    : '<span class="counter-finder-image-fallback">◆</span>';
+}
+
+function counterFinderImagemSkillHtml(skill) {
+  if (!skill) return "";
+  const fallback = typeof fallbackSourceSkillEvolution === "function"
+    ? fallbackSourceSkillEvolution(skill)
+    : "";
+
+  if (typeof renderImagemEvolution === "function") {
+    return renderImagemEvolution(skill.icon, skill.name || "Skill", fallback);
+  }
+
+  const src = String(skill.icon || fallback || "").trim();
+  return src ? `<img src="${escaparHtml(src)}" alt="">` : "";
 }
 
 function counterFinderRelacaoMini(digi, kind) {
@@ -9525,7 +9590,7 @@ function counterFinderTooltipHtml(digi) {
   };
   return `
     <div class="counter-finder-tooltip-head">
-      ${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="">` : '<span class="counter-finder-tooltip-fallback">◆</span>'}
+      ${counterFinderImagemDigiHtml(digi, counterFinderNome(digi))}
       <div><strong>${escaparHtml(counterFinderNome(digi))}</strong><small>${escaparHtml(counterFinderStage(digi))} · ${escaparHtml(tipo)}</small></div>
       ${typeSrc ? `<img class="counter-finder-tooltip-type" src="${escaparHtml(typeSrc)}" alt="${escaparHtml(tipo)}">` : ""}
     </div>
@@ -9628,7 +9693,7 @@ function counterFinderRenderizarTarget() {
   card.innerHTML = `
     <div class="counter-finder-target-top">
       <div class="counter-finder-target-icon">
-        ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(counterFinderNome(d))}">` : '<span>◆</span>'}
+        ${counterFinderImagemDigiHtml(d, counterFinderNome(d))}
       </div>
       <div class="counter-finder-target-copy">
         <small>ALVO ANALISADO //</small>
@@ -9664,7 +9729,7 @@ function counterFinderBestSkillHtml(best) {
   const efeitos = counterFinderSkillEfeitos(skill);
   return `
     <div class="counter-finder-best-skill">
-      ${skill.icon ? `<img src="${escaparHtml(skill.icon)}" alt="">` : ""}
+      ${counterFinderImagemSkillHtml(skill)}
       <div>
         <small>MELHOR OPÇÃO OFENSIVA</small>
         <strong>S${Number(skill.slot) || "?"} · ${escaparHtml(skill.name || "Skill")}</strong>
@@ -9749,7 +9814,7 @@ function counterFinderRenderizarResultados() {
             onfocus="counterFinderMostrarTooltip(this, ${Number(d.did) || 0}, false)"
             onblur="counterFinderOcultarTooltip(false)"
             onclick="counterFinderToggleTooltip(event, this, ${Number(d.did) || 0})">
-            ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(counterFinderNome(d))}">` : '<span>◆</span>'}
+            ${counterFinderImagemDigiHtml(d, counterFinderNome(d))}
           </button>
           <div class="counter-finder-result-ident">
             <h3>${escaparHtml(counterFinderNome(d) || "-")}</h3>
