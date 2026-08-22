@@ -9453,6 +9453,160 @@ function counterFinderRelacaoMini(digi, kind) {
   return `<span class="counter-finder-relation-mini">${renderizarIconeElemento(info.element)}<b>${escaparHtml(info.element)}</b>${info.effect ? `<em>${escaparHtml(info.effect)}</em>` : ""}</span>`;
 }
 
+function counterFinderFields(digi) {
+  const valor = digi && (digi.fields || digi.field) || "";
+  return (typeof separarFields === "function" ? separarFields(valor) : String(valor).split(/[,/|\s]+/))
+    .map(function(item){ return String(item || "").trim().toUpperCase(); })
+    .filter(Boolean)
+    .filter(function(item, index, lista){ return lista.indexOf(item) === index; });
+}
+
+function counterFinderFieldIconHtml(codigo) {
+  const code = String(codigo || "").trim().toUpperCase();
+  if (!code) return "";
+  const src = typeof pegarImagemField === "function" ? pegarImagemField(code) : "";
+  return `<span class="counter-finder-meta-icon counter-finder-field-icon" title="FIELD: ${escaparHtml(code)}" aria-label="FIELD ${escaparHtml(code)}">${src ? `<img src="${escaparHtml(src)}" alt="${escaparHtml(code)}" onload="if(typeof normalizarIconeField==='function')normalizarIconeField(this)">` : `<b>${escaparHtml(code)}</b>`}</span>`;
+}
+
+function counterFinderRelationIconHtml(digi, kind) {
+  const info = counterFinderRelacao(digi, kind);
+  const label = String(kind || "").toUpperCase();
+  if (!info.element) return `<span class="counter-finder-meta-icon counter-finder-relation-icon empty" title="${label}: sem dado">—</span>`;
+  const src = typeof pegarImagemElemento === "function" ? pegarImagemElemento(info.element) : "";
+  const title = label + ": " + info.element + (info.effect ? " · " + info.effect : "");
+  return `<span class="counter-finder-meta-icon counter-finder-relation-icon ${String(kind).toLowerCase()}" title="${escaparHtml(title)}" aria-label="${escaparHtml(title)}">${src ? `<img src="${escaparHtml(src)}" alt="${escaparHtml(info.element)}">` : `<b>${escaparHtml(info.element)}</b>`}</span>`;
+}
+
+function counterFinderResultMetaHtml(digi) {
+  const fields = counterFinderFields(digi);
+  return `
+    <div class="counter-finder-result-meta">
+      <span class="counter-finder-meta-group"><small>FIELD</small><span class="counter-finder-meta-icons">${fields.length ? fields.map(counterFinderFieldIconHtml).join("") : '<i>—</i>'}</span></span>
+      <span class="counter-finder-meta-group"><small>STRONG</small><span class="counter-finder-meta-icons">${counterFinderRelationIconHtml(digi, "strong")}</span></span>
+      <span class="counter-finder-meta-group"><small>WEAK</small><span class="counter-finder-meta-icons">${counterFinderRelationIconHtml(digi, "weak")}</span></span>
+      <span class="counter-finder-meta-group counter-finder-meta-type"><small>TYPE</small><span class="counter-finder-meta-icons">${counterFinderTypeIcon(counterFinderType(digi))}</span></span>
+      <span class="counter-finder-stage-tag">${escaparHtml(counterFinderStage(digi))}</span>
+    </div>`;
+}
+
+function counterFinderTooltipFieldHtml(digi) {
+  const fields = counterFinderFields(digi);
+  if (!fields.length) return '<span class="counter-finder-tooltip-empty">—</span>';
+  return fields.map(function(code) {
+    const src = typeof pegarImagemField === "function" ? pegarImagemField(code) : "";
+    return `<span class="counter-finder-tooltip-field-item">${src ? `<img src="${escaparHtml(src)}" alt="">` : ""}<b>${escaparHtml(code)}</b></span>`;
+  }).join("");
+}
+
+function counterFinderTooltipRelationHtml(digi, kind) {
+  const info = counterFinderRelacao(digi, kind);
+  if (!info.element) return '<span class="counter-finder-tooltip-empty">—</span>';
+  const src = typeof pegarImagemElemento === "function" ? pegarImagemElemento(info.element) : "";
+  return `<span class="counter-finder-tooltip-relation-item">${src ? `<img src="${escaparHtml(src)}" alt="">` : ""}<span><b>${escaparHtml(info.element)}</b>${info.effect ? `<small>${escaparHtml(info.effect)}</small>` : ""}</span></span>`;
+}
+
+function counterFinderTooltipEl() {
+  let tooltip = document.getElementById("counterFinderDigiTooltip");
+  if (tooltip) return tooltip;
+  tooltip = document.createElement("div");
+  tooltip.id = "counterFinderDigiTooltip";
+  tooltip.className = "counter-finder-digi-tooltip";
+  tooltip.setAttribute("role", "tooltip");
+  tooltip.hidden = true;
+  document.body.appendChild(tooltip);
+  return tooltip;
+}
+
+function counterFinderTooltipHtml(digi) {
+  const tipo = counterFinderType(digi);
+  const typeSrc = TYPE_ICONS[tipo] || "";
+  const stat = function(label, valor) {
+    return `<span><i>${label}</i><b>${escaparHtml(String(valor || "-"))}</b></span>`;
+  };
+  return `
+    <div class="counter-finder-tooltip-head">
+      ${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="">` : '<span class="counter-finder-tooltip-fallback">◆</span>'}
+      <div><strong>${escaparHtml(counterFinderNome(digi))}</strong><small>${escaparHtml(counterFinderStage(digi))} · ${escaparHtml(tipo)}</small></div>
+      ${typeSrc ? `<img class="counter-finder-tooltip-type" src="${escaparHtml(typeSrc)}" alt="${escaparHtml(tipo)}">` : ""}
+    </div>
+    <div class="counter-finder-tooltip-profile-meta">
+      <div class="wide"><em>FIELD</em><span>${counterFinderTooltipFieldHtml(digi)}</span></div>
+      <div><em>STRONG</em><span>${counterFinderTooltipRelationHtml(digi, "strong")}</span></div>
+      <div><em>WEAK</em><span>${counterFinderTooltipRelationHtml(digi, "weak")}</span></div>
+    </div>
+    <div class="counter-finder-tooltip-stats">
+      ${stat("HP", counterFinderStat(digi, "HP"))}
+      ${stat("SP", counterFinderStat(digi, "SP"))}
+      ${stat("STR", counterFinderStat(digi, "STR"))}
+      ${stat("INT", counterFinderStat(digi, "INT"))}
+      ${stat("DEF", counterFinderStat(digi, "DEF"))}
+      ${stat("RES", counterFinderStat(digi, "RES"))}
+      ${stat("SPD", counterFinderStat(digi, "SPD"))}
+    </div>`;
+}
+
+function counterFinderMostrarTooltip(trigger, did, fixar) {
+  if (!trigger) return;
+  const digi = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(item){ return Number(item.did) === Number(did); });
+  if (!digi) return;
+  const tooltip = counterFinderTooltipEl();
+  tooltip.innerHTML = counterFinderTooltipHtml(digi);
+  tooltip.hidden = false;
+  tooltip.classList.add("ativo");
+  if (fixar) tooltip.dataset.pinned = "1";
+  else if (tooltip.dataset.pinned !== "1") delete tooltip.dataset.pinned;
+  tooltip.dataset.did = String(did);
+
+  requestAnimationFrame(function() {
+    if (tooltip.hidden || !trigger.isConnected) return;
+    const rect = trigger.getBoundingClientRect();
+    const margem = 10;
+    const largura = tooltip.offsetWidth || 320;
+    const altura = tooltip.offsetHeight || 280;
+    let left = rect.right + margem;
+    if (left + largura > window.innerWidth - 8) left = rect.left - largura - margem;
+    left = Math.max(8, Math.min(left, window.innerWidth - largura - 8));
+    let top = rect.top + rect.height / 2 - altura / 2;
+    top = Math.max(8, Math.min(top, window.innerHeight - altura - 8));
+    tooltip.style.left = Math.round(left) + "px";
+    tooltip.style.top = Math.round(top) + "px";
+  });
+}
+
+function counterFinderOcultarTooltip(forcar) {
+  const tooltip = document.getElementById("counterFinderDigiTooltip");
+  if (!tooltip) return;
+  if (!forcar && tooltip.dataset.pinned === "1") return;
+  tooltip.classList.remove("ativo");
+  tooltip.hidden = true;
+  delete tooltip.dataset.pinned;
+  delete tooltip.dataset.did;
+}
+
+function counterFinderToggleTooltip(evento, trigger, did) {
+  if (evento) { evento.preventDefault(); evento.stopPropagation(); }
+  const tooltip = counterFinderTooltipEl();
+  const mesmo = !tooltip.hidden && tooltip.dataset.did === String(did) && tooltip.dataset.pinned === "1";
+  if (mesmo) { counterFinderOcultarTooltip(true); return; }
+  tooltip.dataset.pinned = "1";
+  counterFinderMostrarTooltip(trigger, did, true);
+}
+
+function counterFinderMatchupStripHtml(candidato, alvo, analise) {
+  const spd = counterFinderStat(candidato, "SPD");
+  const spdAlvo = counterFinderStat(alvo, "SPD");
+  const diff = spd && spdAlvo ? spd - spdAlvo : null;
+  const best = analise && analise.bestOut;
+  const inMod = Number(analise && analise.typeIn) || 0;
+  return `
+    <div class="counter-finder-matchup-strip">
+      <span class="${counterFinderTypeClasse(analise.typeOut)}"><small>OFENSIVA TYPE</small><b>${counterFinderTypeTexto(analise.typeOut)}</b></span>
+      <span class="${inMod < 0 ? "vantagem" : inMod > 0 ? "desvantagem" : "neutro"}"><small>TYPE RECEBIDO</small><b>${counterFinderTypeTexto(inMod)}</b></span>
+      <span class="${diff === null ? "neutro" : diff > 0 ? "vantagem" : diff < 0 ? "desvantagem" : "neutro"}"><small>SPD Δ</small><b>${diff === null ? "—" : (diff > 0 ? "+" : "") + diff}</b></span>
+      <span class="best"><small>MELHOR SKILL</small><b>${best && best.skill ? `S${Number(best.skill.slot)||"?"} · ${escaparHtml(best.element || "-")}` : "—"}</b></span>
+    </div>`;
+}
+
 function counterFinderRenderizarTarget() {
   const card = document.getElementById("counterFinderTargetCard");
   if (!card) return;
@@ -9588,23 +9742,23 @@ function counterFinderRenderizarResultados() {
         <div class="counter-finder-rank">#${indice + 1}</div>
         <div class="counter-finder-score"><strong>${a.score}</strong><small>/ 100</small><span>${a.label}</span></div>
         <div class="counter-finder-result-head">
-          <div class="counter-finder-result-icon">
+          <button class="counter-finder-result-icon counter-finder-profile-trigger" type="button"
+            aria-label="Ver status de ${escaparHtml(counterFinderNome(d))}"
+            onmouseenter="counterFinderMostrarTooltip(this, ${Number(d.did) || 0}, false)"
+            onmouseleave="counterFinderOcultarTooltip(false)"
+            onfocus="counterFinderMostrarTooltip(this, ${Number(d.did) || 0}, false)"
+            onblur="counterFinderOcultarTooltip(false)"
+            onclick="counterFinderToggleTooltip(event, this, ${Number(d.did) || 0})">
             ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(counterFinderNome(d))}">` : '<span>◆</span>'}
-          </div>
-          <div>
+          </button>
+          <div class="counter-finder-result-ident">
             <h3>${escaparHtml(counterFinderNome(d) || "-")}</h3>
-            <div class="counter-finder-result-tags">${counterFinderTypeIcon(counterFinderType(d))}<span>${escaparHtml(counterFinderStage(d))}</span></div>
+            ${counterFinderResultMetaHtml(d)}
           </div>
         </div>
         ${counterFinderTypeDuelHtml(d, counterFinderTarget, a)}
         ${counterFinderBestSkillHtml(a.bestOut)}
-        <div class="counter-finder-stats">
-          <span><small>HP</small><b>${counterFinderStat(d, "HP") || "-"}</b></span>
-          <span><small>STR</small><b>${counterFinderStat(d, "STR") || "-"}</b></span>
-          <span><small>INT</small><b>${counterFinderStat(d, "INT") || "-"}</b></span>
-          <span><small>DEF/RES</small><b>${counterFinderStat(d, "DEF") || "-"}/${counterFinderStat(d, "RES") || "-"}</b></span>
-          <span><small>SPD</small><b>${counterFinderStat(d, "SPD") || "-"}</b></span>
-        </div>
+        ${counterFinderMatchupStripHtml(d, counterFinderTarget, a)}
         ${counterFinderEffectsHtml(a.efeitos)}
         <ul class="counter-finder-reasons">${motivos}${riscos}${neutros}</ul>
         <button class="counter-finder-open" type="button" onclick="counterFinderAbrirDigidex(decodeURIComponent('${nomeCodificado}'))">ABRIR NA DIGIDEX <span>→</span></button>
@@ -9635,8 +9789,8 @@ function inicializarCounterFinder() {
     document.addEventListener("click", function(evento) {
       const box = document.getElementById("counterFinderSuggestions");
       const wrap = document.querySelector(".counter-finder-search");
-      if (!box || !wrap || wrap.contains(evento.target)) return;
-      box.hidden = true;
+      if (box && wrap && !wrap.contains(evento.target)) box.hidden = true;
+      if (!evento.target.closest || !evento.target.closest(".counter-finder-profile-trigger")) counterFinderOcultarTooltip(true);
     });
   }
 }

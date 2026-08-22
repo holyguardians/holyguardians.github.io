@@ -25790,3 +25790,193 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   .counter-finder-best-skill > img { width: 36px; height: 36px; }
   .counter-finder-best-skill em { grid-column: 1 / -1; min-height: 20px; max-width: none; border-left: 0; border-top: 1px solid rgba(78, 165, 208, .13); }
 }
+
+
+/* =====================================================
+   HG 2026-08-22 — COUNTER FINDER META + PROFILE TOOLTIP
+===================================================== */
+
+.counter-finder-result-ident { min-width: 0; }
+.counter-finder-result-ident h3 { margin-bottom: 8px !important; }
+
+.counter-finder-result-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.counter-finder-meta-group {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border: 1px solid rgba(76, 165, 215, .15);
+  border-radius: 6px;
+  background: rgba(7, 30, 55, .48);
+}
+
+.counter-finder-meta-group > small {
+  color: #5f839c;
+  font-size: 5px;
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+.counter-finder-meta-icons { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.counter-finder-meta-icons > i { color: #5c7890; font-size: 7px; font-style: normal; }
+.counter-finder-meta-icon {
+  min-width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 4px;
+  color: #c8eaff;
+  background: rgba(8, 39, 67, .74);
+}
+.counter-finder-meta-icon img { width: 18px; height: 18px; object-fit: contain; display: block; }
+.counter-finder-meta-icon b { padding: 0 3px; font-size: 5px; font-weight: 1000; }
+.counter-finder-meta-icon.empty { color: #58758b; font-size: 7px; }
+.counter-finder-relation-icon.strong { border: 1px solid rgba(68, 220, 176, .16); }
+.counter-finder-relation-icon.weak { border: 1px solid rgba(255, 112, 132, .16); }
+
+.counter-finder-meta-type .type-icon-wrap {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.counter-finder-meta-type .type-icon-img { width: 19px; height: 19px; object-fit: contain; }
+.counter-finder-meta-type .type-icon-name { display: none; }
+.counter-finder-stage-tag {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid rgba(81, 161, 211, .17);
+  border-radius: 6px;
+  color: #6f99b5;
+  background: rgba(5, 27, 50, .45);
+  font-size: 5.5px;
+  font-weight: 1000;
+  letter-spacing: .07em;
+}
+
+.counter-finder-profile-trigger {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  font: inherit;
+  cursor: help;
+}
+.counter-finder-profile-trigger:focus-visible {
+  outline: 1px solid #55dcff;
+  outline-offset: 3px;
+}
+
+.counter-finder-matchup-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.counter-finder-matchup-strip > span {
+  min-width: 0;
+  min-height: 38px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 5px 6px;
+  border: 1px solid rgba(72, 158, 207, .13);
+  border-radius: 6px;
+  text-align: center;
+  background: rgba(4, 23, 42, .6);
+}
+.counter-finder-matchup-strip small { color: #66869d; font-size: 5px; line-height: 1; font-weight: 1000; letter-spacing: .06em; }
+.counter-finder-matchup-strip b { overflow: hidden; color: #cce9f7; font-size: 8px; line-height: 1.1; font-weight: 1000; white-space: nowrap; text-overflow: ellipsis; }
+.counter-finder-matchup-strip .vantagem { border-color: rgba(68, 224, 171, .17); }
+.counter-finder-matchup-strip .vantagem b { color: #62efba; }
+.counter-finder-matchup-strip .desvantagem { border-color: rgba(241, 99, 123, .18); }
+.counter-finder-matchup-strip .desvantagem b { color: #ff8797; }
+.counter-finder-matchup-strip .neutro b { color: #9bb7c9; }
+.counter-finder-matchup-strip .best b { color: #73ddff; }
+
+.counter-finder-digi-tooltip {
+  position: fixed;
+  z-index: 999999;
+  width: min(330px, calc(100vw - 16px));
+  padding: 12px;
+  border: 1px solid rgba(84, 200, 255, .38);
+  border-radius: 12px;
+  color: #eaf8ff;
+  background: linear-gradient(180deg, rgba(8, 27, 49, .99), rgba(2, 10, 21, .995));
+  box-shadow: 0 18px 45px rgba(0,0,0,.5), 0 0 0 1px rgba(63,174,238,.06), 0 0 24px rgba(42,157,229,.13);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px) scale(.985);
+  transition: opacity .11s ease, transform .11s ease;
+}
+.counter-finder-digi-tooltip.ativo { opacity: 1; transform: translateY(0) scale(1); }
+.counter-finder-digi-tooltip[hidden] { display: none !important; }
+
+.counter-finder-tooltip-head {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(92,190,245,.14);
+}
+.counter-finder-tooltip-head > img:first-child,
+.counter-finder-tooltip-fallback { width: 54px; height: 54px; object-fit: contain; display: grid; place-items: center; }
+.counter-finder-tooltip-head strong { display: block; color: #fff; font-size: 13px; line-height: 1.08; font-weight: 1000; overflow-wrap: anywhere; }
+.counter-finder-tooltip-head small { display: block; margin-top: 4px; color: #7db9dc; font-size: 8px; font-weight: 900; letter-spacing: .07em; }
+.counter-finder-tooltip-type { width: 25px; height: 25px; object-fit: contain; }
+
+.counter-finder-tooltip-profile-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 9px 0;
+}
+.counter-finder-tooltip-profile-meta > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid rgba(87,181,235,.12);
+  border-radius: 7px;
+  background: rgba(6, 22, 39, .72);
+}
+.counter-finder-tooltip-profile-meta > div.wide { grid-column: 1 / -1; }
+.counter-finder-tooltip-profile-meta em { color: #67cfff; font-size: 7px; line-height: 1; font-style: normal; font-weight: 1000; letter-spacing: .09em; }
+.counter-finder-tooltip-profile-meta > div > span { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.counter-finder-tooltip-field-item { display: inline-flex; align-items: center; gap: 4px; padding: 2px 5px; border: 1px solid rgba(94,187,238,.14); border-radius: 6px; background: rgba(10,36,61,.65); }
+.counter-finder-tooltip-field-item img { width: 19px; height: 19px; object-fit: contain; }
+.counter-finder-tooltip-field-item b, .counter-finder-tooltip-empty { color: #d8f3ff; font-size: 7px; font-weight: 900; }
+.counter-finder-tooltip-relation-item { min-width: 0; display: flex; align-items: center; gap: 6px; }
+.counter-finder-tooltip-relation-item > img { width: 23px; height: 23px; object-fit: contain; }
+.counter-finder-tooltip-relation-item > span { min-width: 0; display: grid; gap: 2px; }
+.counter-finder-tooltip-relation-item b { color: #e8f8ff; font-size: 8px; font-weight: 1000; }
+.counter-finder-tooltip-relation-item small { overflow: hidden; color: #789db5; font-size: 6px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+
+.counter-finder-tooltip-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.counter-finder-tooltip-stats span { min-width: 0; display: grid; gap: 3px; padding: 6px 5px; border: 1px solid rgba(87,181,235,.13); border-radius: 7px; text-align: center; background: rgba(6,22,39,.8); }
+.counter-finder-tooltip-stats i { color: #6baed2; font-size: 7px; line-height: 1; font-style: normal; font-weight: 1000; letter-spacing: .07em; }
+.counter-finder-tooltip-stats b { overflow: hidden; color: #fff; font-size: 9px; line-height: 1; font-weight: 1000; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .counter-finder-result-meta { gap: 4px; }
+  .counter-finder-meta-group { min-height: 23px; padding: 2px 4px; }
+  .counter-finder-meta-group > small { font-size: 4.5px; }
+  .counter-finder-meta-icon { min-width: 18px; height: 18px; }
+  .counter-finder-meta-icon img { width: 16px; height: 16px; }
+  .counter-finder-stage-tag { min-height: 23px; }
+  .counter-finder-matchup-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .counter-finder-digi-tooltip { width: min(310px, calc(100vw - 12px)); }
+}
