@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260821-tier-dmo-v1">
+  <link rel="stylesheet" href="styles.css?v=20260822-raids-counter-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -78,6 +78,29 @@
       <b>GUARDIANS</b>
     </span>
   </button>
+
+  <div id="hgHeaderCountdowns" class="hg-header-countdowns" aria-label="Próximos eventos">
+    <button class="hg-header-event hg-header-event-boss" type="button"
+      onclick="mostrarPagina('raidBossPagina', document.getElementById('btnRaidBoss'))"
+      title="Abrir Raid Boss">
+      <span class="hg-header-event-mark" aria-hidden="true">⚔</span>
+      <span class="hg-header-event-copy">
+        <small>PRÓXIMO BOSS</small>
+        <b id="hgHeaderBossName">CARREGANDO...</b>
+      </span>
+      <strong id="hgHeaderBossCountdown">--:--:--</strong>
+    </button>
+    <button class="hg-header-event hg-header-event-dekyu" type="button"
+      onclick="mostrarPagina('dekyuTreasurePagina', document.getElementById('btnDekyuTreasure'))"
+      title="Abrir Dekyu Treasure">
+      <span class="hg-header-event-mark" aria-hidden="true">◆</span>
+      <span class="hg-header-event-copy">
+        <small>DEKYU</small>
+        <b id="hgHeaderDekyuTime">PRÓXIMO --:--</b>
+      </span>
+      <strong id="hgHeaderDekyuCountdown">--:--:--</strong>
+    </button>
+  </div>
 
   <div class="hg-mobile-page-title" id="hgMobilePageTitle" aria-live="polite">HOME</div>
 
@@ -194,6 +217,12 @@
             onclick="mostrarPagina('comparacaoPagina', this)">
             <img id="navIconComparacao" alt="">
             <span>COMPARAÇÃO</span>
+          </button>
+
+          <button id="btnCounterFinder" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('counterFinderPagina', this)">
+            <span class="hg-counter-nav-icon" aria-hidden="true">⌖</span>
+            <span>COUNTER FINDER</span>
           </button>
 
           <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
@@ -453,235 +482,27 @@
 
       <div class="home-feature-grid">
 
-      <!-- HISTÓRIA -->
+      <!-- RAID BOSSES // HOME -->
 
-      <section class="hg-panel history-panel">
-
-        <div class="panel-heading">
-
-          <div class="heading-icon">
-            ⚙
-          </div>
-
-          <h2>
-            Nossa História
-          </h2>
-
-          <div class="heading-line">
-          </div>
-
+      <section class="hg-panel raid-home-panel">
+        <div class="panel-heading raid-home-heading">
+          <div class="heading-icon">⚔</div>
+          <h2>Raid Bosses</h2>
+          <div class="heading-line"></div>
+          <span class="raid-home-heading-status"><i></i> LIVE SCHEDULE</span>
         </div>
-
-
-        <div class="history-carousel" aria-label="Linha do tempo da Holy Guardians">
-
-          <button class="history-arrow history-arrow-prev" type="button" onclick="mudarHistoria(-1)" aria-label="História anterior">‹</button>
-
-          <div class="history-grid">
-
-
-          <article class="history-card year-2012">
-
-            <div class="history-year">
-              2012
-            </div>
-
-            <div class="history-logo">
-
-              <img
-                id="historyDmoLucemon"
-                src=""
-                alt="DMO"
-              >
-
-            </div>
-
-            <h3>
-              SERVER LUCEMON
-            </h3>
-
-            <p>
-
-              Fundação da Holy Guardians no GDMO,
-              se destacando no server Lucemon
-              e chegando ao TOP 3 do ranking global.
-
-            </p>
-
-            <div class="history-badge gold">
-              🏆 TOP 3 Global
-            </div>
-
-          </article>
-
-
-          <article class="history-card">
-
-            <div class="history-year">
-              2017
-            </div>
-
-            <div class="history-logo">
-
-              <img
-                id="historyDmoNa"
-                src=""
-                alt="DMO NA"
-              >
-
-            </div>
-
-            <h3>
-              SERVER OMEGAMON (NA)
-            </h3>
-
-            <p>
-
-              Expansão para o server Omegamon
-              na versão NA do Digimon Masters Online.
-
-            </p>
-
-            <div class="history-badge">
-
-              <img
-                id="historyIconNa"
-                src=""
-              >
-
-              NA Version
-
-            </div>
-
-          </article>
-
-
-          <article class="history-card year-2022">
-
-            <div class="history-year">
-              2022
-            </div>
-
-            <div class="history-logo">
-
-              <img
-                id="historyLadmo"
-                src=""
-                alt="LADMO"
-              >
-
-            </div>
-
-            <h3>
-              LADMO
-            </h3>
-
-            <p>
-
-              Criação da guild no server Omegamon
-              e posteriormente no server Alphamon.
-
-            </p>
-
-            <div class="history-badges-double">
-
-              <div class="history-badge">
-
-                <img
-                  id="historyIconOmegamon"
-                  src=""
-                >
-
-                Omegamon
-
-              </div>
-
-              <div class="history-badge">
-
-                <img
-                  id="historyIconAlphamon"
-                  src=""
-                >
-
-                Alphamon
-
-              </div>
-
-            </div>
-
-          </article>
-
-
-          <article class="history-card year-now">
-
-            <div class="history-year">
-              ATUALMENTE
-            </div>
-
-            <div class="history-logo">
-
-              <img
-                id="historyDsr"
-                src=""
-                alt="DSR"
-              >
-
-            </div>
-
-            <h3>
-              DSR
-            </h3>
-
-            <p>
-
-              Matriz ativa no server Omegamon (NA)
-              do DMO e no server 1 (KOROMON)
-              do Digimon Super Rumble.
-
-            </p>
-
-            <div class="history-badges-double">
-
-              <div class="history-badge">
-
-                <img
-                  id="historyFlagUsa"
-                  src=""
-                >
-
-                Omegamon (NA)
-
-              </div>
-
-
-              <div class="history-badge">
-
-                <img
-                  id="historyFlagKorea"
-                  src=""
-                >
-
-                Server 1 (KOROMON)
-
-              </div>
-
-            </div>
-
-          </article>
-
+        <div id="raidHomeCarousel" class="raid-home-carousel" aria-label="Próximos Raid Bosses">
+          <button class="raid-home-arrow raid-home-arrow-prev" type="button" onclick="mudarRaidHome(-1)" aria-label="Boss anterior">‹</button>
+          <div id="raidHomeTrack" class="raid-home-track">
+            <article class="raid-home-card ativo raid-home-loading">
+              <div class="raid-home-loading-pulse"></div>
+              <strong>CARREGANDO AGENDA DE RAIDS...</strong>
+              <small>Sincronizando com o horário KST.</small>
+            </article>
           </div>
-
-          <button class="history-arrow history-arrow-next" type="button" onclick="mudarHistoria(1)" aria-label="Próxima história">›</button>
-
-          <div class="history-dots" aria-label="Selecionar período">
-            <button type="button" class="ativo" onclick="selecionarHistoria(0)" aria-label="2012"></button>
-            <button type="button" onclick="selecionarHistoria(1)" aria-label="2017"></button>
-            <button type="button" onclick="selecionarHistoria(2)" aria-label="2022"></button>
-            <button type="button" onclick="selecionarHistoria(3)" aria-label="Atualmente"></button>
-          </div>
-
+          <button class="raid-home-arrow raid-home-arrow-next" type="button" onclick="mudarRaidHome(1)" aria-label="Próximo boss">›</button>
+          <div id="raidHomeDots" class="raid-home-dots" aria-label="Selecionar Raid Boss"></div>
         </div>
-
       </section>
 
 
@@ -2299,6 +2120,66 @@
 </section>
 
 <!-- =====================================================
+     COUNTER FINDER
+===================================================== -->
+
+<section id="counterFinderPagina" class="pagina">
+  <div class="internal-wrap counter-finder-wrap">
+    <header class="counter-finder-header">
+      <div>
+        <div class="counter-finder-kicker">MATCHUP ANALYSIS // HOLY GUARDIANS</div>
+        <h2 class="page-title">COUNTER FINDER</h2>
+        <p class="page-subtitle">Escolha um Digimon e encontre os melhores matchups usando os dados da DATABASE MASTER.</p>
+      </div>
+      <div class="counter-finder-source"><i></i><span>FONTE</span><strong>DATABASE MASTER</strong></div>
+    </header>
+    <div class="counter-finder-layout">
+      <aside class="counter-finder-controls">
+        <div class="counter-finder-control-head">
+          <small>01 // TARGET</small>
+          <strong>QUAL DIGIMON VOCÊ QUER COUNTERAR?</strong>
+        </div>
+        <label class="counter-finder-field" for="counterFinderTargetInput">
+          <span>DIGIMON ALVO</span>
+          <div class="counter-finder-search">
+            <input id="counterFinderTargetInput" type="text" autocomplete="off" placeholder="Digite o nome do Digimon..."
+              oninput="counterFinderPesquisarAlvo()" onkeydown="counterFinderTeclaAlvo(event)">
+            <div id="counterFinderSuggestions" class="counter-finder-suggestions" hidden></div>
+          </div>
+        </label>
+        <label class="counter-finder-field" for="counterFinderStage">
+          <span>STAGE DOS CANDIDATOS</span>
+          <select id="counterFinderStage" onchange="counterFinderRenderizarResultados()">
+            <option value="MEGA" selected>MEGA</option>
+            <option value="ULTIMATE">ULTIMATE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="ROOKIE">ROOKIE</option>
+            <option value="ALL">TODOS</option>
+          </select>
+        </label>
+        <div class="counter-finder-how">
+          <strong>COMO O SCORE É MONTADO</strong>
+          <p>O ranking cruza Type, elementos das Skills, Strong/Weak, SPD, CC, DOT, DEF BREAK e pressão ofensiva. O score é um índice de matchup — não uma porcentagem de vitória.</p>
+        </div>
+      </aside>
+      <main class="counter-finder-main">
+        <div id="counterFinderTargetCard" class="counter-finder-target-card">
+          <div class="counter-finder-empty-icon">⌖</div>
+          <div><strong>SELECIONE UM DIGIMON</strong><small>Os counters aparecerão aqui automaticamente.</small></div>
+        </div>
+        <div class="counter-finder-results-head">
+          <div><small>02 // ANALYSIS</small><strong>MELHORES COUNTERS</strong></div>
+          <span id="counterFinderResultCount">AGUARDANDO ALVO</span>
+        </div>
+        <div id="counterFinderResults" class="counter-finder-results">
+          <div class="counter-finder-empty">Escolha um Digimon acima para iniciar a análise da DATABASE MASTER.</div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
      RAID BOSS
 ===================================================== -->
 
@@ -3156,6 +3037,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260821-tier-dmo-v1"></script>
+<script src="script.js?v=20260822-raids-counter-v1"></script>
 </body>
 </html>

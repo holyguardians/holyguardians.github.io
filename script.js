@@ -2115,6 +2115,7 @@ function hgTituloPaginaHeader(id) {
     databasePagina: "DIGIDEX",
     digivolutionPagina: "DIGIVOLUTION",
     comparacaoPagina: "COMPARAÇÃO",
+    counterFinderPagina: "COUNTER FINDER",
     builderPagina: "TEAM BUILDER",
     statusSimulatorPagina: "STATUS SIMULATOR",
     elementosPagina: "ELEMENTOS",
@@ -2327,6 +2328,7 @@ function mostrarPagina(
       databasePagina: "digidex",
       digivolutionPagina: "digivolution",
       comparacaoPagina: "comparacao",
+      counterFinderPagina: "counter-finder",
       builderPagina: "team-builder",
       statusSimulatorPagina: "status-simulator",
       elementosPagina: "elementos",
@@ -2375,6 +2377,7 @@ function abrirPaginaPelaUrl() {
     digidex: { pagina: "databasePagina", botao: "btnDatabase" },
     digivolution: { pagina: "digivolutionPagina", botao: "btnDigivolution" },
     comparacao: { pagina: "comparacaoPagina", botao: "btnComparacao" },
+    "counter-finder": { pagina: "counterFinderPagina", botao: "btnCounterFinder" },
     "team-builder": { pagina: "builderPagina", botao: "btnBuilder" },
     "status-simulator": { pagina: "statusSimulatorPagina", botao: "btnStatusSimulator" },
     elementos: { pagina: "elementosPagina", botao: "btnElementos" },
@@ -8861,6 +8864,404 @@ function atualizarPotentialPlanner() {
 
 
 /* =====================================================
+   COUNTER FINDER — DATABASE MASTER
+===================================================== */
+
+let counterFinderTarget = null;
+
+const COUNTER_FINDER_TYPE_ADVANTAGE = {
+  VACCINE: "VIRUS",
+  VIRUS: "DATA",
+  DATA: "VACCINE"
+};
+
+function counterFinderNumero(valor) {
+  if (valor === null || valor === undefined || valor === "") return 0;
+  const numero = Number(String(valor).replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function counterFinderTemValor(valor) {
+  if (valor === null || valor === undefined) return false;
+  const texto = String(valor).trim().toUpperCase();
+  return Boolean(texto && texto !== "-" && texto !== "NONE" && texto !== "N/A" && texto !== "0" && texto !== "FALSE");
+}
+
+function counterFinderNormalizarElemento(valor) {
+  const elemento = normalizarElemento(valor);
+  return elemento === "IRON" ? "STEEL" : elemento;
+}
+
+function counterFinderElementos(digi) {
+  if (!digi) return [];
+  const lista = [];
+  [digi.skill1, digi.skill2, digi.skill3].forEach(function(skill) {
+    obterElementosSkill(skill).forEach(function(elemento) {
+      const normalizado = counterFinderNormalizarElemento(elemento);
+      if (normalizado && !lista.includes(normalizado)) lista.push(normalizado);
+    });
+  });
+  return lista;
+}
+
+function counterFinderNormalizarRelacao(digi, tipo) {
+  const info = hgRelationData(digi, tipo);
+  return counterFinderNormalizarElemento(info && info.element);
+}
+
+function counterFinderTypeIcon(tipo) {
+  return renderizarTypeIcon(normalizarType(tipo), true);
+}
+
+function counterFinderEhTypeFavoravel(candidato, alvo) {
+  const candidatoType = normalizarType(candidato && candidato.type);
+  const alvoType = normalizarType(alvo && alvo.type);
+  return COUNTER_FINDER_TYPE_ADVANTAGE[candidatoType] === alvoType;
+}
+
+function counterFinderEhTypeDesfavoravel(candidato, alvo) {
+  const candidatoType = normalizarType(candidato && candidato.type);
+  const alvoType = normalizarType(alvo && alvo.type);
+  return COUNTER_FINDER_TYPE_ADVANTAGE[alvoType] === candidatoType;
+}
+
+function counterFinderScore(candidato, alvo) {
+  let score = 50;
+  const motivos = [];
+  const riscos = [];
+  const candidatoElementos = counterFinderElementos(candidato);
+  const alvoElementos = counterFinderElementos(alvo);
+  const alvoWeak = counterFinderNormalizarRelacao(alvo, "weak");
+  const alvoStrong = counterFinderNormalizarRelacao(alvo, "strong");
+  const candidatoStrong = counterFinderNormalizarRelacao(candidato, "strong");
+  const candidatoWeak = counterFinderNormalizarRelacao(candidato, "weak");
+
+  if (counterFinderEhTypeFavoravel(candidato, alvo)) {
+    score += 16;
+    motivos.push("Type favorável contra " + normalizarType(alvo.type));
+  } else if (counterFinderEhTypeDesfavoravel(candidato, alvo)) {
+    score -= 14;
+    riscos.push("Type desfavorável neste matchup");
+  }
+
+  if (alvoWeak && candidatoElementos.includes(alvoWeak)) {
+    score += 25;
+    motivos.push("Possui Skill " + alvoWeak + " que acerta a Weak do alvo");
+  }
+
+  if (alvoStrong && candidatoElementos.includes(alvoStrong)) {
+    score -= 10;
+    riscos.push("Usa " + alvoStrong + ", elemento em que o alvo é Strong");
+  }
+
+  if (candidatoStrong && alvoElementos.includes(candidatoStrong)) {
+    score += 11;
+    motivos.push("É Strong contra " + candidatoStrong + ", usado pelo alvo");
+  }
+
+  if (candidatoWeak && alvoElementos.includes(candidatoWeak)) {
+    score -= 18;
+    riscos.push("O alvo possui " + candidatoWeak + " e explora sua Weak");
+  }
+
+  const spdCandidato = counterFinderNumero(candidato.spd);
+  const spdAlvo = counterFinderNumero(alvo.spd);
+  if (spdCandidato > 0 && spdAlvo > 0) {
+    const diferencaPct = (spdCandidato - spdAlvo) / spdAlvo;
+    const bonusSpd = Math.max(-8, Math.min(8, diferencaPct * 22));
+    score += bonusSpd;
+    if (diferencaPct >= 0.05) motivos.push("SPD superior ao alvo");
+    if (diferencaPct <= -0.08) riscos.push("SPD consideravelmente inferior");
+  }
+
+  if (counterFinderTemValor(candidato.cc)) {
+    score += 7;
+    motivos.push("Possui controle de grupo (CC)");
+  }
+  if (counterFinderTemValor(candidato.defBreak)) {
+    score += 5;
+    motivos.push("Possui DEF BREAK");
+  }
+  if (counterFinderTemValor(candidato.dot)) {
+    score += 3;
+    motivos.push("Possui dano contínuo (DOT)");
+  }
+
+  const str = counterFinderNumero(candidato.str);
+  const intStat = counterFinderNumero(candidato.int);
+  const alvoDef = counterFinderNumero(alvo.def);
+  const alvoRes = counterFinderNumero(alvo.res);
+  const pressaoFisica = str > 0 && alvoDef > 0 ? str / alvoDef : 0;
+  const pressaoMagica = intStat > 0 && alvoRes > 0 ? intStat / alvoRes : 0;
+  const pressao = Math.max(pressaoFisica, pressaoMagica);
+  if (pressao >= 1.18) {
+    score += 6;
+    motivos.push("Boa pressão ofensiva contra DEF/RES do alvo");
+  } else if (pressao > 0 && pressao < 0.78) {
+    score -= 4;
+    riscos.push("Pressão ofensiva baixa contra as defesas do alvo");
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let classe = "risco";
+  let label = "ARRISCADO";
+  if (score >= 78) {
+    classe = "elite";
+    label = "ÓTIMO MATCHUP";
+  } else if (score >= 64) {
+    classe = "forte";
+    label = "VANTAGEM";
+  } else if (score >= 50) {
+    classe = "neutro";
+    label = "EQUILIBRADO";
+  }
+
+  return {
+    score: score,
+    classe: classe,
+    label: label,
+    motivos: motivos.slice(0, 5),
+    riscos: riscos.slice(0, 4),
+    elementos: candidatoElementos
+  };
+}
+
+function counterFinderListaBase() {
+  const seletor = document.getElementById("counterFinderStage");
+  const stage = String(seletor && seletor.value || "MEGA").toUpperCase();
+  return (Array.isArray(database) ? database : []).filter(function(digi) {
+    const digiStage = normalizarStageDigidex(digi && digi.stage);
+    if (!DIGIDEX_STAGES.includes(digiStage)) return false;
+    return stage === "ALL" || digiStage === stage;
+  });
+}
+
+function counterFinderPesquisarAlvo() {
+  const input = document.getElementById("counterFinderTargetInput");
+  const box = document.getElementById("counterFinderSuggestions");
+  if (!input || !box) return;
+
+  const termo = String(input.value || "").trim().toLowerCase();
+  counterFinderTarget = null;
+  counterFinderRenderizarTarget();
+  counterFinderRenderizarResultados();
+
+  if (!termo) {
+    box.innerHTML = "";
+    box.hidden = true;
+    return;
+  }
+
+  const resultados = (Array.isArray(database) ? database : [])
+    .filter(function(digi) {
+      const stage = normalizarStageDigidex(digi && digi.stage);
+      return DIGIDEX_STAGES.includes(stage) && String(digi.digimon || "").toLowerCase().includes(termo);
+    })
+    .slice(0, 8);
+
+  if (!resultados.length) {
+    box.innerHTML = '<div class="counter-finder-suggestion-empty">Nenhum Digimon encontrado.</div>';
+    box.hidden = false;
+    return;
+  }
+
+  box.innerHTML = resultados.map(function(digi) {
+    const nome = String(digi.digimon || "");
+    const codificado = encodeURIComponent(nome);
+    return `
+      <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvo(decodeURIComponent('${codificado}'))">
+        ${digi.icon ? `<img src="${escaparHtml(digi.icon)}" alt="">` : '<span class="counter-finder-suggestion-fallback">◆</span>'}
+        <span><b>${escaparHtml(nome)}</b><small>${escaparHtml(normalizarStageDigidex(digi.stage))} • ${escaparHtml(normalizarType(digi.type))}</small></span>
+      </button>
+    `;
+  }).join("");
+  box.hidden = false;
+}
+
+function counterFinderTeclaAlvo(evento) {
+  if (!evento || evento.key !== "Enter") return;
+  evento.preventDefault();
+  const input = document.getElementById("counterFinderTargetInput");
+  if (!input) return;
+  const termo = String(input.value || "").trim().toLowerCase();
+  const candidato = (Array.isArray(database) ? database : []).find(function(digi) {
+    return String(digi.digimon || "").trim().toLowerCase() === termo;
+  }) || (Array.isArray(database) ? database : []).find(function(digi) {
+    return String(digi.digimon || "").toLowerCase().includes(termo);
+  });
+  if (candidato) counterFinderSelecionarAlvo(candidato.digimon);
+}
+
+function counterFinderSelecionarAlvo(nome) {
+  const alvoNome = String(nome || "").trim().toLowerCase();
+  counterFinderTarget = (Array.isArray(database) ? database : []).find(function(digi) {
+    return String(digi.digimon || "").trim().toLowerCase() === alvoNome;
+  }) || null;
+
+  const input = document.getElementById("counterFinderTargetInput");
+  const box = document.getElementById("counterFinderSuggestions");
+  if (input && counterFinderTarget) input.value = counterFinderTarget.digimon;
+  if (box) {
+    box.innerHTML = "";
+    box.hidden = true;
+  }
+  counterFinderRenderizarTarget();
+  counterFinderRenderizarResultados();
+}
+
+function counterFinderRelacaoMini(digi, kind) {
+  const info = hgRelationData(digi, kind);
+  if (!info || !info.element) return '<span class="counter-finder-empty-value">—</span>';
+  const elemento = counterFinderNormalizarElemento(info.element);
+  return `<span class="counter-finder-relation-mini">${renderizarIconeElemento(elemento)}<b>${escaparHtml(elemento)}</b></span>`;
+}
+
+function counterFinderRenderizarTarget() {
+  const card = document.getElementById("counterFinderTargetCard");
+  if (!card) return;
+
+  if (!counterFinderTarget) {
+    card.innerHTML = `
+      <div class="counter-finder-target-empty">
+        <span>⌖</span>
+        <strong>SELECIONE O DIGIMON INIMIGO</strong>
+        <small>O analisador usará os dados da DATABASE MASTER para buscar os melhores matchups.</small>
+      </div>
+    `;
+    return;
+  }
+
+  const d = counterFinderTarget;
+  card.innerHTML = `
+    <div class="counter-finder-target-top">
+      <div class="counter-finder-target-icon">
+        ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(d.digimon || "")}">` : '<span>◆</span>'}
+      </div>
+      <div class="counter-finder-target-copy">
+        <small>ALVO ANALISADO //</small>
+        <h3>${escaparHtml(d.digimon || "-")}</h3>
+        <div class="counter-finder-target-tags">
+          ${counterFinderTypeIcon(d.type)}
+          <span>${escaparHtml(normalizarStageDigidex(d.stage))}</span>
+        </div>
+      </div>
+      <div class="counter-finder-target-spd"><small>SPD</small><strong>${escaparHtml(d.spd || "-")}</strong></div>
+    </div>
+    <div class="counter-finder-target-relations">
+      <div><small>STRONG</small>${counterFinderRelacaoMini(d, "strong")}</div>
+      <div><small>WEAK</small>${counterFinderRelacaoMini(d, "weak")}</div>
+      <div class="counter-finder-target-elements"><small>ELEMENTOS DAS SKILLS</small><span>${counterFinderElementos(d).map(function(el){ return renderizarIconeElemento(el); }).join("") || "—"}</span></div>
+    </div>
+  `;
+}
+
+function counterFinderRenderizarResultados() {
+  const lista = document.getElementById("counterFinderResults");
+  const count = document.getElementById("counterFinderResultCount");
+  if (!lista || !count) return;
+
+  if (!counterFinderTarget) {
+    count.textContent = "AGUARDANDO ALVO";
+    lista.innerHTML = `
+      <div class="counter-finder-results-empty">
+        <span>⌁</span>
+        <strong>NENHUM MATCHUP CALCULADO</strong>
+        <small>Escolha um Digimon acima para iniciar a análise.</small>
+      </div>
+    `;
+    return;
+  }
+
+  const alvoNome = String(counterFinderTarget.digimon || "").trim().toLowerCase();
+  const resultados = counterFinderListaBase()
+    .filter(function(digi) {
+      return String(digi.digimon || "").trim().toLowerCase() !== alvoNome;
+    })
+    .map(function(digi) {
+      return { digi: digi, analise: counterFinderScore(digi, counterFinderTarget) };
+    })
+    .sort(function(a, b) {
+      if (b.analise.score !== a.analise.score) return b.analise.score - a.analise.score;
+      return counterFinderNumero(b.digi.spd) - counterFinderNumero(a.digi.spd);
+    })
+    .slice(0, 12);
+
+  count.textContent = resultados.length + " MELHORES CANDIDATOS";
+
+  if (!resultados.length) {
+    lista.innerHTML = '<div class="counter-finder-results-empty"><strong>NENHUM CANDIDATO NESTE STAGE</strong></div>';
+    return;
+  }
+
+  lista.innerHTML = resultados.map(function(item, indice) {
+    const d = item.digi;
+    const a = item.analise;
+    const nomeCodificado = encodeURIComponent(String(d.digimon || ""));
+    const motivos = a.motivos.length
+      ? a.motivos.map(function(texto){ return `<li class="positivo"><span>✓</span>${escaparHtml(texto)}</li>`; }).join("")
+      : '<li class="neutro"><span>•</span>Sem bônus decisivo identificado.</li>';
+    const riscos = a.riscos.map(function(texto){ return `<li class="negativo"><span>!</span>${escaparHtml(texto)}</li>`; }).join("");
+    return `
+      <article class="counter-finder-result counter-finder-${a.classe}">
+        <div class="counter-finder-rank">#${indice + 1}</div>
+        <div class="counter-finder-score"><strong>${a.score}</strong><small>/ 100</small><span>${a.label}</span></div>
+        <div class="counter-finder-result-head">
+          <div class="counter-finder-result-icon">
+            ${d.icon ? `<img src="${escaparHtml(d.icon)}" alt="${escaparHtml(d.digimon || "")}">` : '<span>◆</span>'}
+          </div>
+          <div>
+            <h3>${escaparHtml(d.digimon || "-")}</h3>
+            <div class="counter-finder-result-tags">
+              ${counterFinderTypeIcon(d.type)}
+              <span>${escaparHtml(normalizarStageDigidex(d.stage))}</span>
+            </div>
+          </div>
+        </div>
+        <div class="counter-finder-elements">
+          <small>SKILLS</small>
+          <div>${a.elementos.map(function(el){ return renderizarIconeElemento(el); }).join("") || '<span class="counter-finder-empty-value">—</span>'}</div>
+        </div>
+        <div class="counter-finder-stats">
+          <span><small>STR</small><b>${escaparHtml(d.str || "-")}</b></span>
+          <span><small>INT</small><b>${escaparHtml(d.int || "-")}</b></span>
+          <span><small>DEF</small><b>${escaparHtml(d.def || "-")}</b></span>
+          <span><small>RES</small><b>${escaparHtml(d.res || "-")}</b></span>
+          <span><small>SPD</small><b>${escaparHtml(d.spd || "-")}</b></span>
+        </div>
+        <ul class="counter-finder-reasons">${motivos}${riscos}</ul>
+        <button class="counter-finder-open" type="button" onclick="counterFinderAbrirDigidex(decodeURIComponent('${nomeCodificado}'))">
+          ABRIR NA DIGIDEX <span>→</span>
+        </button>
+      </article>
+    `;
+  }).join("");
+}
+
+function counterFinderAbrirDigidex(nome) {
+  mostrarPagina("databasePagina", document.getElementById("btnDatabase"));
+  if (typeof abrirPerfilDigidex === "function") abrirPerfilDigidex(nome);
+}
+
+function counterFinderSincronizarDatabase() {
+  counterFinderRenderizarTarget();
+  counterFinderRenderizarResultados();
+  const input = document.getElementById("counterFinderTargetInput");
+  if (input && input.value) counterFinderPesquisarAlvo();
+}
+
+function inicializarCounterFinder() {
+  counterFinderRenderizarTarget();
+  counterFinderRenderizarResultados();
+  document.addEventListener("click", function(evento) {
+    const box = document.getElementById("counterFinderSuggestions");
+    const wrap = document.querySelector(".counter-finder-search");
+    if (!box || !wrap || wrap.contains(evento.target)) return;
+    box.hidden = true;
+  });
+}
+
+/* =====================================================
    RAID BOSS — AGENDA KST
 ===================================================== */
 
@@ -9087,6 +9488,9 @@ function renderizarRaids() {
       </article>
     `;
   }).join("");
+
+  renderizarRaidHomeCarousel();
+  atualizarHgHeaderCountdowns(new Date());
 }
 
 function atualizarRaidTimers() {
@@ -9108,6 +9512,9 @@ function atualizarRaidTimers() {
     if (diff <= 0) precisaRenderizar = true;
     verificarRaidAlerta(raid, diff);
   });
+
+  atualizarRaidHomeTimers(agora);
+  atualizarHgHeaderCountdowns(agora);
 
   if (precisaRenderizar) renderizarRaids();
 }
@@ -9333,6 +9740,7 @@ function atualizarContadorDekyu() {
     .map(function(valor) { return String(valor).padStart(2, "0"); })
     .join(":");
   proximoHorario.textContent = String(proximo.hora).padStart(2, "0") + ":00";
+  atualizarHgHeaderCountdowns(new Date(agora));
 }
 
 function obterZonaDekyuSelecionada() {
@@ -9498,6 +9906,7 @@ function carregarDatabase() {
         inicializarCalculadora();
         renderizarStatusSimulator();
         renderizarRaids();
+        counterFinderSincronizarDatabase();
         tierListSincronizarDatabase();
 
         // Se a URL for #digidex/<digimon>, restaura o perfil depois que os stats chegaram.
@@ -9530,11 +9939,12 @@ function carregarDatabase() {
 
 
 /* =====================================================
-   HOME — HISTÓRIA E OFDS DIÁRIAS
+   HOME — RAID CAROUSEL E OFDS DIÁRIAS
 ===================================================== */
 
-let historiaHomeIndice = 0;
-let historiaHomeTimer = null;
+let raidHomeIndice = 0;
+let raidHomeTimer = null;
+let raidHomePrimeiroEventoChave = "";
 let ofdHomeTimer = null;
 let ofdAgendaHome = [];
 let ofdDiaSelecionadoHome = "";
@@ -9559,50 +9969,217 @@ const OFD_HOME_FALLBACK = [
   { name: "Data World", map: "Data Area", level: "95–103", ticket: "H", days: [2, 4, 6], order: 6 }
 ];
 
-function atualizarHistoriaHome() {
-  const cards = Array.from(document.querySelectorAll(".history-grid .history-card"));
-  const dots = Array.from(document.querySelectorAll(".history-dots button"));
+function raidHomeEventoChave(raid) {
+  if (!raid) return "";
+  return String(raid.name || "") + "|" + (raid.nextTime instanceof Date ? raid.nextTime.getTime() : "");
+}
+
+function formatarRaidBrt(data) {
+  if (!(data instanceof Date) || Number.isNaN(data.getTime())) return "HORÁRIO INDISPONÍVEL";
+  try {
+    const partes = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).formatToParts(data).reduce(function(acc, parte) {
+      if (parte.type !== "literal") acc[parte.type] = parte.value;
+      return acc;
+    }, {});
+    return String(partes.weekday || "").replace(".", "").toUpperCase() + " • " +
+      partes.day + "/" + partes.month + " • " + partes.hour + ":" + partes.minute + " BRT";
+  } catch (erro) {
+    return data.toLocaleString("pt-BR") + " BRT";
+  }
+}
+
+function renderizarRaidHomeCarousel() {
+  const track = document.getElementById("raidHomeTrack");
+  const dots = document.getElementById("raidHomeDots");
+  if (!track || !dots) return;
+
+  const lista = Array.isArray(raidEventosAtuais) ? raidEventosAtuais : [];
+  const primeiraChave = lista.length ? raidHomeEventoChave(lista[0]) : "";
+  if (primeiraChave && primeiraChave !== raidHomePrimeiroEventoChave) {
+    raidHomeIndice = 0;
+    raidHomePrimeiroEventoChave = primeiraChave;
+  }
+  if (!lista.length) {
+    raidHomeIndice = 0;
+    track.innerHTML = `
+      <article class="raid-home-card ativo raid-home-loading" aria-hidden="false">
+        <div class="raid-home-loading-pulse"></div>
+        <strong>CARREGANDO AGENDA DE RAIDS...</strong>
+        <small>Sincronizando com o horário KST.</small>
+      </article>
+    `;
+    dots.innerHTML = "";
+    return;
+  }
+
+  if (raidHomeIndice >= lista.length) raidHomeIndice = 0;
+
+  track.innerHTML = lista.map(function(raid, indice) {
+    const ativo = indice === raidHomeIndice;
+    const atributo = String(raid.attribute || "UNKNOWN").toUpperCase();
+    return `
+      <article class="raid-home-card ${ativo ? "ativo" : ""} ${indice === 0 ? "raid-home-next" : ""}"
+        aria-hidden="${ativo ? "false" : "true"}" data-raid-home-index="${indice}">
+        <div class="raid-home-status-row">
+          <span class="raid-home-status ${indice === 0 ? "next" : "scheduled"}">
+            <i></i>${indice === 0 ? "PRÓXIMO SPAWN" : "AGENDADO"}
+          </span>
+          ${raid.rotation ? '<span class="raid-home-rotation">↻ ROTAÇÃO</span>' : ""}
+        </div>
+
+        <div class="raid-home-body">
+          <button class="raid-home-icon" type="button" onclick="abrirRaidHomeNaPagina(${indice})" aria-label="Abrir ${escaparHtml(raid.name || "Raid Boss")}">
+            <img src="${escaparHtml(raid.iconPath || "icon_raid.png")}" alt="${escaparHtml(raid.name || "Raid Boss")}">
+          </button>
+          <div class="raid-home-info">
+            <div class="raid-home-type">${renderizarTypeIcon(atributo, true)}</div>
+            <h3>${escaparHtml(raid.name || "Raid Boss")}</h3>
+            <button class="raid-home-map" type="button" onclick="abrirMapaRaid(${indice})">
+              ${escaparHtml(raid.map || "Mapa indisponível")} <span>⌖</span>
+            </button>
+            <div class="raid-home-meta">
+              <span>LV. ${escaparHtml(raid.level || "-")}</span>
+              <span>HP ${formatarRaidHp(raid.hp)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="raid-home-time">
+          <small>${formatarRaidBrt(raid.nextTime)}</small>
+          <strong id="raidHomeCountdown${indice}">${formatarRaidContagem(raid.nextTime - new Date())}</strong>
+          <span>${formatarRaidKst(raid.nextTime)}</span>
+        </div>
+
+        <button class="raid-home-open" type="button" onclick="abrirRaidHomeNaPagina(${indice})">
+          VER AGENDA DE RAID <span>→</span>
+        </button>
+      </article>
+    `;
+  }).join("");
+
+  dots.innerHTML = lista.map(function(raid, indice) {
+    return `<button type="button" class="${indice === raidHomeIndice ? "ativo" : ""}" onclick="selecionarRaidHome(${indice})" aria-label="Mostrar ${escaparHtml(raid.name || "boss")}" aria-pressed="${indice === raidHomeIndice ? "true" : "false"}"></button>`;
+  }).join("");
+}
+
+function atualizarRaidHomeSelecao() {
+  const cards = Array.from(document.querySelectorAll("#raidHomeTrack .raid-home-card[data-raid-home-index]"));
+  const dots = Array.from(document.querySelectorAll("#raidHomeDots button"));
   if (!cards.length) return;
-  historiaHomeIndice = (historiaHomeIndice + cards.length) % cards.length;
+  raidHomeIndice = (raidHomeIndice + cards.length) % cards.length;
   cards.forEach(function(card, indice) {
-    card.classList.toggle("ativo", indice === historiaHomeIndice);
-    card.setAttribute("aria-hidden", indice === historiaHomeIndice ? "false" : "true");
+    const ativo = indice === raidHomeIndice;
+    card.classList.toggle("ativo", ativo);
+    card.setAttribute("aria-hidden", ativo ? "false" : "true");
   });
   dots.forEach(function(dot, indice) {
-    dot.classList.toggle("ativo", indice === historiaHomeIndice);
-    dot.setAttribute("aria-current", indice === historiaHomeIndice ? "true" : "false");
+    const ativo = indice === raidHomeIndice;
+    dot.classList.toggle("ativo", ativo);
+    dot.setAttribute("aria-pressed", ativo ? "true" : "false");
   });
 }
 
-function iniciarRotacaoHistoriaHome() {
-  clearInterval(historiaHomeTimer);
-  historiaHomeTimer = setInterval(function() {
-    historiaHomeIndice += 1;
-    atualizarHistoriaHome();
+function iniciarRotacaoRaidHome() {
+  if (raidHomeTimer) clearInterval(raidHomeTimer);
+  raidHomeTimer = setInterval(function() {
+    const cards = document.querySelectorAll("#raidHomeTrack .raid-home-card[data-raid-home-index]");
+    if (cards.length <= 1) return;
+    raidHomeIndice = (raidHomeIndice + 1) % cards.length;
+    atualizarRaidHomeSelecao();
   }, 10000);
 }
 
-function mudarHistoria(direcao) {
-  historiaHomeIndice += Number(direcao) || 0;
-  atualizarHistoriaHome();
-  iniciarRotacaoHistoriaHome();
+function mudarRaidHome(direcao) {
+  const cards = document.querySelectorAll("#raidHomeTrack .raid-home-card[data-raid-home-index]");
+  if (!cards.length) return;
+  raidHomeIndice = (raidHomeIndice + Number(direcao || 0) + cards.length) % cards.length;
+  atualizarRaidHomeSelecao();
+  iniciarRotacaoRaidHome();
 }
 
-function selecionarHistoria(indice) {
-  historiaHomeIndice = Number(indice) || 0;
-  atualizarHistoriaHome();
-  iniciarRotacaoHistoriaHome();
+function selecionarRaidHome(indice) {
+  const cards = document.querySelectorAll("#raidHomeTrack .raid-home-card[data-raid-home-index]");
+  if (!cards.length) return;
+  raidHomeIndice = Math.max(0, Math.min(cards.length - 1, Number(indice) || 0));
+  atualizarRaidHomeSelecao();
+  iniciarRotacaoRaidHome();
 }
 
-function inicializarHistoriaHome() {
-  const carrossel = document.querySelector(".history-carousel");
-  if (!carrossel) return;
-  atualizarHistoriaHome();
-  iniciarRotacaoHistoriaHome();
-  carrossel.addEventListener("mouseenter", function() { clearInterval(historiaHomeTimer); });
-  carrossel.addEventListener("mouseleave", iniciarRotacaoHistoriaHome);
-  carrossel.addEventListener("focusin", function() { clearInterval(historiaHomeTimer); });
-  carrossel.addEventListener("focusout", iniciarRotacaoHistoriaHome);
+function abrirRaidHomeNaPagina(indice) {
+  mostrarPagina("raidBossPagina", document.getElementById("btnRaidBoss"));
+  window.setTimeout(function() {
+    const card = document.querySelector('#raidList .raid-card[data-raid-index="' + Number(indice || 0) + '"]');
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("raid-home-focus");
+    window.setTimeout(function() { card.classList.remove("raid-home-focus"); }, 1800);
+  }, 80);
+}
+
+function atualizarRaidHomeTimers(agora) {
+  const momento = agora instanceof Date ? agora : new Date();
+  (Array.isArray(raidEventosAtuais) ? raidEventosAtuais : []).forEach(function(raid, indice) {
+    const contador = document.getElementById("raidHomeCountdown" + indice);
+    if (!contador) return;
+    const diff = raid.nextTime - momento;
+    contador.textContent = formatarRaidContagem(diff);
+    contador.classList.toggle("raid-soon", diff > 0 && diff <= 5 * 60000);
+  });
+}
+
+function inicializarRaidHomeCarousel() {
+  renderizarRaidHomeCarousel();
+  iniciarRotacaoRaidHome();
+  const carousel = document.getElementById("raidHomeCarousel");
+  if (carousel && !carousel.dataset.hgRaidBound) {
+    carousel.dataset.hgRaidBound = "1";
+    carousel.addEventListener("mouseenter", function() {
+      if (raidHomeTimer) clearInterval(raidHomeTimer);
+    });
+    carousel.addEventListener("mouseleave", iniciarRotacaoRaidHome);
+    carousel.addEventListener("focusin", function() {
+      if (raidHomeTimer) clearInterval(raidHomeTimer);
+    });
+    carousel.addEventListener("focusout", function(evento) {
+      if (!carousel.contains(evento.relatedTarget)) iniciarRotacaoRaidHome();
+    });
+  }
+}
+
+function atualizarHgHeaderCountdowns(agora) {
+  const momento = agora instanceof Date ? agora : new Date();
+  const bossName = document.getElementById("hgHeaderBossName");
+  const bossCountdown = document.getElementById("hgHeaderBossCountdown");
+  const bossButton = document.querySelector(".hg-header-event-boss");
+  const proximoBoss = Array.isArray(raidEventosAtuais) && raidEventosAtuais.length ? raidEventosAtuais[0] : null;
+
+  if (bossName) bossName.textContent = proximoBoss ? String(proximoBoss.name || "RAID BOSS") : "CARREGANDO...";
+  if (bossCountdown) {
+    const diffBoss = proximoBoss ? proximoBoss.nextTime - momento : 0;
+    bossCountdown.textContent = proximoBoss ? formatarRaidContagem(diffBoss) : "--:--:--";
+    bossCountdown.classList.toggle("raid-soon", Boolean(proximoBoss && diffBoss > 0 && diffBoss <= 5 * 60000));
+    if (bossButton) bossButton.classList.toggle("is-soon", Boolean(proximoBoss && diffBoss > 0 && diffBoss <= 5 * 60000));
+  }
+
+  const dekyuCountdown = document.getElementById("hgHeaderDekyuCountdown");
+  const dekyuTime = document.getElementById("hgHeaderDekyuTime");
+  const proximoDekyu = typeof obterProximoHorarioDekyu === "function" ? obterProximoHorarioDekyu(momento.getTime()) : null;
+  if (proximoDekyu) {
+    const diff = Math.max(0, proximoDekyu.instante - momento.getTime());
+    if (dekyuCountdown) dekyuCountdown.textContent = formatarRaidContagem(diff);
+    if (dekyuTime) dekyuTime.textContent = "PRÓXIMO " + String(proximoDekyu.hora).padStart(2, "0") + ":00";
+  } else {
+    if (dekyuCountdown) dekyuCountdown.textContent = "--:--:--";
+    if (dekyuTime) dekyuTime.textContent = "PRÓXIMO --:--";
+  }
 }
 
 function obterRelogioBrasilia() {
@@ -9899,7 +10476,9 @@ document.addEventListener(
 
     inicializarDekyuTreasure();
 
-    inicializarHistoriaHome();
+    inicializarRaidHomeCarousel();
+
+    inicializarCounterFinder();
 
     carregarOfdsHome();
 
