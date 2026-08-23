@@ -27,6 +27,7 @@
 
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=20260823-hidden-quests-v1">
+  <link rel="stylesheet" href="i18n.css?v=20260823-safe-phase1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -79,11 +80,11 @@
     </span>
   </button>
 
-  <div id="hgHeaderCountdowns" class="hg-header-countdowns" aria-label="Próximos eventos">
+  <div id="hgHeaderCountdowns" class="hg-header-countdowns" aria-label="Próximos eventos" data-i18n-aria-label="header.upcomingEvents">
     <button class="hg-header-event hg-header-event-boss" type="button"
       onclick="mostrarPagina('raidBossPagina', document.getElementById('btnRaidBoss'))"
       title="Abrir Raid Boss">
-      <small class="hg-header-event-label">PRÓXIMO BOSS</small>
+      <small class="hg-header-event-label" data-i18n="header.nextBoss">PRÓXIMO BOSS</small>
       <span class="hg-header-event-body">
         <span class="hg-header-event-icon-shell" aria-hidden="true">
           <img id="hgHeaderBossIcon" class="hg-header-event-icon" src="icon_raid.png" alt="">
@@ -133,7 +134,7 @@
     id="hgMobileNavToggle"
     class="hg-mobile-nav-toggle"
     type="button"
-    aria-label="Abrir navegação"
+    aria-label="Abrir navegação" data-i18n-aria-label="nav.openNavigation"
     aria-controls="siteNavShell"
     aria-expanded="false"
     onclick="toggleMobileSiteNav(event)"
@@ -145,9 +146,9 @@
     <div class="hg-nav-panel-head">
       <div>
         <small>HOLY GUARDIANS //</small>
-        <strong>NAVEGAÇÃO</strong>
+        <strong data-i18n="nav.navigation">NAVEGAÇÃO</strong>
       </div>
-      <button type="button" aria-label="Fechar navegação" onclick="fecharMobileSiteNav()">×</button>
+      <button type="button" aria-label="Fechar navegação" data-i18n-aria-label="nav.closeNavigation" onclick="fecharMobileSiteNav()">×</button>
     </div>
 
     <div class="nav-menu" id="siteNavMenu">
@@ -155,45 +156,45 @@
       <button id="btnHome" class="nav-button ativo"
         onclick="mostrarPagina('homePagina', this)">
         <img id="navIconHome" alt="">
-        <span>Home</span>
+        <span data-i18n="nav.home">Home</span>
       </button>
 
       <button id="btnDatabase" class="nav-button"
         onclick="mostrarPagina('databasePagina', this)">
         <img id="navIconDigidex" alt="">
-        <span>DIGIDEX</span>
+        <span data-i18n="nav.digidex">DIGIDEX</span>
       </button>
 
       <button id="btnBuilder" class="nav-button"
         onclick="mostrarPagina('builderPagina', this)">
         <img id="navIconBuilder" alt="">
-        <span>Team Builder</span>
+        <span data-i18n="nav.teamBuilder">Team Builder</span>
       </button>
 
       <button id="btnElementos" class="nav-button"
         onclick="mostrarPagina('elementosPagina', this)">
         <img id="navIconElementos" alt="">
-        <span>Elementos</span>
+        <span data-i18n="nav.elements">Elementos</span>
       </button>
 
       <button id="btnCalculadora" class="nav-button"
         onclick="mostrarPagina('calculadoraPagina', this)">
         <img id="navIconCalculadora" alt="">
-        <span>Calculadora</span>
+        <span data-i18n="nav.calculator">Calculadora</span>
       </button>
 
       <div class="nav-dropdown pvp-nav-dropdown" id="pvpNavDropdown">
         <button id="btnPvp" class="nav-button nav-button-dropdown" type="button"
           onclick="togglePvpNavMenu(event)" aria-haspopup="true" aria-expanded="false">
           <img id="navIconPvp" alt="">
-          <span>PvP</span>
+          <span data-i18n="nav.pvp">PvP</span>
           <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
         </button>
 
         <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
-          <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
-          <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
-          <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+          <button type="button" role="menuitem" onclick="abrirPvpBuild()" data-i18n="pvp.buildTeam">BUILD PVP TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()" data-i18n="pvp.importTeam">IMPORT TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirPvpMatch()" data-i18n="pvp.match">MATCH</button>
         </div>
       </div>
 
@@ -201,12 +202,12 @@
         <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
           onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
           <img class="features-nav-icon" src="conteudo_icon.png" alt="" aria-hidden="true">
-          <span>Conteúdos</span>
+          <span data-i18n="nav.content">Conteúdos</span>
           <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
         </button>
 
         <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
-          <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+          <button type="button" role="menuitem" onclick="abrirSorteio()" data-i18n="content.giveaway">SORTEIO</button>
           <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
           <button type="button" role="menuitem" onclick="abrirTierListDmo()">TIER LIST DMO</button>
         </div>
@@ -215,21 +216,21 @@
       <button id="btnSocial" class="nav-button"
         onclick="mostrarPagina('socialPagina', this)">
         <img id="navIconSocial" alt="">
-        <span>Comunidade</span>
+        <span data-i18n="nav.community">Comunidade</span>
       </button>
 
       <div class="nav-dropdown nav-more-dropdown" id="moreNavDropdown">
         <button id="btnMore" class="nav-button nav-button-dropdown hg-nav-more-trigger" type="button"
           onclick="toggleMoreNavMenu(event)" aria-haspopup="true" aria-expanded="false">
           <span class="hg-more-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span>Mais</span>
+          <span data-i18n="nav.more">Mais</span>
           <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
         </button>
 
         <div class="nav-dropdown-menu nav-more-menu" id="moreNavMenu" role="menu">
           <div class="hg-nav-more-heading">
-            <small>MAIS FERRAMENTAS //</small>
-            <strong>ATALHOS HG</strong>
+            <small data-i18n="more.tools">MAIS FERRAMENTAS //</small>
+            <strong data-i18n="more.shortcuts">ATALHOS HG</strong>
           </div>
 
           <button id="btnDigivolution" class="nav-button hg-more-nav-item" type="button" hidden aria-hidden="true" tabindex="-1"
@@ -241,7 +242,7 @@
           <button id="btnComparacao" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('comparacaoPagina', this)">
             <img id="navIconComparacao" alt="">
-            <span>COMPARAÇÃO</span>
+            <span data-i18n="more.comparison">COMPARAÇÃO</span>
           </button>
 
           <button id="btnCounterFinder" class="nav-button hg-more-nav-item" type="button"
@@ -259,19 +260,19 @@
           <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('statusSimulatorPagina', this)">
             <img src="icon_status_simulator.png" alt="">
-            <span>Status Simulator</span>
+            <span data-i18n="more.statusSimulator">Status Simulator</span>
           </button>
 
           <button id="btnRaidBoss" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('raidBossPagina', this)">
             <img src="icon_raid.png" alt="">
-            <span>Raid Boss</span>
+            <span data-i18n="more.raidBoss">Raid Boss</span>
           </button>
 
           <button id="btnDekyuTreasure" class="nav-button hg-more-nav-item" type="button"
             onclick="mostrarPagina('dekyuTreasurePagina', this)">
             <img src="dekyu_treasure.png" alt="">
-            <span>Dekyu Treasure</span>
+            <span data-i18n="more.dekyuTreasure">Dekyu Treasure</span>
           </button>
 
           <button
@@ -282,12 +283,60 @@
             aria-expanded="false"
             aria-controls="hgDisplaySettingsPanel"
             aria-label="Ajuste de tela"
+            data-i18n-aria-label="more.displaySettings"
             title="Ajuste de tela"
+            data-i18n-title="more.displaySettings"
             onclick="toggleHgDisplaySettings(event)"
           >
             <span class="hg-display-settings-gear" aria-hidden="true">⚙</span>
-            <span>Ajuste de Tela</span>
+            <span data-i18n="more.displaySettings">Ajuste de Tela</span>
           </button>
+        </div>
+      </div>
+
+      <div class="hg-language-switcher" id="hgLanguageSwitcher">
+        <button
+          id="hgLanguageTrigger"
+          class="hg-language-trigger"
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="hgLanguageMenu"
+          aria-label="Selecionar idioma"
+          data-i18n-aria-label="language.select"
+        >
+          <img id="hgLanguageCurrentFlag" src="i18n_flag_br.svg" alt="" aria-hidden="true">
+          <span id="hgLanguageCurrentCode">PT</span>
+          <b aria-hidden="true">⌄</b>
+        </button>
+
+        <div id="hgLanguageMenu" class="hg-language-menu" role="menu" hidden>
+          <div class="hg-language-menu-head">
+            <small>HOLY GUARDIANS //</small>
+            <strong data-i18n="language.title">IDIOMA</strong>
+          </div>
+
+          <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="pt-BR" aria-checked="true">
+            <img src="i18n_flag_br.svg" alt="" aria-hidden="true">
+            <span><strong>Português</strong><small>PT-BR</small></span>
+            <b class="hg-language-check" aria-hidden="true">✓</b>
+          </button>
+
+          <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="en-US" aria-checked="false">
+            <img src="i18n_flag_us.svg" alt="" aria-hidden="true">
+            <span><strong>English</strong><small>EN-US</small></span>
+            <b class="hg-language-check" aria-hidden="true">✓</b>
+          </button>
+
+          <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="ko-KR" aria-checked="false">
+            <img src="i18n_flag_kr.svg" alt="" aria-hidden="true">
+            <span><strong>한국어</strong><small>KO-KR</small></span>
+            <b class="hg-language-check" aria-hidden="true">✓</b>
+          </button>
+
+          <p class="hg-language-disclaimer" data-i18n="language.disclaimer">
+            As traduções facilitam o acesso e podem ser revisadas gradualmente. Nomes oficiais do jogo são preservados sempre que possível.
+          </p>
         </div>
       </div>
 
@@ -295,7 +344,7 @@
 
     <div class="hg-nav-panel-foot">
       <span>HG SYSTEM // ONLINE</span>
-      <button type="button" onclick="fecharMobileSiteNav()">× FECHAR MENU</button>
+      <button type="button" onclick="fecharMobileSiteNav()" data-i18n="nav.closeMenu">× FECHAR MENU</button>
     </div>
   </div>
 </nav>
@@ -3142,6 +3191,10 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
+<script src="i18n_pt-BR.js?v=20260823-safe-phase1"></script>
+<script src="i18n_en-US.js?v=20260823-safe-phase1"></script>
+<script src="i18n_ko-KR.js?v=20260823-safe-phase1"></script>
+<script src="i18n.js?v=20260823-safe-phase1"></script>
 <script src="script.js?v=20260823-hidden-quests-v1"></script>
 </body>
 </html>
