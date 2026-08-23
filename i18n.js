@@ -1442,7 +1442,18 @@
       setAttr(button, "title", next);
     });
     all(".calc-skill-tooltip", root).forEach(function (tip) {
-      if (currentLanguage === "pt-BR") return;
+      /* Os tooltips usam nós de texto com original preservado. Quando voltamos
+         para PT também precisamos reaplicar o original; retornar cedo deixava
+         EN/KO preso na tela até o tooltip ser recriado. */
+      if (currentLanguage === "pt-BR") {
+        var ptTitle = one(":scope > strong", tip);
+        if (ptTitle) {
+          var ptTitleOriginal = ptTitle.getAttribute("data-hg-calc-tip-title-original");
+          if (ptTitleOriginal) setText(ptTitle, ptTitleOriginal);
+        }
+        phase5TranslateTextNodes(tip, []);
+        return;
+      }
 
       // The calculator builds these tooltips in Portuguese/technical English in script.js.
       // Translate every presentation fragment here without touching calculation/database logic.
@@ -2567,6 +2578,21 @@
     if (!root) return;
     all("#pvpStageLabel, #pvpStageOptions button, #pvpMatchCreateStage option, #pvpMatchRoomStage, #pvpDraftStage, .pvp-slot-meta, .pvp-current-stage, .pvp-picker-copy small, .pvp-draft-digi > small, .pvp-ban-card > small", root).forEach(function (element) {
       var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+      var tag = String(element.tagName || "").toUpperCase();
+
+      /* OPTION não passa pelo tradutor de text nodes. Por isso, depois de virar
+         궁극체 (Mega), por exemplo, ele precisava ser restaurado explicitamente
+         ao sair do coreano. O value continua canônico e é a fonte mais segura. */
+      if (tag === "OPTION") {
+        var optionSource = String(element.value || element.getAttribute("data-hg-pvp-stage-original") || raw).trim();
+        var optionMatch = optionSource.match(/(ROOKIE|CHAMPION|ULTIMATE|MEGA)/i) || raw.match(/\((ROOKIE|CHAMPION|ULTIMATE|MEGA)\)/i);
+        if (!optionMatch) return;
+        var optionStage = optionMatch[1].charAt(0).toUpperCase() + optionMatch[1].slice(1).toLowerCase();
+        element.setAttribute("data-hg-pvp-stage-original", optionStage);
+        setText(element, phase9PvpStageLabel(optionStage, null));
+        return;
+      }
+
       var m = raw.match(/(ROOKIE|CHAMPION|ULTIMATE|MEGA)(?:\s*·\s*LV\.\s*(\d+))?/i);
       if (!m) return;
       var original = element.getAttribute("data-hg-pvp-stage-original") || (m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase());
@@ -2871,16 +2897,48 @@
 
   function localizedWeekdayText(value, shortForm) {
     var text = String(value == null ? "" : value);
-    var map = [
-      [/(segunda-feira|segunda|SEG)(?=\b|,)/gi, translate("weekday.SEG." + (shortForm ? "short" : "full"), shortForm ? "SEG" : "SEGUNDA")],
-      [/(terça-feira|terça|terca-feira|terca|TER)(?=\b|,)/gi, translate("weekday.TER." + (shortForm ? "short" : "full"), shortForm ? "TER" : "TERÇA")],
-      [/(quarta-feira|quarta|QUA)(?=\b|,)/gi, translate("weekday.QUA." + (shortForm ? "short" : "full"), shortForm ? "QUA" : "QUARTA")],
-      [/(quinta-feira|quinta|QUI)(?=\b|,)/gi, translate("weekday.QUI." + (shortForm ? "short" : "full"), shortForm ? "QUI" : "QUINTA")],
-      [/(sexta-feira|sexta|SEX)(?=\b|,)/gi, translate("weekday.SEX." + (shortForm ? "short" : "full"), shortForm ? "SEX" : "SEXTA")],
-      [/(sábado|sabado|SÁB|SAB)(?=\b|,)/gi, translate("weekday.SAB." + (shortForm ? "short" : "full"), shortForm ? "SÁB" : "SÁBADO")],
-      [/(domingo|DOM)(?=\b|,)/gi, translate("weekday.DOM." + (shortForm ? "short" : "full"), shortForm ? "DOM" : "DOMINGO")]
-    ];
-    map.forEach(function (entry) { text = text.replace(entry[0], entry[1]); });
+    var codes = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"];
+    var resolved = false;
+    var aliases = {
+      SEG: ["segunda-feira", "segunda"],
+      TER: ["terça-feira", "terça", "terca-feira", "terca"],
+      QUA: ["quarta-feira", "quarta"],
+      QUI: ["quinta-feira", "quinta"],
+      SEX: ["sexta-feira", "sexta"],
+      SAB: ["sábado", "sabado", "SÁB", "SAB"],
+      DOM: ["domingo"]
+    };
+
+    /* O texto da OFD é dinâmico e pode já estar em PT, EN ou KO quando o
+       usuário troca o idioma novamente. Sempre reconhecemos TODAS as versões
+       conhecidas e só então escrevemos a versão do idioma atual. */
+    codes.forEach(function (code) {
+      var variants = (aliases[code] || []).slice();
+      Object.keys(LANGUAGE_META).forEach(function (language) {
+        var data = dictionary(language);
+        ["full", "short"].forEach(function (form) {
+          var label = data["weekday." + code + "." + form];
+          if (label != null && String(label).trim()) variants.push(String(label).trim());
+        });
+      });
+      variants.push(code);
+      variants = variants.filter(function (item, index, list) {
+        var normalized = String(item || "").toLocaleLowerCase();
+        return normalized && list.findIndex(function (other) {
+          return String(other || "").toLocaleLowerCase() === normalized;
+        }) === index;
+      }).sort(function (a, b) { return String(b).length - String(a).length; });
+
+      if (!variants.length) return;
+      var escaped = variants.map(function (item) {
+        return String(item).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      });
+      var pattern = new RegExp("(" + escaped.join("|") + ")(?=\\s|,|•|$)", "i");
+      if (resolved || !pattern.test(text)) return;
+      var output = translate("weekday." + code + "." + (shortForm ? "short" : "full"), shortForm ? code : code);
+      text = text.replace(pattern, String(output));
+      resolved = true;
+    });
     return text;
   }
 
