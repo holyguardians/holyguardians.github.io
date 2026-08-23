@@ -1422,3 +1422,70 @@ Object.assign(window.HG_I18N["ko-KR"], {
 });
 Object.assign(window.HG_I18N["ko-KR"], { "builder.title":"팀 빌더", "status.title":"스탯 시뮬레이터" });
 Object.assign(window.HG_I18N["ko-KR"], { "calc.emptySelect":"목록에서 디지몬을 선택하면 Lv.10 스킬을 확인할 수 있습니다." });
+
+
+/* PHASE 6 — official Korean display aliases sourced from DSR WIKI Korean. */
+Object.assign(window.HG_I18N["ko-KR"], {
+  "__mapNames": {
+    "H.o.L - Past (Night)": "빛의 언덕 과거(밤)",
+    "Network": "네트워크",
+    "Dragon's Eye Lake": "용의 눈 호수",
+    "Gear Savannah": "기어 사바나",
+    "Infinity Mountain": "무한 산",
+    "Infinite Mountain": "무한 산",
+    "Camping Site": "캠핑장",
+    "Hill of Light": "빛의 언덕",
+    "Subway Station": "지하철 역",
+    "Odaiba Entrance": "오다이바 입구",
+    "Northern Odaiba": "오다이바 북부",
+    "Shibuya": "시부야",
+    "Southern Odaiba": "오다이바 남부",
+    "World Expo Hall": "국제 전시장",
+    "Desert Area": "사막 지대",
+    "Dark Castle Valley": "어둠성 계곡",
+    "Dark Castle": "어둠성 계곡",
+    "Forest Area": "수목 지구",
+    "Metalcity Area": "강철 도시",
+    "Net Ocean": "네트워크 바다",
+    "Dark Area": "어둠의 권역",
+    "Spiral Mt. Summit": "스파이럴 마운틴 정상",
+    "Spiral Mountain Top": "스파이럴 마운틴 정상",
+    "Spiral Mountain — Apocalymon Area": "스파이럴 마운틴 ???",
+    "Data Space": "데이터 공간",
+    "Data Area": "데이터 공간"
+  },
+  "__raidBossNames": {
+    "Pumpkinmon": "펌프몬",
+    "Gotsumon": "울퉁몬",
+    "Kimeramon": "키메라몬",
+    "BlackSeraphimon": "블랙세라피몬",
+    "Black Seraphimon": "블랙세라피몬",
+    "Ophanimon: Fallen Mode": "오파니몬:폴다운모드",
+    "Ophanimon:Falldownmode": "오파니몬:폴다운모드",
+    "Megidramon": "메기드라몬",
+    "Omnimon": "오메가몬",
+    "Zhuqiaomon": "주작몬",
+    "Ebonwumon": "현무몬",
+    "Azulongmon": "청룡몬",
+    "Baihumon": "백호몬",
+    "Examon": "엑자몬",
+    "Kingdrasil_7D6": "위그드라실_7D6",
+    "Yggdrasil_7D6": "위그드라실_7D6"
+  },
+  "__zoneNames": {
+    "Data World": "데이터 세계",
+    "File Island": "파일섬",
+    "Real World": "현실 세계",
+    "Server Continent": "서버대륙",
+    "Spiral Mt.": "스파이럴 마운틴"
+  },
+  "__overflowNames": {
+    "Infinity Mountain": "무한 산",
+    "Desert Area": "사막 지대",
+    "Dark Castle Valley": "어둠성 계곡",
+    "Real World": "현실 세계",
+    "Sprial Mt.": "스파이럴 마운틴",
+    "Spiral Mt.": "스파이럴 마운틴",
+    "Data World": "데이터 세계"
+  }
+});

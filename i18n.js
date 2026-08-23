@@ -216,6 +216,42 @@
     return koDataMap("__digimonNames")[raw] || "";
   }
 
+  function phase6SpecialLookup(bucket, value) {
+    var raw = String(value || "").replace(/\s+/g, " ").trim();
+    if (!raw) return "";
+    var map = koDataMap(bucket);
+    if (map[raw]) return map[raw];
+    var lower = raw.toLowerCase();
+    var keys = Object.keys(map || {});
+    for (var i = 0; i < keys.length; i++) {
+      if (String(keys[i]).toLowerCase() === lower) return map[keys[i]] || "";
+    }
+    return "";
+  }
+
+  function koMapName(value) {
+    return phase6SpecialLookup("__mapNames", value);
+  }
+
+  function koRaidBossName(value) {
+    var raw = String(value || "").replace(/\s+/g, " ").trim();
+    return phase6SpecialLookup("__raidBossNames", raw) || koDigimonName(raw);
+  }
+
+  function koZoneName(value) {
+    return phase6SpecialLookup("__zoneNames", value);
+  }
+
+  function koOverflowName(value) {
+    return phase6SpecialLookup("__overflowNames", value) || koMapName(value) || koZoneName(value);
+  }
+
+  function phase6KoReference(original, translated) {
+    var raw = String(original || "").trim();
+    var ko = String(translated || "").trim();
+    return ko && raw ? ko + " (" + raw + ")" : raw;
+  }
+
   function koReferenceInline(info) {
     if (!info) return "";
     return escapeHtml(info.ko) + ' <small class="hg-ko-inline-ref">(' + escapeHtml(info.ref) + ')</small>';
@@ -565,6 +601,7 @@
       var born = textRaw.match(/^(?:Nasce em|Spawns in|등장까지)\s+(.+?)\s+[—-]\s+(.+)$/i);
       if (born) setText(alertText, formatTranslation("raid.bornIn", "Nasce em {time} — {map}", { time: born[1], map: born[2] }));
     }
+    phase6ApplyRaidNames();
   }
 
   function applyDekyuStaticTranslations() {
@@ -657,6 +694,7 @@
       var newTime = one("#dekyuNextTime", respawnSmall);
       if (newTime) newTime.id = "dekyuNextTime";
     }
+    phase6ApplyDekyuMapNames();
   }
 
   function applyImpmonLiveTranslations() {
@@ -687,6 +725,253 @@
       setText(status, formatTranslation("live.multiStatus", "🔴 {count} AO VIVO AGORA", { count: links.length }));
       setText(hint, translate("live.multiHint", "CLIQUE NO NOME PARA ASSISTIR"));
     }
+  }
+
+
+
+  /* =====================================================
+     PHASE 6 — KOREAN OFFICIAL NAMES / MAPS / SEARCH ALIASES
+     DSR WIKI Korean names are display/search aliases only.
+     Canonical English values remain untouched for site logic.
+  ===================================================== */
+
+  function phase6StoredOriginal(element, attr, fallback) {
+    if (!element) return "";
+    var key = attr || "data-hg-phase6-original";
+    var stored = element.getAttribute(key);
+    if (stored != null && stored !== "") return stored;
+    var raw = String(fallback != null ? fallback : element.textContent || "").replace(/\s+/g, " ").trim();
+    if (raw) element.setAttribute(key, raw);
+    return raw;
+  }
+
+  function phase6ApplyReferenceText(element, resolver, attr, fallback) {
+    if (!element) return;
+    var original = phase6StoredOriginal(element, attr, fallback);
+    if (!original) return;
+    if (currentLanguage === "ko-KR") {
+      var translated = resolver(original);
+      setText(element, translated ? phase6KoReference(original, translated) : original);
+    } else {
+      setText(element, original);
+    }
+  }
+
+  function phase6DirectTextNode(host) {
+    if (!host) return null;
+    var nodes = Array.prototype.slice.call(host.childNodes || []);
+    return nodes.find(function (node) { return node.nodeType === 3 && String(node.nodeValue || "").trim(); }) || null;
+  }
+
+  function phase6ApplyReferenceDirectText(host, resolver, attr) {
+    if (!host) return;
+    var node = phase6DirectTextNode(host);
+    if (!node) return;
+    var key = attr || "data-hg-phase6-direct-original";
+    var original = host.getAttribute(key) || String(node.nodeValue || "").replace(/\s+/g, " ").trim();
+    if (!original) return;
+    if (!host.getAttribute(key)) host.setAttribute(key, original);
+    var next = original;
+    if (currentLanguage === "ko-KR") {
+      var translated = resolver(original);
+      if (translated) next = phase6KoReference(original, translated);
+    }
+    node.nodeValue = next + " ";
+  }
+
+  function phase6ApplyRaidNames() {
+    var root = document.getElementById("raidBossPagina");
+    if (!root) return;
+    all("#raidList .raid-card", root).forEach(function (card) {
+      phase6ApplyReferenceDirectText(one(".raid-card-top h3", card), koRaidBossName, "data-hg-raid-boss-original");
+      phase6ApplyReferenceDirectText(one(".raid-map-link", card), koMapName, "data-hg-raid-map-original");
+    });
+
+    var alertTitle = document.getElementById("raidAlertTitle");
+    if (alertTitle) {
+      var raw = String(alertTitle.textContent || "").replace(/\s+/g, " ").trim();
+      var ko = koRaidBossName(raw);
+      if (currentLanguage === "ko-KR" && ko) setText(alertTitle, phase6KoReference(raw, ko));
+    }
+  }
+
+  function phase6ApplyHomeRaidAndOverflowNames() {
+    var home = document.getElementById("homePagina");
+    if (!home) return;
+
+    all("#raidHomeTrack .raid-home-card", home).forEach(function (card) {
+      phase6ApplyReferenceText(one(".raid-home-info h3", card), koRaidBossName, "data-hg-home-boss-original");
+      phase6ApplyReferenceDirectText(one(".raid-home-map", card), koMapName, "data-hg-home-raid-map-original");
+    });
+
+    all("#ofdHomeList .ofd-home-card, #ofdWeekList .ofd-week-card", home).forEach(function (card) {
+      var name = one(".ofd-location-line strong", card);
+      phase6ApplyReferenceText(name, koOverflowName, "data-hg-ofd-name-original");
+
+      var map = one(".ofd-location-line span", card);
+      if (map) {
+        var raw = phase6StoredOriginal(map, "data-hg-ofd-map-original");
+        var clean = String(raw || "").replace(/^\s*[—-]\s*/, "").trim();
+        if (currentLanguage === "ko-KR") {
+          var translated = koMapName(clean);
+          setText(map, "— " + (translated ? phase6KoReference(clean, translated) : clean));
+        } else {
+          setText(map, raw);
+        }
+      }
+    });
+  }
+
+  function phase6ApplyDekyuMapNames() {
+    var root = document.getElementById("dekyuTreasurePagina");
+    if (!root) return;
+
+    all("#dekyuZone option", root).forEach(function (option) {
+      var originalZone = String(option.value || option.getAttribute("data-hg-dekyu-zone-original") || option.textContent || "").trim();
+      if (!originalZone || /Carregando áreas|Loading areas|지역 불러오는 중|Erro ao carregar áreas|Error loading areas|지역을 불러오지 못했습니다/i.test(originalZone)) return;
+      option.setAttribute("data-hg-dekyu-zone-original", originalZone);
+      if (currentLanguage === "ko-KR") {
+        var translatedZone = koZoneName(originalZone);
+        if (translatedZone) setText(option, phase6KoReference(originalZone, translatedZone));
+      } else setText(option, originalZone);
+    });
+
+    var zoneLabel = one("#dekyuZoneLabel", root);
+    var zoneSelect = one("#dekyuZone", root);
+    if (zoneLabel && zoneSelect && zoneSelect.value) {
+      var zoneOriginal = String(zoneSelect.value || "").trim();
+      if (currentLanguage === "ko-KR") {
+        var zoneKo = koZoneName(zoneOriginal);
+        if (zoneKo) setText(zoneLabel, phase6KoReference(zoneOriginal, zoneKo));
+      } else setText(zoneLabel, zoneOriginal);
+    }
+
+    all("#dekyuMap option", root).forEach(function (option) {
+      var original = String(option.value || option.getAttribute("data-hg-dekyu-map-original") || option.textContent || "").trim();
+      if (!original || /Carregando mapas|Loading maps|맵 불러오는 중|Erro ao carregar mapas|Error loading maps|맵을 불러오지 못했습니다/i.test(original)) return;
+      option.setAttribute("data-hg-dekyu-map-original", original);
+      if (currentLanguage === "ko-KR") {
+        var translated = koMapName(original);
+        if (translated) setText(option, phase6KoReference(original, translated));
+      } else setText(option, original);
+    });
+
+    var title = one("#dekyuMapTitle", root);
+    if (title) {
+      var current = String(title.textContent || "").replace(/\s+/g, " ").trim();
+      var placeholder = /^(Selecione um mapa|Select a map|맵을 선택하세요)$/i.test(current);
+      if (!placeholder) {
+        var mapSelect = one("#dekyuMap", root);
+        var originalTitle = String(mapSelect && mapSelect.value || current).trim();
+        if (currentLanguage === "ko-KR") {
+          var ko = koMapName(originalTitle);
+          if (ko) setText(title, phase6KoReference(originalTitle, ko));
+        } else setText(title, originalTitle);
+      }
+    }
+  }
+
+  function phase6KoreanSearchEntries() {
+    var map = koDataMap("__digimonNames");
+    return Object.keys(map || {}).map(function (en) {
+      return { en: String(en || "").trim(), ko: String(map[en] || "").trim() };
+    }).filter(function (entry) { return entry.en && entry.ko; });
+  }
+
+  function phase6CommonPrefix(values) {
+    var arr = (values || []).filter(Boolean);
+    if (!arr.length) return "";
+    var prefix = arr[0];
+    for (var i = 1; i < arr.length && prefix; i++) {
+      var value = arr[i];
+      var max = Math.min(prefix.length, value.length);
+      var j = 0;
+      while (j < max && prefix[j] === value[j]) j++;
+      prefix = prefix.slice(0, j);
+    }
+    return prefix.replace(/[\s_(:-]+$/g, "");
+  }
+
+  function phase6ResolveKoreanSearchAlias(value) {
+    var raw = String(value || "").replace(/\s+/g, " ").trim();
+    if (currentLanguage !== "ko-KR" || !/[가-힣]/.test(raw)) return "";
+    var entries = phase6KoreanSearchEntries();
+    var exact = entries.find(function (entry) { return entry.ko === raw; });
+    if (exact) return exact.en;
+    var matches = entries.filter(function (entry) { return entry.ko.indexOf(raw) !== -1; });
+    if (!matches.length) return "";
+    var lowerNames = matches.map(function (entry) { return entry.en.toLowerCase(); });
+    var common = phase6CommonPrefix(lowerNames);
+    return common.length >= 2 ? common : matches[0].en;
+  }
+
+  function phase6IsDigimonSearchInput(input) {
+    if (!input || input.nodeType !== 1) return false;
+    if (input.matches && input.matches("#pesquisa, #counterFinderTargetInput, .team-search, #statusSimulatorSearch, #calcDigimon, [id^='comparacaoDigimon']")) return true;
+    return false;
+  }
+
+  function phase6AliasSearchEvent(event) {
+    var input = event && event.target;
+    if (!phase6IsDigimonSearchInput(input) || currentLanguage !== "ko-KR") return;
+    if (event && event.isComposing) return;
+    if (event && event.type === "keydown" && event.key !== "Enter") return;
+    var original = String(input.value || "");
+    var alias = phase6ResolveKoreanSearchAlias(original);
+    if (!alias || alias === original) return;
+    input.value = alias;
+    var restore = function () {
+      if (String(input.value || "") === alias) input.value = original;
+    };
+    if (typeof queueMicrotask === "function") queueMicrotask(restore);
+    else Promise.resolve().then(restore);
+  }
+
+  function phase6WithAliasedInput(input, callback) {
+    if (!input || currentLanguage !== "ko-KR") return callback();
+    var original = String(input.value || "");
+    var alias = phase6ResolveKoreanSearchAlias(original);
+    if (!alias || alias === original) return callback();
+    input.value = alias;
+    try {
+      return callback();
+    } finally {
+      if (String(input.value || "") === alias) input.value = original;
+    }
+  }
+
+  function phase6WrapSearchFunction(name, inputResolver) {
+    var original = window[name];
+    if (typeof original !== "function" || original.__hgKoSearchWrapped) return;
+    var wrapped = function () {
+      var args = arguments;
+      var self = this;
+      var input = null;
+      try { input = inputResolver ? inputResolver(args) : null; } catch (error) { input = null; }
+      return phase6WithAliasedInput(input, function () { return original.apply(self, args); });
+    };
+    wrapped.__hgKoSearchWrapped = true;
+    wrapped.__hgKoSearchOriginal = original;
+    window[name] = wrapped;
+  }
+
+  function installPhase6KoreanSearchFunctionHooks() {
+    phase6WrapSearchFunction("filtrar", function () { return document.getElementById("pesquisa"); });
+    phase6WrapSearchFunction("counterFinderPesquisarAlvo", function () { return document.getElementById("counterFinderTargetInput"); });
+    phase6WrapSearchFunction("counterFinderTeclaAlvo", function () { return document.getElementById("counterFinderTargetInput"); });
+    phase6WrapSearchFunction("atualizarSugestoesStatusSimulator", function () { return document.getElementById("statusSimulatorSearch"); });
+    phase6WrapSearchFunction("calcMostrarSugestoes", function () { return document.getElementById("calcDigimon"); });
+    phase6WrapSearchFunction("atualizarCalculadora", function () { return document.getElementById("calcDigimon"); });
+    phase6WrapSearchFunction("atualizarSugestoesComparacao", function (args) { return document.getElementById("comparacaoDigimon" + String(args[0] || "")); });
+    phase6WrapSearchFunction("atualizarSugestoes", function (args) { return args[1] || null; });
+  }
+
+  function installPhase6KoreanSearchAliases() {
+    if (document.documentElement.getAttribute("data-hg-ko-search-ready") === "1") return;
+    document.documentElement.setAttribute("data-hg-ko-search-ready", "1");
+    ["input", "focus", "keydown", "change"].forEach(function (type) {
+      document.addEventListener(type, phase6AliasSearchEvent, true);
+    });
   }
 
 
@@ -1430,6 +1715,7 @@
     var base = ensureHiddenBase();
     var list = base && Array.isArray(base.quests) ? base.quests : [];
     return list.find(function (quest) { return String(quest.code) === String(code); }) || null;
+    phase6ApplyHomeRaidAndOverflowNames();
   }
 
   function applyHiddenDynamicTranslations() {
@@ -1978,6 +2264,14 @@
     ["atualizarCalculadora", "calcMostrarSugestoes"].forEach(function (name) {
       wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("calculadoraPagina"); });
     });
+    ["renderizarRaids", "renderizarRaidHomeCarousel"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () {
+        applyDynamicTranslationsForRoot(name === "renderizarRaids" ? "raidBossPagina" : "homePagina");
+      });
+    });
+    ["alterarZonaDekyu", "renderizarMapaDekyu"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("dekyuTreasurePagina"); });
+    });
   }
 
   function installObservers() {
@@ -2099,9 +2393,11 @@
       if (event.target && event.target.closest && event.target.closest(".counter-finder-profile-trigger")) window.setTimeout(applyCounterTooltipTranslations, 0);
     });
 
+    installPhase6KoreanSearchAliases();
     applyStaticTranslations();
     updateLanguageUi();
     installRuntimeHooks();
+    installPhase6KoreanSearchFunctionHooks();
     installObservers();
     window.setTimeout(function () {
       refreshHiddenQuestUi();
