@@ -497,8 +497,30 @@
     setText(one(".hg-header-event-dekyu .hg-header-event-label", header), translate("header.dekyuTreasure", "DEKYU TREASURE"));
 
     var bossName = one("#hgHeaderBossName", header);
-    if (bossName && /^(CARREGANDO\.\.\.|LOADING\.\.\.|불러오는 중\.\.\.)$/i.test(String(bossName.textContent || "").trim())) {
-      setText(bossName, translate("header.loading", "CARREGANDO..."));
+    if (bossName) {
+      var bossRaw = String(bossName.textContent || "").replace(/\s+/g, " ").trim();
+      if (/^(CARREGANDO\.\.\.|LOADING\.\.\.|불러오는 중\.\.\.)$/i.test(bossRaw)) {
+        setText(bossName, translate("header.loading", "CARREGANDO..."));
+      } else if (currentLanguage === "ko-KR") {
+        /* O timer principal reescreve o nome EN a cada atualização. Traduzimos
+           imediatamente no mesmo ciclo, preservando a referência original. */
+        var bossKo = koRaidBossName(bossRaw);
+        if (bossKo) {
+          bossName.setAttribute("data-hg-header-boss-original", bossRaw);
+          setText(bossName, phase6KoReference(bossRaw, bossKo));
+          setAttr(bossName, "title", bossRaw);
+        } else {
+          var bossOriginal = bossName.getAttribute("data-hg-header-boss-original") || "";
+          var storedKo = bossOriginal ? koRaidBossName(bossOriginal) : "";
+          if (storedKo && bossRaw === phase6KoReference(bossOriginal, storedKo)) setAttr(bossName, "title", bossOriginal);
+        }
+      } else {
+        var storedBoss = bossName.getAttribute("data-hg-header-boss-original") || "";
+        if (storedBoss && koRaidBossName(storedBoss) && bossRaw === phase6KoReference(storedBoss, koRaidBossName(storedBoss))) {
+          setText(bossName, storedBoss);
+        }
+        if (bossName.hasAttribute("title")) bossName.removeAttribute("title");
+      }
     }
 
     var dekyuTime = one("#hgHeaderDekyuTime", header);
@@ -1709,13 +1731,16 @@
         setText(small, localizedWeekdayText(kPrefix, false) + " • KST");
       }
     }
+
+    /* PHASE 6: o carousel da HOME é reconstruído pelo renderer principal.
+       Aplicamos nomes KO do boss/mapa aqui para cobrir também o slide visível. */
+    phase6ApplyHomeRaidAndOverflowNames();
   }
 
   function questBaseByCode(code) {
     var base = ensureHiddenBase();
     var list = base && Array.isArray(base.quests) ? base.quests : [];
     return list.find(function (quest) { return String(quest.code) === String(code); }) || null;
-    phase6ApplyHomeRaidAndOverflowNames();
   }
 
   function applyHiddenDynamicTranslations() {

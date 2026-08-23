@@ -1450,7 +1450,7 @@ Object.assign(window.HG_I18N["ko-KR"], {
     "Dark Area": "어둠의 권역",
     "Spiral Mt. Summit": "스파이럴 마운틴 정상",
     "Spiral Mountain Top": "스파이럴 마운틴 정상",
-    "Spiral Mountain — Apocalymon Area": "스파이럴 마운틴 ???",
+    "Spiral Mountain — Apocalymon Area": "???",
     "Data Space": "데이터 공간",
     "Data Area": "데이터 공간"
   },
