@@ -929,7 +929,7 @@
 
   function phase6IsDigimonSearchInput(input) {
     if (!input || input.nodeType !== 1) return false;
-    if (input.matches && input.matches("#pesquisa, #counterFinderTargetInput, .team-search, #statusSimulatorSearch, #calcDigimon, [id^='comparacaoDigimon']")) return true;
+    if (input.matches && input.matches("#pesquisa, #counterFinderTargetInput, .team-search, #statusSimulatorSearch, #calcDigimon, #tierListSearch, #tierListDmoSearch, [id^='comparacaoDigimon']")) return true;
     return false;
   }
 
@@ -986,6 +986,8 @@
     phase6WrapSearchFunction("atualizarCalculadora", function () { return document.getElementById("calcDigimon"); });
     phase6WrapSearchFunction("atualizarSugestoesComparacao", function (args) { return document.getElementById("comparacaoDigimon" + String(args[0] || "")); });
     phase6WrapSearchFunction("atualizarSugestoes", function (args) { return args[1] || null; });
+    phase6WrapSearchFunction("tierListAplicarFiltros", function () { return document.getElementById("tierListSearch"); });
+    phase6WrapSearchFunction("tierListDmoAplicarFiltros", function () { return document.getElementById("tierListDmoSearch"); });
   }
 
   function installPhase6KoreanSearchAliases() {
@@ -1680,6 +1682,629 @@
     if (empty) setText(empty, qtd === 2 ? translate("comparison.empty2", "Escolha dois Digimons para iniciar a comparação.") : formatTranslation("comparison.emptyN", "Selecione até {count} Digimons para iniciar a comparação.", {count:qtd}));
   }
 
+
+
+  /* =====================================================
+     PHASE 8 — CONTENT TOOLS + FINAL NON-PVP AUDIT
+     Tier List DSR / Tier List DMO / Giveaway + mobile title.
+     Keeps platform/user names and canonical game data untouched.
+  ===================================================== */
+
+  function phase8SetTextNode(host, key, fallback) {
+    if (!host) return;
+    var node = Array.prototype.slice.call(host.childNodes || []).find(function (item) {
+      return item.nodeType === 3 && String(item.nodeValue || "").trim();
+    });
+    if (!node) return;
+    var before = String(node.nodeValue || "");
+    var lead = (before.match(/^\s*/) || [""])[0];
+    var trail = (before.match(/\s*$/) || [""])[0];
+    var next = lead + String(translate(key, fallback)) + trail;
+    if (node.nodeValue !== next) node.nodeValue = next;
+  }
+
+  function phase8SetAttr(element, name, key, fallback) {
+    if (!element) return;
+    setAttr(element, name, translate(key, fallback));
+  }
+
+  function phase8CompactDigimonName(element) {
+    if (!element) return;
+    var original = element.getAttribute("data-hg-phase8-digimon-original");
+    var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+    if (!original) {
+      original = raw || "";
+      if (original) element.setAttribute("data-hg-phase8-digimon-original", original);
+    }
+    if (!original) return;
+    if (currentLanguage === "ko-KR") {
+      var ko = koDigimonName(original);
+      if (ko) {
+        setText(element, ko);
+        setAttr(element, "title", original);
+        return;
+      }
+    }
+    setText(element, original);
+    if (element.getAttribute("title") === original) element.removeAttribute("title");
+  }
+
+  function phase8TranslateStageCompact(element) {
+    if (!element) return;
+    var original = element.getAttribute("data-hg-phase8-stage-original") || String(element.textContent || "").trim();
+    if (!original) return;
+    element.setAttribute("data-hg-phase8-stage-original", original);
+    if (currentLanguage === "ko-KR") {
+      var info = koStageData(original);
+      setText(element, info ? info.ko + " (" + info.ref + ")" : original);
+    } else setText(element, original);
+  }
+
+  function applyContentNavTranslations() {
+    var trigger = document.getElementById("btnFeatures");
+    if (trigger) {
+      var spans = all(":scope > span", trigger).filter(function (el) { return !el.classList.contains("nav-dropdown-chevron"); });
+      if (spans[0]) setText(spans[0], translate("nav.content", "Conteúdos"));
+    }
+    var menu = document.getElementById("featuresNavMenu");
+    var buttons = all("button", menu);
+    if (buttons[0]) setText(buttons[0], translate("content.giveaway", "SORTEIO"));
+    if (buttons[1]) setText(buttons[1], translate("content.tierDsr", "TIER LIST DSR"));
+    if (buttons[2]) setText(buttons[2], translate("content.tierDmo", "TIER LIST DMO"));
+  }
+
+  function applyTierListDsrStaticTranslations() {
+    var root = document.getElementById("tierListPagina");
+    if (!root) return;
+    setText(one(".tierlist-kicker", root), translate("tier.common.kicker", "HOLY GUARDIANS // FERRAMENTAS HG"));
+    setText(one(".tierlist-hero h1", root), translate("tier.dsr.title", "TIER LIST DSR"));
+    setText(one(".tierlist-hero p", root), translate("tier.dsr.subtitle", "Monte sua própria Tier List com os Digimons da nossa base. Crie quantas tiers quiser, renomeie, escolha as cores e arraste os ícones livremente."));
+    var badgeSpans = all(".tierlist-hero-badge span", root);
+    if (badgeSpans[0]) setText(badgeSpans[0], translate("tier.common.drag", "DRAG"));
+    if (badgeSpans[1]) setText(badgeSpans[1], translate("tier.common.drop", "DROP"));
+    setText(one(".tierlist-title-field > span", root), translate("tier.common.titleLabel", "TÍTULO DA TIER LIST"));
+    var actions = all(".tierlist-toolbar-actions .tierlist-action", root);
+    replaceButtonTextNode(actions[0], "tier.common.addTier", "ADICIONAR TIER");
+    replaceButtonTextNode(actions[1], "tier.common.streamMode", "MODO STREAM");
+    if (actions[2] && /GERANDO PNG|GENERATING PNG|PNG 생성 중/.test(actions[2].textContent || "")) setHtml(actions[2], '<span>◌</span> ' + escapeHtml(translate("tier.common.generatingPng", "GERANDO PNG...")));
+    else replaceButtonTextNode(actions[2], "tier.common.exportPng", "EXPORTAR PNG");
+    replaceButtonTextNode(actions[3], "tier.common.reset", "RESETAR");
+    setText(one(".tierlist-export-brand small", root), translate("tier.dsr.exportBrand", "HOLY GUARDIANS // DSR TOOLS"));
+    phase8SetAttr(one("#tierListBoardTitle", root), "aria-label", "tier.common.boardAria", "Título da Tier List");
+    phase8SetAttr(one("#tierListBoardTitle", root), "title", "tier.common.boardTitle", "Clique para editar o título desta sessão");
+    setText(one(".tierlist-pool-head small", root), translate("tier.dsr.available", "DIGIMONS DISPONÍVEIS"));
+    setText(one(".tierlist-pool-head strong", root), translate("tier.common.dragDesired", "ARRASTE PARA A TIER DESEJADA"));
+    phase8SetAttr(one("#tierListSearch", root), "placeholder", "tier.dsr.search", "Procurar Digimon...");
+
+    var filters = all(".tierlist-filter-field", root);
+    if (filters[0]) setText(one(":scope > span", filters[0]), currentLanguage === "ko-KR" ? "진화 단계 (Stage)" : translate("tier.common.stage", "STAGE"));
+    if (filters[1]) setText(one(":scope > span", filters[1]), currentLanguage === "ko-KR" ? "타입 (Type)" : translate("tier.common.type", "TYPE"));
+    var stageSelect = one("#tierListStageFilter", root);
+    if (stageSelect) all("option", stageSelect).forEach(function (option) {
+      if (!option.value) setText(option, translate("tier.common.all", "TODOS"));
+      else if (currentLanguage === "ko-KR") applyKoreanStageLabel(option, option.value);
+      else setText(option, option.value);
+    });
+    var typeSelect = one("#tierListTypeFilter", root);
+    if (typeSelect) all("option", typeSelect).forEach(function (option) {
+      if (!option.value) setText(option, translate("tier.common.all", "TODOS"));
+      else setText(option, option.value);
+    });
+    filters.forEach(function (field) {
+      var select = one("select", field), trigger = one(".tierlist-select-trigger b", field);
+      if (select && trigger && select.selectedOptions && select.selectedOptions[0]) setText(trigger, select.selectedOptions[0].textContent);
+    });
+    setText(one(".tierlist-clear-filter", root), translate("tier.common.clearFilters", "LIMPAR FILTROS"));
+    setText(one("#tierListEmpty", root), translate("tier.common.noMatches", "Nenhum Digimon corresponde aos filtros."));
+    setHtml(one(".tierlist-tip p", root), translate("tier.dsr.tipHtml", "<strong>Dica:</strong> arraste os Digimons entre as tiers ou de volta para a lista. As alterações são salvas automaticamente neste navegador."));
+    setText(one("#tierListStreamExit", root), translate("tier.common.exitStream", "SAIR DO MODO STREAM"));
+  }
+
+  function phase8TierRowsDynamic(root) {
+    all(".tierlist-row", root).forEach(function (row) {
+      var label = one(".tierlist-label", row);
+      if (label) phase8SetAttr(label, "aria-label", "tier.common.tierName", "Nome da tier");
+      var controls = all(".tierlist-tier-controls > *", row);
+      if (controls[0]) { phase8SetAttr(controls[0], "title", "tier.common.moveUp", "Subir tier"); phase8SetAttr(controls[0], "aria-label", "tier.common.moveUp", "Subir tier"); }
+      if (controls[1]) { phase8SetAttr(controls[1], "title", "tier.common.moveDown", "Descer tier"); phase8SetAttr(controls[1], "aria-label", "tier.common.moveDown", "Descer tier"); }
+      if (controls[2]) { phase8SetAttr(controls[2], "title", "tier.common.color", "Cor da tier"); phase8SetAttr(controls[2], "aria-label", "tier.common.color", "Cor da tier"); }
+      if (controls[3]) { phase8SetAttr(controls[3], "title", "tier.common.deleteTier", "Excluir tier"); phase8SetAttr(controls[3], "aria-label", "tier.common.deleteTier", "Excluir tier"); }
+      var tierName = one(".tierlist-label", row);
+      if (tierName && /^NOVA TIER$|^NEW TIER$|^새 티어$/i.test(String(tierName.textContent || "").trim())) setText(tierName, translate("tier.common.newTier", "NOVA TIER"));
+    });
+    all(".tierlist-zone-placeholder", root).forEach(function (el) { setText(el, translate("tier.common.dropHere", "ARRASTE AQUI")); });
+    all(".tierlist-loading", root).forEach(function (el) { setText(el, translate("tier.dsr.loading", "Carregando Digimons da database...")); });
+  }
+
+  function applyTierListDsrDynamicTranslations() {
+    var root = document.getElementById("tierListPagina");
+    if (!root) return;
+    applyTierListDsrStaticTranslations();
+    phase8TierRowsDynamic(root);
+    all(".tierlist-digi", root).forEach(function (card) {
+      var name = one(":scope > strong", card);
+      phase8CompactDigimonName(name);
+      phase8TranslateStageCompact(one(":scope > small", card));
+      var originalName = name ? (name.getAttribute("data-hg-phase8-digimon-original") || name.textContent) : "Digimon";
+      var back = one(".tierlist-card-return", card);
+      if (back) setAttr(back, "aria-label", formatTranslation("tier.common.returnAvailable", "Voltar {name} para disponíveis", { name: originalName }));
+    });
+    all(".tierlist-select-options .tierlist-select-option", root).forEach(function (button) {
+      var value = String(button.getAttribute("data-value") || "");
+      if (!value) setText(button, translate("tier.common.all", "TODOS"));
+      else if (["ROOKIE","CHAMPION","ULTIMATE","MEGA"].indexOf(value.toUpperCase()) >= 0 && currentLanguage === "ko-KR") {
+        var info = koStageData(value);
+        if (info) setText(button, info.ko + " (" + info.ref + ")");
+      } else if (value) setText(button, value);
+    });
+    var tooltip = document.getElementById("tierListDigiTooltip");
+    if (tooltip && !tooltip.hidden) {
+      var tName = one(".tierlist-tooltip-head strong", tooltip);
+      if (tName) {
+        var original = tName.getAttribute("data-hg-phase8-digimon-original") || String(tName.textContent || "").trim();
+        tName.setAttribute("data-hg-phase8-digimon-original", original);
+        if (currentLanguage === "ko-KR") {
+          var ko = koDigimonName(original);
+          setText(tName, ko ? ko + " (" + original + ")" : original);
+        } else setText(tName, original);
+      }
+      var meta = one(".tierlist-tooltip-head small", tooltip);
+      if (meta) {
+        var rawMeta = meta.getAttribute("data-hg-phase8-meta-original") || String(meta.textContent || "").trim();
+        meta.setAttribute("data-hg-phase8-meta-original", rawMeta);
+        if (currentLanguage === "ko-KR") {
+          var parts = rawMeta.split(" · ");
+          var st = koStageData(parts[0]);
+          setText(meta, (st ? st.ko + " (" + st.ref + ")" : parts[0]) + (parts[1] ? " · " + parts[1] : ""));
+        } else setText(meta, rawMeta);
+      }
+      var fieldLabel = one(".tierlist-tooltip-field em", tooltip);
+      if (fieldLabel) applyReferenceLabel(fieldLabel, "FIELD", true);
+      all(".tierlist-tooltip-stats i", tooltip).forEach(function (label) { applyReferenceLabel(label, canonicalReferenceKey(label.textContent), true); });
+    }
+  }
+
+  function applyTierListDmoStaticTranslations() {
+    var root = document.getElementById("tierListDmoPagina");
+    if (!root) return;
+    setText(one(".tierlist-kicker", root), translate("tier.common.kicker", "HOLY GUARDIANS // FERRAMENTAS HG"));
+    setText(one(".tierlist-hero h1", root), translate("tier.dmo.title", "TIER LIST DMO"));
+    setText(one(".tierlist-hero p", root), translate("tier.dmo.subtitle", "Monte sua Tier List com os Digimons de rank U, SSS+ e SSS do DMO. Pesquise por nome, filtre por rank ou adicione seu próprio ícone sem depender de atualização do site."));
+    setText(one(".tierlist-title-field > span", root), translate("tier.common.titleLabel", "TÍTULO DA TIER LIST"));
+    var actions = all(".tierlist-toolbar-actions .tierlist-action", root);
+    replaceButtonTextNode(actions[0], "tier.common.addTier", "ADICIONAR TIER");
+    replaceButtonTextNode(actions[1], "tier.dmo.addIcon", "ADICIONAR ÍCONE");
+    replaceButtonTextNode(actions[2], "tier.common.streamMode", "MODO STREAM");
+    if (actions[3] && /GERANDO PNG|GENERATING PNG|PNG 생성 중/.test(actions[3].textContent || "")) setHtml(actions[3], '<span>◌</span> ' + escapeHtml(translate("tier.common.generatingPng", "GERANDO PNG...")));
+    else replaceButtonTextNode(actions[3], "tier.common.exportPng", "EXPORTAR PNG");
+    replaceButtonTextNode(actions[4], "tier.common.reset", "RESETAR");
+    setText(one(".tierlist-export-brand small", root), translate("tier.dmo.exportBrand", "HOLY GUARDIANS // DMO TOOLS"));
+    phase8SetAttr(one("#tierListDmoBoardTitle", root), "aria-label", "tier.common.boardAria", "Título da Tier List");
+    phase8SetAttr(one("#tierListDmoBoardTitle", root), "title", "tier.common.boardTitle", "Clique para editar o título desta sessão");
+    setText(one(".tierlist-pool-head small", root), translate("tier.dmo.catalog", "CATÁLOGO DMO"));
+    setText(one(".tierlist-pool-head strong", root), translate("tier.dmo.dragRanks", "U • SSS+ • SSS // ARRASTE PARA A TIER DESEJADA"));
+    phase8SetAttr(one("#tierListDmoSearch", root), "placeholder", "tier.dmo.search", "Procurar Digimon por nome...");
+    phase8SetAttr(one(".tierlist-dmo-ranks", root), "aria-label", "tier.dmo.rankAria", "Filtrar por rank");
+    var rankButtons = all(".tierlist-dmo-ranks button", root);
+    rankButtons.forEach(function (button) {
+      var rank = String(button.getAttribute("data-rank") || "");
+      if (!rank) phase8SetTextNode(button, "tier.common.allEn", "ALL");
+      else if (rank === "CUSTOM") phase8SetTextNode(button, "tier.dmo.custom", "CUSTOM");
+    });
+    setText(one(".tierlist-clear-filter", root), translate("tier.common.clearFilters", "LIMPAR FILTROS"));
+    setText(one("#tierListDmoEmpty", root), translate("tier.common.noMatches", "Nenhum Digimon corresponde aos filtros."));
+    setHtml(one(".tierlist-tip p", root), translate("tier.dmo.tipHtml", "<strong>Dica:</strong> o catálogo base usa os ranks U, SSS+ e SSS. Ícones adicionados por você ficam salvos somente neste navegador e também funcionam no Modo Stream."));
+    setText(one("#tierListDmoStreamExit", root), translate("tier.common.exitStream", "SAIR DO MODO STREAM"));
+
+    var modal = one("#tierListDmoUploadModal", root);
+    if (modal) {
+      setText(one(".tierlist-dmo-upload-head small", modal), translate("tier.dmo.modalBrand", "HOLY GUARDIANS // DMO"));
+      setText(one("#tierListDmoUploadTitle", modal), translate("tier.dmo.addIcon", "ADICIONAR ÍCONE"));
+      phase8SetAttr(one(".tierlist-dmo-upload-head button", modal), "aria-label", "common.close", "Fechar");
+      phase8SetAttr(one("#tierListDmoUploadPreview", modal), "alt", "tier.dmo.previewAlt", "Prévia do ícone");
+      var labels = all(".tierlist-dmo-upload-body label > span", modal);
+      if (labels[0]) setText(labels[0], translate("tier.dmo.digimonName", "NOME DO DIGIMON"));
+      if (labels[1]) setText(labels[1], currentLanguage === "ko-KR" ? "랭크 (Rank)" : translate("tier.dmo.rank", "RANK"));
+      phase8SetAttr(one("#tierListDmoUploadName", modal), "placeholder", "tier.dmo.nameExample", "Ex.: Omegamon Alter-S");
+      var customOption = one("#tierListDmoUploadRank option[value='CUSTOM']", modal);
+      if (customOption) setText(customOption, translate("tier.dmo.custom", "CUSTOM"));
+      setText(one(".tierlist-dmo-upload-body > p", modal), translate("tier.dmo.fileNote", "O arquivo é reduzido automaticamente e salvo apenas no navegador deste dispositivo."));
+      var modalActions = all(".tierlist-dmo-upload-actions button", modal);
+      if (modalActions[0]) setText(modalActions[0], translate("common.cancel", "CANCELAR"));
+      if (modalActions[1]) setText(modalActions[1], translate("common.add", "ADICIONAR"));
+    }
+  }
+
+  function applyTierListDmoDynamicTranslations() {
+    var root = document.getElementById("tierListDmoPagina");
+    if (!root) return;
+    applyTierListDmoStaticTranslations();
+    phase8TierRowsDynamic(root);
+    all(".tierlist-digi", root).forEach(function (card) {
+      var name = one(":scope > strong", card);
+      phase8CompactDigimonName(name);
+      var originalName = name ? (name.getAttribute("data-hg-phase8-digimon-original") || name.textContent) : "Digimon";
+      var back = one(".tierlist-card-return", card);
+      if (back) setAttr(back, "aria-label", formatTranslation("tier.common.returnAvailable", "Voltar {name} para disponíveis", { name: originalName }));
+      var customDelete = one(".tierlist-dmo-custom-delete", card);
+      if (customDelete) {
+        setAttr(customDelete, "title", translate("tier.dmo.deleteCustom", "Excluir ícone personalizado"));
+        setAttr(customDelete, "aria-label", formatTranslation("tier.dmo.deleteNamed", "Excluir {name}", { name: originalName }));
+      }
+    });
+    ["tierListDmoExportBtn"].forEach(function (id) {
+      var button = document.getElementById(id);
+      if (button && /GERANDO PNG|GENERATING PNG|PNG 생성 중/.test(button.textContent || "")) {
+        setHtml(button, '<span>◌</span> ' + escapeHtml(translate("tier.common.generatingPng", "GERANDO PNG...")));
+      }
+    });
+  }
+
+  function applySorteioStaticTranslations() {
+    var root = document.getElementById("sorteioPagina");
+    if (!root) return;
+    setText(one(".sorteio-kicker", root), translate("giveaway.kicker", "HOLY GUARDIANS // FERRAMENTAS HG"));
+    setText(one(".sorteio-hero .page-title", root), translate("giveaway.title", "SORTEIO"));
+    setText(one(".sorteio-hero .page-subtitle", root), translate("giveaway.subtitle", "Monte a lista manualmente, conecte uma plataforma individual ou una YouTube, Twitch e Kick no Multi Stream em tempo real."));
+    setText(one(".sorteio-status-card small", root), translate("giveaway.sessionStatus", "STATUS DA SESSÃO"));
+    setText(one(".sorteio-source-copy small", root), translate("giveaway.source", "FONTE DOS PARTICIPANTES"));
+    setText(one(".sorteio-source-copy strong", root), translate("giveaway.chooseSource", "ESCOLHA COMO ALIMENTAR A ROLETA"));
+
+    var sourceButtons = all(".sorteio-source-btn", root);
+    sourceButtons.forEach(function (button) {
+      if (button.classList.contains("manual")) {
+        setText(one("b", button), translate("giveaway.manual", "MANUAL"));
+        setText(one("small", button), translate("giveaway.availableNow", "Disponível agora"));
+      } else if (button.classList.contains("youtube") || button.classList.contains("twitch") || button.classList.contains("kick")) {
+        setText(one("small", button), "Evil Guardians · " + translate("giveaway.available", "disponível"));
+      }
+    });
+
+    var wheelHead = one(".sorteio-wheel-panel .sorteio-panel-head", root);
+    if (wheelHead) {
+      var copy = one(":scope > div:first-child", wheelHead);
+      if (copy) { setText(one("small", copy), translate("giveaway.hgWheel", "ROLETA HG")); setText(one("strong", copy), translate("giveaway.current", "SORTEIO ATUAL")); }
+    }
+    var streamBtn = one("#sorteioStreamBtn", root);
+    replaceButtonTextNode(streamBtn, "tier.common.streamMode", "MODO STREAM");
+    phase8SetAttr(streamBtn, "title", "giveaway.streamTitle", "Exibir a roleta em modo limpo para OBS/stream");
+    setText(one(".sorteio-participant-counter > span", root), translate("giveaway.participants", "PARTICIPANTES"));
+    phase8SetAttr(one("#sorteioCanvas", root), "aria-label", "giveaway.canvasAria", "Roleta de participantes");
+    setHtml(one("#sorteioWinnerBox small", root), '<span class="sorteio-winner-crown" aria-hidden="true">👑</span> ' + escapeHtml(translate("giveaway.winner", "VENCEDOR DO SORTEIO")));
+    setText(one("#sorteioSpinBtn", root), translate("giveaway.spin", "GIRAR ROLETA"));
+
+    var manualPanel = one("#sorteioManualPanel", root);
+    if (manualPanel) {
+      var manualLabels = all(".sorteio-field > span", manualPanel);
+      if (manualLabels[0]) setText(manualLabels[0], translate("giveaway.addName", "ADICIONAR UM NOME"));
+      if (manualLabels[1]) setText(manualLabels[1], translate("giveaway.pasteList", "COLAR UMA LISTA"));
+      phase8SetAttr(one("#sorteioNomeInput", manualPanel), "placeholder", "giveaway.nameExample", "Ex: GrimSleep");
+      phase8SetAttr(one("#sorteioListaInput", manualPanel), "placeholder", "giveaway.listPlaceholder", "Um nome por linha, vírgula ou ponto e vírgula...");
+      setText(one("#sorteioAddListBtn", manualPanel), translate("giveaway.addList", "ADICIONAR LISTA"));
+      setText(one("#sorteioImportBtn", manualPanel), translate("giveaway.import", "IMPORTAR TXT/CSV"));
+    }
+
+    var ytPanel = one("#sorteioYoutubePanel", root);
+    if (ytPanel) {
+      var ytLabels = all(".sorteio-field > span", ytPanel);
+      if (ytLabels[0]) setText(ytLabels[0], translate("giveaway.youtubeLink", "LINK DA LIVE DO YOUTUBE"));
+      if (ytLabels[1]) setText(ytLabels[1], translate("giveaway.command", "COMANDO PARA ENTRAR"));
+    }
+    var twPanel = one("#sorteioTwitchPanel", root);
+    if (twPanel) {
+      setText(one(".sorteio-twitch-auth-note b", twPanel), translate("giveaway.twitchSecure", "CONEXÃO SEGURA COM A TWITCH"));
+      setText(one(".sorteio-twitch-auth-note small", twPanel), translate("giveaway.twitchSecureDesc", "O canal usado será a conta que autorizar o Evil Guardians na janela oficial da Twitch."));
+      setText(one(".sorteio-field > span", twPanel), translate("giveaway.command", "COMANDO PARA ENTRAR"));
+    }
+    var kickPanel = one("#sorteioKickPanel", root);
+    if (kickPanel) {
+      setText(one(".sorteio-kick-auth-note b", kickPanel), translate("giveaway.kickSecure", "CONEXÃO SEGURA COM A KICK"));
+      setText(one(".sorteio-kick-auth-note small", kickPanel), translate("giveaway.kickSecureDesc", "O canal usado será a conta que autorizar o Evil Guardians. Ao conectar e ao abrir o sorteio, ele também avisa no chat."));
+      setText(one(".sorteio-field > span", kickPanel), translate("giveaway.command", "COMANDO PARA ENTRAR"));
+    }
+    var multiPanel = one("#sorteioMultiPanel", root);
+    if (multiPanel) {
+      setText(one(".sorteio-multi-note b", multiPanel), translate("giveaway.multiUnified", "MULTI STREAM // LISTA ÚNICA"));
+      setHtml(one(".sorteio-multi-note small", multiPanel), translate("giveaway.multiDescHtml", "Conecte quantas plataformas quiser. Todos os <strong>!sorteio</strong> entram na mesma roleta em tempo real."));
+      setText(one(":scope > .sorteio-field > span", multiPanel), translate("giveaway.commandAll", "COMANDO PARA ENTRAR EM TODAS"));
+      setText(one(".sorteio-multi-platform-card.youtube .sorteio-field > span", multiPanel), translate("giveaway.liveLink", "LINK DA LIVE"));
+      var summary = one(".sorteio-multi-summary span", multiPanel);
+      if (summary) phase8SetTextNode(summary, "giveaway.platformsConnected", "/3 PLATAFORMAS CONECTADAS");
+      setText(one(".sorteio-multi-summary > small", multiPanel), translate("giveaway.accountPerPlatform", "Uma conta pode participar uma vez em cada plataforma."));
+    }
+
+    ["#sorteioYoutubeConnectBtn", "#sorteioTwitchConnectBtn", "#sorteioKickConnectBtn"].forEach(function (sel) {
+      var btn = one(sel, root);
+      if (!btn) return;
+      if (/CONECTANDO|CONNECTING|연결 중|AGUARDANDO|WAITING|대기 중/i.test(btn.textContent || "")) phase8TranslateDynamicText(btn);
+      else setText(btn, translate("giveaway.connectEvil", "CONECTAR EVIL GUARDIANS"));
+    });
+    ["#sorteioYoutubeDisconnectBtn", "#sorteioTwitchDisconnectBtn", "#sorteioKickDisconnectBtn", "#sorteioMultiYoutubeDisconnectBtn", "#sorteioMultiTwitchDisconnectBtn", "#sorteioMultiKickDisconnectBtn"].forEach(function (sel) { setText(one(sel, root), translate("giveaway.disconnect", "DESCONECTAR")); });
+    ["#sorteioMultiYoutubeConnectBtn", "#sorteioMultiTwitchConnectBtn", "#sorteioMultiKickConnectBtn"].forEach(function (sel) {
+      var btn = one(sel, root);
+      if (!btn) return;
+      if (/CONECTANDO|CONNECTING|연결 중|AGUARDANDO|WAITING|대기 중/i.test(btn.textContent || "")) phase8TranslateDynamicText(btn);
+      else setText(btn, translate("giveaway.connect", "CONECTAR"));
+    });
+
+    var checks = all(".sorteio-check-copy", root);
+    /* O primeiro checkbox muda conforme Manual / Live / Multi e é tratado no bloco dinâmico. */
+    if (checks[1]) { setText(one("b", checks[1]), translate("giveaway.removeWinner", "REMOVER VENCEDOR APÓS SORTEAR")); setText(one("small", checks[1]), translate("giveaway.removeWinnerDesc", "Útil para várias rodadas seguidas.")); }
+
+    var controlCards = all(".sorteio-control-card", root);
+    var participantsCard = one(".sorteio-participants-card", root);
+    if (participantsCard) {
+      setText(one(".sorteio-control-title small", participantsCard), translate("giveaway.currentList", "LISTA ATUAL"));
+      setText(one(".sorteio-control-title strong", participantsCard), translate("giveaway.validParticipants", "PARTICIPANTES VÁLIDOS"));
+      setText(one(".sorteio-clear-btn", participantsCard), translate("giveaway.clear", "LIMPAR"));
+    }
+    var historyCard = one(".sorteio-history-card", root);
+    if (historyCard) {
+      setText(one(".sorteio-control-title small", historyCard), translate("giveaway.localHistory", "HISTÓRICO LOCAL"));
+      setText(one(".sorteio-control-title strong", historyCard), translate("giveaway.lastWinners", "ÚLTIMOS VENCEDORES"));
+      setText(one(".sorteio-clear-btn", historyCard), translate("giveaway.clear", "LIMPAR"));
+    }
+    setText(one("#sorteioStreamExit", root), translate("tier.common.exitStream", "SAIR DO MODO STREAM"));
+  }
+
+  function phase8TranslateSorteioPhrase(raw) {
+    var text = String(raw == null ? "" : raw).replace(/\s+/g, " ").trim();
+    if (!text) return text;
+    var exact = {
+      "INSCRIÇÕES ABERTAS":"giveaway.entriesOpen", "INSCRIÇÕES ENCERRADAS":"giveaway.entriesClosed", "ABERTO":"giveaway.open", "FECHADO":"giveaway.closed",
+      "FECHAR INSCRIÇÕES":"giveaway.closeEntries", "ABRIR INSCRIÇÕES":"giveaway.openEntries", "REABRIR INSCRIÇÕES":"giveaway.reopenEntries",
+      "ENTRADA MANUAL":"giveaway.manualEntry", "PARTICIPANTES":"giveaway.participants", "EVIL GUARDIANS LIVE":"giveaway.evilLive",
+      "UMA ENTRADA POR NOME":"giveaway.onePerName", "Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.":"giveaway.duplicateDesc",
+      "UMA ENTRADA POR USUÁRIO":"giveaway.onePerUser", "UMA ENTRADA POR USUÁRIO / PLATAFORMA":"giveaway.onePerUserPlatform",
+      "A mesma conta entra uma vez em cada plataforma. Twitch, Kick e YouTube são validados separadamente.":"giveaway.separatePlatforms",
+      "EVIL GUARDIANS CONECTADO":"giveaway.connected", "EVIL GUARDIANS DESCONECTADO":"giveaway.disconnected", "FALHA AO CONECTAR":"giveaway.connectFailed",
+      "DESCONECTADO":"giveaway.disconnectedShort", "CONECTADO":"giveaway.connectedShort", "CONECTANDO...":"giveaway.connecting", "AGUARDANDO...":"giveaway.waiting",
+      "Cole o link de uma live com chat ativo para começar.":"giveaway.youtubeIdle", "Autorize a Twitch para ligar seu canal ao sorteio.":"giveaway.twitchIdle", "Autorize a Kick para ligar seu canal ao sorteio.":"giveaway.kickIdle",
+      "NENHUM PARTICIPANTE":"giveaway.noParticipants", "Adicione nomes para montar a roleta.":"giveaway.addNamesWheel", "Nenhum sorteio realizado nesta sessão.":"giveaway.noHistory",
+      "MODO STREAM":"tier.common.streamMode", "SAIR DO MODO STREAM":"tier.common.exitStream", "GIRAR ROLETA":"giveaway.spin", "LIMPAR":"giveaway.clear",
+      "CONECTAR":"giveaway.connect", "DESCONECTAR":"giveaway.disconnect", "CONECTAR EVIL GUARDIANS":"giveaway.connectEvil",
+      "MANUAL":"giveaway.manual"
+    };
+    if (exact[text]) return translate(exact[text], text);
+
+    var m;
+    if ((m = text.match(/^(.+) selecionado\. Conecte o Evil Guardians\.$/))) return formatTranslation("giveaway.sourceSelected", "{platform} selecionado. Conecte o Evil Guardians.", { platform:m[1] });
+    if ((m = text.match(/^Conecte o Evil Guardians à (.+) antes de abrir as inscrições\.$/))) return formatTranslation("giveaway.connectBeforeOpen", "Conecte o Evil Guardians à {platform} antes de abrir as inscrições.", { platform:m[1] });
+    if ((m = text.match(/^Inscrições abertas, mas o aviso no chat da Kick falhou: (.+)\.$/))) return formatTranslation("giveaway.kickNoticeFailed", "Inscrições abertas, mas o aviso no chat da Kick falhou: {error}.", { error:m[1] });
+    if ((m = text.match(/^Evil Guardians respondeu HTTP (.+)$/))) return formatTranslation("giveaway.httpError", "Evil Guardians respondeu HTTP {code}", { code:m[1] });
+    if ((m = text.match(/^AGUARDANDO (.+)$/))) return formatTranslation("giveaway.awaitingPlatform", "AGUARDANDO {platform}", { platform:m[1] });
+    if ((m = text.match(/^(.+) · ONLINE$/))) return formatTranslation("giveaway.onlineSuffix", "{name} · ONLINE", { name:m[1] });
+    if ((m = text.match(/^(.+) · ouvindo (.+)$/i))) return formatTranslation("giveaway.listening", "{name} · ouvindo {command}", { name:m[1], command:m[2] });
+    if ((m = text.match(/^O Evil Guardians identifica a conta da (.+) e ignora tentativas repetidas\.$/))) return formatTranslation("giveaway.identifiesAccount", "O Evil Guardians identifica a conta da {platform} e ignora tentativas repetidas.", { platform:m[1] });
+    if ((m = text.match(/^Aguardando alguém mandar (.+) no chat\.$/))) return formatTranslation("giveaway.waitChat", "Aguardando alguém mandar {command} no chat.", { command:m[1] });
+    if ((m = text.match(/^Aguardando alguém mandar (.+) no chat da (Twitch|Kick)\.$/))) return formatTranslation("giveaway.waitPlatformChat", "Aguardando alguém mandar {command} no chat da {platform}.", { command:m[1], platform:m[2] });
+    if ((m = text.match(/^Aguardando (.+) em (.+)\.$/))) return formatTranslation("giveaway.waitMulti", "Aguardando {command} em {platforms}.", { command:m[1], platforms:m[2] });
+    if ((m = text.match(/^Vencedor definido: (.+)\.$/))) return formatTranslation("giveaway.winnerDefined", "Vencedor definido: {name}.", { name:m[1] });
+    if ((m = text.match(/^Sorteando entre (\d+) participantes\.\.\.$/))) return formatTranslation("giveaway.drawingAmong", "Sorteando entre {count} participantes...", { count:m[1] });
+    if ((m = text.match(/^Lista congelada com (\d+) participante\(s\)\.$/))) return formatTranslation("giveaway.listFrozen", "Lista congelada com {count} participante(s).", { count:m[1] });
+    if ((m = text.match(/^(\d+) participante\(s\) adicionado\(s\)(?: · (\d+) duplicado\(s\) ignorado\(s\))?\.$/))) return formatTranslation("giveaway.addedMany", "{count} participante(s) adicionado(s){duplicates}.", { count:m[1], duplicates:m[2] ? formatTranslation("giveaway.duplicateSuffix", " · {count} duplicado(s) ignorado(s)", {count:m[2]}) : "" });
+    if ((m = text.match(/^Inscrições encerradas com (\d+) participante\(s\) · (.+)\.$/))) return formatTranslation("giveaway.closedWith", "Inscrições encerradas com {count} participante(s) · {platform}.", { count:m[1], platform:m[2] });
+    if ((m = text.match(/^Inscrições abertas · (.+) ativo em (.+)\.$/))) return formatTranslation("giveaway.openCommand", "Inscrições abertas · {command} ativo em {platform}.", { command:m[1], platform:m[2] });
+    if ((m = text.match(/^Lista da (.+) limpa · conexão mantida\.$/))) return formatTranslation("giveaway.listClearedConnection", "Lista da {platform} limpa · conexão mantida.", { platform:m[1] });
+    if ((m = text.match(/^Evil Guardians conectado ao YouTube(?: no Multi Stream)?\.$/))) return text.indexOf("Multi Stream") >= 0 ? translate("giveaway.youtubeConnectedMulti", text) : translate("giveaway.youtubeConnected", text);
+    if ((m = text.match(/^Evil Guardians desconectado do YouTube(?: · outras plataformas mantidas)?\.$/))) return text.indexOf("outras plataformas") >= 0 ? translate("giveaway.youtubeDisconnectedKeep", text) : translate("giveaway.youtubeDisconnected", text);
+    if ((m = text.match(/^Evil Guardians conectado à (Twitch|Kick)(?: no Multi Stream)?(?: e pronto para ouvir o chat)?\.$/))) return formatTranslation("giveaway.platformConnected", "Evil Guardians conectado à {platform}.", { platform:m[1] });
+    if ((m = text.match(/^(Twitch|Kick) desconectada(?: · outras plataformas mantidas| desta sessão do sorteio)?\.$/))) return formatTranslation("giveaway.platformDisconnected", "{platform} desconectada.", { platform:m[1] });
+    if ((m = text.match(/^(\d+) participante\(s\) entrou\(aram\) pelo YouTube\.$/))) return formatTranslation("giveaway.youtubeJoined", "{count} participante(s) entrou(aram) pelo YouTube.", { count:m[1] });
+    if ((m = text.match(/^YouTube: (.+)\. Tentando novamente\.\.\.$/))) return formatTranslation("giveaway.youtubeRetry", "YouTube: {error}. Tentando novamente...", { error:m[1] });
+
+    var direct = {
+      "O navegador não conseguiu alcançar o Evil Guardians. Verifique o Worker/CORS e tente novamente.":"giveaway.networkError",
+      "Modo manual ativado.":"giveaway.manualActivated",
+      "Cole o link da live do YouTube antes de conectar.":"giveaway.needYoutubeLink",
+      "O Worker não confirmou a conexão com o chat do YouTube.":"giveaway.workerNoYoutube",
+      "Não foi possível conectar à live.":"giveaway.liveConnectError",
+      "Falha ao desconectar.":"giveaway.disconnectError",
+      "O navegador bloqueou a janela da Twitch. Libere pop-ups para este site e tente novamente.":"giveaway.twitchPopupBlocked",
+      "Autorize o Evil Guardians na janela da Twitch...":"giveaway.authorizeTwitch",
+      "A Twitch autorizou a janela, mas o site não conseguiu sincronizar a sessão a tempo.":"giveaway.twitchSyncTimeout",
+      "Não foi possível conectar à Twitch.":"giveaway.twitchConnectError",
+      "Falha ao desconectar a Twitch.":"giveaway.twitchDisconnectError",
+      "O navegador bloqueou a janela da Kick. Libere pop-ups para este site e tente novamente.":"giveaway.kickPopupBlocked",
+      "Autorize o Evil Guardians na janela da Kick...":"giveaway.authorizeKick",
+      "A Kick autorizou a janela, mas o site não conseguiu confirmar a conexão a tempo.":"giveaway.kickSyncTimeout",
+      "Não foi possível conectar à Kick.":"giveaway.kickConnectError",
+      "Falha ao desconectar a Kick.":"giveaway.kickDisconnectError",
+      "Conecte pelo menos uma plataforma ao Multi Stream antes de abrir as inscrições.":"giveaway.connectOneMulti",
+      "Não foi possível alterar a rodada ao vivo.":"giveaway.roundChangeError",
+      "Inscrições reabertas. Você pode adicionar ou remover participantes.":"giveaway.entriesReopened",
+      "Participante adicionado à roleta.":"giveaway.participantAdded",
+      "Esse nome já está participando. Entrada duplicada ignorada.":"giveaway.duplicateIgnored",
+      "As inscrições estão encerradas. Reabra para adicionar nomes.":"giveaway.entriesClosedAdd",
+      "Cole pelo menos um nome antes de adicionar a lista.":"giveaway.pasteOneName",
+      "Não foi possível ler esse arquivo.":"giveaway.fileReadError",
+      "Conecte o Evil Guardians antes de limpar a rodada.":"giveaway.connectBeforeClear",
+      "Não foi possível limpar a rodada ao vivo.":"giveaway.liveClearError",
+      "Reabra as inscrições antes de alterar a lista.":"giveaway.reopenBeforeEdit",
+      "Lista de participantes limpa.":"giveaway.participantListCleared",
+      "Conecte o Evil Guardians a uma live do YouTube.":"giveaway.connectYoutube",
+      "Conecte o Evil Guardians à Twitch.":"giveaway.connectTwitch",
+      "Conecte o Evil Guardians à Kick.":"giveaway.connectKick",
+      "Conecte YouTube, Twitch e/ou Kick para formar a lista unificada.":"giveaway.connectMultiList",
+      "Feche as inscrições antes de girar a roleta.":"giveaway.closeBeforeSpin",
+      "Adicione pelo menos 2 participantes.":"giveaway.needTwo",
+      "Preparando o sorteio...":"giveaway.preparing",
+      "O Digitama está reagindo...":"giveaway.digitamaReacting"
+    };
+    if (direct[text]) return translate(direct[text], text);
+    return text;
+  }
+
+  function phase8TranslateDynamicText(element) {
+    if (!element) return;
+    var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+    var last = element.getAttribute("data-hg-phase8-last") || "";
+    var original = element.getAttribute("data-hg-phase8-dynamic-original") || "";
+    if (!original || (raw && raw !== last && raw !== original)) {
+      original = raw;
+      if (original) element.setAttribute("data-hg-phase8-dynamic-original", original);
+    }
+    if (!original) return;
+    var next = phase8TranslateSorteioPhrase(original);
+    setText(element, next);
+    element.setAttribute("data-hg-phase8-last", next);
+  }
+
+  function phase8TranslateDynamicAttr(element, name, translator) {
+    if (!element) return;
+    var raw = String(element.getAttribute(name) || "");
+    var baseKey = "data-hg-phase8-attr-" + name.replace(/[^a-z0-9_-]/gi, "-");
+    var originalKey = baseKey + "-original", lastKey = baseKey + "-last";
+    var original = element.getAttribute(originalKey) || "";
+    var last = element.getAttribute(lastKey) || "";
+    if (!original || (raw && raw !== last && raw !== original)) { original = raw; if (original) element.setAttribute(originalKey, original); }
+    if (!original) return;
+    var next = translator(original);
+    setAttr(element, name, next);
+    element.setAttribute(lastKey, next);
+  }
+
+  function phase8RedrawEmptySorteioCanvas() {
+    var root = document.getElementById("sorteioPagina");
+    var canvas = one("#sorteioCanvas", root);
+    var total = one("#sorteioTotal", root);
+    if (!canvas || !total || Number(total.textContent || 0) !== 0 || !canvas.getContext) return;
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    var w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, radius = Math.min(w,h)*0.445;
+    ctx.clearRect(0,0,w,h);
+    var halo = ctx.createRadialGradient(cx,cy,radius*.72,cx,cy,radius*1.13);
+    halo.addColorStop(0,"rgba(30,185,255,0)"); halo.addColorStop(.72,"rgba(38,171,255,.10)"); halo.addColorStop(1,"rgba(142,83,255,0)");
+    ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(cx,cy,radius*1.12,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.translate(cx,cy);
+    var grad=ctx.createRadialGradient(0,0,40,0,0,radius); grad.addColorStop(0,"#0c2347"); grad.addColorStop(1,"#061226");
+    ctx.fillStyle=grad; ctx.strokeStyle="rgba(76,211,255,.55)"; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,radius,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle="#7edfff"; ctx.font='700 28px "Oxanium", Arial, sans-serif'; ctx.textAlign="center";
+    ctx.fillText(translate("giveaway.canvasAdd", "ADICIONE PARTICIPANTES"),0,-16);
+    ctx.fillStyle="#789ab8"; ctx.font='500 18px "Oxanium", Arial, sans-serif';
+    ctx.fillText(translate("giveaway.canvasBuild", "para montar a roleta"),0,22); ctx.restore();
+  }
+
+  function applySorteioDynamicTranslations() {
+    var root = document.getElementById("sorteioPagina");
+    if (!root) return;
+    applySorteioStaticTranslations();
+    ["#sorteioStatusTopo","#sorteioEntryState","#sorteioLockBtn","#sorteioEntryKicker","#sorteioEntryTitle","#sorteioDuplicateTitle","#sorteioDuplicateDesc","#sorteioFeedback",
+      "#sorteioMultiYoutubeStatus","#sorteioMultiTwitchStatus","#sorteioMultiKickStatus"].forEach(function (sel) { phase8TranslateDynamicText(one(sel, root)); });
+    all(".sorteio-live-connection b, .sorteio-live-connection small", root).forEach(phase8TranslateDynamicText);
+    all(".sorteio-empty-list b, .sorteio-empty-list span, .sorteio-empty-history", root).forEach(phase8TranslateDynamicText);
+    all(".sorteio-participant-row small", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-phase8-origin-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-phase8-origin-original")) el.setAttribute("data-hg-phase8-origin-original", original);
+      setText(el, original === "MANUAL" ? translate("giveaway.manual", "MANUAL") : original);
+    });
+    all(".sorteio-history-row small", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-phase8-history-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-phase8-history-original")) el.setAttribute("data-hg-phase8-history-original", original);
+      setText(el, original.replace(/ · MANUAL$/, " · " + translate("giveaway.manual", "MANUAL")));
+    });
+    var winnerMeta = one("#sorteioWinnerMeta", root);
+    if (winnerMeta && winnerMeta.textContent) {
+      var wmOriginal = winnerMeta.getAttribute("data-hg-phase8-winner-meta-original") || String(winnerMeta.textContent || "").trim();
+      if (!winnerMeta.getAttribute("data-hg-phase8-winner-meta-original")) winnerMeta.setAttribute("data-hg-phase8-winner-meta-original", wmOriginal);
+      setText(winnerMeta, wmOriginal.replace(/^MANUAL · /, translate("giveaway.manual", "MANUAL") + " · "));
+    }
+    all("[data-sorteio-remove]", root).forEach(function (button) {
+      phase8TranslateDynamicAttr(button, "aria-label", function (original) {
+        var match = original.match(/^Remover (.+)$/);
+        return match ? formatTranslation("giveaway.removeNamed", "Remover {name}", {name:match[1]}) : original;
+      });
+    });
+    all(".sorteio-live-user-mark", root).forEach(function (mark) { setAttr(mark, "title", translate("giveaway.validatedEntry", "Entrada validada pelo Evil Guardians")); });
+    var clearBtn = one("#sorteioClearBtn", root);
+    if (clearBtn && clearBtn.title) {
+      phase8TranslateDynamicAttr(clearBtn, "title", function (original) {
+        if (/lista unificada/.test(original)) return translate("giveaway.clearUnifiedTitle", original);
+        if (/participantes desta rodada/.test(original)) return translate("giveaway.clearRoundTitle", original);
+        return original;
+      });
+    }
+    phase8RedrawEmptySorteioCanvas();
+  }
+
+  var PHASE8_MOBILE_TITLES = {
+    "HOME":"mobile.home", "DIGIDEX":"mobile.digidex", "DIGIVOLUTION":"mobile.digivolution", "COMPARAÇÃO":"mobile.comparison", "COUNTER FINDER":"mobile.counter",
+    "HIDDEN QUESTS":"mobile.hidden", "TEAM BUILDER":"mobile.builder", "STATUS SIMULATOR":"mobile.status", "ELEMENTOS":"mobile.elements", "PVP":"mobile.pvp",
+    "CALCULADORA":"mobile.calculator", "RAID BOSS":"mobile.raid", "DEKYU TREASURE":"mobile.dekyu", "TIER LIST DSR":"mobile.tierDsr", "TIER LIST DMO":"mobile.tierDmo",
+    "SORTEIO":"mobile.giveaway", "COMUNIDADE":"mobile.community"
+  };
+
+  function applyMobilePageTitleTranslation() {
+    var element = document.getElementById("hgMobilePageTitle");
+    if (!element) return;
+    var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+    var canonical = element.getAttribute("data-hg-mobile-canonical") || "";
+    if (PHASE8_MOBILE_TITLES[raw]) {
+      canonical = raw;
+      element.setAttribute("data-hg-mobile-canonical", canonical);
+    }
+    if (!canonical) return;
+    setText(element, translate(PHASE8_MOBILE_TITLES[canonical] || "", canonical));
+  }
+
+  function phase8TranslateDialogMessage(message) {
+    var text = String(message == null ? "" : message);
+    var exact = {
+      "A Tier List precisa ter pelo menos uma tier.":"tier.dialog.needOne",
+      "Resetar a Tier List DSR? As tiers personalizadas e posições salvas neste navegador serão apagadas.":"tier.dialog.resetDsr",
+      "Resetar a Tier List DMO? As tiers personalizadas e posições salvas serão apagadas. Seus ícones enviados permanecerão disponíveis.":"tier.dialog.resetDmo",
+      "O gerador de imagem ainda não carregou. Atualize a página e tente novamente.":"tier.dialog.generatorMissing",
+      "Não foi possível gerar o PNG da Tier List. Atualize a página e tente novamente.":"tier.dialog.pngDsrError",
+      "Não foi possível gerar o PNG. Se algum ícone externo ainda estiver carregando, aguarde alguns segundos e tente novamente.":"tier.dialog.pngDmoError",
+      "Escolha um arquivo de imagem.":"tier.dialog.chooseImage",
+      "Use uma imagem de até 8 MB.":"tier.dialog.max8mb",
+      "Não foi possível ler essa imagem.":"tier.dialog.readImageError",
+      "Escolha uma imagem primeiro.":"tier.dialog.chooseImageFirst",
+      "Digite o nome do Digimon.":"tier.dialog.enterDigimonName",
+      "Não foi possível salvar o ícone neste navegador. Tente uma imagem menor.":"tier.dialog.saveIconError"
+    };
+    if (exact[text]) return translate(exact[text], text);
+    var m = text.match(/^Excluir a tier ["“](.+?)["”]\?( Os Digimons dela voltarão para disponíveis\.)?$/);
+    if (m) return formatTranslation("tier.dialog.deleteTier", 'Excluir a tier "{name}"?{extra}', {name:m[1], extra:m[2] ? translate("tier.dialog.returnDigis", " Os Digimons dela voltarão para disponíveis.") : ""});
+    m = text.match(/^Excluir o ícone personalizado ["“](.+?)["”] deste navegador\?$/);
+    if (m) return formatTranslation("tier.dialog.deleteCustom", 'Excluir o ícone personalizado "{name}" deste navegador?', {name:m[1]});
+    return phase8TranslateSorteioPhrase(text);
+  }
+
+  function installPhase8DialogTranslationHooks() {
+    if (window.__hgPhase8DialogsInstalled) return;
+    window.__hgPhase8DialogsInstalled = true;
+    if (typeof window.alert === "function") {
+      var originalAlert = window.alert.bind(window);
+      window.alert = function (message) { return originalAlert(phase8TranslateDialogMessage(message)); };
+    }
+    if (typeof window.confirm === "function") {
+      var originalConfirm = window.confirm.bind(window);
+      window.confirm = function (message) { return originalConfirm(phase8TranslateDialogMessage(message)); };
+    }
+    if (typeof window.open === "function" && !window.open.__hgPhase8Wrapped) {
+      var originalOpen = window.open;
+      var wrappedOpen = function () {
+        var popup = originalOpen.apply(window, arguments);
+        try {
+          if (popup && popup.document && typeof popup.document.write === "function") {
+            var originalWrite = popup.document.write.bind(popup.document);
+            popup.document.write = function (html) {
+              var next = String(html == null ? "" : html)
+                .replace("Preparando autorização da Twitch...", translate("giveaway.preparingTwitchAuth", "Preparando autorização da Twitch..."))
+                .replace("Preparando autorização da Kick...", translate("giveaway.preparingKickAuth", "Preparando autorização da Kick..."));
+              return originalWrite(next);
+            };
+          }
+        } catch (error) { /* popup may become cross-origin later */ }
+        return popup;
+      };
+      wrappedOpen.__hgPhase8Wrapped = true;
+      window.open = wrappedOpen;
+    }
+  }
+
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -1711,6 +2336,11 @@
     applyCommunityStaticTranslations();
     applyDisplaySettingsTranslations();
     applyComparisonStaticTranslations();
+    applyContentNavTranslations();
+    applyTierListDsrStaticTranslations();
+    applyTierListDmoStaticTranslations();
+    applySorteioStaticTranslations();
+    applyMobilePageTitleTranslation();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
@@ -2418,6 +3048,10 @@
       applyCommunityDynamicTranslations();
       applyDisplaySettingsTranslations();
       applyComparisonDynamicTranslations();
+      applyTierListDsrDynamicTranslations();
+      applyTierListDmoDynamicTranslations();
+      applySorteioDynamicTranslations();
+      applyMobilePageTitleTranslation();
       applyKoreanReferenceTranslations();
       applyCounterTooltipTranslations();
     });
@@ -2479,6 +3113,15 @@
           break;
         case "comparacaoPagina":
           applyComparisonDynamicTranslations();
+          break;
+        case "tierListPagina":
+          applyTierListDsrDynamicTranslations();
+          break;
+        case "tierListDmoPagina":
+          applyTierListDmoDynamicTranslations();
+          break;
+        case "sorteioPagina":
+          applySorteioDynamicTranslations();
           break;
         case "hgDisplaySettingsPanel":
           applyDisplaySettingsTranslations();
@@ -2550,6 +3193,16 @@
     ["abrirHgDisplaySettings", "atualizarHgDisplaySettingsUi"].forEach(function (name) {
       wrapRuntimeFunction(name, function () { applyDisplaySettingsTranslations(); });
     });
+    ["tierListRenderizar", "tierListRenderizarRows", "tierListRenderizarPool", "tierListAplicarFiltros", "tierListSincronizarFiltrosCustom", "tierListMostrarTooltip", "tierListAdicionarTier", "tierListAlternarModoStream", "tierListExportarPng"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("tierListPagina"); });
+    });
+    ["tierListDmoRenderizar", "tierListDmoRenderizarRows", "tierListDmoRenderizarPool", "tierListDmoAplicarFiltros", "tierListDmoSelecionarRank", "tierListDmoAdicionarTier", "tierListDmoAlternarModoStream", "tierListDmoAbrirUpload", "tierListDmoReceberArquivo", "tierListDmoFecharUpload", "tierListDmoExportarPng"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("tierListDmoPagina"); });
+    });
+    ["sorteioAtualizarFonteUI", "sorteioAtualizarEstadoInscricoes", "sorteioRenderParticipantes", "sorteioRenderHistorico", "sorteioRegistrarVencedor", "sorteioDefinirFeedback", "sorteioAtualizarTudo", "sorteioDesenhar", "sorteioAlternarModoStream"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("sorteioPagina"); });
+    });
+    wrapRuntimeFunction("hgAtualizarTituloHeader", function () { applyMobilePageTitleTranslation(); });
 
     ["renderizarRaids", "renderizarRaidHomeCarousel"].forEach(function (name) {
       wrapRuntimeFunction(name, function () {
@@ -2564,13 +3217,14 @@
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("elementosPagina"), document.getElementById("socialPagina"), document.getElementById("comparacaoPagina"), document.getElementById("hgDisplaySettingsPanel"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("elementosPagina"), document.getElementById("socialPagina"), document.getElementById("comparacaoPagina"), document.getElementById("tierListPagina"), document.getElementById("tierListDmoPagina"), document.getElementById("sorteioPagina"), document.getElementById("hgDisplaySettingsPanel"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function (mutations) {
         /* IMPORTANTE: o header precisa ser corrigido mesmo se outra tradução estiver
            momentaneamente com o observer silenciado. O timer original escreve PT. */
         if (root.id === "siteTopbar") {
           applyHeaderEventTranslations();
+          applyMobilePageTitleTranslation();
           return;
         }
 
@@ -2681,6 +3335,7 @@
     });
 
     installPhase6KoreanSearchAliases();
+    installPhase8DialogTranslationHooks();
     applyStaticTranslations();
     updateLanguageUi();
     installRuntimeHooks();
