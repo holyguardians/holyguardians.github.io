@@ -24179,6 +24179,7 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
   text-shadow:0 0 15px rgba(55,220,255,.55);
 }
 
+#tierListPagina .tierlist-action.upload,
 #tierListDmoPagina .tierlist-action.upload{
   border-color:rgba(91,222,255,.48);
   color:#d8fbff;
@@ -24279,6 +24280,25 @@ body.hg-sorteio-stream-body #sorteioPagina .sorteio-wrap{
   color:#baffda;
   background:linear-gradient(180deg,rgba(13,112,73,.94),rgba(4,52,38,.96));
 }
+
+#tierListPagina .tierlist-dsr-custom-delete{
+  position:absolute;
+  z-index:12;
+  top:4px;
+  left:4px;
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,105,125,.44);
+  border-radius:6px;
+  color:#ff9dac;
+  background:rgba(45,8,18,.86);
+  cursor:pointer;
+  opacity:.42;
+}
+#tierListPagina .tierlist-dsr-custom-delete:hover{opacity:1;}
+#tierListPagina .tierlist-tier-zone .tierlist-dsr-custom-delete{display:none;}
 
 #tierListDmoPagina .tierlist-dmo-custom-delete{
   position:absolute;

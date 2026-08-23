@@ -1806,10 +1806,11 @@
     setText(one(".tierlist-title-field > span", root), translate("tier.common.titleLabel", "TÍTULO DA TIER LIST"));
     var actions = all(".tierlist-toolbar-actions .tierlist-action", root);
     replaceButtonTextNode(actions[0], "tier.common.addTier", "ADICIONAR TIER");
-    replaceButtonTextNode(actions[1], "tier.common.streamMode", "MODO STREAM");
-    if (actions[2] && /GERANDO PNG|GENERATING PNG|PNG 생성 중/.test(actions[2].textContent || "")) setHtml(actions[2], '<span>◌</span> ' + escapeHtml(translate("tier.common.generatingPng", "GERANDO PNG...")));
-    else replaceButtonTextNode(actions[2], "tier.common.exportPng", "EXPORTAR PNG");
-    replaceButtonTextNode(actions[3], "tier.common.reset", "RESETAR");
+    replaceButtonTextNode(actions[1], "tier.dmo.addIcon", "ADICIONAR ÍCONE");
+    replaceButtonTextNode(actions[2], "tier.common.streamMode", "MODO STREAM");
+    if (actions[3] && /GERANDO PNG|GENERATING PNG|PNG 생성 중/.test(actions[3].textContent || "")) setHtml(actions[3], '<span>◌</span> ' + escapeHtml(translate("tier.common.generatingPng", "GERANDO PNG...")));
+    else replaceButtonTextNode(actions[3], "tier.common.exportPng", "EXPORTAR PNG");
+    replaceButtonTextNode(actions[4], "tier.common.reset", "RESETAR");
     setText(one(".tierlist-export-brand small", root), translate("tier.dsr.exportBrand", "HOLY GUARDIANS // DSR TOOLS"));
     phase8SetAttr(one("#tierListBoardTitle", root), "aria-label", "tier.common.boardAria", "Título da Tier List");
     phase8SetAttr(one("#tierListBoardTitle", root), "title", "tier.common.boardTitle", "Clique para editar o título desta sessão");
@@ -1839,6 +1840,28 @@
     setText(one("#tierListEmpty", root), translate("tier.common.noMatches", "Nenhum Digimon corresponde aos filtros."));
     setHtml(one(".tierlist-tip p", root), translate("tier.dsr.tipHtml", "<strong>Dica:</strong> arraste os Digimons entre as tiers ou de volta para a lista. As alterações são salvas automaticamente neste navegador."));
     setText(one("#tierListStreamExit", root), translate("tier.common.exitStream", "SAIR DO MODO STREAM"));
+
+    var modal = one("#tierListUploadModal", root);
+    if (modal) {
+      setText(one(".tierlist-dmo-upload-head small", modal), "HOLY GUARDIANS // DSR");
+      setText(one("#tierListUploadTitle", modal), translate("tier.dmo.addIcon", "ADICIONAR ÍCONE"));
+      phase8SetAttr(one(".tierlist-dmo-upload-head button", modal), "aria-label", "common.close", "Fechar");
+      phase8SetAttr(one("#tierListUploadPreview", modal), "alt", "tier.dmo.previewAlt", "Prévia do ícone");
+      var uploadLabels = all(".tierlist-dmo-upload-body label > span", modal);
+      if (uploadLabels[0]) setText(uploadLabels[0], translate("tier.dmo.digimonName", "NOME DO DIGIMON"));
+      if (uploadLabels[1]) setText(uploadLabels[1], currentLanguage === "ko-KR" ? "진화 단계 (Stage)" : translate("tier.common.stage", "STAGE"));
+      if (uploadLabels[2]) setText(uploadLabels[2], currentLanguage === "ko-KR" ? "타입 (Type)" : translate("tier.common.type", "TYPE"));
+      phase8SetAttr(one("#tierListUploadName", modal), "placeholder", "tier.dmo.nameExample", "Ex.: Digimon");
+      var uploadStage = one("#tierListUploadStage", modal);
+      if (uploadStage) all("option", uploadStage).forEach(function(option) {
+        if (currentLanguage === "ko-KR") applyKoreanStageLabel(option, option.value);
+        else setText(option, option.value);
+      });
+      setText(one(".tierlist-dmo-upload-body > p", modal), translate("tier.dmo.fileNote", "O arquivo é reduzido automaticamente e salvo apenas no navegador deste dispositivo."));
+      var modalActions = all(".tierlist-dmo-upload-actions button", modal);
+      if (modalActions[0]) setText(modalActions[0], translate("common.cancel", "CANCELAR"));
+      if (modalActions[1]) setText(modalActions[1], translate("common.add", "ADICIONAR"));
+    }
   }
 
   function phase8TierRowsDynamic(root) {
@@ -1869,6 +1892,11 @@
       var originalName = name ? (name.getAttribute("data-hg-phase8-digimon-original") || name.textContent) : "Digimon";
       var back = one(".tierlist-card-return", card);
       if (back) setAttr(back, "aria-label", formatTranslation("tier.common.returnAvailable", "Voltar {name} para disponíveis", { name: originalName }));
+      var customDelete = one(".tierlist-dsr-custom-delete", card);
+      if (customDelete) {
+        setAttr(customDelete, "title", translate("tier.dmo.deleteCustom", "Excluir ícone personalizado"));
+        setAttr(customDelete, "aria-label", formatTranslation("tier.dmo.deleteNamed", "Excluir {name}", { name: originalName }));
+      }
     });
     all(".tierlist-select-options .tierlist-select-option", root).forEach(function (button) {
       var value = String(button.getAttribute("data-value") || "");
