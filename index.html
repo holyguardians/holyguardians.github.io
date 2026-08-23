@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260822-home-dashboard-v1">
+  <link rel="stylesheet" href="styles.css?v=20260823-hidden-quests-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -248,6 +248,12 @@
             onclick="mostrarPagina('counterFinderPagina', this)">
             <img src="icon_counter_finder.png" alt="" aria-hidden="true">
             <span>COUNTER FINDER</span>
+          </button>
+
+          <button id="btnHiddenQuests" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('hiddenQuestsPagina', this)">
+            <img src="icon_hidden_quests.svg" alt="" aria-hidden="true">
+            <span>HIDDEN QUESTS</span>
           </button>
 
           <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
@@ -2144,6 +2150,45 @@
   </div>
 </section>
 
+
+<!-- =====================================================
+     HIDDEN QUESTS
+===================================================== -->
+<section id="hiddenQuestsPagina" class="pagina">
+  <div class="internal-wrap hidden-quests-wrap">
+    <header class="hidden-quests-header tech-corners">
+      <div class="hidden-quests-header-icon" aria-hidden="true"><img src="icon_hidden_quests.svg" alt=""></div>
+      <div class="hidden-quests-header-copy">
+        <div class="hidden-quests-kicker">QUEST ARCHIVE // HOLY GUARDIANS</div>
+        <h2 class="page-title">HIDDEN QUESTS</h2>
+        <p class="page-subtitle">Guia traduzido com rotas, objetivos, recompensas, imagens e vídeos do post original do DSR.</p>
+      </div>
+      <a class="hidden-quests-source" href="https://cafe.naver.com/movedsr/77" target="_blank" rel="noopener noreferrer"><i></i><span>FONTE ORIGINAL</span><strong>NAVER CAFE</strong></a>
+    </header>
+
+    <section class="hidden-quests-alert tech-corners" aria-label="Informações importantes">
+      <div class="hidden-quests-alert-head"><span>!</span><div><small>ANTES DE COMEÇAR</small><strong>INFORMAÇÕES IMPORTANTES DO AUTOR</strong></div></div>
+      <div id="hiddenQuestIntro" class="hidden-quests-alert-grid"></div>
+    </section>
+
+    <section class="hidden-quests-toolbar tech-corners">
+      <div class="hidden-quests-search">
+        <label for="hiddenQuestSearch">BUSCAR QUEST / NPC / DIGIMON / ITEM</label>
+        <div><span aria-hidden="true">⌕</span><input id="hiddenQuestSearch" type="search" autocomplete="off" placeholder="Ex.: Dekyu, Dark Castle, Leafmon..." oninput="hiddenQuestAplicarFiltros()"></div>
+      </div>
+      <div class="hidden-quests-summary"><small>ARQUIVO HG</small><strong id="hiddenQuestCount">0 QUESTS</strong><span id="hiddenQuestFilterStatus">TODAS AS REGIÕES</span></div>
+      <div id="hiddenQuestRegionFilters" class="hidden-quests-region-filters" aria-label="Filtrar por região"></div>
+    </section>
+
+    <div id="hiddenQuestResults" class="hidden-quests-results"></div>
+  </div>
+
+  <div id="hiddenQuestImageModal" class="hidden-quest-image-modal" hidden aria-hidden="true" onclick="hiddenQuestFecharImagem(event)">
+    <button type="button" class="hidden-quest-image-close" aria-label="Fechar imagem" onclick="hiddenQuestFecharImagem(event, true)">×</button>
+    <figure><img id="hiddenQuestImageModalImg" src="" alt=""><figcaption id="hiddenQuestImageModalCaption"></figcaption></figure>
+  </div>
+</section>
+
 <!-- =====================================================
      COUNTER FINDER
 ===================================================== -->
@@ -3096,6 +3141,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="script.js?v=20260822-event-sound-v1"></script>
+<script src="hidden_quests_data.js?v=20260823-v1"></script>
+<script src="script.js?v=20260823-hidden-quests-v1"></script>
 </body>
 </html>

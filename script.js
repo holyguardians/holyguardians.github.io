@@ -2116,6 +2116,7 @@ function hgTituloPaginaHeader(id) {
     digivolutionPagina: "DIGIVOLUTION",
     comparacaoPagina: "COMPARAÇÃO",
     counterFinderPagina: "COUNTER FINDER",
+    hiddenQuestsPagina: "HIDDEN QUESTS",
     builderPagina: "TEAM BUILDER",
     statusSimulatorPagina: "STATUS SIMULATOR",
     elementosPagina: "ELEMENTOS",
@@ -2318,6 +2319,10 @@ function mostrarPagina(
     setTimeout(counterFinderAtivar, 0);
   }
 
+  if (id === "hiddenQuestsPagina" && typeof hiddenQuestAtivar === "function") {
+    setTimeout(hiddenQuestAtivar, 0);
+  }
+
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
   } else {
@@ -2333,6 +2338,7 @@ function mostrarPagina(
       digivolutionPagina: "digivolution",
       comparacaoPagina: "comparacao",
       counterFinderPagina: "counter-finder",
+      hiddenQuestsPagina: "hidden-quests",
       builderPagina: "team-builder",
       statusSimulatorPagina: "status-simulator",
       elementosPagina: "elementos",
@@ -2382,6 +2388,7 @@ function abrirPaginaPelaUrl() {
     digivolution: { pagina: "digivolutionPagina", botao: "btnDigivolution" },
     comparacao: { pagina: "comparacaoPagina", botao: "btnComparacao" },
     "counter-finder": { pagina: "counterFinderPagina", botao: "btnCounterFinder" },
+    "hidden-quests": { pagina: "hiddenQuestsPagina", botao: "btnHiddenQuests" },
     "team-builder": { pagina: "builderPagina", botao: "btnBuilder" },
     "status-simulator": { pagina: "statusSimulatorPagina", botao: "btnStatusSimulator" },
     elementos: { pagina: "elementosPagina", botao: "btnElementos" },
@@ -9860,6 +9867,102 @@ function inicializarCounterFinder() {
   }
 }
 
+
+/* =====================================================
+   HIDDEN QUESTS // QUEST ARCHIVE
+===================================================== */
+let hiddenQuestFiltroRegiao = "all";
+let hiddenQuestInicializado = false;
+
+function hiddenQuestDados(){
+  const pacote = window.HG_HIDDEN_QUESTS_DATA || {};
+  return Array.isArray(pacote.quests) ? pacote.quests : [];
+}
+function hiddenQuestEscapar(valor){
+  return String(valor == null ? "" : valor)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function hiddenQuestNormalizar(valor){
+  return String(valor == null ? "" : valor).normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase();
+}
+function hiddenQuestRegioes(){
+  const ordem=[
+    ["all","ALL"],["starting-village","VILA INICIAL"],["gear-savanna","GEAR SAVANNA"],["infinite-mountain","INFINITE MOUNTAIN"],
+    ["desert-area","DESERT AREA"],["dark-castle-valley","DARK CASTLE"],["real-copy-world","REAL COPY WORLD"],
+    ["leafmon","LEAFMON"],["spiral-mountain","SPIRAL MOUNTAIN"],["data-world","DATA WORLD"],["climber","CLIMBER"]
+  ];
+  const existentes=new Set(hiddenQuestDados().map(function(q){return q.regionSlug}));
+  return ordem.filter(function(item){return item[0]==="all"||existentes.has(item[0])});
+}
+function hiddenQuestAtivar(){
+  if(!hiddenQuestInicializado){
+    hiddenQuestInicializado=true;
+    const intro=document.getElementById("hiddenQuestIntro");
+    const pacote=window.HG_HIDDEN_QUESTS_DATA||{};
+    if(intro){intro.innerHTML=(Array.isArray(pacote.intro)?pacote.intro:[]).map(function(x){return '<div class="hidden-quests-alert-item">'+hiddenQuestEscapar(x)+'</div>'}).join("")}
+    const filtros=document.getElementById("hiddenQuestRegionFilters");
+    if(filtros){filtros.innerHTML=hiddenQuestRegioes().map(function(item){return '<button type="button" class="hidden-quest-filter-btn'+(item[0]==="all"?' ativo':'')+'" data-region="'+item[0]+'" onclick="hiddenQuestSelecionarRegiao(this.dataset.region,this)">'+item[1]+'</button>'}).join("")}
+  }
+  hiddenQuestAplicarFiltros();
+}
+function hiddenQuestSelecionarRegiao(regiao,botao){
+  hiddenQuestFiltroRegiao=regiao||"all";
+  document.querySelectorAll(".hidden-quest-filter-btn").forEach(function(btn){btn.classList.toggle("ativo",btn===botao)});
+  hiddenQuestAplicarFiltros();
+}
+function hiddenQuestAplicarFiltros(){
+  const busca=document.getElementById("hiddenQuestSearch");
+  const termo=hiddenQuestNormalizar(busca&&busca.value||"");
+  const lista=hiddenQuestDados().filter(function(q){
+    if(hiddenQuestFiltroRegiao!=="all"&&q.regionSlug!==hiddenQuestFiltroRegiao)return false;
+    if(!termo)return true;
+    const hay=[q.title,q.korean,q.region,q.kind].concat(q.steps||[]).join(" ");
+    return hiddenQuestNormalizar(hay).includes(termo);
+  });
+  hiddenQuestRenderizar(lista);
+}
+function hiddenQuestRenderizar(lista){
+  const box=document.getElementById("hiddenQuestResults"),count=document.getElementById("hiddenQuestCount"),status=document.getElementById("hiddenQuestFilterStatus");
+  if(!box)return;
+  if(count)count.textContent=lista.length+" "+(lista.length===1?"QUEST":"QUESTS");
+  if(status){const ativo=hiddenQuestRegioes().find(function(x){return x[0]===hiddenQuestFiltroRegiao});status.textContent=ativo?ativo[1]:"TODAS AS REGIÕES"}
+  if(!lista.length){box.innerHTML='<div class="hidden-quests-empty"><strong>NENHUMA QUEST ENCONTRADA</strong><span>Tente outro termo ou região.</span></div>';return}
+  box.innerHTML=lista.map(function(q){return hiddenQuestCardHtml(q)}).join("");
+}
+function hiddenQuestCardHtml(q){
+  const all=hiddenQuestDados(),idx=all.findIndex(function(x){return x.code===q.code}),imgs=Array.isArray(q.images)?q.images:[],videos=Array.isArray(q.videos)?q.videos:[];
+  const chips=['<span class="hidden-quest-chip">'+hiddenQuestEscapar(q.region)+'</span>','<span class="hidden-quest-chip '+(q.kind==="SPECIAL"?'special':'')+'">'+hiddenQuestEscapar(q.kind)+'</span>'];
+  if(q.chain)chips.push('<span class="hidden-quest-chip chain">CHAIN QUEST</span>');
+  const steps=(q.steps||[]).map(function(s){const cls=/^Recompensa/i.test(s)?" reward":"";return '<div class="hidden-quest-step'+cls+'">'+hiddenQuestEscapar(s)+'</div>'}).join("")||'<div class="hidden-quest-no-images">O post não fornece passos textuais adicionais para esta entrada.</div>';
+  const gallery=imgs.length?'<div class="hidden-quest-gallery">'+imgs.map(function(src,i){return '<button type="button" data-src="'+hiddenQuestEscapar(src)+'" data-caption="'+hiddenQuestEscapar(q.title)+' · imagem '+(i+1)+'" onclick="hiddenQuestAbrirImagem(this.dataset.src,this.dataset.caption)"><img src="'+hiddenQuestEscapar(src)+'" loading="lazy" alt="'+hiddenQuestEscapar(q.title)+' · imagem '+(i+1)+'"></button>'}).join("")+'</div>':'<div class="hidden-quest-no-images">SEM IMAGENS NECESSÁRIAS NESTA QUEST</div>';
+  const videoHtml=videos.length?'<div class="hidden-quest-video-list">'+videos.map(function(v){return '<a class="hidden-quest-video" href="'+hiddenQuestEscapar(v.url)+'" target="_blank" rel="noopener noreferrer"><span>▶ '+hiddenQuestEscapar(v.label||"Guia em vídeo")+'</span><span>↗</span></a>'}).join("")+'</div>':'';
+  return '<article class="hidden-quest-card" id="hiddenQuestCard-'+hiddenQuestEscapar(q.code)+'">'+
+    '<button type="button" class="hidden-quest-toggle" data-code="'+hiddenQuestEscapar(q.code)+'" onclick="hiddenQuestToggleCard(this.dataset.code)" aria-expanded="false">'+
+      '<span class="hidden-quest-index">'+hiddenQuestEscapar(q.code)+'</span><span class="hidden-quest-title-wrap"><span class="hidden-quest-title-top"><strong>'+hiddenQuestEscapar(q.title)+'</strong>'+chips.join("")+'</span><span class="hidden-quest-korean">'+hiddenQuestEscapar(q.korean)+'</span></span>'+
+      '<span class="hidden-quest-toggle-side"><span class="hidden-quest-image-count">'+imgs.length+' IMG'+(imgs.length===1?'':'S')+'</span><span class="hidden-quest-chevron">⌄</span></span></button>'+
+    '<div class="hidden-quest-body"><div class="hidden-quest-body-grid"><section class="hidden-quest-steps"><div class="hidden-quest-section-title">PASSOS / INFORMAÇÕES</div><div class="hidden-quest-step-list">'+steps+'</div>'+videoHtml+'</section><section class="hidden-quest-gallery-shell"><div class="hidden-quest-section-title">IMAGENS DO POST</div>'+gallery+'</section></div>'+
+    '<div class="hidden-quest-nav">'+(idx>0?'<button type="button" data-code="'+all[idx-1].code+'" onclick="hiddenQuestIrPara(this.dataset.code)">← ANTERIOR</button>':'<span></span>')+(idx>=0&&idx<all.length-1?'<button type="button" data-code="'+all[idx+1].code+'" onclick="hiddenQuestIrPara(this.dataset.code)">PRÓXIMA →</button>':'')+'</div></div></article>';
+}
+function hiddenQuestToggleCard(code,forcarAbrir){
+  const card=document.getElementById("hiddenQuestCard-"+code);if(!card)return;
+  const abrir=forcarAbrir===true?true:!card.classList.contains("aberto");
+  card.classList.toggle("aberto",abrir);const btn=card.querySelector(".hidden-quest-toggle");if(btn)btn.setAttribute("aria-expanded",abrir?"true":"false");
+}
+function hiddenQuestIrPara(code){
+  const q=hiddenQuestDados().find(function(x){return x.code===code});if(!q)return;
+  hiddenQuestFiltroRegiao="all";const input=document.getElementById("hiddenQuestSearch");if(input)input.value="";
+  document.querySelectorAll(".hidden-quest-filter-btn").forEach(function(btn){btn.classList.toggle("ativo",btn.dataset.region==="all")});
+  hiddenQuestAplicarFiltros();setTimeout(function(){const card=document.getElementById("hiddenQuestCard-"+code);if(card){hiddenQuestToggleCard(code,true);card.scrollIntoView({behavior:"smooth",block:"start"})}},0);
+}
+function hiddenQuestAbrirImagem(src,caption){
+  const modal=document.getElementById("hiddenQuestImageModal"),img=document.getElementById("hiddenQuestImageModalImg"),cap=document.getElementById("hiddenQuestImageModalCaption");if(!modal||!img)return;
+  img.src=src;img.alt=caption||"Imagem da quest";if(cap)cap.textContent=caption||"";modal.hidden=false;modal.setAttribute("aria-hidden","false");document.body.classList.add("hidden-quest-image-modal-open");
+}
+function hiddenQuestFecharImagem(event,forcar){
+  const modal=document.getElementById("hiddenQuestImageModal");if(!modal)return;if(!forcar&&event&&event.target!==modal)return;modal.hidden=true;modal.setAttribute("aria-hidden","true");document.body.classList.remove("hidden-quest-image-modal-open");const img=document.getElementById("hiddenQuestImageModalImg");if(img)img.src="";
+}
+document.addEventListener("keydown",function(event){if(event.key==="Escape"){const modal=document.getElementById("hiddenQuestImageModal");if(modal&&!modal.hidden)hiddenQuestFecharImagem(null,true)}});
 
 /* =====================================================
    RAID BOSS — AGENDA KST
