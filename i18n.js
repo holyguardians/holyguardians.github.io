@@ -15,6 +15,16 @@
   };
 
   var currentLanguage = DEFAULT_LANGUAGE;
+  var hiddenBaseData = null;
+  var dynamicApplyQueued = false;
+  var observerInstalled = false;
+
+  function cloneData(value) {
+    try { return JSON.parse(JSON.stringify(value)); }
+    catch (error) { return value; }
+  }
+
+  if (window.HG_HIDDEN_QUESTS_DATA) hiddenBaseData = cloneData(window.HG_HIDDEN_QUESTS_DATA);
 
   function normalizeLanguage(value) {
     var raw = String(value || "").trim();
@@ -23,19 +33,13 @@
   }
 
   function languageFromUrl() {
-    try {
-      return normalizeLanguage(new URL(window.location.href).searchParams.get("lang"));
-    } catch (error) {
-      return "";
-    }
+    try { return normalizeLanguage(new URL(window.location.href).searchParams.get("lang")); }
+    catch (error) { return ""; }
   }
 
   function languageFromStorage() {
-    try {
-      return normalizeLanguage(localStorage.getItem(STORAGE_KEY));
-    } catch (error) {
-      return "";
-    }
+    try { return normalizeLanguage(localStorage.getItem(STORAGE_KEY)); }
+    catch (error) { return ""; }
   }
 
   function dictionary(language) {
@@ -50,20 +54,418 @@
     return fallback == null ? key : fallback;
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function setText(element, value) {
+    if (!element) return;
+    var next = String(value == null ? "" : value);
+    if (element.textContent !== next) element.textContent = next;
+  }
+
+  function setHtml(element, value) {
+    if (!element) return;
+    var next = String(value == null ? "" : value);
+    if (element.innerHTML !== next) element.innerHTML = next;
+  }
+
+  function setAttr(element, name, value) {
+    if (!element) return;
+    var next = String(value == null ? "" : value);
+    if (element.getAttribute(name) !== next) element.setAttribute(name, next);
+  }
+
+  function all(selector, root) {
+    try { return Array.prototype.slice.call((root || document).querySelectorAll(selector)); }
+    catch (error) { return []; }
+  }
+
+  function one(selector, root) {
+    try { return (root || document).querySelector(selector); }
+    catch (error) { return null; }
+  }
+
   function applyStaticTranslations() {
-    document.querySelectorAll("[data-i18n]").forEach(function (element) {
+    all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
-      element.textContent = translate(key, element.textContent);
+      setText(element, translate(key, element.textContent));
     });
 
-    document.querySelectorAll("[data-i18n-aria-label]").forEach(function (element) {
+    all("[data-i18n-aria-label]").forEach(function (element) {
       var key = element.getAttribute("data-i18n-aria-label");
-      element.setAttribute("aria-label", translate(key, element.getAttribute("aria-label") || ""));
+      setAttr(element, "aria-label", translate(key, element.getAttribute("aria-label") || ""));
     });
 
-    document.querySelectorAll("[data-i18n-title]").forEach(function (element) {
+    all("[data-i18n-title]").forEach(function (element) {
       var key = element.getAttribute("data-i18n-title");
-      element.setAttribute("title", translate(key, element.getAttribute("title") || ""));
+      setAttr(element, "title", translate(key, element.getAttribute("title") || ""));
+    });
+
+    applyHomeStaticTranslations();
+    applyHiddenStaticTranslations();
+    setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
+    setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
+  }
+
+  function replaceButtonTextNode(button, key, fallback) {
+    if (!button) return;
+    var nodes = Array.prototype.slice.call(button.childNodes || []);
+    var target = nodes.find(function (node) {
+      return node.nodeType === 3 && String(node.nodeValue || "").trim();
+    });
+    if (!target) return;
+    var translated = translate(key, fallback);
+    var before = String(target.nodeValue || "");
+    var lead = before.match(/^\s*/);
+    var trail = before.match(/\s*$/);
+    var next = (lead ? lead[0] : "") + translated + (trail ? trail[0] : "");
+    if (target.nodeValue !== next) target.nodeValue = next;
+  }
+
+  function applyHomeStaticTranslations() {
+    var home = document.getElementById("homePagina");
+    if (!home) return;
+
+    setText(one(".hero-welcome", home), translate("home.welcome", "BEM-VINDO À"));
+    setText(one(".hero-motto", home), translate("home.motto", "FORÇA • UNIÃO • EVOLUÇÃO"));
+    setHtml(one(".hero-lead", home), translate("home.heroLead", one(".hero-lead", home) ? one(".hero-lead", home).innerHTML : ""));
+
+    var actionButtons = all(".hero-actions .action-button", home);
+    replaceButtonTextNode(actionButtons[0], "home.openDigidex", "ACESSAR DIGIDEX");
+    replaceButtonTextNode(actionButtons[1], "home.buildTeam", "MONTAR TIME");
+
+    setText(one(".raid-home-heading h2", home), translate("home.raidBosses", "Raid Bosses"));
+    var liveSchedule = one(".raid-home-heading-status", home);
+    if (liveSchedule) {
+      var liveText = translate("home.liveSchedule", "LIVE SCHEDULE");
+      var liveNode = Array.prototype.slice.call(liveSchedule.childNodes).find(function (n) { return n.nodeType === 3 && String(n.nodeValue || "").trim(); });
+      if (liveNode && String(liveNode.nodeValue || "").trim() !== liveText) liveNode.nodeValue = " " + liveText;
+    }
+    setAttr(one("#raidHomeCarousel", home), "aria-label", translate("home.raidSelect", "Próximos Raid Bosses"));
+    setAttr(one(".raid-home-arrow-prev", home), "aria-label", translate("home.raidPrev", "Boss anterior"));
+    setAttr(one(".raid-home-arrow-next", home), "aria-label", translate("home.raidNext", "Próximo boss"));
+    setAttr(one("#raidHomeDots", home), "aria-label", translate("home.raidSelect", "Selecionar Raid Boss"));
+
+    setText(one(".ofd-home-panel .panel-heading h2", home), translate("home.ofdToday", "OFDs de Hoje"));
+    setText(one(".ofd-home-countdown small", home), translate("home.nextUpdate", "PRÓXIMA ATUALIZAÇÃO"));
+    setHtml(one(".ofd-time-alert p", home), translate("home.ofdReset", one(".ofd-time-alert p", home) ? one(".ofd-time-alert p", home).innerHTML : ""));
+
+    setText(one(".ofd-week-panel .panel-heading h2", home), translate("home.ofdWeekly", "Overflow Dungeons Semanal"));
+    setText(one(".ofd-week-copy strong", home), translate("home.chooseOtherDay", "CONSULTAR OUTRO DIA"));
+    setText(one(".ofd-week-copy small", home), translate("home.chooseDayHint", "Selecione o dia brasileiro. Abaixo mostramos também o dia correspondente na Coreia."));
+    setAttr(one(".ofd-week-days", home), "aria-label", translate("home.weekdaysAria", "Dias da semana"));
+    all(".ofd-week-days button", home).forEach(function (button) {
+      var code = String(button.getAttribute("data-ofd-day") || "").toUpperCase();
+      setText(one("span", button), translate("weekday." + code + ".short", one("span", button) ? one("span", button).textContent : code));
+      setText(one("small", button), translate("weekday." + code + ".full", one("small", button) ? one("small", button).textContent : code));
+    });
+    setHtml(one(".ofd-week-time-hint p", home), translate("home.cycleHint", one(".ofd-week-time-hint p", home) ? one(".ofd-week-time-hint p", home).innerHTML : ""));
+
+    setText(one(".servers-panel .panel-heading h2", home), translate("home.activeServers", "Servers Ativos"));
+    all(".server-status", home).forEach(function (element) { setText(element, translate("home.active", "ATIVA •")); });
+    setText(one(".staff-panel .panel-heading h2", home), translate("home.staff", "Staff DSR"));
+    setText(one(".staff-subs-title", home), translate("home.subs", "SUBS"));
+    setText(one(".home-social-panel .panel-heading h2", home), translate("home.socials", "Nossas Redes"));
+
+    all(".home-social-card.youtube .home-social-action, .home-social-card.twitch .home-social-action", home)
+      .forEach(function (element) { setText(element, translate("home.openChannel", "ACESSAR CANAL →")); });
+    all(".home-social-card.discord .home-social-action", home)
+      .forEach(function (element) { setText(element, translate("home.openServer", "ACESSAR SERVIDOR →")); });
+
+    setText(one(".footer-center-motto", home), translate("home.motto", "FORÇA • UNIÃO • EVOLUÇÃO"));
+    setHtml(one(".footer-right", home), translate("home.footer", one(".footer-right", home) ? one(".footer-right", home).innerHTML : ""));
+  }
+
+  function applyHiddenStaticTranslations() {
+    var root = document.getElementById("hiddenQuestsPagina");
+    if (!root) return;
+    setText(one(".hidden-quests-header .page-subtitle", root), translate("hidden.subtitle", "Guia traduzido com rotas, objetivos, recompensas, imagens e vídeos do post original do DSR."));
+    setText(one(".hidden-quests-source span", root), translate("hidden.source", "FONTE ORIGINAL"));
+    setAttr(one(".hidden-quests-alert", root), "aria-label", translate("hidden.alertAria", "Informações importantes"));
+    setText(one(".hidden-quests-alert-head small", root), translate("hidden.before", "ANTES DE COMEÇAR"));
+    setText(one(".hidden-quests-alert-head strong", root), translate("hidden.authorInfo", "INFORMAÇÕES IMPORTANTES DO AUTOR"));
+    setText(one(".hidden-quests-search label", root), translate("hidden.searchLabel", "BUSCAR QUEST / NPC / DIGIMON / ITEM"));
+    setAttr(one("#hiddenQuestSearch", root), "placeholder", translate("hidden.searchPlaceholder", "Ex.: Dekyu, Dark Castle, Leafmon..."));
+    setText(one(".hidden-quests-summary small", root), translate("hidden.archive", "ARQUIVO HG"));
+    setAttr(one("#hiddenQuestRegionFilters", root), "aria-label", translate("hidden.filterAria", "Filtrar por região"));
+    setAttr(one(".hidden-quest-image-close", root), "aria-label", translate("hidden.closeImage", "Fechar imagem"));
+  }
+
+  function hiddenTranslations(language) {
+    var langData = dictionary(language || currentLanguage);
+    return langData.__hiddenQuests || {};
+  }
+
+  function ensureHiddenBase() {
+    if (!hiddenBaseData && window.HG_HIDDEN_QUESTS_DATA) hiddenBaseData = cloneData(window.HG_HIDDEN_QUESTS_DATA);
+    return hiddenBaseData;
+  }
+
+  function hiddenRegionLabel(slug, fallback) {
+    var active = hiddenTranslations(currentLanguage).regions || {};
+    var base = hiddenTranslations(DEFAULT_LANGUAGE).regions || {};
+    return active[slug] || base[slug] || fallback || slug;
+  }
+
+  function localizeHiddenQuestPackage() {
+    var base = ensureHiddenBase();
+    if (!base) return;
+    var pkg = cloneData(base);
+    var translationData = hiddenTranslations(currentLanguage);
+    if (Array.isArray(translationData.intro)) pkg.intro = translationData.intro.slice();
+
+    var questTranslations = translationData.quests || {};
+    pkg.quests = (Array.isArray(base.quests) ? base.quests : []).map(function (quest) {
+      var copy = cloneData(quest);
+      var tr = questTranslations[quest.code] || {};
+      if (currentLanguage === "ko-KR") copy.title = tr.title || quest.korean || quest.title;
+      else copy.title = tr.title || quest.title;
+      if (Array.isArray(tr.steps)) copy.steps = tr.steps.slice();
+      copy.region = hiddenRegionLabel(quest.regionSlug, quest.region);
+      if (Array.isArray(copy.videos)) {
+        copy.videos = copy.videos.map(function (video, index) {
+          var v = cloneData(video);
+          if (Array.isArray(tr.videoLabels) && tr.videoLabels[index]) v.label = tr.videoLabels[index];
+          return v;
+        });
+      }
+      return copy;
+    });
+    window.HG_HIDDEN_QUESTS_DATA = pkg;
+  }
+
+  function refreshHiddenQuestUi() {
+    var root = document.getElementById("hiddenQuestsPagina");
+    if (!root) return;
+    var pkg = window.HG_HIDDEN_QUESTS_DATA || {};
+    var intro = document.getElementById("hiddenQuestIntro");
+    if (intro && Array.isArray(pkg.intro)) {
+      var html = pkg.intro.map(function (text) { return '<div class="hidden-quests-alert-item">' + escapeHtml(text) + '</div>'; }).join("");
+      setHtml(intro, html);
+    }
+    all(".hidden-quest-filter-btn", root).forEach(function (button) {
+      var slug = button.getAttribute("data-region") || "all";
+      setText(button, hiddenRegionLabel(slug, button.textContent));
+    });
+    if (typeof window.hiddenQuestAplicarFiltros === "function") {
+      try { window.hiddenQuestAplicarFiltros(); } catch (error) { /* isolated addon: never block site */ }
+    }
+    applyHiddenDynamicTranslations();
+  }
+
+  function localizedWeekdayText(value, shortForm) {
+    var text = String(value == null ? "" : value);
+    var map = [
+      [/(segunda-feira|segunda|SEG)(?=\b|,)/gi, translate("weekday.SEG." + (shortForm ? "short" : "full"), shortForm ? "SEG" : "SEGUNDA")],
+      [/(terça-feira|terça|terca-feira|terca|TER)(?=\b|,)/gi, translate("weekday.TER." + (shortForm ? "short" : "full"), shortForm ? "TER" : "TERÇA")],
+      [/(quarta-feira|quarta|QUA)(?=\b|,)/gi, translate("weekday.QUA." + (shortForm ? "short" : "full"), shortForm ? "QUA" : "QUARTA")],
+      [/(quinta-feira|quinta|QUI)(?=\b|,)/gi, translate("weekday.QUI." + (shortForm ? "short" : "full"), shortForm ? "QUI" : "QUINTA")],
+      [/(sexta-feira|sexta|SEX)(?=\b|,)/gi, translate("weekday.SEX." + (shortForm ? "short" : "full"), shortForm ? "SEX" : "SEXTA")],
+      [/(sábado|sabado|SÁB|SAB)(?=\b|,)/gi, translate("weekday.SAB." + (shortForm ? "short" : "full"), shortForm ? "SÁB" : "SÁBADO")],
+      [/(domingo|DOM)(?=\b|,)/gi, translate("weekday.DOM." + (shortForm ? "short" : "full"), shortForm ? "DOM" : "DOMINGO")]
+    ];
+    map.forEach(function (entry) { text = text.replace(entry[0], entry[1]); });
+    return text;
+  }
+
+  function replaceDirectText(element, matcher, value) {
+    if (!element) return;
+    Array.prototype.slice.call(element.childNodes || []).forEach(function (node) {
+      if (node.nodeType !== 3) return;
+      var raw = String(node.nodeValue || "");
+      if (!matcher.test(raw)) return;
+      var leading = (raw.match(/^\s*/) || [""])[0];
+      var trailing = (raw.match(/\s*$/) || [""])[0];
+      var next = leading + value + trailing;
+      if (node.nodeValue !== next) node.nodeValue = next;
+    });
+  }
+
+  function applyHomeDynamicTranslations() {
+    var home = document.getElementById("homePagina");
+    if (!home) return;
+
+    all("#raidHomeTrack .raid-home-loading strong", home).forEach(function (el) { setText(el, translate("home.raidLoading", "CARREGANDO AGENDA DE RAIDS...")); });
+    all("#raidHomeTrack .raid-home-loading small", home).forEach(function (el) { setText(el, translate("home.raidSync", "Sincronizando com o horário KST.")); });
+    all("#raidHomeTrack .raid-home-card", home).forEach(function (card) {
+      var status = one(".raid-home-status", card);
+      if (status) {
+        var statusText = String(status.textContent || "").toUpperCase();
+        var label = statusText.indexOf("PRÓXIMO") >= 0 || statusText.indexOf("NEXT") >= 0 || statusText.indexOf("다음") >= 0
+          ? translate("home.nextSpawn", "PRÓXIMO SPAWN")
+          : translate("home.scheduled", "AGENDADO");
+        var statusHtml = '<i></i>' + escapeHtml(label);
+        setHtml(status, statusHtml);
+      }
+      var rotation = one(".raid-home-rotation", card);
+      if (rotation) setText(rotation, "↻ " + translate("home.rotation", "ROTAÇÃO"));
+      var mapButton = one(".raid-home-map", card);
+      if (mapButton && /Mapa indisponível|Map unavailable|지도 없음/i.test(mapButton.textContent || "")) {
+        setHtml(mapButton, escapeHtml(translate("home.mapUnavailable", "Mapa indisponível")) + " <span>⌖</span>");
+      }
+      var openButton = one(".raid-home-open", card);
+      if (openButton) replaceDirectText(openButton, /VER AGENDA DE RAID|VIEW RAID SCHEDULE|레이드 일정 보기/i, translate("home.viewRaidSchedule", "VER AGENDA DE RAID"));
+      var brt = one(".raid-home-time small", card);
+      if (brt) {
+        var brtText = localizedWeekdayText(brt.textContent, true);
+        if (/HORÁRIO INDISPONÍVEL/i.test(brtText)) brtText = translate("home.timeUnavailable", "HORÁRIO INDISPONÍVEL");
+        setText(brt, brtText);
+      }
+    });
+
+    var day = document.getElementById("ofdHomeDay");
+    if (day) {
+      var dayText = String(day.textContent || "");
+      var dayPrefix = dayText.split(" • ")[0] || translate("home.todayBrazil", "HOJE NO BRASIL");
+      dayPrefix = localizedWeekdayText(dayPrefix, false);
+      setText(day, dayPrefix + " • " + translate("home.brazilTime", "HORÁRIO DO BRASIL"));
+    }
+    var kstDay = document.getElementById("ofdHomeKstDay");
+    if (kstDay) {
+      var kstText = String(kstDay.textContent || "");
+      var kstPrefix = kstText.split(" • ")[0] || translate("home.kstRotation", "ROTAÇÃO KST");
+      kstPrefix = localizedWeekdayText(kstPrefix, false);
+      setText(kstDay, kstPrefix + " • " + translate("home.kstAvailability", "DISPONIBILIDADE KST"));
+    }
+
+    all("#ofdHomeList .ofd-home-card, #ofdWeekList .ofd-week-card", home).forEach(function (card) {
+      var meta = one(".ofd-home-copy small", card);
+      if (meta) {
+        var match = String(meta.textContent || "").match(/(?:NV|LV)\s*([^•]+)\s*•\s*(?:TICKET|티켓)\s*(.+)$/i);
+        if (match) setHtml(meta, escapeHtml(translate("home.levelShort", "NV")) + " " + escapeHtml(String(match[1]).trim()) + " <b>•</b> " + escapeHtml(translate("home.ticket", "TICKET")) + " " + escapeHtml(String(match[2]).trim()));
+      }
+      var available = one(".ofd-home-open", card);
+      if (available) setHtml(available, "<i></i> " + escapeHtml(translate("home.available", "DISPONÍVEL")));
+    });
+
+    all("#ofdHomeList .ofd-home-empty", home).forEach(function (el) { setText(el, translate("home.noOfdPeriod", "Nenhuma OFD disponível neste período.")); });
+    all("#ofdWeekList .ofd-home-empty", home).forEach(function (el) { setText(el, translate("home.noOfdDay", "Nenhuma OFD disponível neste dia.")); });
+
+    var weekTitle = document.getElementById("ofdWeekTitle");
+    if (weekTitle) {
+      var strong = one("strong", weekTitle);
+      var small = one("small", weekTitle);
+      if (strong) {
+        var sPrefix = String(strong.textContent || "").split(" • ")[0];
+        setText(strong, localizedWeekdayText(sPrefix, false) + " • " + translate("home.brazilTime", "HORÁRIO DO BRASIL"));
+      } else if (String(weekTitle.textContent || "").trim()) {
+        setText(weekTitle, translate("home.ofdDay", "OFDs DO DIA"));
+      }
+      if (small) {
+        var kPrefix = String(small.textContent || "").split(" • ")[0];
+        setText(small, localizedWeekdayText(kPrefix, false) + " • KST");
+      }
+    }
+  }
+
+  function questBaseByCode(code) {
+    var base = ensureHiddenBase();
+    var list = base && Array.isArray(base.quests) ? base.quests : [];
+    return list.find(function (quest) { return String(quest.code) === String(code); }) || null;
+  }
+
+  function applyHiddenDynamicTranslations() {
+    var root = document.getElementById("hiddenQuestsPagina");
+    if (!root) return;
+
+    all(".hidden-quest-filter-btn", root).forEach(function (button) {
+      var slug = button.getAttribute("data-region") || "all";
+      setText(button, hiddenRegionLabel(slug, button.textContent));
+    });
+
+    var activeFilter = one(".hidden-quest-filter-btn.ativo", root);
+    var filterStatus = document.getElementById("hiddenQuestFilterStatus");
+    if (filterStatus) {
+      var activeSlug = activeFilter ? activeFilter.getAttribute("data-region") : "all";
+      setText(filterStatus, hiddenRegionLabel(activeSlug || "all", translate("hidden.regionAll", "TODAS AS REGIÕES")));
+    }
+
+    var count = document.getElementById("hiddenQuestCount");
+    if (count) {
+      var numberMatch = String(count.textContent || "").match(/\d+/);
+      var amount = numberMatch ? Number(numberMatch[0]) : 0;
+      setText(count, amount + " " + translate(amount === 1 ? "hidden.questOne" : "hidden.questMany", amount === 1 ? "QUEST" : "QUESTS"));
+    }
+
+    var empty = one(".hidden-quests-empty", root);
+    if (empty) {
+      setText(one("strong", empty), translate("hidden.noneTitle", "NENHUMA QUEST ENCONTRADA"));
+      setText(one("span", empty), translate("hidden.noneText", "Tente outro termo ou região."));
+    }
+
+    all(".hidden-quest-card", root).forEach(function (card) {
+      var code = String(card.id || "").replace(/^hiddenQuestCard-/, "");
+      var baseQuest = questBaseByCode(code);
+      var chips = all(".hidden-quest-title-top .hidden-quest-chip", card);
+      if (baseQuest && chips[1]) setText(chips[1], translate("hidden.kind." + String(baseQuest.kind || ""), baseQuest.kind || ""));
+      var chain = one(".hidden-quest-chip.chain", card);
+      if (chain) setText(chain, translate("hidden.chain", "CHAIN QUEST"));
+
+      var titles = all(".hidden-quest-section-title", card);
+      if (titles[0]) setText(titles[0], translate("hidden.steps", "PASSOS / INFORMAÇÕES"));
+      if (titles[1]) setText(titles[1], translate("hidden.images", "IMAGENS DO POST"));
+
+      all(".hidden-quest-step", card).forEach(function (step) {
+        var text = String(step.textContent || "").trim();
+        var isReward = /^(Recompensa|Reward|보상)\s*:/i.test(text);
+        step.classList.toggle("reward", isReward);
+      });
+
+      all(".hidden-quest-no-images", card).forEach(function (message) {
+        if (message.closest(".hidden-quest-gallery-shell")) setText(message, translate("hidden.noImages", "SEM IMAGENS NECESSÁRIAS NESTA QUEST"));
+        else setText(message, translate("hidden.noSteps", "O post não fornece passos textuais adicionais para esta entrada."));
+      });
+
+      var imageCount = one(".hidden-quest-image-count", card);
+      if (imageCount) {
+        var nMatch = String(imageCount.textContent || "").match(/\d+/);
+        var n = nMatch ? Number(nMatch[0]) : all(".hidden-quest-gallery button", card).length;
+        setText(imageCount, n + " " + translate(n === 1 ? "hidden.imgOne" : "hidden.imgMany", n === 1 ? "IMG" : "IMGS"));
+      }
+
+      all(".hidden-quest-gallery button", card).forEach(function (button, index) {
+        var title = one(".hidden-quest-title-top strong", card);
+        var caption = (title ? title.textContent : "") + " · " + translate("hidden.image", "imagem") + " " + (index + 1);
+        setAttr(button, "data-caption", caption);
+        var img = one("img", button);
+        if (img) setAttr(img, "alt", caption);
+      });
+
+      all(".hidden-quest-nav button", card).forEach(function (button) {
+        var text = String(button.textContent || "").toUpperCase();
+        if (text.indexOf("ANTERIOR") >= 0 || text.indexOf("PREVIOUS") >= 0 || text.indexOf("이전") >= 0) setText(button, translate("hidden.previous", "← ANTERIOR"));
+        else setText(button, translate("hidden.next", "PRÓXIMA →"));
+      });
+    });
+  }
+
+  function applyDynamicTranslations() {
+    applyHomeDynamicTranslations();
+    applyHiddenDynamicTranslations();
+  }
+
+  function queueDynamicTranslations() {
+    if (dynamicApplyQueued) return;
+    dynamicApplyQueued = true;
+    window.setTimeout(function () {
+      dynamicApplyQueued = false;
+      applyDynamicTranslations();
+    }, 0);
+  }
+
+  function installObservers() {
+    if (observerInstalled || typeof MutationObserver === "undefined") return;
+    observerInstalled = true;
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina")].forEach(function (root) {
+      if (!root) return;
+      var observer = new MutationObserver(function () { queueDynamicTranslations(); });
+      observer.observe(root, { childList: true, subtree: true, characterData: true });
     });
   }
 
@@ -72,12 +474,10 @@
     var code = document.getElementById("hgLanguageCurrentCode");
     var flag = document.getElementById("hgLanguageCurrentFlag");
     var switcher = document.getElementById("hgLanguageSwitcher");
-
     if (code) code.textContent = meta.code;
     if (flag) flag.src = meta.flag;
     if (switcher) switcher.setAttribute("data-language", currentLanguage);
-
-    document.querySelectorAll("[data-hg-language]").forEach(function (button) {
+    all("[data-hg-language]").forEach(function (button) {
       var selected = button.getAttribute("data-hg-language") === currentLanguage;
       button.setAttribute("aria-checked", selected ? "true" : "false");
       button.classList.toggle("is-active", selected);
@@ -90,9 +490,7 @@
       if (language === DEFAULT_LANGUAGE) url.searchParams.delete("lang");
       else url.searchParams.set("lang", LANGUAGE_META[language].query);
       window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
-    } catch (error) {
-      // URL support is optional; language switching still works without it.
-    }
+    } catch (error) { /* optional */ }
   }
 
   function closeMenu() {
@@ -110,70 +508,66 @@
   }
 
   function toggleMenu(event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+    if (event) { event.preventDefault(); event.stopPropagation(); }
     var menu = document.getElementById("hgLanguageMenu");
     if (!menu) return;
-    if (menu.hidden) openMenu();
-    else closeMenu();
+    if (menu.hidden) openMenu(); else closeMenu();
   }
 
   function setLanguage(language, options) {
     var next = normalizeLanguage(language) || DEFAULT_LANGUAGE;
     var opts = options || {};
     currentLanguage = next;
-
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch (error) {
-      // Storage is optional.
-    }
-
+    try { localStorage.setItem(STORAGE_KEY, next); } catch (error) { /* optional */ }
     document.documentElement.lang = LANGUAGE_META[next].htmlLang;
+    localizeHiddenQuestPackage();
     applyStaticTranslations();
     updateLanguageUi();
+    refreshHiddenQuestUi();
+    queueDynamicTranslations();
     if (opts.updateUrl !== false) updateUrl(next);
     closeMenu();
-
-    document.dispatchEvent(new CustomEvent("hg:languagechange", {
-      detail: { language: next }
-    }));
+    document.dispatchEvent(new CustomEvent("hg:languagechange", { detail: { language: next } }));
   }
 
   function init() {
     currentLanguage = languageFromUrl() || languageFromStorage() || DEFAULT_LANGUAGE;
     document.documentElement.lang = LANGUAGE_META[currentLanguage].htmlLang;
+    localizeHiddenQuestPackage();
 
     var trigger = document.getElementById("hgLanguageTrigger");
     var menu = document.getElementById("hgLanguageMenu");
     if (trigger) trigger.addEventListener("click", toggleMenu);
     if (menu) menu.addEventListener("click", function (event) { event.stopPropagation(); });
 
-    document.querySelectorAll("[data-hg-language]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        setLanguage(button.getAttribute("data-hg-language"));
-      });
+    all("[data-hg-language]").forEach(function (button) {
+      button.addEventListener("click", function () { setLanguage(button.getAttribute("data-hg-language")); });
     });
 
     document.addEventListener("click", function (event) {
       var switcher = document.getElementById("hgLanguageSwitcher");
       if (switcher && !switcher.contains(event.target)) closeMenu();
     });
-
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") closeMenu();
-    });
+    document.addEventListener("keydown", function (event) { if (event.key === "Escape") closeMenu(); });
 
     applyStaticTranslations();
     updateLanguageUi();
+    installObservers();
+    window.setTimeout(function () {
+      refreshHiddenQuestUi();
+      applyDynamicTranslations();
+    }, 0);
   }
 
   window.hgT = translate;
   window.hgSetLanguage = setLanguage;
   window.hgGetLanguage = function () { return currentLanguage; };
-  window.hgApplyTranslations = applyStaticTranslations;
+  window.hgApplyTranslations = function () {
+    applyStaticTranslations();
+    localizeHiddenQuestPackage();
+    refreshHiddenQuestUi();
+    applyDynamicTranslations();
+  };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
