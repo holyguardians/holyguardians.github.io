@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260823-i18n-v2">
+  <link rel="stylesheet" href="styles.css?v=20260823-hidden-quests-v1">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -125,21 +125,6 @@
       </span>
       <small id="hgHeaderSoundState">OFF</small>
     </button>
-
-    <div id="hgLanguageSwitcher" class="hg-language-switcher">
-      <button id="hgLanguageButton" class="hg-language-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="hgLanguageMenu" aria-label="Selecionar idioma" onclick="hgToggleLanguageMenu(event)">
-        <img id="hgLanguageCurrentFlag" src="language_flags/br.svg" alt="" aria-hidden="true">
-        <strong id="hgLanguageCurrentCode">PT</strong>
-        <span aria-hidden="true">⌄</span>
-      </button>
-      <div id="hgLanguageMenu" class="hg-language-menu tech-corners" role="menu" aria-label="Selecionar idioma do site" hidden>
-        <div class="hg-language-menu-head"><small data-i18n="language.kicker">HOLY GUARDIANS // IDIOMAS</small><strong data-i18n="language.title">IDIOMA</strong></div>
-        <button type="button" role="menuitemradio" aria-checked="true" data-hg-lang="pt-BR" onclick="hgDefinirIdioma('pt-BR')"><img src="language_flags/br.svg" alt=""><span><strong>Português</strong><small>Brasil</small></span><i>✓</i></button>
-        <button type="button" role="menuitemradio" aria-checked="false" data-hg-lang="en-US" onclick="hgDefinirIdioma('en-US')"><img src="language_flags/us.svg" alt=""><span><strong>English</strong><small>United States</small></span><i>✓</i></button>
-        <button type="button" role="menuitemradio" aria-checked="false" data-hg-lang="ko-KR" onclick="hgDefinirIdioma('ko-KR')"><img src="language_flags/kr.svg" alt=""><span><strong>한국어</strong><small>대한민국</small></span><i>✓</i></button>
-        <p data-i18n="language.disclaimer">As traduções facilitam o acesso e podem ser revisadas gradualmente. Nomes oficiais do jogo são preservados sempre que possível.</p>
-      </div>
-    </div>
   </div>
 
   <div class="hg-mobile-page-title" id="hgMobilePageTitle" aria-live="polite">HOME</div>
@@ -478,7 +463,7 @@
 
               <img id="heroIconDigidex">
 
-              <span class="hg-i18n-action-label">ACESSAR DIGIDEX</span>
+              ACESSAR DIGIDEX
 
               <span>→</span>
 
@@ -497,7 +482,7 @@
 
               <img id="heroIconBuilder">
 
-              <span class="hg-i18n-action-label">MONTAR TIME</span>
+              MONTAR TIME
 
               <span>→</span>
 
@@ -535,7 +520,7 @@
           <div class="heading-icon">⚔</div>
           <h2>Raid Bosses</h2>
           <div class="heading-line"></div>
-          <span class="raid-home-heading-status"><i></i> <span class="hg-i18n-live-schedule">LIVE SCHEDULE</span></span>
+          <span class="raid-home-heading-status"><i></i> LIVE SCHEDULE</span>
         </div>
         <div id="raidHomeCarousel" class="raid-home-carousel" aria-label="Próximos Raid Bosses">
           <button class="raid-home-arrow raid-home-arrow-prev" type="button" onclick="mudarRaidHome(-1)" aria-label="Boss anterior">‹</button>
@@ -3156,11 +3141,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script src="locales/pt-BR.js?v=20260823-i18n-v1"></script>
-<script src="locales/en-US.js?v=20260823-i18n-v1"></script>
-<script src="locales/ko-KR.js?v=20260823-i18n-v1"></script>
-<script src="i18n.js?v=20260823-i18n-v1"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
-<script src="script.js?v=20260823-i18n-v1"></script>
+<script src="script.js?v=20260823-hidden-quests-v1"></script>
 </body>
 </html>
