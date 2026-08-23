@@ -1485,21 +1485,9 @@ const staff = [
   },
 
   {
-    nome: "HGxDrHouse",
-    cargo: "SUB",
-    imagem: "HGxDrHouse"
-  },
-
-  {
     nome: "Shinzin",
     cargo: "SUB",
     imagem: "Shinzin"
-  },
-
-  {
-    nome: "lNutri",
-    cargo: "SUB",
-    imagem: "lNutri"
   },
 
   {
@@ -15028,6 +15016,67 @@ async function tierListTrocarImagensParaExport(container) {
   };
 }
 
+
+/* =====================================================
+   TIER LIST — DOWNLOAD PNG MAIS CONFIÁVEL
+   - Em Chromium/Opera usa o seletor nativo de arquivo imediatamente
+     após o clique, preservando a ativação do usuário durante a geração.
+   - Nos demais navegadores mantém o download por Blob como fallback.
+===================================================== */
+async function tierListPrepararDestinoPng(nomeArquivo) {
+  if (typeof window.showSaveFilePicker !== "function" || !window.isSecureContext) {
+    return { handle: null, cancelado: false };
+  }
+
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: nomeArquivo,
+      types: [
+        {
+          description: "Imagem PNG",
+          accept: { "image/png": [".png"] }
+        }
+      ]
+    });
+    return { handle: handle, cancelado: false };
+  } catch (erro) {
+    if (erro && erro.name === "AbortError") {
+      return { handle: null, cancelado: true };
+    }
+    console.warn("Seletor nativo de arquivo indisponível; usando download padrão.", erro);
+    return { handle: null, cancelado: false };
+  }
+}
+
+async function tierListSalvarPng(blob, nomeArquivo, handle) {
+  if (!blob) throw new Error("PNG vazio");
+
+  if (handle && typeof handle.createWritable === "function") {
+    const gravador = await handle.createWritable();
+    try {
+      await gravador.write(blob);
+    } finally {
+      await gravador.close();
+    }
+    return;
+  }
+
+  if (typeof builderBaixarBlob === "function") {
+    builderBaixarBlob(blob, nomeArquivo);
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeArquivo;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+}
+
 async function tierListExportarPng() {
   if (typeof html2canvas !== "function") {
     alert("O gerador de imagem ainda não carregou. Atualize a página e tente novamente.");
@@ -15039,14 +15088,24 @@ async function tierListExportarPng() {
   const botao = document.getElementById("tierListExportBtn");
   if (!area || !pagina) return;
 
+  const nome = tierListNormalizarTexto(tierListEstado && tierListEstado.title || "tier-list-dsr").replace(/\s+/g, "_") || "tier_list_dsr";
+  const data = typeof builderDataArquivo === "function" ? builderDataArquivo() : new Date().toISOString().slice(0, 10);
+  const nomeArquivo = "holy_guardians_" + nome + "_" + data + ".png";
+
   const original = botao ? botao.innerHTML : "";
   let restaurar = function() {};
+  let destino = { handle: null, cancelado: false };
 
   try {
     if (botao) {
       botao.disabled = true;
       botao.innerHTML = "<span>◌</span> GERANDO PNG...";
     }
+
+    /* Abre o seletor antes das esperas do html2canvas para o Opera/Chromium
+       não perder a ativação do clique e bloquear o salvamento. */
+    destino = await tierListPrepararDestinoPng(nomeArquivo);
+    if (destino.cancelado) return;
 
     pagina.classList.add("tierlist-exporting");
     restaurar = await tierListTrocarImagensParaExport(area);
@@ -15070,11 +15129,7 @@ async function tierListExportarPng() {
     });
 
     const blob = await new Promise(function(resolve) { canvas.toBlob(resolve, "image/png", 1); });
-    if (!blob) throw new Error("Não foi possível montar o arquivo PNG.");
-
-    const nome = tierListNormalizarTexto(tierListEstado && tierListEstado.title || "tier-list-dsr").replace(/\s+/g, "_") || "tier_list_dsr";
-    const data = typeof builderDataArquivo === "function" ? builderDataArquivo() : new Date().toISOString().slice(0, 10);
-    builderBaixarBlob(blob, "holy_guardians_" + nome + "_" + data + ".png");
+    await tierListSalvarPng(blob, nomeArquivo, destino.handle);
   } catch (erro) {
     console.error("Erro ao exportar Tier List:", erro);
     alert("Não foi possível gerar o PNG da Tier List. Atualize a página e tente novamente.");
@@ -15723,12 +15778,21 @@ async function tierListDmoExportarPng() {
   const botao = document.getElementById("tierListDmoExportBtn");
   if (!area || !pagina) return;
 
+  const nome = tierListDmoNormalizarTexto(tierListDmoEstado && tierListDmoEstado.title || "tier-list-dmo").replace(/\s+/g,"_") || "tier_list_dmo";
+  const data = typeof builderDataArquivo === "function" ? builderDataArquivo() : new Date().toISOString().slice(0,10);
+  const nomeArquivo = "holy_guardians_" + nome + "_" + data + ".png";
+
   const original = botao ? botao.innerHTML : "";
+  let destino = { handle: null, cancelado: false };
   try {
     if (botao) {
       botao.disabled = true;
       botao.innerHTML = "<span>◌</span> GERANDO PNG...";
     }
+
+    destino = await tierListPrepararDestinoPng(nomeArquivo);
+    if (destino.cancelado) return;
+
     pagina.classList.add("tierlist-exporting");
     if (typeof builderEsperarImagens === "function") await builderEsperarImagens(area);
     await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
@@ -15747,10 +15811,7 @@ async function tierListDmoExportarPng() {
       ignoreElements:function(element) { return element.hasAttribute && element.hasAttribute("data-html2canvas-ignore"); }
     });
     const blob = await new Promise(function(resolve) { canvas.toBlob(resolve, "image/png", 1); });
-    if (!blob) throw new Error("PNG vazio");
-    const nome = tierListDmoNormalizarTexto(tierListDmoEstado && tierListDmoEstado.title || "tier-list-dmo").replace(/\s+/g,"_") || "tier_list_dmo";
-    const data = typeof builderDataArquivo === "function" ? builderDataArquivo() : new Date().toISOString().slice(0,10);
-    builderBaixarBlob(blob, "holy_guardians_" + nome + "_" + data + ".png");
+    await tierListSalvarPng(blob, nomeArquivo, destino.handle);
   } catch (erro) {
     console.error("Erro Tier List DMO export:", erro);
     alert("Não foi possível gerar o PNG. Se algum ícone externo ainda estiver carregando, aguarde alguns segundos e tente novamente.");
