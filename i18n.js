@@ -433,6 +433,9 @@
       });
     }
 
+    var builder = document.getElementById("builderPagina");
+    if (builder) applyKoreanRelationTooltips(builder);
+
     var tooltip = document.getElementById("counterFinderDigiTooltip");
     if (tooltip && !tooltip.hidden) applyCounterTooltipReferenceTranslations(tooltip);
 
@@ -686,6 +689,461 @@
     }
   }
 
+
+
+  /* =====================================================
+     PHASE 5 — TEAM BUILDER / STATUS SIMULATOR / CALCULATOR
+     Isolated translation layer. No gameplay/calculation logic is changed.
+  ===================================================== */
+
+  function phase5ElementLabel(value) {
+    var original = String(value || "").trim().toUpperCase();
+    if (currentLanguage !== "ko-KR") return original;
+    var info = koElementData(original);
+    return info ? info.ko + " (" + info.ref + ")" : original;
+  }
+
+  function phase5DigimonDisplay(original) {
+    var raw = String(original || "").trim();
+    if (currentLanguage !== "ko-KR") return raw;
+    var ko = koDigimonName(raw);
+    return ko ? ko + " (" + raw + ")" : raw;
+  }
+
+  function phase5TextNodeOriginal(node) {
+    if (!node) return "";
+    if (node.__hgI18nOriginalText == null) node.__hgI18nOriginalText = String(node.nodeValue || "");
+    return String(node.__hgI18nOriginalText || "");
+  }
+
+  function phase5WalkTextNodes(root, callback) {
+    if (!root || !document.createTreeWalker) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) callback(node);
+  }
+
+  function phase5TranslateTextNodes(root, rules) {
+    if (!root) return;
+    phase5WalkTextNodes(root, function (node) {
+      var original = phase5TextNodeOriginal(node);
+      var next = original;
+      (rules || []).forEach(function (rule) {
+        next = next.replace(rule[0], typeof rule[1] === "function" ? rule[1] : String(rule[1]));
+      });
+      if (node.nodeValue !== next) node.nodeValue = next;
+    });
+  }
+
+  function phase5SetStoredText(element, key, fallback) {
+    if (!element) return;
+    if (!element.hasAttribute("data-hg-phase5-original")) element.setAttribute("data-hg-phase5-original", String(element.textContent || "").trim());
+    var original = element.getAttribute("data-hg-phase5-original") || fallback || "";
+    setText(element, currentLanguage === DEFAULT_LANGUAGE ? original : translate(key, original));
+  }
+
+  function phase5TranslateKoElementElement(element) {
+    if (!element) return;
+    var original = element.getAttribute("data-hg-element-original") || String(element.textContent || "").trim();
+    if (!element.getAttribute("data-hg-element-original")) element.setAttribute("data-hg-element-original", original);
+    setText(element, currentLanguage === "ko-KR" ? phase5ElementLabel(original) : original);
+  }
+
+  function applyBuilderStaticTranslations() {
+    var root = document.getElementById("builderPagina");
+    if (!root) return;
+    setText(one(".builder-heading .page-title", root), translate("builder.title", "TEAM BUILDER"));
+    setText(one(".builder-heading .page-subtitle", root), translate("builder.subtitle", "Selecione até 8 Digimons e monte seu time para o Guild Boss."));
+    replaceButtonTextNode(one("#builderSaveImageBtn", root), "builder.saveImage", "SALVAR IMAGEM DO TIME");
+    replaceButtonTextNode(one("#builderExportBtn", root), "builder.export", "EXPORTAR TIME");
+    replaceButtonTextNode(one("#builderImportBtn", root), "builder.import", "IMPORTAR TIME");
+
+    var boxes = all(".builder-analysis-box", root);
+    if (boxes[0]) {
+      setText(one(".builder-analysis-title span", boxes[0]), translate("builder.fieldSynergy", "FIELD SYNERGY"));
+      setText(one(".builder-analysis-title small", boxes[0]), translate("builder.fieldSynergyHint", "2 / 3 DIGIMONS DIFERENTES"));
+    }
+    if (boxes[1]) {
+      setText(one(".builder-analysis-title span", boxes[1]), translate("builder.teamUtility", "TEAM UTILITY"));
+      setText(one(".builder-analysis-title small", boxes[1]), translate("builder.teamUtilityHint", "EFEITOS PRESENTES NO TIME"));
+    }
+    if (boxes[2]) {
+      setText(one(".builder-analysis-title span", boxes[2]), translate("builder.elementCoverage", "ELEMENT COVERAGE"));
+      setText(one(".builder-analysis-title small", boxes[2]), translate("builder.elementCoverageHint", "SKILLS ATUALMENTE SELECIONADAS"));
+    }
+  }
+
+  function applyBuilderDynamicTranslations() {
+    var root = document.getElementById("builderPagina");
+    if (!root) return;
+
+    all(".slot", root).forEach(function (slot, index) {
+      setText(one(".slot-title", slot), formatTranslation("builder.slot", "SLOT {n}", { n: index + 1 }));
+      setAttr(one(".team-search", slot), "placeholder", translate("builder.searchPlaceholder", "Digite o nome do Digimon..."));
+      var status = one(".team-search-status", slot);
+      if (status) {
+        var currentStatus = String(status.textContent || "").trim();
+        var lastStatus = status.getAttribute("data-hg-builder-status-last") || "";
+        var raw = status.getAttribute("data-hg-builder-status-original") || currentStatus;
+        if (currentStatus !== lastStatus) { raw = currentStatus; status.setAttribute("data-hg-builder-status-original", raw); }
+        if (/^Nenhum Mega encontrado\.?$/i.test(raw)) setText(status, translate("builder.noMega", "Nenhum Mega encontrado."));
+        else {
+          var match = raw.match(/^(\d+)\s+op(?:ção|ções)$/i);
+          if (match) setText(status, formatTranslation(Number(match[1]) === 1 ? "builder.optionOne" : "builder.optionMany", "{count} opções", { count: match[1] }));
+          else if (/^✓\s+/.test(raw)) {
+            var name = raw.replace(/^✓\s+/, "");
+            setText(status, "✓ " + phase5DigimonDisplay(name));
+          }
+        }
+        status.setAttribute("data-hg-builder-status-last", String(status.textContent || "").trim());
+      }
+    });
+
+    all(".team-suggestion", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-digimon-original") || String(el.textContent || "").trim();
+      if (!original) return;
+      if (!el.getAttribute("data-hg-digimon-original")) el.setAttribute("data-hg-digimon-original", original);
+      setText(el, phase5DigimonDisplay(original));
+    });
+
+    all(".selected-info .type-label", root).forEach(function (el) { applyReferenceLabel(el, "TYPE", true); });
+    all(".selected-info .field .label", root).forEach(function (el) { applyReferenceLabel(el, "FIELD", true); });
+    all(".selected-info .strong .label", root).forEach(function (el) { applyReferenceLabel(el, "STRONG", true); });
+    all(".selected-info .weak .label", root).forEach(function (el) { applyReferenceLabel(el, "WEAK", true); });
+
+    all(".selected-info .mini-stat", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-mini-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-mini-original")) el.setAttribute("data-hg-mini-original", original);
+      var match = original.match(/^(DEF BREAK|HP|SP|STR|INT|DEF|RES|SPD|CC|DOT)\s*:\s*(.*)$/i);
+      if (!match) return;
+      var key = match[1].toUpperCase();
+      var value = match[2];
+      if (currentLanguage === "ko-KR") {
+        var ref = koreanReferenceData(key);
+        var displayValue = /^NO$/i.test(value) ? "없음 (NO)" : value.replace(/^SKILL\s+(\d+)$/i, function (_, n) { return "스킬 " + n + " (Skill " + n + ")"; });
+        setText(el, (ref ? ref.ko + " (" + ref.ref + ")" : key) + ": " + displayValue);
+      } else setText(el, original);
+    });
+
+    all(".selected-info .skill-title", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-skill-title-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-skill-title-original")) el.setAttribute("data-hg-skill-title-original", original);
+      if (currentLanguage !== "ko-KR") { setText(el, original); return; }
+      var next = original.replace(/^SKILL\s+(\d+)/i, function (_, n) { return "스킬 " + n + " (Skill " + n + ")"; });
+      next = next.replace(/\bBASE\s*:/gi, "기본 (Base):");
+      Object.keys(koDataMap("__elements")).sort(function(a,b){return b.length-a.length;}).forEach(function (key) {
+        var info = koElementData(key); if (!info) return;
+        next = next.replace(new RegExp("\\b" + key + "\\b", "g"), info.ko + " (" + info.ref + ")");
+      });
+      setText(el, next);
+    });
+
+    all(".selected-info .skill select option", root).forEach(function (option) {
+      var original = option.getAttribute("data-hg-element-original") || String(option.value || option.textContent || "").trim();
+      if (!option.getAttribute("data-hg-element-original")) option.setAttribute("data-hg-element-original", original);
+      setText(option, currentLanguage === "ko-KR" ? phase5ElementLabel(original) : original);
+    });
+    all(".selected-info .skill-efeito .efeito-buff > span:last-child, .selected-info .skill-efeito .efeito-remove > span:last-child", root).forEach(phase5TranslateKoElementElement);
+
+    all(".builder-analysis .analysis-empty", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-analysis-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-analysis-original")) el.setAttribute("data-hg-analysis-original", original);
+      if (/^Nenhuma synergy ativa/i.test(original)) setText(el, translate("builder.noSynergy", original));
+      else if (/^Selecione Digimons para analisar/i.test(original)) setText(el, translate("builder.noCoverage", original));
+      else setText(el, original);
+    });
+    setText(one(".synergy-reference-title", root), translate("builder.synergyList", "SYNERGY LIST"));
+    all(".utility-row strong", root).forEach(function (el) { var k=canonicalReferenceKey(el.textContent); if(k) applyReferenceLabel(el,k,true); });
+    all(".coverage-row > strong", root).forEach(phase5TranslateKoElementElement);
+
+    applyKoreanRelationTooltips(root);
+  }
+
+  function applyStatusSimulatorStaticTranslations() {
+    var root = document.getElementById("statusSimulatorPagina");
+    if (!root) return;
+    setText(one(".status-simulator-header .page-title", root), translate("status.title", "STATUS SIMULATOR"));
+    setText(one(".status-simulator-header .page-subtitle", root), translate("status.subtitle", "Combine Baby Correction, Tetris, acessórios e deck para visualizar os status finais do Digimon."));
+    setText(one(".status-simulator-accuracy-note strong", root), translate("status.approxTitle", "VALORES APROXIMADOS"));
+    setText(one(".status-simulator-accuracy-note span", root), translate("status.approxText", "Os cálculos críticos podem apresentar pequenas variações em relação ao jogo."));
+    setText(one(".status-simulator-search > label", root), translate("status.selectDigimon", "SELECIONE O DIGIMON"));
+    setAttr(one("#statusSimulatorSearch", root), "placeholder", translate("status.searchPlaceholder", "Digite o nome do Digimon..."));
+    setText(one(".status-simulator-searchbox > button", root), translate("status.clear", "LIMPAR"));
+
+    var tetrisTitle = one(".status-simulator-tetris-title", root);
+    if (tetrisTitle) { setText(one(":scope > div > strong", tetrisTitle), translate("status.tetris", "TETRIS")); setText(one(":scope > div > small", tetrisTitle), translate("status.tetrisHint", "Escolha o valor e preencha até 16 espaços.")); }
+    var step0 = one('.status-simulator-step[data-status-step="0"] .status-simulator-panel-title', root);
+    var step1 = one('.status-simulator-step[data-status-step="1"] .status-simulator-panel-title', root);
+    var step2 = one('.status-simulator-step[data-status-step="2"] .status-simulator-panel-title', root);
+    var step3 = one('.status-simulator-step[data-status-step="3"] .status-simulator-panel-title', root);
+    var step4 = one('.status-simulator-step[data-status-step="4"] .status-simulator-panel-title', root);
+    if (step0) { setText(one("strong", step0), translate("status.baby", "BABY CORRECTION")); setText(one("small", step0), translate("status.babyHint", "Máximo de 14% por status e 28% no total.")); }
+    if (step1) { setText(one("strong", step1), translate("status.accessories", "ACESSÓRIOS")); setText(one("small", step1), translate("status.accessoriesHint", "Informe os valores fixos presentes nos equipamentos.")); }
+    if (step2) { setText(one("strong", step2), translate("status.clothing", "STATUS EM ROUPA")); setText(one("small", step2), translate("status.clothingHint", "Informe os bônus fixos presentes nas roupas.")); }
+    if (step3) { setText(one("strong", step3), translate("status.deck", "STATUS OBTIDOS POR DECK")); setText(one("small", step3), translate("status.deckHint", "Informe os bônus fixos concedidos pelo deck.")); }
+    if (step4) { setText(one("strong", step4), translate("status.final", "RESULTADO FINAL")); setText(one("small", step4), translate("status.finalHint", "Composição completa pronta para captura.")); }
+    setText(one(".status-simulator-mega-potential > span", root), translate("status.megaPotential", "MEGA POTENTIAL"));
+    setText(one(".status-simulator-cube-palette > span", root), translate("status.addCube", "ADICIONAR CUBO"));
+    var cubeButtons = all(".status-simulator-cube-mode > button", root);
+    cubeButtons.forEach(function (button) { replaceButtonTextNode(button, "status.cubesOf", "CUBOS DE"); });
+    setText(one(".status-simulator-meter-line > span", root), translate("status.totalUsed", "TOTAL UTILIZADO"));
+    setText(one(".status-simulator-tetris-actions button:first-of-type", root), translate("status.undo", "DESFAZER"));
+    setText(one(".status-simulator-tetris-actions button:last-of-type", root), translate("status.reset", "RESET"));
+    setText(one("#statusSimulatorBack", root), translate("status.back", "VOLTAR"));
+  }
+
+  function applyStatusSimulatorDynamicTranslations() {
+    var root = document.getElementById("statusSimulatorPagina");
+    if (!root) return;
+
+    all("#statusSimulatorSuggestions button", root).forEach(function (button) {
+      var name = one("strong", button), meta = one("small", button);
+      if (name) applyKoreanDigimonName(name);
+      if (meta) {
+        var original = meta.getAttribute("data-hg-status-meta-original") || String(meta.textContent || "").trim();
+        if (!meta.getAttribute("data-hg-status-meta-original")) meta.setAttribute("data-hg-status-meta-original", original);
+        var parts = original.split("//").map(function (x) { return x.trim(); });
+        var stageInfo = koStageData(parts[1]);
+        if (currentLanguage === "ko-KR" && stageInfo) setText(meta, parts[0] + " // " + stageInfo.ko + " (" + stageInfo.ref + ")");
+        else setText(meta, original);
+      }
+    });
+    var none = one(".status-simulator-no-suggestion", root);
+    if (none) setText(none, translate("status.noDigimon", "Nenhum Digimon encontrado."));
+
+    var count = one("#statusSimulatorCubeCount", root);
+    if (count) {
+      var match = String(count.textContent || "").match(/^(\d+)\s*\/\s*16/);
+      if (match) setText(count, formatTranslation("status.spaces", "{count} / 16 ESPAÇOS", { count: match[1] }));
+    }
+    var hint = one("#statusSimulatorMegaHint", root);
+    if (hint) {
+      var currentHint = String(hint.textContent || "").trim();
+      var lastHint = hint.getAttribute("data-hg-status-hint-last") || "";
+      var rawHint = hint.getAttribute("data-hg-status-hint-original") || currentHint;
+      if (currentHint !== lastHint) { rawHint = currentHint; hint.setAttribute("data-hg-status-hint-original", rawHint); }
+      var improved = rawHint.match(/^(\d+)\/(\d+)\s+MELHORADOS/i);
+      if (improved) setText(hint, formatTranslation("status.improvedHint", "{used}/{max} MELHORADOS · CLIQUE NO ÍCONE PARA SAIR", { used: improved[1], max: improved[2] }));
+      else setText(hint, translate("status.chooseMega", "Escolha um ícone e clique nos cubos."));
+      hint.setAttribute("data-hg-status-hint-last", String(hint.textContent || "").trim());
+    }
+    all("#statusSimulatorTetris .status-simulator-cube.is-filled", root).forEach(function (cube) {
+      var title = String(cube.getAttribute("title") || "");
+      setAttr(cube, "title", title.indexOf("+1%") >= 0 ? translate("status.cubeMegaTitle", "Clique para aplicar/remover +1%") : translate("status.cubeRemoveTitle", "Clique para remover"));
+      var stat = one("strong", cube); if (stat) applyReferenceLabel(stat, String(stat.textContent || "").trim(), true);
+    });
+    all("#statusSimulatorCubeButtons strong, #statusSimulatorBabyFields label > span, #statusSimulatorAccessoryFields label > span, #statusSimulatorClothingFields label > span, #statusSimulatorDeckFields label > span", root).forEach(function (el) {
+      var key = canonicalReferenceKey(el.textContent); if (key) applyReferenceLabel(el, key, true);
+    });
+
+    var emptyCard = one(".status-simulator-empty-card", root);
+    if (emptyCard) {
+      setText(one("strong", emptyCard), translate("status.selectCard", "SELECIONE UM DIGIMON"));
+      setText(one("span", emptyCard), translate("status.baseAppear", "Os status base aparecerão aqui."));
+    }
+    var digiCard = one("#statusSimulatorDigiCard", root);
+    if (digiCard && !emptyCard) {
+      var name = one(":scope > h3", digiCard); if (name) applyKoreanDigimonName(name);
+      var stage = one(".status-simulator-stage-tag", digiCard);
+      if (stage) applyKoreanStageLabel(stage, stage.getAttribute("data-hg-stage-original") || stage.textContent);
+      all(".status-simulator-card-stats > div > span", digiCard).forEach(function (el) { var key=canonicalReferenceKey(el.textContent); if(key) applyReferenceLabel(el,key,true); });
+      all(".status-simulator-card-stats > div > small", digiCard).forEach(function (el) {
+        var original = el.getAttribute("data-hg-status-small-original") || String(el.textContent || "").trim();
+        if (!el.getAttribute("data-hg-status-small-original")) el.setAttribute("data-hg-status-small-original", original);
+        setText(el, currentLanguage === "pt-BR" ? original : original.replace(/^BASE\s+/i, translate("status.base", "BASE") + " "));
+      });
+    }
+
+    var resultEmpty = one(".status-simulator-result-empty", root);
+    if (resultEmpty) setText(resultEmpty, translate("status.resultEmpty", "Selecione um Digimon para calcular o resultado final."));
+    all(".status-simulator-result-row", root).forEach(function (row) {
+      var stat = one(":scope > strong", row); if (stat) { var key=canonicalReferenceKey(stat.textContent); if(key) applyReferenceLabel(stat,key,true); }
+      var small = one(":scope > small", row);
+      if (small) {
+        var original = small.getAttribute("data-hg-result-original") || String(small.textContent || "").trim();
+        if (!small.getAttribute("data-hg-result-original")) small.setAttribute("data-hg-result-original", original);
+        var next = original;
+        if (currentLanguage !== "pt-BR") {
+          next = next.replace(/\bBASE\b/g, translate("status.base", "BASE"))
+            .replace(/\bBABY\b/g, translate("status.babyShort", "BABY"))
+            .replace(/\bACESS\.\b/g, translate("status.accessShort", "ACCESS."))
+            .replace(/\bROUPA\b/g, translate("status.clothingShort", "CLOTHES"))
+            .replace(/\bDECK\b/g, translate("status.deckShort", "DECK"));
+        }
+        setText(small, next);
+      }
+    });
+    var crit = one(".status-simulator-crit-result", root);
+    if (crit) {
+      var curve = one(":scope > small", crit); if (curve) {
+        var originalCurve = curve.getAttribute("data-hg-curve-original") || String(curve.textContent || "").trim();
+        if (!curve.getAttribute("data-hg-curve-original")) curve.setAttribute("data-hg-curve-original", originalCurve);
+        var nextCurve = currentLanguage === "pt-BR" ? originalCurve : originalCurve.replace(/^CURVA:/, translate("status.curve", "CURVE:")).replace(/INT BASE/g, translate("status.intBase", "BASE INT")).replace(/INT FINAL/g, translate("status.intFinal", "FINAL INT")).replace(/BÔNUS DE INT/g, translate("status.intBonus", "INT BONUS"));
+        setText(curve, nextCurve);
+      }
+      setText(one(":scope > em", crit), translate("status.criticalNote", "VALORES CRÍTICOS APROXIMADOS · A FÓRMULA SEGUE EM CALIBRAÇÃO"));
+    }
+
+    var next = one("#statusSimulatorNext", root);
+    if (next) {
+      var raw = String(next.textContent || "").trim().toUpperCase();
+      if (raw === "EDITAR" || raw === "EDIT" || raw.indexOf("수정") >= 0) setText(next, translate("status.edit", "EDITAR"));
+      else if (raw === "VER RESULTADO" || raw === "VIEW RESULT" || raw.indexOf("결과") >= 0) setText(next, translate("status.viewResult", "VER RESULTADO"));
+      else setText(next, translate("status.next", "NEXT"));
+    }
+    var step = one("#statusSimulatorStepLabel", root);
+    if (step) {
+      var rawStep = String(step.textContent || "").trim();
+      if (/SIMULAÇÃO CONCLUÍDA|SIMULATION COMPLETE|시뮬레이션 완료/i.test(rawStep)) setText(step, translate("status.complete", "SIMULAÇÃO CONCLUÍDA"));
+      else {
+        var m = rawStep.match(/(\d+)\s+(?:DE|OF)\s+5/i) || rawStep.match(/(\d+)\s*\/\s*5/);
+        if (m) setText(step, formatTranslation("status.step", "ETAPA {n} DE 5", { n: m[1] }));
+      }
+    }
+  }
+
+  function applyCalculatorStaticTranslations() {
+    var root = document.getElementById("calculadoraPagina");
+    if (!root) return;
+    setText(one(".page-title", root), translate("calc.title", "CALCULADORA"));
+    setText(one(".page-subtitle", root), translate("calc.subtitle", "Calcule o dano total das Skills Lv.10 com o seu bônus elemental."));
+    setText(one('label[for="calcDigimon"]', root), translate("calc.digimon", "Digimon"));
+    setAttr(one("#calcDigimon", root), "placeholder", translate("calc.searchPlaceholder", "Digite ou selecione um Digimon..."));
+    setText(one('label[for="calcElemento"]', root), translate("calc.appliedElement", "Elemento aplicado"));
+    setText(one('label[for="calcElementoValor"]', root), translate("calc.tamerElement", "Elemento Total do Tamer"));
+    setHtml(one(".calc-help", root), translate("calc.help", one(".calc-help", root) ? one(".calc-help", root).innerHTML : ""));
+    var empty = one("#calcResultados .calc-empty", root); if (empty) setText(empty, translate("calc.emptyStart", "Selecione um Digimon e informe o Elemento Total do Tamer para calcular."));
+    setText(one(".calc-guide-title", root), translate("calc.guideTitle", "COMO USAR A CALCULADORA"));
+    var guide = all(".calc-guide-text", root);
+    if (guide[0]) setHtml(guide[0], translate("calc.guideOpen", guide[0].innerHTML));
+    if (guide[1]) setHtml(guide[1], translate("calc.guideInsert", guide[1].innerHTML));
+    setHtml(one(".calc-guide-note", root), translate("calc.guideNote", one(".calc-guide-note", root) ? one(".calc-guide-note", root).innerHTML : ""));
+    all("#calcElemento option", root).forEach(function (option) {
+      var original = option.getAttribute("data-hg-element-original") || String(option.value || option.textContent || "").trim();
+      if (!option.getAttribute("data-hg-element-original")) option.setAttribute("data-hg-element-original", original);
+      setText(option, currentLanguage === "ko-KR" ? phase5ElementLabel(original) : original);
+    });
+  }
+
+  function applyCalculatorDynamicTranslations() {
+    var root = document.getElementById("calculadoraPagina");
+    if (!root) return;
+
+    all(".calc-autocomplete-item", root).forEach(function (button) {
+      var original = button.getAttribute("data-calc-digimon") || button.getAttribute("data-hg-digimon-original") || String(button.textContent || "").trim();
+      if (!original) return;
+      button.setAttribute("data-hg-digimon-original", original);
+      setText(button, phase5DigimonDisplay(original));
+    });
+    var selectedName = one(".calc-selected-name", root); if (selectedName) applyKoreanDigimonName(selectedName);
+    var calcEmpty = one("#calcResultados .calc-empty", root);
+    if (calcEmpty) {
+      var emptyRaw = String(calcEmpty.textContent || "").trim();
+      if (/da lista para visualizar/i.test(emptyRaw) || /from the list to view/i.test(emptyRaw) || /목록에서.*선택/i.test(emptyRaw)) setText(calcEmpty, translate("calc.emptySelect", "Selecione um Digimon da lista para visualizar as Skills Lv.10."));
+      else setText(calcEmpty, translate("calc.emptyStart", "Selecione um Digimon e informe o Elemento Total do Tamer para calcular."));
+    }
+    all(".calc-element-tag", root).forEach(phase5TranslateKoElementElement);
+
+    all(".calc-skill-identity-copy > small", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-calc-skill-small") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-calc-skill-small")) el.setAttribute("data-hg-calc-skill-small", original);
+      if (currentLanguage === "ko-KR") setText(el, original.replace(/^SKILL\s+(\d+)/i, function(_,n){return "스킬 "+n+" (Skill "+n+")";}));
+      else setText(el, original);
+    });
+    all(".calc-burst-title", root).forEach(function (el) { setText(el, translate("calc.burstSkill", "BURST SKILL")); });
+    all(".calc-burst-selector-label", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-burst-selector-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-burst-selector-original")) el.setAttribute("data-hg-burst-selector-original", original);
+      setText(el, /Usar como base/i.test(original) ? translate("calc.useAsBase", "Usar como base") : translate("calc.burstBasedOn", "Burst baseada em"));
+    });
+    all(".calc-number-label", root).forEach(function (el) {
+      var raw = el.getAttribute("data-hg-calc-label-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-calc-label-original")) el.setAttribute("data-hg-calc-label-original", raw);
+      var map = {
+        "Dano base total":"calc.baseDamageTotal", "Dano total":"calc.totalDamage", "Dano normal total":"calc.normalDamageTotal",
+        "Chance base do efeito":"calc.baseEffectChance", "Dano na Burst":"calc.damageInBurst", "Bônus Burst na taxa":"calc.burstRateBonus",
+        "Base Burst total":"calc.burstBaseTotal", "Dano Burst total":"calc.burstDamageTotal"
+      };
+      setText(el, map[raw] ? translate(map[raw], raw) : raw);
+    });
+    all(".calc-status", root).forEach(function (el) {
+      var raw = el.getAttribute("data-hg-calc-status-original") || String(el.textContent || "").replace(/\s+/g," ").trim();
+      if (!el.getAttribute("data-hg-calc-status-original")) el.setAttribute("data-hg-calc-status-original", raw);
+      if (/^SEM COEFICIENTE$/i.test(raw)) setText(el, translate("calc.noCoefficient", "SEM COEFICIENTE"));
+      else if (/^SEM BÔNUS$/i.test(raw)) setText(el, translate("calc.noBonus", "SEM BÔNUS"));
+      else if (/^BURST DE EFEITO$/i.test(raw)) setText(el, translate("calc.effectBurst", "BURST DE EFEITO"));
+      else {
+        var m = raw.match(/^([A-Z]+)\s+APLICADO$/i);
+        if (m) setText(el, formatTranslation("calc.elementApplied", "{element} APLICADO", { element: currentLanguage === "ko-KR" ? phase5ElementLabel(m[1]) : m[1] }));
+        else setText(el, raw);
+      }
+    });
+
+    var selectedMeta = one(".calc-selected-meta", root);
+    if (selectedMeta) phase5TranslateTextNodes(selectedMeta, currentLanguage === "pt-BR" ? [] : [
+      [/Skills Lv\.10/gi, translate("calc.skillsLv10", "Skills Lv.10")],
+      [/Elemento selecionado:/gi, translate("calc.selectedElement", "Elemento selecionado:")],
+      [/Elemento Total do Tamer:/gi, translate("calc.tamerElementColon", "Elemento Total do Tamer:")]
+    ]);
+
+    var rules = currentLanguage === "pt-BR" ? [] : [
+      [/Skill de efeito/gi, translate("calc.effectSkill", "Skill de efeito")],
+      [/chance base/gi, translate("calc.baseChance", "chance base")],
+      [/Esta Skill não possui coeficiente percentual de dano utilizável na base, mas mantém normalmente seu elemento e as trocas de elemento\./gi, translate("calc.effectNoCoefficientText", "Esta Skill não possui coeficiente percentual de dano utilizável na base, mas mantém normalmente seu elemento e as trocas de elemento.")],
+      [/Esta skill não possui coeficiente de ataque utilizável na base atual\./gi, translate("calc.noAttackCoefficientText", "Esta skill não possui coeficiente de ataque utilizável na base atual.")],
+      [/Elemento Total do Tamer:/gi, translate("calc.tamerElementColon", "Elemento Total do Tamer:")],
+      [/Bônus elemental por hit:/gi, translate("calc.elementBonusPerHit", "Bônus elemental por hit:")],
+      [/Bônus elemental total:/gi, translate("calc.elementBonusTotal", "Bônus elemental total:")],
+      [/Nenhuma Skill com dados de Burst utilizáveis está disponível\./gi, translate("calc.noBurstData", "Nenhuma Skill com dados de Burst utilizáveis está disponível.")],
+      [/Efeito:/gi, translate("calc.effectColon", "Efeito:")],
+      [/Burst:/gi, translate("calc.burstColon", "Burst:")],
+      [/O dano não é multiplicado pela Burst\./gi, translate("calc.damageNotMultiplied", "O dano não é multiplicado pela Burst.")],
+      [/Dano normal preservado:/gi, translate("calc.normalDamagePreserved", "Dano normal preservado:")],
+      [/Bônus elemental por hit permanece normal:/gi, translate("calc.normalBonusPerHit", "Bônus elemental por hit permanece normal:")],
+      [/Total com elemento:/gi, translate("calc.totalWithElement", "Total com elemento:")],
+      [/Esta Skill não possui coeficiente percentual de dano na base, mas mantém normalmente seu elemento e suas trocas de elemento\./gi, translate("calc.noDamageCoefficientButElements", "Esta Skill não possui coeficiente percentual de dano na base, mas mantém normalmente seu elemento e suas trocas de elemento.")],
+      [/original:/gi, translate("calc.originalColon", "original:")],
+      [/Bônus elemental Burst por hit:/gi, translate("calc.burstBonusPerHit", "Bônus elemental Burst por hit:")],
+      [/Bônus elemental Burst total:/gi, translate("calc.burstBonusTotal", "Bônus elemental Burst total:")],
+      [/O elemento ([A-Z]+) não entra na Skill (\d+);\s*portanto não há bônus elemental nesta Burst\./gi, function(_,el,n){return formatTranslation("calc.noElementBurst", "O elemento {element} não entra na Skill {skill}; portanto não há bônus elemental nesta Burst.", {element: currentLanguage === "ko-KR" ? phase5ElementLabel(el) : el, skill:n});}]
+    ];
+    all(".calc-breakdown", root).forEach(function (el) { phase5TranslateTextNodes(el, rules); });
+
+    all(".calc-skill-lv", root).forEach(function (el) {
+      var original = el.getAttribute("data-hg-calc-lv-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-calc-lv-original")) el.setAttribute("data-hg-calc-lv-original", original);
+      var next = original;
+      if (currentLanguage !== "pt-BR") next = next.replace(/DADOS DA DATABASE MASTER FINAL/gi, translate("calc.masterData", "DADOS DA DATABASE MASTER FINAL"));
+      setText(el, next);
+    });
+    all(".calc-burst-skill-option", root).forEach(function (button) {
+      var original = button.getAttribute("data-hg-title-original") || button.getAttribute("title") || "";
+      if (!button.getAttribute("data-hg-title-original")) button.setAttribute("data-hg-title-original", original);
+      var next = original;
+      if (currentLanguage !== "pt-BR") {
+        next = next.replace(/Dados de Burst indisponíveis/g, translate("calc.burstUnavailable", "Dados de Burst indisponíveis"))
+          .replace(/Burst aumenta a taxa do efeito; dano normal não é multiplicado/g, translate("calc.burstEffectTitle", "Burst aumenta a taxa do efeito; dano normal não é multiplicado"))
+          .replace(/Burst de dano com valores exatos da MASTER/g, translate("calc.burstDamageTitle", "Burst de dano com valores exatos da MASTER"));
+      }
+      setAttr(button, "title", next);
+    });
+    all(".calc-skill-tooltip", root).forEach(function (tip) {
+      if (currentLanguage === "pt-BR") return;
+      var tipRules = [
+        [/BURST SKILL/g, translate("calc.burstSkill", "BURST SKILL")],
+        [/SKILL\s+(\d+)/g, function (_, n) { return currentLanguage === "ko-KR" ? "스킬 " + n + " (Skill " + n + ")" : "SKILL " + n; }],
+        [/Tipo:/g, translate("calc.tip.type", "Tipo:")], [/Efeito:/g, translate("calc.tip.effect", "Efeito:")],
+        [/Chance base:/g, translate("calc.tip.baseChance", "Chance base:")], [/Chance:/g, translate("calc.tip.chance", "Chance:")],
+        [/Elemento base:/g, translate("calc.tip.baseElement", "Elemento base:")], [/Mudança por elemento:/g, translate("calc.tip.elementChange", "Mudança por elemento:")],
+        [/Bônus Burst na taxa do efeito:/g, translate("calc.tip.burstRate", "Bônus Burst na taxa do efeito:")],
+        [/Dano permanece igual:/g, translate("calc.tip.damageSame", "Dano permanece igual:")],
+        [/Sem coeficiente percentual de dano na base/g, translate("calc.tip.noDamageCoefficient", "Sem coeficiente percentual de dano na base")],
+        [/Dados de Burst indisponíveis para esta Skill/g, translate("calc.tip.burstUnavailableSkill", "Dados de Burst indisponíveis para esta Skill")]
+      ];
+      phase5TranslateTextNodes(tip, tipRules);
+    });
+  }
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -710,6 +1168,9 @@
     applyRaidStaticTranslations();
     applyDekyuStaticTranslations();
     applyImpmonLiveTranslations();
+    applyBuilderStaticTranslations();
+    applyStatusSimulatorStaticTranslations();
+    applyCalculatorStaticTranslations();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
@@ -1406,6 +1867,9 @@
       applyRaidDynamicTranslations();
       applyDekyuDynamicTranslations();
       applyImpmonLiveTranslations();
+      applyBuilderDynamicTranslations();
+      applyStatusSimulatorDynamicTranslations();
+      applyCalculatorDynamicTranslations();
       applyKoreanReferenceTranslations();
       applyCounterTooltipTranslations();
     });
@@ -1449,6 +1913,15 @@
           break;
         case "siteTopbar":
           applyHeaderEventTranslations();
+          break;
+        case "builderPagina":
+          applyBuilderDynamicTranslations();
+          break;
+        case "statusSimulatorPagina":
+          applyStatusSimulatorDynamicTranslations();
+          break;
+        case "calculadoraPagina":
+          applyCalculatorDynamicTranslations();
           break;
       }
     });
@@ -1495,12 +1968,22 @@
         applyDynamicTranslationsForRoot("counterFinderPagina");
       });
     });
+
+    ["criarSlots", "atualizarSugestoes", "mostrarDadosDoSlot", "atualizarPainelBuilder", "criarSkillSelect"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("builderPagina"); });
+    });
+    ["renderizarStatusSimulator", "renderizarCamposStatusSimulator", "renderizarTetrisStatusSimulator", "renderizarCardStatusSimulator", "renderizarResultadoStatusSimulator", "renderizarEtapaStatusSimulator", "atualizarSugestoesStatusSimulator"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("statusSimulatorPagina"); });
+    });
+    ["atualizarCalculadora", "calcMostrarSugestoes"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("calculadoraPagina"); });
+    });
   }
 
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function (mutations) {
         /* IMPORTANTE: o header precisa ser corrigido mesmo se outra tradução estiver

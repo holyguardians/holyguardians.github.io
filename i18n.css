@@ -357,3 +357,43 @@ html[lang="ko"] #databasePagina .hg-relation-tooltip-copy {
   word-break: keep-all;
   line-height: 1.55;
 }
+
+/* =====================================================
+   PHASE 5 — KO readability for Builder / Status / Calculator
+===================================================== */
+html[lang="ko"] #builderPagina .team-suggestion,
+html[lang="ko"] #calculadoraPagina .calc-autocomplete-item {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+html[lang="ko"] #builderPagina .selected-info .mini-stat {
+  line-height: 1.28;
+  white-space: normal;
+}
+
+html[lang="ko"] #builderPagina .skill-title {
+  line-height: 1.3;
+  white-space: normal;
+}
+
+html[lang="ko"] #builderPagina .utility-row strong.hg-ko-ref-host,
+html[lang="ko"] #statusSimulatorPagina .hg-ko-ref-host {
+  white-space: normal;
+}
+
+html[lang="ko"] #statusSimulatorPagina #statusSimulatorDigiCard > h3.hg-ko-digimon-name-host,
+html[lang="ko"] #calculadoraPagina .calc-selected-name.hg-ko-digimon-name-host {
+  align-items: center;
+}
+
+html[lang="ko"] #statusSimulatorPagina .status-simulator-card-stats .hg-ko-ref-en,
+html[lang="ko"] #statusSimulatorPagina .status-simulator-result-row .hg-ko-ref-en {
+  font-size: 7px;
+}
+
+html[lang="ko"] #calculadoraPagina .calc-element-tag {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+}
