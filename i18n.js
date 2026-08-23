@@ -19,6 +19,8 @@
   var dynamicApplyQueued = false;
   var observerInstalled = false;
   var observerMuteDepth = 0;
+  var dynamicRootQueued = Object.create(null);
+  var runtimeHooksInstalled = false;
 
   function cloneData(value) {
     try { return JSON.parse(JSON.stringify(value)); }
@@ -1418,28 +1420,109 @@
     }, 0);
   }
 
+  function applyDynamicTranslationsForRoot(rootId) {
+    return withObserverMuted(function () {
+      switch (String(rootId || "")) {
+        case "homePagina":
+          applyHomeDynamicTranslations();
+          break;
+        case "hiddenQuestsPagina":
+          applyHiddenDynamicTranslations();
+          break;
+        case "databasePagina":
+          applyDigidexDynamicTranslations();
+          applyKoreanReferenceTranslations();
+          break;
+        case "counterFinderPagina":
+          applyCounterDynamicTranslations();
+          applyKoreanReferenceTranslations();
+          applyCounterTooltipTranslations();
+          break;
+        case "raidBossPagina":
+          applyRaidDynamicTranslations();
+          break;
+        case "dekyuTreasurePagina":
+          applyDekyuDynamicTranslations();
+          break;
+        case "hgImpmonLive":
+          applyImpmonLiveTranslations();
+          break;
+        case "siteTopbar":
+          applyHeaderEventTranslations();
+          break;
+      }
+    });
+  }
+
+  function queueDynamicTranslationsForRoot(rootId) {
+    var key = String(rootId || "");
+    if (!key || dynamicRootQueued[key]) return;
+    dynamicRootQueued[key] = true;
+    window.setTimeout(function () {
+      dynamicRootQueued[key] = false;
+      applyDynamicTranslationsForRoot(key);
+    }, 0);
+  }
+
+  function wrapRuntimeFunction(name, after) {
+    var original = window[name];
+    if (typeof original !== "function" || original.__hgI18nWrapped) return;
+    var wrapped = function () {
+      var result = original.apply(this, arguments);
+      try { after(); } catch (error) { /* isolated addon */ }
+      return result;
+    };
+    wrapped.__hgI18nWrapped = true;
+    wrapped.__hgI18nOriginal = original;
+    window[name] = wrapped;
+  }
+
+  function installRuntimeHooks() {
+    if (runtimeHooksInstalled) return;
+    runtimeHooksInstalled = true;
+
+    /* O script principal reescreve "PRÓXIMO HH:00" duas vezes por segundo
+       (timers de Raid e Dekyu). Traduzimos no MESMO call stack para nunca existir
+       um frame visível em português quando EN/KO estiver ativo. */
+    wrapRuntimeFunction("atualizarHgHeaderCountdowns", function () {
+      withObserverMuted(applyHeaderEventTranslations);
+    });
+
+    /* O Counter Finder reconstrói cards inteiros. Traduzir logo após o render
+       evita depender de um observer global e elimina o vai-e-volta no KO. */
+    ["counterFinderRenderizarTarget", "counterFinderRenderizarResultados", "counterFinderPesquisarAlvo", "counterFinderMostrarTooltip"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () {
+        applyDynamicTranslationsForRoot("counterFinderPagina");
+      });
+    });
+  }
+
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
     [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function (mutations) {
-        if (observerMuteDepth > 0) return;
-
-        /* O header é atualizado pelo timer principal a cada segundo.
-           Traduzimos o texto do Dekyu no mesmo microtask, antes do browser pintar,
-           evitando o efeito PRÓXIMO -> NEXT/다음 -> PRÓXIMO. */
+        /* IMPORTANTE: o header precisa ser corrigido mesmo se outra tradução estiver
+           momentaneamente com o observer silenciado. O timer original escreve PT. */
         if (root.id === "siteTopbar") {
-          withObserverMuted(function () { applyHeaderEventTranslations(); });
+          applyHeaderEventTranslations();
           return;
         }
 
-        /* O contador do Dekyu muda a cada segundo, mas os números não precisam
-           disparar uma nova tradução do site inteiro. */
+        if (observerMuteDepth > 0) return;
+
+        /* Relógios alteram apenas números e não devem retraduzir outras páginas. */
+        if (root.id === "homePagina" &&
+            mutationsOnlyInside(mutations, "#ofdHomeCountdown, [id^='raidHomeCountdown']")) return;
+        if (root.id === "raidBossPagina" &&
+            mutationsOnlyInside(mutations, "#raidKstClock, [id^='raidCountdown']")) return;
         if (root.id === "dekyuTreasurePagina" &&
             mutationsOnlyInside(mutations, "#dekyuCountdown, #dekyuNextTime")) return;
 
-        queueDynamicTranslations();
+        /* Cada seção traduz APENAS a si mesma. Antes qualquer relógio do site
+           disparava uma tradução completa, fazendo o Counter KO oscilar. */
+        queueDynamicTranslationsForRoot(root.id);
       });
       observer.observe(root, { childList: true, subtree: true, characterData: true });
     });
@@ -1535,6 +1618,7 @@
 
     applyStaticTranslations();
     updateLanguageUi();
+    installRuntimeHooks();
     installObservers();
     window.setTimeout(function () {
       refreshHiddenQuestUi();
