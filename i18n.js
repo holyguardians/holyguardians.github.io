@@ -18,6 +18,7 @@
   var hiddenBaseData = null;
   var dynamicApplyQueued = false;
   var observerInstalled = false;
+  var observerMuteDepth = 0;
 
   function cloneData(value) {
     try { return JSON.parse(JSON.stringify(value)); }
@@ -87,6 +88,29 @@
     if (!element) return;
     var next = String(value == null ? "" : value);
     if (element.getAttribute(name) !== next) element.setAttribute(name, next);
+  }
+
+  function withObserverMuted(callback) {
+    observerMuteDepth += 1;
+    try { return callback(); }
+    finally {
+      window.setTimeout(function () {
+        observerMuteDepth = Math.max(0, observerMuteDepth - 1);
+      }, 0);
+    }
+  }
+
+  function mutationElement(mutation) {
+    if (!mutation || !mutation.target) return null;
+    return mutation.target.nodeType === 1 ? mutation.target : mutation.target.parentElement;
+  }
+
+  function mutationsOnlyInside(mutations, selector) {
+    if (!mutations || !mutations.length) return false;
+    return Array.prototype.every.call(mutations, function (mutation) {
+      var el = mutationElement(mutation);
+      return !!(el && el.closest && el.closest(selector));
+    });
   }
 
   function all(selector, root) {
@@ -1177,7 +1201,7 @@
     setAttr(document.getElementById("counterFinderTargetInput"), "placeholder", translate("counter.searchPlaceholder", "Digite o nome do Digimon..."));
     setText(one('label[for="counterFinderStage"] > span', root), translate("counter.candidateStage", "STAGE DOS CANDIDATOS"));
     var stageAll = one('#counterFinderStage option[value="ALL"]', root);
-    if (stageAll) setText(stageAll, translate("counter.all", "TODOS"));
+    if (stageAll) setText(stageAll, currentLanguage === "ko-KR" ? "전체 (All)" : translate("counter.all", "TODOS"));
     setText(one('label[for="counterFinderTargetPosition"] > span', root), translate("counter.targetPosition", "POSIÇÃO DO ALVO"));
     setText(one('#counterFinderTargetPosition option[value="ANY"]', root), translate("counter.position.any", "NÃO DEFINIDA"));
     setText(one('#counterFinderTargetPosition option[value="FRONT"]', root), translate("counter.position.front", "FRONT LINE"));
@@ -1371,16 +1395,18 @@
   }
 
   function applyDynamicTranslations() {
-    applyHomeDynamicTranslations();
-    applyHiddenDynamicTranslations();
-    applyDigidexDynamicTranslations();
-    applyCounterDynamicTranslations();
-    applyHeaderEventTranslations();
-    applyRaidDynamicTranslations();
-    applyDekyuDynamicTranslations();
-    applyImpmonLiveTranslations();
-    applyKoreanReferenceTranslations();
-    applyCounterTooltipTranslations();
+    return withObserverMuted(function () {
+      applyHomeDynamicTranslations();
+      applyHiddenDynamicTranslations();
+      applyDigidexDynamicTranslations();
+      applyCounterDynamicTranslations();
+      applyHeaderEventTranslations();
+      applyRaidDynamicTranslations();
+      applyDekyuDynamicTranslations();
+      applyImpmonLiveTranslations();
+      applyKoreanReferenceTranslations();
+      applyCounterTooltipTranslations();
+    });
   }
 
   function queueDynamicTranslations() {
@@ -1397,7 +1423,24 @@
     observerInstalled = true;
     [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
-      var observer = new MutationObserver(function () { queueDynamicTranslations(); });
+      var observer = new MutationObserver(function (mutations) {
+        if (observerMuteDepth > 0) return;
+
+        /* O header é atualizado pelo timer principal a cada segundo.
+           Traduzimos o texto do Dekyu no mesmo microtask, antes do browser pintar,
+           evitando o efeito PRÓXIMO -> NEXT/다음 -> PRÓXIMO. */
+        if (root.id === "siteTopbar") {
+          withObserverMuted(function () { applyHeaderEventTranslations(); });
+          return;
+        }
+
+        /* O contador do Dekyu muda a cada segundo, mas os números não precisam
+           disparar uma nova tradução do site inteiro. */
+        if (root.id === "dekyuTreasurePagina" &&
+            mutationsOnlyInside(mutations, "#dekyuCountdown, #dekyuNextTime")) return;
+
+        queueDynamicTranslations();
+      });
       observer.observe(root, { childList: true, subtree: true, characterData: true });
     });
   }
