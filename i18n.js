@@ -99,6 +99,152 @@
     catch (error) { return null; }
   }
 
+
+  function koreanReferenceData(key) {
+    var refs = dictionary("ko-KR").__referenceLabels || {};
+    return refs[String(key || "").toUpperCase()] || null;
+  }
+
+  function koreanReferenceHtml(key, compact) {
+    var info = koreanReferenceData(key);
+    if (!info) return escapeHtml(String(key || ""));
+    var klass = "hg-ko-ref-label" + (compact ? " hg-ko-ref-label-compact" : "");
+    return '<span class="' + klass + '"><span class="hg-ko-ref-main">' + escapeHtml(info.ko) + '</span><small class="hg-ko-ref-en">(' + escapeHtml(info.ref) + ')</small></span>';
+  }
+
+  function canonicalReferenceKey(raw) {
+    var text = String(raw == null ? "" : raw).replace(/\s+/g, " ").trim();
+    var upper = text.toUpperCase();
+    var keys = ["DEF BREAK","STRONG","WEAK","FIELD","TYPE","CC","DOT","HP","SP","STR","INT","DEF","RES","SPD"];
+    for (var i = 0; i < keys.length; i++) {
+      if (upper === keys[i]) return keys[i];
+      var info = koreanReferenceData(keys[i]);
+      if (info && (text === info.ko || text.indexOf(info.ko + " ") === 0 || text.indexOf("(" + info.ref + ")") >= 0)) return keys[i];
+    }
+    return "";
+  }
+
+  function applyReferenceLabel(element, key, compact) {
+    if (!element) return;
+    var canonical = String(key || element.getAttribute("data-hg-ref-key") || canonicalReferenceKey(element.textContent)).toUpperCase();
+    if (!canonical) return;
+    element.setAttribute("data-hg-ref-key", canonical);
+    if (currentLanguage === "ko-KR") {
+      element.classList.add("hg-ko-ref-host");
+      setHtml(element, koreanReferenceHtml(canonical, !!compact));
+      var info = koreanReferenceData(canonical);
+      if (info) setAttr(element, "title", info.ko + " (" + info.ref + ")");
+    } else {
+      element.classList.remove("hg-ko-ref-host");
+      setText(element, canonical === "DOT" ? "DOT" : canonical);
+      if (element.hasAttribute("title")) element.removeAttribute("title");
+    }
+  }
+
+  function canonicalSkillToken(text) {
+    var raw = String(text == null ? "" : text).replace(/\s+/g, " ").trim();
+    var match = raw.match(/^(?:SKILL|스킬)\s*(\d+)(?:\s*\(Skill\s*\d+\))?$/i);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function applySkillReferenceText(element) {
+    if (!element) return;
+    var slot = Number(element.getAttribute("data-hg-skill-ref") || canonicalSkillToken(element.textContent));
+    if (!slot) return;
+    element.setAttribute("data-hg-skill-ref", String(slot));
+    setText(element, currentLanguage === "ko-KR" ? "스킬 " + slot + " (Skill " + slot + ")" : "SKILL " + slot);
+  }
+
+  function applyNoReferenceText(element) {
+    if (!element) return;
+    var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+    var isNo = element.getAttribute("data-hg-no-ref") === "1" || /^NO$/i.test(raw) || /^없음(?:\s*\(NO\))?$/i.test(raw);
+    if (!isNo) return;
+    element.setAttribute("data-hg-no-ref", "1");
+    setText(element, currentLanguage === "ko-KR" ? "없음 (NO)" : "NO");
+  }
+
+  function applyKoreanReferenceTranslations() {
+    var digidex = document.getElementById("databasePagina");
+    if (digidex) {
+      all(".card .type-label", digidex).forEach(function (el) { applyReferenceLabel(el, "TYPE", true); });
+      all(".card .stats .label", digidex).forEach(function (el) { applyReferenceLabel(el, "", false); });
+      all(".card .stats .value", digidex).forEach(function (el) {
+        applySkillReferenceText(el);
+        applyNoReferenceText(el);
+      });
+
+      all(".digidex-table thead th", digidex).forEach(function (el) {
+        var key = canonicalReferenceKey(el.textContent);
+        if (key) applyReferenceLabel(el, key, true);
+        else applySkillReferenceText(el);
+      });
+      all(".digidex-table tbody tr", digidex).forEach(function (row) {
+        var cells = all(":scope > td", row);
+        [12,13,14].forEach(function (index) {
+          var cell = cells[index];
+          if (!cell) return;
+          applySkillReferenceText(cell);
+          applyNoReferenceText(cell);
+        });
+      });
+
+      all("#filtroSkillElemento .digidex-skill-scope label", digidex).forEach(function (label) {
+        var input = one("input", label);
+        var textNode = Array.prototype.slice.call(label.childNodes || []).find(function (node) { return node.nodeType === 3 && String(node.nodeValue || "").trim(); });
+        if (!textNode) return;
+        var slot = canonicalSkillToken(textNode.nodeValue);
+        if (!slot) return;
+        var next = currentLanguage === "ko-KR" ? " 스킬 " + slot + " (Skill " + slot + ")" : " SKILL " + slot;
+        if (textNode.nodeValue !== next) textNode.nodeValue = next;
+        if (input) input.setAttribute("aria-label", currentLanguage === "ko-KR" ? "스킬 " + slot + " (Skill " + slot + ")" : "SKILL " + slot);
+      });
+
+      var profile = document.getElementById("digidexProfile");
+      if (profile && !profile.hidden) {
+        all(".digidex-profile-relations i", profile).forEach(function (el) { applyReferenceLabel(el, "", true); });
+        all(".digidex-profile-stats i", profile).forEach(function (el) { applyReferenceLabel(el, "", true); });
+      }
+    }
+
+    var counter = document.getElementById("counterFinderPagina");
+    if (counter) {
+      all(".counter-finder-result-meta small", counter).forEach(function (el) { applyReferenceLabel(el, "", true); });
+      all(".counter-finder-target-relations > div > small", counter).forEach(function (el) { applyReferenceLabel(el, "", true); });
+      all(".counter-finder-target-spd small", counter).forEach(function (el) { applyReferenceLabel(el, "SPD", true); });
+      all(".counter-finder-effects-list b", counter).forEach(function (el) {
+        var current = String(el.textContent || "");
+        var base = el.getAttribute("data-hg-effect-base") || "";
+        if (!base) {
+          var upper = current.toUpperCase();
+          if (upper.indexOf("DEF BREAK") >= 0 || upper.indexOf("CC") >= 0 || upper.indexOf("DOT") >= 0) {
+            base = current;
+            el.setAttribute("data-hg-effect-base", base);
+          }
+        }
+        if (!base) return;
+        var output = base;
+        if (currentLanguage === "ko-KR") {
+          ["DEF BREAK","CC","DOT"].forEach(function (key) {
+            var info = koreanReferenceData(key);
+            if (!info) return;
+            output = output.replace(new RegExp(key.replace(" ", "\\s+"), "i"), info.ko + " (" + info.ref + ")");
+          });
+        }
+        setText(el, output);
+      });
+    }
+
+    var tooltip = document.getElementById("counterFinderDigiTooltip");
+    if (tooltip && !tooltip.hidden) applyCounterTooltipReferenceTranslations(tooltip);
+  }
+
+  function applyCounterTooltipReferenceTranslations(tooltip) {
+    if (!tooltip) return;
+    all(".counter-finder-tooltip-profile-meta em", tooltip).forEach(function (el) { applyReferenceLabel(el, "", true); });
+    all(".counter-finder-tooltip-stats i", tooltip).forEach(function (el) { applyReferenceLabel(el, "", true); });
+  }
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -793,7 +939,7 @@
   function applyCounterTooltipTranslations() {
     var tooltip = document.getElementById("counterFinderDigiTooltip");
     if (!tooltip || tooltip.hidden) return;
-    /* FIELD / STRONG / WEAK and stat abbreviations are official game labels; keep them unchanged. */
+    applyCounterTooltipReferenceTranslations(tooltip);
   }
 
   function refreshCounterFinderUi() {
@@ -810,6 +956,7 @@
     applyHiddenDynamicTranslations();
     applyDigidexDynamicTranslations();
     applyCounterDynamicTranslations();
+    applyKoreanReferenceTranslations();
     applyCounterTooltipTranslations();
   }
 

@@ -227,3 +227,80 @@
     margin-top: 6px;
   }
 }
+
+/* =====================================================
+   KO REFERENCE LABELS — Korean + original game term
+   Isolated to the Korean language only.
+===================================================== */
+html[lang="ko"] .hg-ko-ref-host {
+  line-height: 1.12;
+}
+
+html[lang="ko"] .hg-ko-ref-label {
+  display: inline-flex;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  vertical-align: middle;
+}
+
+html[lang="ko"] .hg-ko-ref-main {
+  font: inherit;
+  color: inherit;
+  white-space: nowrap;
+}
+
+html[lang="ko"] .hg-ko-ref-en {
+  display: block;
+  max-width: 100%;
+  color: #6387a8;
+  font-size: .70em;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0;
+  white-space: normal;
+}
+
+html[lang="ko"] .hg-ko-ref-label-compact {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+html[lang="ko"] .hg-ko-ref-label-compact .hg-ko-ref-en {
+  display: inline;
+  font-size: .72em;
+  white-space: nowrap;
+}
+
+html[lang="ko"] #databasePagina .card .stats .label.hg-ko-ref-host {
+  min-height: 20px;
+}
+
+html[lang="ko"] #databasePagina .type-label.hg-ko-ref-host {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+html[lang="ko"] #databasePagina .digidex-table th.hg-ko-ref-host {
+  min-width: 72px;
+  white-space: normal;
+}
+
+html[lang="ko"] #databasePagina .digidex-table th.hg-ko-ref-host .hg-ko-ref-en {
+  color: #6387a8;
+  font-size: 7px;
+}
+
+html[lang="ko"] #counterFinderPagina .counter-finder-meta-group small.hg-ko-ref-host,
+html[lang="ko"] #counterFinderPagina .counter-finder-target-relations small.hg-ko-ref-host,
+html[lang="ko"] #counterFinderPagina .counter-finder-target-spd small.hg-ko-ref-host {
+  white-space: normal;
+}
+
+html[lang="ko"] #counterFinderDigiTooltip .hg-ko-ref-en {
+  font-size: 7px;
+}
