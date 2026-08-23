@@ -4248,6 +4248,56 @@ function evolutionTemPotential(row) {
   });
 }
 
+function assinaturaIconeItemEvolutionProfile(valor) {
+  let chave = String(valor == null ? "" : valor).trim().toLowerCase();
+  try {
+    chave = chave.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (erro) {}
+  return chave
+    .replace(/\.(webp|png|jpg|jpeg)$/i, "")
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function nomeArquivoIconeItemEvolutionProfile(valor) {
+  const limpo = String(valor == null ? "" : valor)
+    .trim()
+    .split(/[?#]/)[0];
+  if (!limpo) return "";
+  const partes = limpo.split(/[\\/]/);
+  return partes[partes.length - 1] || "";
+}
+
+function localizarIconeItemEvolutionEmbutido(item) {
+  const mapa = window.HG_DIGIVOLUTION_ITEM_ICONS || {};
+  const chaves = Object.keys(mapa);
+  if (!chaves.length) return "";
+
+  const candidatos = [];
+  const arquivoSource = nomeArquivoIconeItemEvolutionProfile(item && item.sourceIcon);
+  if (arquivoSource) {
+    candidatos.push(
+      arquivoSource.replace(/\.(png|jpg|jpeg|webp)$/i, "") + ".webp"
+    );
+  }
+  if (item && item.name) candidatos.push(String(item.name));
+
+  for (let i = 0; i < candidatos.length; i++) {
+    const exato = String(candidatos[i] || "").toLowerCase();
+    if (mapa[exato]) return mapa[exato];
+
+    const assinatura = assinaturaIconeItemEvolutionProfile(candidatos[i]);
+    if (!assinatura) continue;
+
+    for (let j = 0; j < chaves.length; j++) {
+      if (assinaturaIconeItemEvolutionProfile(chaves[j]) === assinatura) {
+        return mapa[chaves[j]] || "";
+      }
+    }
+  }
+
+  return "";
+}
+
 function renderEvolutionRequirementsBox(row) {
   const linhas = [];
   const level = numeroEvolution(row.level);
@@ -4278,8 +4328,15 @@ function renderEvolutionRequirementsBox(row) {
     if (!item || !item.name) return;
     const qtd = item.quantity !== "" && item.quantity != null ? ` ×${item.quantity}` : "";
     const local = pegarImagem(item.name);
-    const src = local || item.icon || "";
-    const fallback = local && item.icon ? item.icon : "";
+    const embutido = localizarIconeItemEvolutionEmbutido(item);
+
+    // API/Drive continua sendo a fonte principal. Se o thumbnail falhar,
+    // usa o mesmo pacote de ícones incorporados já utilizado pela aba
+    // Digivolution. Assim um item nunca some por diferença de nomenclatura.
+    const src = item.icon || local || embutido || "";
+    const fallback = embutido && embutido !== src
+      ? embutido
+      : (local && local !== src ? local : "");
     linhas.push(`
       <span class="digidex-evo-req-item digidex-evo-req-wide digidex-evo-req-item-with-icon">
         <span class="digidex-evo-req-item-icon">${src ? renderImagemEvolution(src, item.name, fallback) : "◆"}</span>
