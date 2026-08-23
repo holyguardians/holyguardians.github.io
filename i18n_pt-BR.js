@@ -782,3 +782,20 @@ Object.assign(window.HG_I18N["pt-BR"], {
   "giveaway.httpError": "Evil Guardians respondeu HTTP {code}",
   "giveaway.networkError": "O navegador não conseguiu alcançar o Evil Guardians. Verifique o Worker/CORS e tente novamente."
 });
+
+
+/* PHASE 9 — PVP FINAL BOSS */
+Object.assign(window.HG_I18N["pt-BR"], {
+  "pvp9.searchPlaceholder": "Search Digimon...",
+  "pvp9.close": "Fechar",
+  "pvp9.selectSlotAria": "Selecionar Digimon para o slot {slot}",
+  "pvp9.remove": "Remover",
+  "pvp9.subGaugeAria": "Gauge de substituição",
+  "pvp9.dialog.importFailed": "Não foi possível importar o time PvP.\n\n{error}",
+  "pvp9.dialog.surrender": "{name}, deseja realmente desistir da partida? O oponente será declarado vencedor."
+});
+window.HG_I18N["pt-BR"].__pvpExact = {
+  "SELECT DIGIMON": "SELECT DIGIMON",
+  "Clique para escolher um Digimon": "Clique para escolher um Digimon"
+};
+window.HG_I18N["pt-BR"].__pvpDialogs = {};

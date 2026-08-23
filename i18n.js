@@ -929,7 +929,7 @@
 
   function phase6IsDigimonSearchInput(input) {
     if (!input || input.nodeType !== 1) return false;
-    if (input.matches && input.matches("#pesquisa, #counterFinderTargetInput, .team-search, #statusSimulatorSearch, #calcDigimon, #tierListSearch, #tierListDmoSearch, [id^='comparacaoDigimon']")) return true;
+    if (input.matches && input.matches("#pesquisa, #counterFinderTargetInput, .team-search, #statusSimulatorSearch, #calcDigimon, #tierListSearch, #tierListDmoSearch, #pvpPickerSearch, [id^='comparacaoDigimon']")) return true;
     return false;
   }
 
@@ -988,6 +988,7 @@
     phase6WrapSearchFunction("atualizarSugestoes", function (args) { return args[1] || null; });
     phase6WrapSearchFunction("tierListAplicarFiltros", function () { return document.getElementById("tierListSearch"); });
     phase6WrapSearchFunction("tierListDmoAplicarFiltros", function () { return document.getElementById("tierListDmoSearch"); });
+    phase6WrapSearchFunction("pvpRenderPicker", function () { return document.getElementById("pvpPickerSearch"); });
   }
 
   function installPhase6KoreanSearchAliases() {
@@ -2308,6 +2309,8 @@
     if (m) return formatTranslation("tier.dialog.deleteTier", 'Excluir a tier "{name}"?{extra}', {name:m[1], extra:m[2] ? translate("tier.dialog.returnDigis", " Os Digimons dela voltarão para disponíveis.") : ""});
     m = text.match(/^Excluir o ícone personalizado ["“](.+?)["”] deste navegador\?$/);
     if (m) return formatTranslation("tier.dialog.deleteCustom", 'Excluir o ícone personalizado "{name}" deste navegador?', {name:m[1]});
+    var pvpTranslated = phase9TranslatePvpDialogMessage(text);
+    if (pvpTranslated !== text) return pvpTranslated;
     return phase8TranslateSorteioPhrase(text);
   }
 
@@ -2345,6 +2348,312 @@
   }
 
 
+
+  /* =====================================================
+     PHASE 9 — PVP FINAL BOSS
+     Complete presentation-only localization for Team Builder, Import,
+     Challenge Room, Draft, Ban, Formation, Battle and Substitution.
+     Gameplay/network/state logic remains untouched.
+  ===================================================== */
+
+  function phase9PvpExactMap() {
+    return dictionary(currentLanguage).__pvpExact || {};
+  }
+
+  function phase9PvpExact(raw) {
+    var text = String(raw == null ? "" : raw);
+    var map = phase9PvpExactMap();
+    return Object.prototype.hasOwnProperty.call(map, text) ? String(map[text]) : text;
+  }
+
+  function phase9PvpStageLabel(stage, level) {
+    var raw = String(stage || "").replace(/\s+/g, " ").trim();
+    var canonical = raw;
+    var upper = raw.toUpperCase();
+    if (/ROOKIE|성장기/.test(upper) || /성장기/.test(raw)) canonical = "Rookie";
+    else if (/CHAMPION|성숙기/.test(upper) || /성숙기/.test(raw)) canonical = "Champion";
+    else if (/ULTIMATE|완전체/.test(upper) || /완전체/.test(raw)) canonical = "Ultimate";
+    else if (/MEGA|궁극체/.test(upper) || /궁극체/.test(raw)) canonical = "Mega";
+    if (currentLanguage === "ko-KR") {
+      var info = koStageData(canonical);
+      var label = info ? info.ko + " (" + info.ref + ")" : canonical;
+      return level ? label + " · LV. " + level : label;
+    }
+    return (canonical || raw).toUpperCase() + (level ? " · LV. " + level : "");
+  }
+
+  function phase9PvpOriginalText(node) {
+    if (!node) return "";
+    var current = String(node.nodeValue || "");
+    if (node.__hgPvpOriginalText == null ||
+        (node.__hgPvpLastTranslated != null && current !== node.__hgPvpLastTranslated)) {
+      node.__hgPvpOriginalText = current;
+    }
+    return String(node.__hgPvpOriginalText || "");
+  }
+
+  function phase9PvpTranslatePattern(raw) {
+    var text = String(raw == null ? "" : raw).replace(/\s+/g, " ").trim();
+    if (!text) return text;
+
+    var exact = phase9PvpExact(text);
+    if (exact !== text) return exact;
+
+    var stageOnly = text.match(/^(ROOKIE|CHAMPION|ULTIMATE|MEGA)$/i);
+    if (stageOnly) return phase9PvpStageLabel(stageOnly[1], null);
+
+    var stageLv = text.match(/^(ROOKIE|CHAMPION|ULTIMATE|MEGA)\s*·\s*LV\.\s*(\d+)$/i);
+    if (stageLv) return phase9PvpStageLabel(stageLv[1], stageLv[2]);
+
+    var slot = text.match(/^SLOT\s+(\d+)$/i);
+    if (slot && currentLanguage === "ko-KR") return "슬롯 (Slot) " + slot[1];
+
+    var selectMore = text.match(/^SELECT\s+(\d+)\s+MORE$/i);
+    if (selectMore) {
+      if (currentLanguage === "ko-KR") return selectMore[1] + "마리 더 선택";
+      if (currentLanguage === "en-US") return "SELECT " + selectMore[1] + " MORE";
+    }
+
+    var digiCount = text.match(/^(\d+)\s+DIGIMONS\s*·\s*(ROOKIE|CHAMPION|ULTIMATE|MEGA)\s*·\s*LV\.\s*(\d+)$/i);
+    if (digiCount) {
+      if (currentLanguage === "ko-KR") return digiCount[1] + " 디지몬 · " + phase9PvpStageLabel(digiCount[2], digiCount[3]);
+      return digiCount[1] + " DIGIMONS · " + phase9PvpStageLabel(digiCount[2], digiCount[3]);
+    }
+
+    var spaces = text.match(/^(\d+)\s*\/\s*16\s+ESPAÇOS$/i);
+    if (spaces) {
+      if (currentLanguage === "ko-KR") return spaces[1] + " / 16 슬롯";
+      if (currentLanguage === "en-US") return spaces[1] + " / 16 SLOTS";
+    }
+
+    var total = text.match(/^TOTAL:\s*(.+)$/i);
+    if (total) {
+      if (currentLanguage === "ko-KR") return "합계 (Total): " + total[1];
+      if (currentLanguage === "en-US") return "TOTAL: " + total[1];
+    }
+
+    var deckSummary = text.match(/^ATTRBOOST\s+(.+?)\s*·\s*REDUCE\s+(.+)$/i);
+    if (deckSummary && currentLanguage === "ko-KR") return "속성 강화 (Attr Boost) " + deckSummary[1] + " · 피해 감소 (Reduce) " + deckSummary[2];
+
+    var choose = text.match(/^(.+?)\s+escolhe\s+(\d+)\s+Digimons?\.?$/i);
+    if (choose) {
+      if (currentLanguage === "ko-KR") return choose[1] + "님이 디지몬 " + choose[2] + "마리를 선택합니다.";
+      if (currentLanguage === "en-US") return choose[1] + " chooses " + choose[2] + " Digimon" + (choose[2] === "1" ? "" : "s") + ".";
+    }
+
+    var position = text.match(/^(.+?):\s*defina a posição dos 3 Digimons\.$/i);
+    if (position) {
+      if (currentLanguage === "ko-KR") return position[1] + ": 3마리 디지몬의 포지션을 정하세요.";
+      if (currentLanguage === "en-US") return position[1] + ": set the position of the 3 Digimon.";
+    }
+
+    var round = text.match(/^ROUND\s+(\d+)$/i);
+    if (round) {
+      if (currentLanguage === "ko-KR") return "라운드 (Round) " + round[1];
+      return "ROUND " + round[1];
+    }
+
+    var turns = text.match(/^(\d+)\s+turnos?\s+restantes?$/i);
+    if (turns) {
+      if (currentLanguage === "ko-KR") return "남은 턴 " + turns[1] + "회";
+      if (currentLanguage === "en-US") return turns[1] + " turn" + (turns[1] === "1" ? "" : "s") + " remaining";
+    }
+
+    var hpSp = text.match(/^HP\s+([\d.,]+)\s*·\s*SP\s+([\d.,]+)$/i);
+    if (hpSp && currentLanguage === "ko-KR") return "체력 (HP) " + hpSp[1] + " · 스태미나 (SP) " + hpSp[2];
+
+    var burst = text.match(/^([FB])\s*·\s*BURST\s+(\d+)\/5$/i);
+    if (burst && currentLanguage === "ko-KR") return burst[1] + " · 버스트 (Burst) " + burst[2] + "/5";
+
+    return text;
+  }
+
+  function phase9PvpTranslateTextNodes(root) {
+    if (!root || !document.createTreeWalker) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      var parent = node.parentElement;
+      if (!parent || /^(SCRIPT|STYLE|TEXTAREA|OPTION)$/i.test(parent.tagName || "")) continue;
+      var original = phase9PvpOriginalText(node);
+      var match = original.match(/^(\s*)([\s\S]*?)(\s*)$/);
+      var core = match ? match[2] : original;
+      var translated = phase9PvpTranslatePattern(core);
+      var next = (match ? match[1] : "") + translated + (match ? match[3] : "");
+      if (node.nodeValue !== next) node.nodeValue = next;
+      node.__hgPvpLastTranslated = next;
+    }
+  }
+
+  function phase9PvpTrackOriginal(element, attrName) {
+    if (!element) return "";
+    var originalAttr = "data-hg-pvp-" + attrName + "-original";
+    var lastAttr = "data-hg-pvp-" + attrName + "-last";
+    var current = attrName === "text" ? String(element.textContent || "").replace(/\s+/g, " ").trim() : String(element.getAttribute(attrName) || "");
+    var original = element.getAttribute(originalAttr) || "";
+    var last = element.getAttribute(lastAttr) || "";
+    if (!original || (last && current !== last)) {
+      original = current;
+      element.setAttribute(originalAttr, original);
+    }
+    return original;
+  }
+
+  function phase9PvpSetTrackedText(element, next) {
+    if (!element) return;
+    var value = String(next == null ? "" : next);
+    setText(element, value);
+    element.setAttribute("data-hg-pvp-text-last", value);
+  }
+
+  function phase9PvpApplyDigimonNames(root) {
+    if (!root) return;
+    var selectors = [
+      ".pvp-slot-name", ".pvp-picker-copy > strong", ".pvp-build-tab-copy > strong", "#pvpBuildCurrentName",
+      ".pvp-imported-ready-copy > strong", ".pvp-draft-digi > strong", ".pvp-draft-pick > b",
+      ".pvp-ban-card > strong", ".pvp-formation-card > strong", ".pvp-battle-unit-name", ".pvp-turn-item > span",
+      ".pvp-target-name-line > strong", ".pvp-hud-digi-top strong", ".pvp-sub-card > strong", ".pvp-draft-hover-head strong"
+    ].join(",");
+    all(selectors, root).forEach(function (element) {
+      var current = String(element.textContent || "").replace(/\s+/g, " ").trim();
+      if (!current || /^(SELECT DIGIMON|DIGIMON|EMPTY|EMPTY SLOT|AGUARDANDO\.\.\.)$/i.test(current)) return;
+      var original = element.getAttribute("data-hg-pvp-digimon-original") || "";
+      var last = element.getAttribute("data-hg-pvp-digimon-last") || "";
+      if (!original || (last && current !== last)) {
+        original = current.replace(/^(.+?)\s+\([^()]+\)$/,"$1");
+        /* If the visible name is already Korean, recover its English key. */
+        if (/[가-힣]/.test(original)) {
+          var entries = phase6KoreanSearchEntries();
+          var found = entries.find(function (entry) { return original === entry.ko || current.indexOf(entry.ko) === 0; });
+          if (found) original = found.en;
+        }
+        element.setAttribute("data-hg-pvp-digimon-original", original);
+      }
+      var next = currentLanguage === "ko-KR" ? phase5DigimonDisplay(original) : original;
+      if (element.textContent !== next) element.textContent = next;
+      element.setAttribute("data-hg-pvp-digimon-last", next);
+    });
+  }
+
+  function phase9PvpApplyStageLabels(root) {
+    if (!root) return;
+    all("#pvpStageLabel, #pvpStageOptions button, #pvpMatchCreateStage option, #pvpMatchRoomStage, #pvpDraftStage, .pvp-slot-meta, .pvp-current-stage, .pvp-picker-copy small, .pvp-draft-digi > small, .pvp-ban-card > small", root).forEach(function (element) {
+      var raw = String(element.textContent || "").replace(/\s+/g, " ").trim();
+      var m = raw.match(/(ROOKIE|CHAMPION|ULTIMATE|MEGA)(?:\s*·\s*LV\.\s*(\d+))?/i);
+      if (!m) return;
+      var original = element.getAttribute("data-hg-pvp-stage-original") || (m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase());
+      element.setAttribute("data-hg-pvp-stage-original", original);
+      var level = m[2] || "";
+      var nextStage = phase9PvpStageLabel(original, level || null);
+      if (/^\s*(ROOKIE|CHAMPION|ULTIMATE|MEGA)/i.test(raw)) {
+        var consumed = m[0];
+        var suffix = raw.slice(consumed.length);
+        setText(element, nextStage + suffix);
+      }
+    });
+  }
+
+  function phase9PvpApplyReferences(root) {
+    if (!root) return;
+    all(".pvp-stat-input > span, .pvp-summary-game-stat, .pvp-extra-status-list strong, .pvp-meta-icon-group > small, .pvp-target-asset-badge > small", root).forEach(function (element) {
+      var key = canonicalReferenceKey(element.textContent);
+      if (key) applyReferenceLabel(element, key, true);
+    });
+    all(".pvp-element-icon-tag", root).forEach(function (tag) {
+      var img = one("img[data-pvp-element]", tag);
+      var original = img ? String(img.getAttribute("data-pvp-element") || "").trim().toUpperCase() : String(tag.getAttribute("title") || "").trim().toUpperCase();
+      if (!original) return;
+      var label = currentLanguage === "ko-KR" ? phase5ElementLabel(original) : original;
+      setAttr(tag, "title", label);
+      if (img) setAttr(img, "alt", label);
+      var b = one("b", tag); if (b) setText(b, label);
+    });
+  }
+
+  function phase9PvpTranslateAttrs(root) {
+    if (!root) return;
+    var picker = one("#pvpPickerSearch", root);
+    if (picker) setAttr(picker, "placeholder", translate("pvp9.searchPlaceholder", "Search Digimon..."));
+    var close = one(".pvp-picker-close", root);
+    if (close) setAttr(close, "aria-label", translate("pvp9.close", "Close"));
+    all("#pvpSlots .pvp-slot", root).forEach(function (slot) {
+      var n = slot.getAttribute("data-slot") || "";
+      setAttr(slot, "aria-label", formatTranslation("pvp9.selectSlotAria", "Select Digimon for slot {slot}", {slot:n}));
+      var remove = one(".pvp-slot-remove", slot); if (remove) setAttr(remove, "title", translate("pvp9.remove", "Remove"));
+    });
+    var gauge = one("#pvpBattleGaugeSegments", root);
+    if (gauge) setAttr(gauge, "aria-label", translate("pvp9.subGaugeAria", "Substitution gauge"));
+  }
+
+  function phase9PvpTranslateEffectText(text) {
+    var raw = String(text || "");
+    if (currentLanguage !== "ko-KR") return raw;
+    var out = raw;
+    var elementPairs = Object.keys(koDataMap("__elements") || {}).sort(function(a,b){return b.length-a.length});
+    out = out.replace(/Has a (\d+(?:\.\d+)?)% chance to activate on attack\./gi, "공격 시 $1% 확률로 발동합니다.")
+      .replace(/Deals damage over time each turn\./gi, "매 턴 지속 피해를 줍니다.")
+      .replace(/Increases (STR|INT|DEF|RES|SPD) by (\d+(?:\.\d+)?)%/gi, function(_,s,n){var info=koreanReferenceData(s);return (info?info.ko+" ("+info.ref+")":s)+"을(를) "+n+"% 증가시킵니다.";})
+      .replace(/Decreases (STR|INT|DEF|RES|SPD) by (\d+(?:\.\d+)?)%/gi, function(_,s,n){var info=koreanReferenceData(s);return (info?info.ko+" ("+info.ref+")":s)+"을(를) "+n+"% 감소시킵니다.";})
+      .replace(/Unable to act\./gi, "행동할 수 없습니다.")
+      .replace(/Damage over time\./gi, "지속 피해를 받습니다.")
+      .replace(/Defense reduced\./gi, "방어력이 감소합니다.")
+      .replace(/Status effect\./gi, "상태 이상 효과입니다.");
+    elementPairs.forEach(function (el) {
+      var info = koElementData(el); if (!info) return;
+      var esc = el.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      out = out.replace(new RegExp("Becomes vulnerable to " + esc + " attribute\\.", "gi"), info.ko + " (" + info.ref + ") 속성에 취약해집니다.");
+      out = out.replace(new RegExp("Removed when hit by " + esc + " attribute\\.", "gi"), info.ko + " (" + info.ref + ") 속성 공격을 받으면 해제됩니다.");
+    });
+    return out;
+  }
+
+  function phase9PvpApplySkillTooltips(root) {
+    if (!root) return;
+    all(".pvp-skill-tooltip p, .pvp-skill-hover > p, .pvp-skill-hover-info + p", root).forEach(function (element) {
+      var original = element.getAttribute("data-hg-pvp-effect-original") || String(element.textContent || "").trim();
+      element.setAttribute("data-hg-pvp-effect-original", original);
+      setText(element, phase9PvpTranslateEffectText(original));
+    });
+    all(".pvp-skill-tooltip-title > b", root).forEach(function (element) {
+      var original = element.getAttribute("data-hg-pvp-element-original") || String(element.textContent || "").trim().toUpperCase();
+      element.setAttribute("data-hg-pvp-element-original", original);
+      setText(element, currentLanguage === "ko-KR" ? phase5ElementLabel(original) : original);
+    });
+  }
+
+  function phase9TranslatePvpDialogMessage(message) {
+    var text = String(message == null ? "" : message);
+    var map = dictionary(currentLanguage).__pvpDialogs || {};
+    if (Object.prototype.hasOwnProperty.call(map, text)) return String(map[text]);
+    var m = text.match(/^Não foi possível importar o time PvP\.\n\n([\s\S]+)$/);
+    if (m) return formatTranslation("pvp9.dialog.importFailed", "Could not import the PvP team.\n\n{error}", {error:m[1]});
+    m = text.match(/^(.+?), deseja realmente desistir da partida\? O oponente será declarado vencedor\.$/);
+    if (m) return formatTranslation("pvp9.dialog.surrender", "{name}, do you really want to surrender? Your opponent will be declared the winner.", {name:m[1]});
+    return text;
+  }
+
+  function applyPvpStaticTranslations() {
+    var root = document.getElementById("pvpPagina");
+    if (!root) return;
+    phase9PvpTranslateTextNodes(root);
+    phase9PvpApplyStageLabels(root);
+    phase9PvpApplyReferences(root);
+    phase9PvpApplyDigimonNames(root);
+    phase9PvpTranslateAttrs(root);
+    phase9PvpApplySkillTooltips(root);
+  }
+
+  function applyPvpDynamicTranslations() {
+    var root = document.getElementById("pvpPagina");
+    if (!root) return;
+    phase9PvpTranslateTextNodes(root);
+    phase9PvpApplyStageLabels(root);
+    phase9PvpApplyReferences(root);
+    phase9PvpApplyDigimonNames(root);
+    phase9PvpTranslateAttrs(root);
+    phase9PvpApplySkillTooltips(root);
+  }
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -2380,6 +2689,7 @@
     applyTierListDsrStaticTranslations();
     applyTierListDmoStaticTranslations();
     applySorteioStaticTranslations();
+    applyPvpStaticTranslations();
     applyMobilePageTitleTranslation();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
@@ -3091,6 +3401,7 @@
       applyTierListDsrDynamicTranslations();
       applyTierListDmoDynamicTranslations();
       applySorteioDynamicTranslations();
+      applyPvpDynamicTranslations();
       applyMobilePageTitleTranslation();
       applyKoreanReferenceTranslations();
       applyCounterTooltipTranslations();
@@ -3162,6 +3473,9 @@
           break;
         case "sorteioPagina":
           applySorteioDynamicTranslations();
+          break;
+        case "pvpPagina":
+          applyPvpDynamicTranslations();
           break;
         case "hgDisplaySettingsPanel":
           applyDisplaySettingsTranslations();
@@ -3242,6 +3556,9 @@
     ["sorteioAtualizarFonteUI", "sorteioAtualizarEstadoInscricoes", "sorteioRenderParticipantes", "sorteioRenderHistorico", "sorteioRegistrarVencedor", "sorteioDefinirFeedback", "sorteioAtualizarTudo", "sorteioDesenhar", "sorteioAlternarModoStream"].forEach(function (name) {
       wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("sorteioPagina"); });
     });
+    ["pvpCriarSlots", "pvpAtualizarTodosSlots", "pvpAtualizarSlotVisual", "pvpRenderPicker", "pvpRenderBuildTabs", "pvpRenderBuildAtual", "pvpRenderBabyGrid", "pvpRenderTetrisGrid", "pvpRenderBuffGrid", "pvpRenderElementDeck", "pvpRenderSkills", "pvpRenderSummary", "pvpAtualizarResumosWizard", "pvpMatchAtualizarTeamCheck", "pvpMatchSetConnection", "pvpMatchRenderWaiting", "pvpMatchRenderDraft", "pvpMatchRenderBan", "pvpMatchRenderFormation", "pvpBattleRender", "pvpBattleRenderOpponentLabel", "pvpBattleRenderTarget", "pvpBattleRenderFields", "pvpBattleRenderTurnQueue", "pvpBattleRenderSkills", "pvpBattleRenderLog", "pvpBattleRenderControls", "pvpBattleRenderSubstitution"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("pvpPagina"); });
+    });
     wrapRuntimeFunction("hgAtualizarTituloHeader", function () { applyMobilePageTitleTranslation(); });
 
     ["renderizarRaids", "renderizarRaidHomeCarousel"].forEach(function (name) {
@@ -3257,7 +3574,7 @@
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("elementosPagina"), document.getElementById("socialPagina"), document.getElementById("comparacaoPagina"), document.getElementById("tierListPagina"), document.getElementById("tierListDmoPagina"), document.getElementById("sorteioPagina"), document.getElementById("hgDisplaySettingsPanel"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("elementosPagina"), document.getElementById("socialPagina"), document.getElementById("comparacaoPagina"), document.getElementById("tierListPagina"), document.getElementById("tierListDmoPagina"), document.getElementById("sorteioPagina"), document.getElementById("pvpPagina"), document.getElementById("hgDisplaySettingsPanel"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function (mutations) {
         /* IMPORTANTE: o header precisa ser corrigido mesmo se outra tradução estiver
