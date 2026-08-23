@@ -1121,12 +1121,26 @@ function builderCandidatosDigimonExport(img) {
   const slug = builderSlugDigimonExport(alt);
   const srcAtual = String(img && (img.currentSrc || img.src || img.getAttribute("src")) || "").trim();
   const basename = builderBasenameUrl(srcAtual);
+  const centralDigi = typeof encontrarDigimonIconeCentral === "function"
+    ? encontrarDigimonIconeCentral(alt, null)
+    : null;
+  const centralBasename = centralDigi && centralDigi.iconPath
+    ? builderBasenameUrl(centralDigi.iconPath)
+    : "";
 
-  if (/\.(?:png|webp|jpe?g)$/i.test(basename) && !/^(?:uc|view|download)$/i.test(basename)) {
+  /* PVP_ASSETS/digimon é também a primeira opção same-origin para o PNG. */
+  if (/\.(?:png|webp|jpe?g)$/i.test(centralBasename)) {
+    adicionar("PVP_ASSETS/digimon/" + centralBasename);
+  }
+
+  if (/\.(?:png|webp|jpe?g)$/i.test(basename) && !/^(?:uc|view|download|thumbnail)$/i.test(basename)) {
+    adicionar("PVP_ASSETS/digimon/" + basename);
     adicionar("digivolution_assets/digimons/" + basename);
   }
 
   if (slug) {
+    adicionar("PVP_ASSETS/digimon/" + slug + ".webp");
+    adicionar("PVP_ASSETS/digimon/" + slug.replace(/-mode$/i, "mode") + ".webp");
     adicionar("digivolution_assets/digimons/" + slug + ".webp");
     adicionar("digivolution_assets/digimons/" + slug.replace(/-mode$/i, "mode") + ".webp");
   }
@@ -1141,6 +1155,7 @@ function builderCandidatosDigimonExport(img) {
   };
 
   (aliases[slug] || []).forEach(function(nomeArquivo) {
+    adicionar("PVP_ASSETS/digimon/" + nomeArquivo);
     adicionar("digivolution_assets/digimons/" + nomeArquivo);
   });
 
@@ -2439,6 +2454,95 @@ function pegarImagem(nome) {
     ""
   );
 
+}
+
+
+/* =====================================================
+   ÍCONES DE DIGIMON — RESOLVEDOR CENTRAL DO FRONTEND
+
+   O backend entrega em database[].icon a URL resolvida a partir de
+   PVP_ASSETS/digimon. Todo recurso que possui acesso à DATABASE deve
+   preferir esse ícone antes de qualquer caminho legado.
+===================================================== */
+
+function normalizarChaveIconeDigimonCentral(valor) {
+  let texto = String(valor || "").trim().toLowerCase();
+
+  try {
+    texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (erro) {}
+
+  return texto
+    .replace(/^\s*\[\s*mutant\s*\]\s*/i, "")
+    .replace(/\.(webp|png|jpg|jpeg)$/i, "")
+    .replace(/[^a-z0-9]+/g, "")
+    .replace(/^(mutation|mutant)/, "");
+}
+
+function encontrarDigimonIconeCentral(nome, did) {
+  const lista = Array.isArray(database) ? database : [];
+  const id = Number(did || 0);
+
+  if (id) {
+    const porDid = lista.find(function(item) {
+      return Number(item && item.did || 0) === id;
+    });
+    if (porDid) return porDid;
+  }
+
+  const chave = normalizarChaveIconeDigimonCentral(nome);
+  if (!chave) return null;
+
+  return lista.find(function(item) {
+    return normalizarChaveIconeDigimonCentral(
+      item && (item.digimon || item.name)
+    ) === chave;
+  }) || null;
+}
+
+function resolverIconeDigimonCentral(nome, iconeExplicito, did) {
+  const central = encontrarDigimonIconeCentral(nome, did);
+
+  if (central && central.icon) {
+    return String(central.icon).trim();
+  }
+
+  const explicito = String(iconeExplicito || "").trim();
+  if (explicito) return explicito;
+
+  return "";
+}
+
+function sincronizarIconesPvpComDatabase() {
+  if (!Array.isArray(pvpDatabase) || !pvpDatabase.length) return;
+  if (!Array.isArray(database) || !database.length) return;
+
+  pvpDatabase.forEach(function(digi) {
+    if (!digi) return;
+    const central = resolverIconeDigimonCentral(
+      digi.name || digi.digimon,
+      "",
+      digi.did
+    );
+    if (central) digi.icon = central;
+  });
+
+  if (typeof pvpAtualizarTodosSlots === "function") {
+    pvpAtualizarTodosSlots();
+  }
+
+  if (typeof pvpRenderPicker === "function") {
+    const overlay = document.getElementById("pvpPickerOverlay");
+    if (overlay && overlay.classList.contains("aberto")) pvpRenderPicker();
+  }
+
+  if (typeof counterFinderRenderizarTarget === "function") {
+    counterFinderRenderizarTarget();
+  }
+
+  if (typeof counterFinderRenderizarResultados === "function") {
+    counterFinderRenderizarResultados();
+  }
 }
 
 
@@ -4271,11 +4375,11 @@ function abrirPotentialModalEvolution(id) {
 
 
 function fallbackSourceDigimonEvolution(nome) {
-  const chave = normalizarChaveDigivolution(nome);
-  const mapa = {
-    imperialdramondragonmodeinfected: "https://dsrworldwiki.com/assets/digimons/imperialdramon_dragonmode_infected.png"
-  };
-  return mapa[chave] || "";
+  return resolverIconeDigimonCentral(
+    nome,
+    "",
+    null
+  );
 }
 
 function fallbackSourceSkillEvolution(skill) {
@@ -8461,12 +8565,13 @@ function normalizarChaveDigivolution(valor) {
 }
 
 function obterIconeDigivolution(nome, iconeExplicito) {
-  if (iconeExplicito) return iconeExplicito;
-  const chave = normalizarChaveDigivolution(nome);
-  const digi = (database || []).find(function(item) {
-    return normalizarChaveDigivolution(item.digimon) === chave;
-  });
-  return digi && digi.icon ? digi.icon : pegarImagem(nome);
+  const central = resolverIconeDigimonCentral(
+    nome,
+    iconeExplicito,
+    null
+  );
+
+  return central || pegarImagem(nome);
 }
 
 function renderizarAvatarDigivolution(nome, classe, iconeExplicito) {
@@ -9487,40 +9592,13 @@ function counterFinderSelecionarAlvoPorId(did) {
 }
 
 function counterFinderFallbackDigimon(digi) {
-  const nome = counterFinderNome(digi);
+  if (!digi) return "";
 
-  /* 1) Primeiro reaproveita a mesma fonte/fallback já usada pela Digidex. */
-  if (typeof fallbackDigimonEvolution === "function") {
-    const existente = fallbackDigimonEvolution(nome);
-    if (existente) {
-      if (/^https?:\/\/dsrworldwiki\.com\//i.test(existente)) {
-        return "https://images.weserv.nl/?url=" + encodeURIComponent(existente) +
-          "&w=160&h=160&fit=contain&output=webp";
-      }
-      return existente;
-    }
-  }
-
-  if (typeof pegarImagem === "function") {
-    const drive = pegarImagem(nome);
-    if (drive) return drive;
-  }
-
-  /* 2) Último fallback: asset equivalente da DSR Wiki via proxy.
-     Só é usado quando o ícone da MASTER/Git e o Drive falharem. */
-  const slug = String(nome || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " and ")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .toLowerCase();
-
-  if (!slug) return "";
-
-  const origem = "https://dsrworldwiki.com/assets/digimons/" + slug + ".png";
-  return "https://images.weserv.nl/?url=" + encodeURIComponent(origem) +
-    "&w=160&h=160&fit=contain&output=webp";
+  return resolverIconeDigimonCentral(
+    counterFinderNome(digi),
+    digi.icon || "",
+    digi.did
+  );
 }
 
 function counterFinderImagemDigiHtml(digi, alt) {
@@ -10625,6 +10703,8 @@ function carregarDatabase() {
         database =
           resposta.database ||
           [];
+
+        sincronizarIconesPvpComDatabase();
 
         montarFiltroStatusEffectsDigidex();
 
@@ -12029,7 +12109,7 @@ async function pvpCarregarDatabase(){
   if(pvpDadosCarregando)return pvpDadosCarregando;
   pvpDadosCarregando=fetch(PVP_DATA_URL,{cache:"no-store"})
     .then(function(resp){if(!resp.ok)throw new Error("HTTP "+resp.status);return resp.json()})
-    .then(function(data){pvpDatabase=Array.isArray(data)?data:[];pvpAtualizarTodosSlots();return pvpDatabase})
+    .then(function(data){pvpDatabase=Array.isArray(data)?data:[];sincronizarIconesPvpComDatabase();pvpAtualizarTodosSlots();return pvpDatabase})
     .catch(function(erro){console.error("[PvP] Falha ao carregar pvp-data.json",erro);alert("Não foi possível carregar a DATABASE PvP. Confirme que pvp-data.json está no GitHub ao lado do index.html.");return[]})
     .finally(function(){pvpDadosCarregando=null});
   return pvpDadosCarregando
@@ -14462,10 +14542,11 @@ function tierListSalvarEstado(imediato) {
 }
 
 function tierListIconeLocal(nome) {
-  const slug = typeof builderSlugDigimonExport === "function"
-    ? builderSlugDigimonExport(nome)
-    : tierListNormalizarTexto(nome).replace(/\s+/g, "-");
-  return slug ? "digivolution_assets/digimons/" + slug + ".webp" : "";
+  return resolverIconeDigimonCentral(
+    nome,
+    "",
+    null
+  );
 }
 
 function tierListMontarCatalogo() {
@@ -14492,8 +14573,8 @@ function tierListMontarCatalogo() {
     mapa.set(key, {
       key: key,
       name: nome,
-      icon: especial || String(digi && digi.icon || "").trim() || local,
-      fallback: local,
+      icon: String(digi && digi.icon || "").trim() || local || especial,
+      fallback: local || especial,
       stage: stage || "",
       type: type || "",
       field: String(digi && digi.field || "").trim(),
