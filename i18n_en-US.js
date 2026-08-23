@@ -1127,3 +1127,18 @@ Object.assign(window.HG_I18N["en-US"], {
   "giveaway.httpError": "Evil Guardians returned HTTP {code}",
   "giveaway.networkError": "The browser could not reach Evil Guardians. Check the Worker/CORS and try again."
 });
+
+
+/* CALCULATOR TOOLTIP HOTFIX — complete EN presentation */
+Object.assign(window.HG_I18N["en-US"], {
+  "calc.tip.base": "BASE:",
+  "calc.tip.baseGeneric": "BASE:",
+  "calc.tip.level": "LEVEL",
+  "calc.tip.damageValueUp": "DAMAGE VALUE UP",
+  "calc.tip.effectRateUp": "EFFECT RATE UP",
+  "calc.tip.canChangeTo": "CAN CHANGE TO:",
+  "calc.tip.burstSuffix": "BURST",
+  "calc.tip.burstEffectDescription": "Burst increases the effect rate; it does not multiply this Skill's normal damage.",
+  "calc.tip.burstValuesMaster": "Burst values read directly from DATABASE MASTER FINAL.",
+  "calc.tip.hitCounterKo": ""
+});

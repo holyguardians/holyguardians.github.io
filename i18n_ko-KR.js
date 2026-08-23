@@ -1792,3 +1792,26 @@ Object.assign(window.HG_I18N["ko-KR"], {
   "giveaway.httpError": "Evil Guardians HTTP 응답: {code}",
   "giveaway.networkError": "브라우저가 Evil Guardians에 연결하지 못했습니다. Worker/CORS를 확인한 뒤 다시 시도하세요."
 });
+
+
+/* CALCULATOR TOOLTIP HOTFIX — complete KO presentation + English references */
+Object.assign(window.HG_I18N["ko-KR"], {
+  "calc.tip.base": "기준 (Base):",
+  "calc.tip.baseGeneric": "기본 (Base):",
+  "calc.tip.level": "레벨 (Level)",
+  "calc.tip.type": "유형 (Type):",
+  "calc.tip.effect": "효과 (Effect):",
+  "calc.tip.baseChance": "기본 확률 (Base chance):",
+  "calc.tip.chance": "확률 (Chance):",
+  "calc.tip.baseElement": "기본 속성 (Base element):",
+  "calc.tip.elementChange": "속성 변경 (Element change):",
+  "calc.tip.burstRate": "버스트 효과 확률 보너스 (Burst effect-rate bonus):",
+  "calc.tip.damageSame": "데미지 유지 (Damage remains the same):",
+  "calc.tip.damageValueUp": "데미지 증가 (Damage Value Up)",
+  "calc.tip.effectRateUp": "효과 확률 증가 (Effect Rate Up)",
+  "calc.tip.canChangeTo": "변경 가능 (Can change to):",
+  "calc.tip.burstSuffix": "버스트 (Burst)",
+  "calc.tip.burstEffectDescription": "버스트는 효과 확률을 높이며 이 스킬의 일반 데미지는 배수 적용하지 않습니다.",
+  "calc.tip.burstValuesMaster": "버스트 값은 DATABASE MASTER FINAL에서 직접 불러옵니다.",
+  "calc.tip.hitCounterKo": "타"
+});

@@ -1356,8 +1356,12 @@
     all(".calc-skill-identity-copy > small", root).forEach(function (el) {
       var original = el.getAttribute("data-hg-calc-skill-small") || String(el.textContent || "").trim();
       if (!el.getAttribute("data-hg-calc-skill-small")) el.setAttribute("data-hg-calc-skill-small", original);
-      if (currentLanguage === "ko-KR") setText(el, original.replace(/^SKILL\s+(\d+)/i, function(_,n){return "스킬 "+n+" (Skill "+n+")";}));
-      else setText(el, original);
+      if (currentLanguage === "ko-KR") {
+        var nextSmall = original
+          .replace(/^SKILL\s+(\d+)/i, function(_,n){return "스킬 "+n+" (Skill "+n+")";})
+          .replace(/\bLEVEL\s+(\d+)/i, function(_,n){return translate("calc.tip.level", "레벨 (Level)") + " " + n;});
+        setText(el, nextSmall);
+      } else setText(el, original);
     });
     all(".calc-burst-title", root).forEach(function (el) { setText(el, translate("calc.burstSkill", "BURST SKILL")); });
     all(".calc-burst-selector-label", root).forEach(function (el) {
@@ -1438,17 +1442,53 @@
     });
     all(".calc-skill-tooltip", root).forEach(function (tip) {
       if (currentLanguage === "pt-BR") return;
+
+      // The calculator builds these tooltips in Portuguese/technical English in script.js.
+      // Translate every presentation fragment here without touching calculation/database logic.
+      var title = one(":scope > strong", tip);
+      if (title) {
+        var titleOriginal = title.getAttribute("data-hg-calc-tip-title-original") || String(title.textContent || "").trim();
+        if (!title.getAttribute("data-hg-calc-tip-title-original")) title.setAttribute("data-hg-calc-tip-title-original", titleOriginal);
+        var titleNext = titleOriginal;
+        if (currentLanguage === "ko-KR") {
+          titleNext = titleNext.replace(/\s*•\s*BURST\s*$/i, " • " + translate("calc.tip.burstSuffix", "버스트 (Burst)"));
+        }
+        setText(title, titleNext);
+      }
+
       var tipRules = [
         [/BURST SKILL/g, translate("calc.burstSkill", "BURST SKILL")],
+        [/BASE:\s*SKILL\s+(\d+)/g, function (_, n) {
+          if (currentLanguage === "ko-KR") return translate("calc.tip.base", "기준 (Base):") + " 스킬 " + n + " (Skill " + n + ")";
+          return translate("calc.tip.base", "BASE:") + " SKILL " + n;
+        }],
+        [/BASE:/g, translate("calc.tip.baseGeneric", "BASE:")],
         [/SKILL\s+(\d+)/g, function (_, n) { return currentLanguage === "ko-KR" ? "스킬 " + n + " (Skill " + n + ")" : "SKILL " + n; }],
+        [/LEVEL\s+(\d+)/g, function (_, n) { return translate("calc.tip.level", "LEVEL") + " " + n; }],
         [/Tipo:/g, translate("calc.tip.type", "Tipo:")], [/Efeito:/g, translate("calc.tip.effect", "Efeito:")],
         [/Chance base:/g, translate("calc.tip.baseChance", "Chance base:")], [/Chance:/g, translate("calc.tip.chance", "Chance:")],
         [/Elemento base:/g, translate("calc.tip.baseElement", "Elemento base:")], [/Mudança por elemento:/g, translate("calc.tip.elementChange", "Mudança por elemento:")],
         [/Bônus Burst na taxa do efeito:/g, translate("calc.tip.burstRate", "Bônus Burst na taxa do efeito:")],
         [/Dano permanece igual:/g, translate("calc.tip.damageSame", "Dano permanece igual:")],
         [/Sem coeficiente percentual de dano na base/g, translate("calc.tip.noDamageCoefficient", "Sem coeficiente percentual de dano na base")],
-        [/Dados de Burst indisponíveis para esta Skill/g, translate("calc.tip.burstUnavailableSkill", "Dados de Burst indisponíveis para esta Skill")]
+        [/Dados de Burst indisponíveis para esta Skill/g, translate("calc.tip.burstUnavailableSkill", "Dados de Burst indisponíveis para esta Skill")],
+        [/DAMAGE VALUE UP/g, translate("calc.tip.damageValueUp", "DAMAGE VALUE UP")],
+        [/EFFECT RATE UP/g, translate("calc.tip.effectRateUp", "EFFECT RATE UP")],
+        [/CAN CHANGE TO:/g, translate("calc.tip.canChangeTo", "CAN CHANGE TO:")],
+        [/A Burst aumenta a taxa do efeito; não multiplica o dano normal desta Skill\./g, translate("calc.tip.burstEffectDescription", "A Burst aumenta a taxa do efeito; não multiplica o dano normal desta Skill.")],
+        [/Valores de Burst lidos diretamente da DATABASE MASTER FINAL\./g, translate("calc.tip.burstValuesMaster", "Valores de Burst lidos diretamente da DATABASE MASTER FINAL.")]
       ];
+
+      if (currentLanguage === "ko-KR") {
+        // Translate element values and the hit counter while preserving the original English reference.
+        ["DARKNESS","PHYSICAL","THUNDER","WATER","EARTH","STEEL","IRON","WOOD","WIND","FIRE","LIGHT","DARK","ICE"].forEach(function (elementName) {
+          tipRules.push([new RegExp("\\b" + elementName + "\\b", "g"), phase5ElementLabel(elementName)]);
+        });
+        tipRules.push([/(\d+)\s+hits\b/gi, function (_, n) {
+          return n + translate("calc.tip.hitCounterKo", "타") + " (" + n + " hits)";
+        }]);
+      }
+
       phase5TranslateTextNodes(tip, tipRules);
     });
   }
