@@ -1451,6 +1451,235 @@
     });
   }
 
+
+
+  /* =====================================================
+     PHASE 7 — ELEMENTS / COMMUNITY / DISPLAY / COMPARISON
+     Presentation-only i18n. Main site logic remains untouched.
+  ===================================================== */
+
+  function phase7ElementDisplay(value) {
+    var original = String(value || "").trim().toUpperCase();
+    if (!original) return "";
+    if (currentLanguage !== "ko-KR") return original;
+    var info = koElementData(original);
+    return info ? info.ko + " (" + info.ref + ")" : original;
+  }
+
+  function applyElementsStaticTranslations() {
+    var root = document.getElementById("elementosPagina");
+    if (!root) return;
+    setText(one(".elementos-box h2", root), translate("elements.title", "ELEMENTOS"));
+    setText(one(".elementos-subtitulo", root), translate("elements.select", "SELECIONAR ELEMENTO"));
+    setAttr(one("#elementosSceneArt", root), "alt", translate("elements.alt", "Elementos"));
+
+    var buffTab = one(".elementos-info-tab-buff", root);
+    var removeTab = one(".elementos-info-tab-remove", root);
+    if (buffTab) {
+      setText(one(".elementos-info-tab-handle span:nth-child(2)", buffTab), translate("elements.buff", "BUFF"));
+      setText(one(".elementos-info-tab-panel strong", buffTab), translate("elements.buff", "BUFF"));
+      setText(one(".elementos-info-tab-panel p", buffTab), translate("elements.buffDesc", "Elemento que ganha vantagem de dano ao atingir um alvo afetado por Stun ou DoT causado pelo elemento selecionado."));
+    }
+    if (removeTab) {
+      setText(one(".elementos-info-tab-handle span:nth-child(2)", removeTab), translate("elements.remove", "REMOVE"));
+      setText(one(".elementos-info-tab-panel strong", removeTab), translate("elements.remove", "REMOVE"));
+      setText(one(".elementos-info-tab-panel p", removeTab), translate("elements.removeDesc", "Elemento capaz de remover o Stun ou DoT causado pelo elemento selecionado."));
+    }
+  }
+
+  function applyElementsDynamicTranslations() {
+    var root = document.getElementById("elementosPagina");
+    if (!root) return;
+    applyElementsStaticTranslations();
+
+    var select = one("#elementoSelect", root);
+    if (select) {
+      all("option", select).forEach(function (option, index) {
+        if (!option.value) setText(option, translate("elements.choose", "— Escolha um elemento —"));
+        else setText(option, phase7ElementDisplay(option.value));
+      });
+    }
+
+    var result = one("#elementoResultado", root);
+    if (!result) return;
+    var selected = select ? String(select.value || "").trim().toUpperCase() : "";
+    var name = one(".elemento-resultado-nome > span", result);
+    if (name && selected) setText(name, phase7ElementDisplay(selected));
+
+    var buff = one(".elemento-buff", result);
+    if (buff) {
+      var strongs = all("strong", buff);
+      if (strongs[0]) setText(strongs[0], translate("elements.buff", "BUFF"));
+      if (strongs[1]) {
+        var originalBuff = strongs[1].getAttribute("data-hg-element-original") || String(strongs[1].textContent || "").trim().toUpperCase();
+        if (!strongs[1].getAttribute("data-hg-element-original")) strongs[1].setAttribute("data-hg-element-original", originalBuff);
+        setText(strongs[1], phase7ElementDisplay(originalBuff));
+      }
+    }
+
+    var remove = one(".elemento-remove", result);
+    if (remove) {
+      var rStrong = all("strong", remove);
+      if (rStrong[0]) setText(rStrong[0], translate("elements.remove", "REMOVE"));
+      if (rStrong[1]) {
+        var originalRemove = rStrong[1].getAttribute("data-hg-element-original") || String(rStrong[1].textContent || "").trim().toUpperCase();
+        if (!rStrong[1].getAttribute("data-hg-element-original")) rStrong[1].setAttribute("data-hg-element-original", originalRemove);
+        setText(rStrong[1], phase7ElementDisplay(originalRemove));
+      }
+    }
+
+    if (!one(".elemento-resultado-nome", result)) {
+      var raw = String(result.textContent || "").replace(/\s+/g, " ").trim();
+      if (/^(Selecione um elemento acima\.|Select an element above\.|위에서 속성을 선택하세요\.)$/i.test(raw)) {
+        setText(result, translate("elements.empty", "Selecione um elemento acima."));
+      } else if (/Buff|버프|advantage|유리/i.test(raw)) {
+        setText(result, translate("elements.reminder", "Lembrando que o Buff é o elemento favorecido."));
+      }
+    }
+  }
+
+  function applyCommunityStaticTranslations() {
+    var root = document.getElementById("socialPagina");
+    if (!root) return;
+    setText(one(".social-kicker", root), translate("community.kicker", "DIGIMON SUPER RUMBLE COMMUNITY"));
+    setHtml(one(".social-title-main", root), escapeHtml(translate("community.titlePrefix", "NOSSA")) + ' <span>' + escapeHtml(translate("community.titleAccent", "COMUNIDADE")) + '</span>');
+    setText(one(".social-intro", root), translate("community.intro", "Acompanhe conteúdos, lives e novidades do mundo digital."));
+
+    var descKeys = { youtube:"community.youtubeDesc", twitch:"community.twitchDesc", kick:"community.kickDesc", discord:"community.discordDesc" };
+    var descFallback = { youtube:"Canais e conteúdos da comunidade", twitch:"Lives e transmissões da comunidade", kick:"Lives e canais parceiros", discord:"Servidores e comunidades" };
+    all(".community-platform", root).forEach(function (card) {
+      var platform = String(card.getAttribute("data-community-platform") || "").toLowerCase();
+      /* Platform names (YouTube/Twitch/Kick/Discord) are intentionally preserved. */
+      setText(one(".social-card-copy small", card), translate(descKeys[platform] || "", descFallback[platform] || ""));
+      var open = one(".community-open-label", card);
+      if (open) setHtml(open, escapeHtml(translate("community.openList", "ABRIR LISTA")) + " <b>⌄</b>");
+    });
+
+    var cards = all(".community-wiki-card", root);
+    if (cards[0]) {
+      setText(one("div > strong", cards[0]), translate("community.wikiTitle", "Precisa de guias ou informações detalhadas sobre drops e etc.?"));
+      setText(one("div > small", cards[0]), translate("community.wikiDesc", "Consulte a DSR Wiki para informações completas do jogo."));
+      setAttr(one("a", cards[0]), "aria-label", translate("community.wikiAria", "Abrir DSR Wiki"));
+      /* DSR WIKI is a brand name and stays unchanged. */
+    }
+    if (cards[1]) {
+      setText(one("div > strong", cards[1]), translate("community.codeTitle", "A fim de fazer parte da maior comunidade BR de Digimon Super Rumble? Junte-se já."));
+      setText(one("div > small", cards[1]), translate("community.codeDesc", "Entre no Discord da CODEBR e faça parte da comunidade."));
+      setText(one("a > b", cards[1]), translate("community.codeJoin", "ENTRAR NO DISCORD ↗"));
+      setAttr(one("a", cards[1]), "aria-label", translate("community.codeAria", "Entrar no Discord da CODEBR"));
+    }
+    if (cards[2]) {
+      setText(one("div > strong", cards[2]), translate("community.aloTitle", "Faça parte da comunidade Alo Tamers! Se junte já"));
+      setText(one("div > small", cards[2]), translate("community.aloDesc", "Entre no Discord da Alo Tamers e faça parte da comunidade."));
+      setText(one("a > b", cards[2]), translate("community.aloJoin", "ENTRAR NO DISCORD ↗"));
+      setAttr(one("a", cards[2]), "aria-label", translate("community.aloAria", "Entrar no Discord da Alo Tamers"));
+    }
+  }
+
+  function applyCommunityDynamicTranslations() {
+    var root = document.getElementById("socialPagina");
+    if (!root) return;
+    applyCommunityStaticTranslations();
+    all(".community-link-list .community-empty", root).forEach(function (el) {
+      var raw = String(el.textContent || "").replace(/\s+/g, " ").trim();
+      var kind = el.getAttribute("data-hg-community-empty-kind");
+      if (!kind) {
+        kind = /não foi possível|could not|couldn't|불러올 수 없/i.test(raw) ? "error" : "empty";
+        el.setAttribute("data-hg-community-empty-kind", kind);
+      }
+      setText(el, translate(kind === "error" ? "community.loadError" : "community.empty", kind === "error" ? "Não foi possível carregar os links agora." : "Nenhum link cadastrado nesta plataforma."));
+    });
+    all(".community-channel-link", root).forEach(function (link) {
+      /* Creator/channel names and spreadsheet descriptions are intentionally untouched. */
+      setText(one(":scope > b", link), translate("community.access", "ACESSAR ↗"));
+    });
+  }
+
+  function applyDisplaySettingsTranslations() {
+    var trigger = document.getElementById("btnDisplaySettings");
+    if (trigger) {
+      setAttr(trigger, "aria-label", translate("display.triggerAria", "Ajuste de tela"));
+      setAttr(trigger, "title", translate("display.triggerAria", "Ajuste de tela"));
+      setText(one(":scope > span:last-child", trigger), translate("more.displaySettings", "Ajuste de Tela"));
+    }
+    var panel = document.getElementById("hgDisplaySettingsPanel");
+    if (!panel) return;
+    setText(one(".hg-display-settings-head small", panel), translate("display.interface", "HOLY GUARDIANS // INTERFACE"));
+    setText(one("#hgDisplaySettingsTitle", panel), translate("display.title", "AJUSTE DE TELA"));
+    setAttr(one(".hg-display-settings-close", panel), "aria-label", translate("display.close", "Fechar"));
+    var infos = all(".hg-display-screen-info > div > span", panel);
+    if (infos[0]) setText(infos[0], translate("display.screen", "TELA"));
+    if (infos[1]) setText(infos[1], translate("display.viewport", "VIEWPORT"));
+    if (infos[2]) setText(infos[2], translate("display.scale", "ESCALA"));
+    var labels = all(".hg-display-settings-label", panel);
+    if (labels[0]) {
+      setText(one("span", labels[0]), translate("display.preset", "PRESET"));
+      setText(one("small", labels[0]), translate("display.savedBrowser", "Salvo somente neste navegador"));
+    }
+    if (labels[1]) {
+      setText(one("span", labels[1]), translate("display.fine", "AJUSTE FINO"));
+      /* 80% a 150% is numeric and intentionally unchanged. */
+    }
+    var presets = {};
+    all("[data-hg-display-preset]", panel).forEach(function (button) { presets[button.getAttribute("data-hg-display-preset")] = button; });
+    if (presets.auto) { setText(one("b", presets.auto), translate("display.auto", "AUTOMÁTICO")); setText(one("small", presets.auto), translate("display.autoDesc", "100% · padrão")); }
+    if (presets.compact) setText(one("b", presets.compact), translate("display.compact", "COMPACTO"));
+    if (presets.comfortable) setText(one("b", presets.comfortable), translate("display.comfortable", "CONFORTÁVEL"));
+    if (presets.large) setText(one("b", presets.large), translate("display.large", "GRANDE"));
+    if (presets.ultrawide) { setText(one("b", presets.ultrawide), translate("display.ultrawide", "ULTRAWIDE")); setText(one("small", presets.ultrawide), translate("display.ultrawideDesc", "mais largura + 112%")); }
+    var manualButtons = all(".hg-display-manual-controls button", panel);
+    if (manualButtons[0]) setAttr(manualButtons[0], "aria-label", translate("display.decrease", "Diminuir escala"));
+    if (manualButtons[1]) setAttr(manualButtons[1], "aria-label", translate("display.increase", "Aumentar escala"));
+    setAttr(one("#hgDisplayScaleRange", panel), "aria-label", translate("display.rangeAria", "Escala da interface"));
+    setText(one(".hg-display-reset", panel), translate("display.reset", "RESTAURAR PADRÃO"));
+    setText(one(".hg-display-settings-note", panel), translate("display.note", "O ajuste altera somente a visualização neste dispositivo e não muda a resolução real do monitor."));
+  }
+
+  function phase7ComparisonQuantity(root) {
+    var active = one(".comparacao-qtd-btn.ativo", root);
+    var qtd = Number(active && active.getAttribute("data-qtd"));
+    return [2,4,8].indexOf(qtd) >= 0 ? qtd : 2;
+  }
+
+  function applyComparisonStaticTranslations() {
+    var root = document.getElementById("comparacaoPagina");
+    if (!root) return;
+    var qtd = phase7ComparisonQuantity(root);
+    setText(one(".comparacao-kicker", root), translate("comparison.kicker", "DIGIMON ANALYSIS // HOLY GUARDIANS SYSTEM"));
+    setText(one(".comparacao-header .page-title", root), translate("comparison.title", "COMPARAÇÃO"));
+    setText(one("#comparacaoSubtitle", root), qtd === 2 ? translate("comparison.subtitle2", "Selecione dois Digimons e compare seus dados lado a lado.") : formatTranslation("comparison.subtitleN", "Selecione {count} Digimons e compare seus dados usando a mesma lógica da comparação principal.", {count:qtd}));
+    setText(one(".comparacao-quantidade-label", root), translate("comparison.compare", "COMPARAR"));
+    setAttr(one(".comparacao-quantidade", root), "aria-label", translate("comparison.quantityAria", "Quantidade de Digimons para comparar"));
+    setAttr(one("#comparacaoHeroIcon", root), "alt", translate("comparison.heroAlt", "Comparação"));
+  }
+
+  function applyComparisonDynamicTranslations() {
+    var root = document.getElementById("comparacaoPagina");
+    if (!root) return;
+    applyComparisonStaticTranslations();
+    var qtd = phase7ComparisonQuantity(root);
+
+    all(".comparacao-selector", root).forEach(function (selector, index) {
+      setText(one("label", selector), formatTranslation("comparison.digimonLabel", "DIGIMON {count}", {count:index + 1}));
+      setAttr(one("input.comparacao-input", selector), "placeholder", translate("comparison.placeholder", "Digite o nome do Digimon..."));
+    });
+
+    all(".comparacao-sugestao span", root).forEach(function (el) { applyKoreanDigimonName(el); });
+    all(".comparacao-card h3", root).forEach(function (el) { applyKoreanDigimonName(el); });
+    all(".comparacao-stat-label", root).forEach(function (el) {
+      var key = canonicalReferenceKey(el.textContent);
+      if (key) applyReferenceLabel(el, key, true);
+    });
+    all(".comparacao-extra-box > .label", root).forEach(function (el) {
+      var key = canonicalReferenceKey(el.textContent);
+      if (key) applyReferenceLabel(el, key, true);
+    });
+    applyKoreanRelationTooltips(root);
+
+    var empty = one("#comparacaoResultado .comparacao-empty", root);
+    if (empty) setText(empty, qtd === 2 ? translate("comparison.empty2", "Escolha dois Digimons para iniciar a comparação.") : formatTranslation("comparison.emptyN", "Selecione até {count} Digimons para iniciar a comparação.", {count:qtd}));
+  }
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -1478,6 +1707,10 @@
     applyBuilderStaticTranslations();
     applyStatusSimulatorStaticTranslations();
     applyCalculatorStaticTranslations();
+    applyElementsStaticTranslations();
+    applyCommunityStaticTranslations();
+    applyDisplaySettingsTranslations();
+    applyComparisonStaticTranslations();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
@@ -2181,6 +2414,10 @@
       applyBuilderDynamicTranslations();
       applyStatusSimulatorDynamicTranslations();
       applyCalculatorDynamicTranslations();
+      applyElementsDynamicTranslations();
+      applyCommunityDynamicTranslations();
+      applyDisplaySettingsTranslations();
+      applyComparisonDynamicTranslations();
       applyKoreanReferenceTranslations();
       applyCounterTooltipTranslations();
     });
@@ -2233,6 +2470,18 @@
           break;
         case "calculadoraPagina":
           applyCalculatorDynamicTranslations();
+          break;
+        case "elementosPagina":
+          applyElementsDynamicTranslations();
+          break;
+        case "socialPagina":
+          applyCommunityDynamicTranslations();
+          break;
+        case "comparacaoPagina":
+          applyComparisonDynamicTranslations();
+          break;
+        case "hgDisplaySettingsPanel":
+          applyDisplaySettingsTranslations();
           break;
       }
     });
@@ -2289,6 +2538,19 @@
     ["atualizarCalculadora", "calcMostrarSugestoes"].forEach(function (name) {
       wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("calculadoraPagina"); });
     });
+    ["criarElementos", "mostrarElementoSelecionado"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("elementosPagina"); });
+    });
+    ["renderCommunityLinks", "carregarComunidade", "toggleCommunityPlatform"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("socialPagina"); });
+    });
+    ["setQuantidadeComparacao", "renderizarSelectoresComparacao", "atualizarSugestoesComparacao", "selecionarDigimonComparacao", "renderizarComparacao"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDynamicTranslationsForRoot("comparacaoPagina"); });
+    });
+    ["abrirHgDisplaySettings", "atualizarHgDisplaySettingsUi"].forEach(function (name) {
+      wrapRuntimeFunction(name, function () { applyDisplaySettingsTranslations(); });
+    });
+
     ["renderizarRaids", "renderizarRaidHomeCarousel"].forEach(function (name) {
       wrapRuntimeFunction(name, function () {
         applyDynamicTranslationsForRoot(name === "renderizarRaids" ? "raidBossPagina" : "homePagina");
@@ -2302,7 +2564,7 @@
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("builderPagina"), document.getElementById("statusSimulatorPagina"), document.getElementById("calculadoraPagina"), document.getElementById("elementosPagina"), document.getElementById("socialPagina"), document.getElementById("comparacaoPagina"), document.getElementById("hgDisplaySettingsPanel"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function (mutations) {
         /* IMPORTANTE: o header precisa ser corrigido mesmo se outra tradução estiver
