@@ -1464,7 +1464,7 @@ function inicializarFechamentoFiltrosDigidex() {
    STAFF
 ===================================================== */
 
-const staff = [
+let staff = [
 
   {
     nome: "HGxNunes",
@@ -2723,6 +2723,50 @@ function aplicarAssetsHome() {
 /* =====================================================
    STAFF
 ===================================================== */
+
+function carregarStaff() {
+
+  return chamarApiJsonp("staff")
+    .then(function(resposta) {
+
+      const lista =
+        resposta && Array.isArray(resposta.staff)
+          ? resposta.staff
+          : [];
+
+      if (lista.length) {
+
+        staff = lista
+          .map(function(pessoa, indice) {
+            return {
+              nome: String(pessoa.nome || pessoa.name || "").trim(),
+              cargo: String(pessoa.cargo || pessoa.role || "SUB").trim().toUpperCase(),
+              imagem: String(pessoa.imagem || pessoa.image || pessoa.nome || pessoa.name || "").trim(),
+              ordem: Number(pessoa.ordem != null ? pessoa.ordem : pessoa.order) || (indice + 1)
+            };
+          })
+          .filter(function(pessoa) {
+            return pessoa.nome && (pessoa.cargo === "MASTER" || pessoa.cargo === "SUB");
+          })
+          .sort(function(a, b) {
+            return a.ordem - b.ordem || a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" });
+          });
+
+      }
+
+      criarStaff();
+      return staff;
+
+    })
+    .catch(function(erro) {
+
+      console.warn("[STAFF] Não foi possível carregar a aba STAFF da DATABASE MASTER. Usando fallback local.", erro);
+      criarStaff();
+      return staff;
+
+    });
+
+}
 
 function criarStaff() {
 
@@ -11347,6 +11391,8 @@ document.addEventListener(
 
     carregarImagensSite();
 
+    carregarStaff();
+
     inicializarCalculadora();
 
     carregarDatabase();
@@ -15077,6 +15123,125 @@ async function tierListSalvarPng(blob, nomeArquivo, handle) {
   setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
 }
 
+/* =====================================================
+   TIER LIST — COMPATIBILIDADE HTML2CANVAS
+   html2canvas 1.4.1 não entende color-mix(). A Tier List usa
+   color-mix() nas bordas e gradientes das tiers; antes da captura
+   convertemos essas três cores para rgb/rgba simples e restauramos
+   tudo ao terminar.
+===================================================== */
+function tierListCorRgb(valor) {
+  const texto = String(valor || "").trim();
+  if (!texto) return { r: 85, g: 183, b: 255 };
+
+  if (/^#[0-9a-f]{3}$/i.test(texto)) {
+    return {
+      r: parseInt(texto[1] + texto[1], 16),
+      g: parseInt(texto[2] + texto[2], 16),
+      b: parseInt(texto[3] + texto[3], 16)
+    };
+  }
+
+  if (/^#[0-9a-f]{6}$/i.test(texto)) {
+    return {
+      r: parseInt(texto.slice(1, 3), 16),
+      g: parseInt(texto.slice(3, 5), 16),
+      b: parseInt(texto.slice(5, 7), 16)
+    };
+  }
+
+  const match = texto.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+  if (match) {
+    return {
+      r: Math.max(0, Math.min(255, Math.round(Number(match[1]) || 0))),
+      g: Math.max(0, Math.min(255, Math.round(Number(match[2]) || 0))),
+      b: Math.max(0, Math.min(255, Math.round(Number(match[3]) || 0)))
+    };
+  }
+
+  /* Resolve nomes/formatos suportados pelo próprio navegador. */
+  const teste = document.createElement("span");
+  teste.style.color = texto;
+  teste.style.position = "fixed";
+  teste.style.left = "-99999px";
+  document.body.appendChild(teste);
+  const resolvida = getComputedStyle(teste).color;
+  teste.remove();
+
+  const resolvido = resolvida.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+  return resolvido
+    ? { r: Math.round(Number(resolvido[1])), g: Math.round(Number(resolvido[2])), b: Math.round(Number(resolvido[3])) }
+    : { r: 85, g: 183, b: 255 };
+}
+
+function tierListMisturarRgb(corA, corB, pesoA) {
+  const a = tierListCorRgb(corA);
+  const b = tierListCorRgb(corB);
+  const p = Math.max(0, Math.min(1, Number(pesoA)));
+  return "rgb(" +
+    Math.round(a.r * p + b.r * (1 - p)) + ", " +
+    Math.round(a.g * p + b.g * (1 - p)) + ", " +
+    Math.round(a.b * p + b.b * (1 - p)) + ")";
+}
+
+function tierListRgba(cor, alpha) {
+  const c = tierListCorRgb(cor);
+  return "rgba(" + c.r + ", " + c.g + ", " + c.b + ", " + Math.max(0, Math.min(1, Number(alpha))) + ")";
+}
+
+function tierListPrepararCompatibilidadeHtml2Canvas(container) {
+  if (!container) return function() {};
+
+  const restaurar = [];
+  const guardar = function(elemento, propriedade) {
+    if (!elemento) return;
+    restaurar.push({
+      elemento: elemento,
+      propriedade: propriedade,
+      valor: elemento.style.getPropertyValue(propriedade),
+      prioridade: elemento.style.getPropertyPriority(propriedade)
+    });
+  };
+
+  container.querySelectorAll(".tierlist-row").forEach(function(row) {
+    const estilo = getComputedStyle(row);
+    const tierColor = estilo.getPropertyValue("--tier-color").trim() || "#55b7ff";
+
+    guardar(row, "border-color");
+    row.style.setProperty("border-color", tierListMisturarRgb(tierColor, "#1e3d55", 0.34), "important");
+
+    const label = row.querySelector(".tierlist-label");
+    if (label) {
+      guardar(label, "background");
+      label.style.setProperty(
+        "background",
+        "linear-gradient(145deg, " + tierListMisturarRgb(tierColor, "#ffffff", 0.94) + ", " + tierColor + ")",
+        "important"
+      );
+    }
+
+    const zone = row.querySelector(".tierlist-tier-zone");
+    if (zone) {
+      guardar(zone, "background");
+      zone.style.setProperty(
+        "background",
+        "linear-gradient(90deg, " + tierListRgba(tierColor, 0.09) + ", rgba(0,0,0,0) 30%), rgba(1, 8, 17, .48)",
+        "important"
+      );
+    }
+  });
+
+  return function() {
+    restaurar.reverse().forEach(function(item) {
+      if (item.valor) {
+        item.elemento.style.setProperty(item.propriedade, item.valor, item.prioridade || "");
+      } else {
+        item.elemento.style.removeProperty(item.propriedade);
+      }
+    });
+  };
+}
+
 async function tierListExportarPng() {
   if (typeof html2canvas !== "function") {
     alert("O gerador de imagem ainda não carregou. Atualize a página e tente novamente.");
@@ -15094,6 +15259,7 @@ async function tierListExportarPng() {
 
   const original = botao ? botao.innerHTML : "";
   let restaurar = function() {};
+  let restaurarCompatibilidade = function() {};
   let destino = { handle: null, cancelado: false };
 
   try {
@@ -15108,6 +15274,7 @@ async function tierListExportarPng() {
     if (destino.cancelado) return;
 
     pagina.classList.add("tierlist-exporting");
+    restaurarCompatibilidade = tierListPrepararCompatibilidadeHtml2Canvas(area);
     restaurar = await tierListTrocarImagensParaExport(area);
     if (typeof builderEsperarImagens === "function") await builderEsperarImagens(area);
     await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
@@ -15132,9 +15299,11 @@ async function tierListExportarPng() {
     await tierListSalvarPng(blob, nomeArquivo, destino.handle);
   } catch (erro) {
     console.error("Erro ao exportar Tier List:", erro);
-    alert("Não foi possível gerar o PNG da Tier List. Atualize a página e tente novamente.");
+    const detalhe = erro && erro.message ? erro.message : String(erro || "Erro desconhecido");
+    alert("Não foi possível gerar o PNG da Tier List.\n\nDetalhe: " + detalhe);
   } finally {
     try { restaurar(); } catch (erro) {}
+    try { restaurarCompatibilidade(); } catch (erro) {}
     pagina.classList.remove("tierlist-exporting");
     if (botao) {
       botao.disabled = false;
@@ -15783,6 +15952,7 @@ async function tierListDmoExportarPng() {
   const nomeArquivo = "holy_guardians_" + nome + "_" + data + ".png";
 
   const original = botao ? botao.innerHTML : "";
+  let restaurarCompatibilidade = function() {};
   let destino = { handle: null, cancelado: false };
   try {
     if (botao) {
@@ -15794,6 +15964,7 @@ async function tierListDmoExportarPng() {
     if (destino.cancelado) return;
 
     pagina.classList.add("tierlist-exporting");
+    restaurarCompatibilidade = tierListPrepararCompatibilidadeHtml2Canvas(area);
     if (typeof builderEsperarImagens === "function") await builderEsperarImagens(area);
     await new Promise(function(resolve) { requestAnimationFrame(function() { requestAnimationFrame(resolve); }); });
 
@@ -15814,8 +15985,10 @@ async function tierListDmoExportarPng() {
     await tierListSalvarPng(blob, nomeArquivo, destino.handle);
   } catch (erro) {
     console.error("Erro Tier List DMO export:", erro);
-    alert("Não foi possível gerar o PNG. Se algum ícone externo ainda estiver carregando, aguarde alguns segundos e tente novamente.");
+    const detalhe = erro && erro.message ? erro.message : String(erro || "Erro desconhecido");
+    alert("Não foi possível gerar o PNG da Tier List DMO.\n\nDetalhe: " + detalhe);
   } finally {
+    try { restaurarCompatibilidade(); } catch (erro) {}
     pagina.classList.remove("tierlist-exporting");
     if (botao) { botao.disabled = false; botao.innerHTML = original; }
   }
