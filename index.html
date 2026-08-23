@@ -1,493 +1,3166 @@
-window.HG_I18N = window.HG_I18N || {};
-window.HG_I18N["ko-KR"] = {
-  "strings": {
-    "meta.description": "디지몬 슈퍼럼블을 위한 Holy Guardians 레이드 모니터, 디지덱스, 팀 빌더, 계산기 및 도구 모음.",
-    "language.kicker": "HOLY GUARDIANS // 언어",
-    "language.title": "언어",
-    "language.disclaimer": "접근성을 위해 제공되는 번역이며 내용은 점차 수정될 수 있습니다. 게임 내 공식 명칭은 가능한 한 그대로 유지합니다.",
-    "language.buttonAria": "언어 선택",
-    "language.menuAria": "사이트 언어 선택",
-    "header.events": "다가오는 이벤트",
-    "header.nextBoss": "다음 보스",
-    "header.openRaid": "레이드 보스 열기",
-    "header.openDekyu": "Dekyu Treasure 열기",
-    "header.next": "다음",
-    "header.loading": "불러오는 중...",
-    "header.soundOnAria": "보스 및 Dekyu 알림음 끄기",
-    "header.soundOffAria": "보스 및 Dekyu 알림음 켜기",
-    "header.soundOnTitle": "이벤트 알림음 켜짐 · 5분 전 알림",
-    "header.soundOffTitle": "이벤트 알림음 꺼짐 · 5분 전 알림",
-    "nav.navigation": "메뉴",
-    "nav.openNavigation": "메뉴 열기",
-    "nav.closeNavigation": "메뉴 닫기",
-    "nav.closeMenu": "× 메뉴 닫기",
-    "nav.home": "홈",
-    "nav.digidex": "DIGIDEX",
-    "nav.teamBuilder": "팀 빌더",
-    "nav.elements": "속성",
-    "nav.calculator": "계산기",
-    "nav.pvp": "PvP",
-    "nav.pvpBuild": "PVP 팀 빌드",
-    "nav.importTeam": "팀 불러오기",
-    "nav.match": "매치",
-    "nav.contents": "콘텐츠",
-    "nav.draw": "추첨",
-    "nav.community": "커뮤니티",
-    "nav.more": "더보기",
-    "nav.moreTools": "추가 도구 //",
-    "nav.shortcuts": "HG 바로가기",
-    "nav.comparison": "비교",
-    "nav.counterFinder": "COUNTER FINDER",
-    "nav.hiddenQuests": "HIDDEN QUESTS",
-    "nav.statusSimulator": "Status Simulator",
-    "nav.raidBoss": "Raid Boss",
-    "nav.dekyuTreasure": "Dekyu Treasure",
-    "nav.displaySettings": "화면 설정",
-    "display.interface": "HOLY GUARDIANS // INTERFACE",
-    "display.title": "화면 설정",
-    "display.close": "닫기",
-    "display.screen": "화면",
-    "display.viewport": "뷰포트",
-    "display.scale": "배율",
-    "display.preset": "PRESET",
-    "display.saved": "이 브라우저에만 저장됩니다",
-    "display.auto": "자동",
-    "display.autoSub": "100% · 기본",
-    "display.compact": "컴팩트",
-    "display.comfortable": "편안하게",
-    "display.large": "크게",
-    "display.ultrawideSub": "더 넓게 + 112%",
-    "display.fine": "세부 조정",
-    "display.decrease": "배율 줄이기",
-    "display.increase": "배율 늘리기",
-    "display.scaleAria": "인터페이스 배율",
-    "display.reset": "기본값 복원",
-    "display.note": "이 설정은 현재 기기의 표시 크기만 변경하며 모니터의 실제 해상도는 변경하지 않습니다.",
-    "home.welcome": "환영합니다",
-    "home.motto": "힘 • 단결 • 진화",
-    "home.heroLead": "<strong>길드 그 이상, 하나의 가족.</strong><br>2012년부터 디지몬 세계에서 역사를 만들어 오며 여러 세대와 서버에서 함께 성장해 왔습니다.<br>우리의 목표는 언제나 같습니다. 함께 진화하는 것!",
-    "home.openDigidex": "디지덱스 열기",
-    "home.buildTeam": "팀 구성",
-    "home.raidBosses": "레이드 보스",
-    "home.liveSchedule": "실시간 일정",
-    "home.raidPrev": "이전 보스",
-    "home.raidNext": "다음 보스",
-    "home.raidSelect": "레이드 보스 선택",
-    "home.raidLoading": "레이드 일정을 불러오는 중...",
-    "home.raidSync": "KST 기준으로 동기화 중입니다.",
-    "home.nextSpawn": "다음 등장",
-    "home.scheduled": "예정",
-    "home.rotation": "로테이션",
-    "home.mapUnavailable": "맵 정보 없음",
-    "home.viewRaidSchedule": "레이드 일정 보기",
-    "home.showBoss": "{name} 보기",
-    "home.openBoss": "{name} 열기",
-    "home.timeUnavailable": "시간 정보 없음",
-    "home.ofdToday": "오늘의 OFD",
-    "home.nextUpdate": "다음 갱신",
-    "home.ofdReset": "<strong>리셋 안내:</strong> Overflow Dungeon은 <b>00:00 KST</b>에 변경되며 브라질리아 시간으로는 <b>12:00</b>입니다. 기본 날짜는 브라질 기준이며, 이용 가능 여부는 표시된 KST 요일을 따릅니다.",
-    "home.ofdWeekly": "주간 Overflow Dungeon",
-    "home.chooseOtherDay": "다른 요일 확인",
-    "home.chooseDayHint": "브라질 기준 요일을 선택하세요. 아래에 해당하는 한국 요일도 함께 표시됩니다.",
-    "home.ofdDay": "선택한 날의 OFD",
-    "home.cycleHint": "선택한 주기는 <b>12:00 BRT</b>에 시작하며 다음 날 <b>00:00 KST</b>에 해당합니다.",
-    "home.todayBrazil": "브라질 오늘",
-    "home.brazilTime": "브라질 시간",
-    "home.kstRotation": "KST 로테이션",
-    "home.kstAvailability": "KST 이용 가능",
-    "home.noOfdPeriod": "이 시간대에 이용 가능한 OFD가 없습니다.",
-    "home.noOfdDay": "이 요일에 이용 가능한 OFD가 없습니다.",
-    "home.available": "이용 가능",
-    "home.pass": "패스",
-    "home.levelShort": "LV",
-    "home.ticket": "TICKET",
-    "home.activeServers": "활성 서버",
-    "home.active": "활성 •",
-    "home.staff": "DSR 스태프",
-    "home.subs": "부마스터",
-    "home.socials": "공식 채널",
-    "home.openChannel": "채널 열기 →",
-    "home.openServer": "서버 열기 →",
-    "home.footer": "2012년부터 <span class=\"footer-heart\">♥</span> HG 가족을 위해",
-    "hidden.subtitle": "DSR 원본 게시글의 동선, 목표, 보상, 이미지와 영상을 정리한 번역 가이드입니다.",
-    "hidden.source": "원본 출처",
-    "hidden.before": "시작하기 전에",
-    "hidden.authorInfo": "작성자의 중요 안내",
-    "hidden.searchLabel": "퀘스트 / NPC / 디지몬 / 아이템 검색",
-    "hidden.searchPlaceholder": "예: Dekyu, Dark Castle, Leafmon...",
-    "hidden.archive": "HG 아카이브",
-    "hidden.allRegions": "전체 지역",
-    "hidden.questOne": "퀘스트",
-    "hidden.questMany": "퀘스트",
-    "hidden.noneTitle": "검색된 퀘스트가 없습니다",
-    "hidden.noneText": "다른 검색어나 지역을 선택해 보세요.",
-    "hidden.chain": "연계 퀘스트",
-    "hidden.steps": "진행 방법 / 정보",
-    "hidden.images": "원본 게시글 이미지",
-    "hidden.noSteps": "이 항목에 대해 원본 게시글에 추가 텍스트 설명이 없습니다.",
-    "hidden.noImages": "이 퀘스트에는 필요한 이미지가 없습니다",
-    "hidden.image": "이미지",
-    "hidden.imgOne": "장",
-    "hidden.imgMany": "장",
-    "hidden.videoGuide": "영상 가이드",
-    "hidden.previous": "← 이전",
-    "hidden.next": "다음 →",
-    "hidden.closeImage": "이미지 닫기",
-    "hidden.kind.HIDDEN QUEST": "히든 퀘스트",
-    "hidden.kind.SPECIAL": "특별 퀘스트",
-    "hidden.kind.CLIMBER": "등반자",
-    "weekday.SEG.short": "월",
-    "weekday.SEG.full": "월요일",
-    "weekday.TER.short": "화",
-    "weekday.TER.full": "화요일",
-    "weekday.QUA.short": "수",
-    "weekday.QUA.full": "수요일",
-    "weekday.QUI.short": "목",
-    "weekday.QUI.full": "목요일",
-    "weekday.SEX.short": "금",
-    "weekday.SEX.full": "금요일",
-    "weekday.SAB.short": "토",
-    "weekday.SAB.full": "토요일",
-    "weekday.DOM.short": "일",
-    "weekday.DOM.full": "일요일",
-    "page.home": "홈",
-    "page.digidex": "DIGIDEX",
-    "page.digivolution": "DIGIVOLUTION",
-    "page.comparison": "비교",
-    "page.counter": "COUNTER FINDER",
-    "page.hidden": "HIDDEN QUESTS",
-    "page.builder": "TEAM BUILDER",
-    "page.status": "STATUS SIMULATOR",
-    "page.elements": "속성",
-    "page.pvp": "PVP",
-    "page.calculator": "계산기",
-    "page.raid": "RAID BOSS",
-    "page.dekyu": "DEKYU TREASURE",
-    "page.tierDsr": "TIER LIST DSR",
-    "page.tierDmo": "TIER LIST DMO",
-    "page.draw": "추첨",
-    "page.community": "커뮤니티"
-  },
-  "hiddenQuests": {
-    "intro": [
-      "작성자는 이 가이드가 2025년 11월 19일 기준으로 여전히 적용된다고 안내했습니다. 이 번역은 원본 게시글의 내용을 정리한 것이며 이후 업데이트를 별도로 검증하지 않았습니다.",
-      "히든 퀘스트도 테이머 레벨 경험치에 포함됩니다.",
-      "지역에 따라 약 1시간에서 여러 시간이 걸릴 수 있어 히든 퀘스트 진행 시간이 상당히 길 수 있습니다.",
-      "많은 히든 퀘스트는 특정 메인 퀘스트와 서브 퀘스트를 완료한 뒤에만 나타납니다.",
-      "진행 전에 업적(Y) > 퀘스트에서 각 지역의 미완료 서브 퀘스트를 확인하는 것을 작성자가 권장합니다.",
-      "플레이어와 적 디지몬의 레벨 차이가 너무 크면 드롭률이 낮아지거나 퀘스트 아이템이 나오지 않을 수 있습니다.",
-      "퀘스트 재료가 드롭되지 않는 버그가 발생할 수 있습니다. 작성자는 재접속하거나 1:1 문의를 이용할 것을 권장합니다.",
-      "퀘스트 간소화 패치 이후 일부 퀘스트가 삭제되었거나 이미 완료된 것으로 표시될 수 있습니다."
-    ],
-    "regions": {
-      "all": "전체",
-      "starting-village": "시작의 마을",
-      "gear-savanna": "기어 사바나",
-      "infinite-mountain": "무한산",
-      "desert-area": "사막지대",
-      "dark-castle-valley": "어둠성 계곡",
-      "real-copy-world": "리얼 카피월드",
-      "leafmon": "잎새몬",
-      "spiral-mountain": "스파이럴 마운틴",
-      "data-world": "데이터 세계",
-      "climber": "등반자"
-    },
-    "quests": {
-      "01": {
-        "steps": [
-          "시작의 마을에서 플로라몬 옆 토마토 밭의 츄몬을 처치해 씨앗을 획득하세요.",
-          "보상: 작성자는 소량의 Bits와 Attack Data S를 언급하지만, 원문에서도 확실하지 않은 정보로 표시되어 있습니다."
-        ]
-      },
-      "02": {
-        "steps": [
-          "토마토 밭 왼쪽 아래쪽 지형에 이름이 표시된 고부리몬이 있습니다. 근처 책이 놓인 탁자를 찾으세요.",
-          "탁자와 상호작용하면 \"종이 조각\"이 인벤토리에 들어오며 히든 퀘스트가 시작됩니다.",
-          "보상: 소량의 Bits와 Attack Data S. 이 보상 역시 작성자가 확실하지 않다고 표시했습니다."
-        ]
-      },
-      "03": {
-        "steps": [
-          "이미지에 표시된 치즈를 클릭하세요. 인벤토리에 들어오면 아이템을 우클릭해 퀘스트를 시작합니다."
-        ]
-      },
-      "04": {
-        "steps": [
-          "기어 사바나의 파괴된 배 근처에서 검은 톱니바퀴를 클릭해 퀘스트를 시작하세요."
-        ]
-      },
-      "05": {
-        "steps": [
-          "무한산에서 원문에 말벌몬으로 표시된 디지몬을 처치해 히든 퀘스트 아이템을 획득하세요. 재료가 드롭되려면 메인 퀘스트를 충분히 진행해야 합니다.",
-          "아이템을 우클릭해 퀘스트를 시작하세요.",
-          "보상: 9,000 XP 경험치 포션 1개."
-        ]
-      },
-      "06": {
-        "steps": [
-          "레오몬 뒤의 빛나는 지점으로 가서 퀘스트를 시작하세요.",
-          "그다음 Dragon's Eye Lake로 이동해 이미지에 표시된 지역에서 네잎클로버를 찾으세요.",
-          "기어 사바나에서 NPC 어니몬에게 \"Fresh Water\"를 구매하세요.",
-          "시작의 마을 천사상에서 니드몬 3마리를 찾으세요.",
-          "무한산에서 프리지몬을 처치해 얼음을 획득하세요.",
-          "빛나는 지점으로 돌아간 뒤 Time Village의 플로라몬과 대화하고 다시 빛나는 지점으로 돌아와 완료하세요.",
-          "현재 보상: 20,000 Bits. 예전에는 Winter Fairy Shoes Selection Box 1개도 지급되었지만 현재는 더 이상 지급되지 않는다고 원문에 적혀 있습니다."
-        ]
-      },
-      "07": {
-        "steps": [
-          "사막지대에서 Guardromon Lv.48을 처치해 \"Dekyu Cage Key Bundle\"을 획득한 뒤 아이템을 사용해 퀘스트를 시작하세요.",
-          "Dekyu를 찾아 구출하세요.",
-          "보상: 30,000 Bits + 9,000 XP 경험치 포션 1개."
-        ]
-      },
-      "08": {
-        "steps": [
-          "Monochromon 근처 제단에 퀘스트가 있습니다.",
-          "물고기 20마리를 구해 제단에 바치고 퀘스트를 완료하세요.",
-          "보상: 30,000 Bits + 9,000 XP 경험치 포션 1개."
-        ]
-      },
-      "09": {
-        "steps": [
-          "덜렁대는 Gazimon이 잃어버린 열쇠와 관련된 퀘스트가 있습니다.",
-          "근처 Guardromon을 처치해 열쇠를 얻고 전달하면 완료됩니다."
-        ]
-      },
-      "10": {
-        "steps": [
-          "어둠성 계곡 입구에서 원문에 원뿔몬으로 표시된 Lv.65 디지몬을 처치해 \"Dekyu Cage Key Bundle 2\"를 획득하세요.",
-          "아이템을 사용한 뒤 Dekyu를 찾아 구출하세요.",
-          "보상: 약 30,000 Bits + Auto Loot 1시간."
-        ]
-      },
-      "11": {
-        "steps": [
-          "원문에 원뿔몬으로 표시된 디지몬 근처 낚시터에서 물고기 더미를 클릭해 퀘스트를 시작하세요.",
-          "식당의 Vegiemon에게 이동하세요.",
-          "보상: 30,000 Bits + Broken Zero Unit 1개."
-        ]
-      },
-      "12": {
-        "steps": [
-          "표시된 위치의 해골을 클릭해 \"주인 없는 해골\" 퀘스트를 시작하세요.",
-          "무한산의 묘지로 가서 해골을 묻으세요.",
-          "보상: 30,000 Bits + In-Training II Digitama 1개."
-        ]
-      },
-      "13": {
-        "steps": [
-          "이미지에 보이는 수상한 쪽지와 상호작용해 퀘스트를 시작하세요.",
-          "표시된 장소로 가서 Rebellimon을 처치하세요.",
-          "보상: 35,500 Bits + 12,000 XP 경험치 포션 3개."
-        ]
-      },
-      "14": {
-        "steps": [
-          "작성자 주의: 이 연계 퀘스트는 조금 더 어렵고 위치를 다른 지역과 혼동하기 쉽습니다.",
-          "Gazimon 근처 마법진 옆의 편지를 클릭해 \"피 묻은 편지\"를 시작하세요.",
-          "Sunflowmon에게 이동하세요. 이 단계 보상은 35,500 Bits + Potential Fragment 5개이며, 이어서 \"피 묻은 주인\" 퀘스트가 시작됩니다.",
-          "Kabuterimon 20마리를 처치하세요. 보상: 30,000 Bits + Champion Digicore Bundle 1개. 연계 퀘스트가 계속됩니다.",
-          "표시된 NPC들과 대화해 단계를 완료하면 미니맵에 새 퀘스트가 나타납니다.",
-          "새 퀘스트를 수락하고 NPC들과 대화한 뒤 미니맵 6시 방향에서 원문에 원뿔몬으로 표시된 디지몬을 처치해 물고기 10마리를 획득하세요.",
-          "NPC들과 다시 대화하세요. 보상: Champion Digicore Bundle 1개. 다음 단계가 열립니다.",
-          "NPC들과 대화하고 요청받은 꽃을 수집하세요. 표시된 보상은 30,000 Bits이며 연계가 계속됩니다.",
-          "다음 단계를 완료하면 포탈이 생성되고 또 다른 퀘스트가 나타납니다.",
-          "절벽 아래에서 MegaSeadramon Lv.78 20마리를 처치한 뒤 NPC들과 대화해 연계를 마무리하세요.",
-          "원문에 언급된 최종 보상: 30,000 Bits + 30,000 Bits + In-Training I Digitama 1개.",
-          "마지막에는 선착장으로 이동하는 포탈이 해금됩니다."
-        ]
-      },
-      "15": {
-        "steps": [
-          "Gekomon 성 2층에서 Chuumon Lv.70을 처치해 \"수상한 Gekomon 성 감옥 열쇠\"를 획득하세요.",
-          "열쇠를 사용하고 지하 감옥에서 Goburimon을 찾으세요.",
-          "보상: Potential Fragment 10개."
-        ]
-      },
-      "16": {
-        "steps": [
-          "Dark Castle 내부의 검을 클릭해 \"화려한 검\" 퀘스트를 시작하세요.",
-          "Gekomon 성의 Otamamon에게 가서 완료하세요.",
-          "보상: 30,000 Bits + Advanced Enhancement Material 1개."
-        ]
-      },
-      "17": {
-        "steps": [
-          "Dark Castle 내부 Myotismon의 서재/사무실에서 책상과 상호작용해 \"Myotismon의 명령\" 퀘스트를 시작하세요.",
-          "이미지에 표시된 비밀 책장을 찾은 뒤 흰수염도사에게 이동하세요.",
-          "보상: 30,000 Bits + Advanced Enhancement Material 1개."
-        ]
-      },
-      "18": {
-        "steps": [
-          "Dark Castle에서 Devidramon을 처치하면 퀘스트 시작 아이템 \"진홍빛 겹눈\"이 드롭될 수 있습니다.",
-          "아이템을 우클릭해 퀘스트를 시작하세요.",
-          "근처 석상과 대화하고 Devidramon을 처치해 진홍빛 겹눈 4개를 수집하세요.",
-          "석상으로 돌아가면 이후 거대 Devidramon과 전투하게 됩니다.",
-          "보상: 30,000 Bits + Potential Fragment 5개."
-        ]
-      },
-      "19": {
-        "steps": [
-          "표시된 위치의 정체불명 편지를 클릭하고 흔적/표시를 따라가며 퀘스트를 완료하세요.",
-          "보상: 10,000 Bits + Potential Fragment 100개."
-        ]
-      },
-      "20": {
-        "steps": [
-          "표시된 위치에서 책을 읽으세요. Diaboromon을 처치하라는 수배지가 들어 있습니다.",
-          "원문 텍스트에는 이 퀘스트의 보상이 적혀 있지 않습니다."
-        ]
-      },
-      "21": {
-        "steps": [
-          "원문 크레딧: Koromon.",
-          "표시된 위치의 책을 클릭해 실험 보고서를 획득하세요.",
-          "보고서를 문서의 주인인 과학자에게 전달하면 퀘스트가 시작됩니다.",
-          "요청받은 재료를 모아 단계를 완료하세요.",
-          "이미지에 표시된 위치에서 \"Kunemon의 친구 찾기 2\"가 시작됩니다.",
-          "대화한 뒤 수상한 사람과 맞서세요.",
-          "친구를 찾고 Kunemon과 대화하세요.",
-          "표시된 지점으로 가면 F키가 활성화됩니다. F를 눌러 \"Kunemon의 친구 찾기 3\"을 시작하세요.",
-          "Parasimon을 처치하고 친구를 Kunemon에게 데려가 완료하세요.",
-          "원문 텍스트에는 최종 보상이 명시되어 있지 않습니다."
-        ]
-      },
-      "22": {
-        "steps": [
-          "원문 크레딧: Koromon.",
-          "표시된 위치의 모래성을 클릭하고 보물을 찾아 퀘스트를 완료하세요."
-        ]
-      },
-      "23": {
-        "steps": [
-          "표시된 위치에 쓰러진 안내판이 있습니다. 작성자는 2층이 아니라 1층에 있다고 강조합니다.",
-          "안내판에서 Energy Drink를 얻는 위치를 확인할 수 있습니다.",
-          "이후 원문에 태스트몬으로 표시된 디지몬을 처치해 Energy Drink를 획득하세요.",
-          "작성자 주의: 드롭률이 매우 낮을 수 있어 경우에 따라 몇 시간 동안 파밍해야 할 수 있습니다.",
-          "아이템을 얻은 뒤 숨겨진 지역의 지친 사람에게 Energy Drink를 전달해 완료하세요.",
-          "원본 게시글 영상 - 숨겨진 지역 1로 가는 방법"
-        ],
-        "videoLabels": [
-          "영상 가이드 - 숨겨진 지역 1로 가는 방법"
-        ]
-      },
-      "24": {
-        "steps": [
-          "이 퀘스트는 이전과 다른 숨겨진 지역에서 시작됩니다.",
-          "원본 게시글 영상 - 숨겨진 지역 2로 가는 방법",
-          "해당 위치에 \"이상한 세계에서 온 사람\"의 퀘스트가 있습니다.",
-          "진행하면 Shibuya에서 Mistymon을 찾으라고 합니다.",
-          "Mistymon과 대화한 뒤 숨겨진 지역의 인물에게 돌아가세요.",
-          "돌아가기 위해 필요한 재료를 요구합니다. 모두 수집하세요.",
-          "그다음 표시된 위치에서 TigerVespamon을 처치하라는 퀘스트가 나옵니다.",
-          "작성자는 위치 표시 오류가 있어 1:1 문의를 했다고 설명합니다. 이미지에 표시된 지점을 따라가세요.",
-          "보상은 작성자가 \"매우 좋다\"고만 표현했으며 원문에는 정확한 아이템/수치가 없습니다."
-        ],
-        "videoLabels": [
-          "영상 가이드 - 숨겨진 지역 2로 가는 방법"
-        ]
-      },
-      "25": {
-        "steps": [
-          "Spiral까지 모든 메인 퀘스트를 완료하면 무한산 맵에 \"수상한 움직임\" 퀘스트가 나타납니다.",
-          "앞에 있는 Lv.100 Unimon을 처치해 완료하세요.",
-          "원문 섹션 제목에서 Leafmon Digitama 획득 퀘스트라고 명시하지만, 표시된 텍스트에는 보상이 자세히 설명되어 있지 않습니다."
-        ]
-      },
-      "26": {
-        "steps": [
-          "원문 크레딧: 인기스타.",
-          "표시된 위치에서 보물지도를 찾은 뒤 Crescent Island에서 보물상자를 찾으세요."
-        ]
-      },
-      "27": {
-        "steps": [
-          "원문 크레딧: 당분, 인기스타.",
-          "Devidramon 서브 퀘스트를 완료하면 Mushroomon의 퀘스트가 나타납니다.",
-          "Mushroomon 퀘스트를 완료하면 \"수상한 Digitama\"를 받습니다.",
-          "이 Digitama를 들고 표시된 방향으로 꽃밭까지 이동하세요.",
-          "이미지에 표시된 제단과 상호작용/대화해 완료하세요."
-        ]
-      },
-      "28": {
-        "steps": [
-          "원문 크레딧: 당분.",
-          "이미지에 표시된 몬스터들을 처치하세요.",
-          "그 이후 Network Sea, Steel City, Forest District 및 ??? 지역의 남은 서브 퀘스트가 작성자 설명대로 완료/해금됩니다.",
-          "균열이 열립니다.",
-          "Apocalymon을 처치한 뒤 원문에 이바몬으로 표시된 몬스터를 순서대로 처치해 마무리하세요.",
-          "작성자는 메인 퀘스트, 서브 퀘스트, 히든 퀘스트를 모두 완료하면 테이머 레벨 45에 도달한다고 안내합니다."
-        ]
-      },
-      "29": {
-        "steps": [
-          "Tamer's House 2층 침대 옆 수납공간에 책이 있습니다.",
-          "일기를 획득한 뒤 우클릭해 퀘스트를 시작하세요.",
-          "목표는 Memory Fragment를 수집하는 것입니다. 작성자는 위치가 표시되기 때문에 비교적 간단하다고 설명합니다."
-        ]
-      },
-      "30": {
-        "steps": [
-          "NPC Kuramon에게 느낌표가 없는 퀘스트가 있으며 작성자는 히든 퀘스트로 추정합니다.",
-          "옆의 Tentomon과 대화한 뒤 Diaboromon 20마리를 처치하세요."
-        ]
-      },
-      "A01": {
-        "steps": [
-          "옆의 주황색 계단에서 점프해 업적 지점에 도달하세요."
-        ]
-      },
-      "A02": {
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A03": {
-        "steps": [
-          "작성자 주의: 이동속도 버프 아이템이 없으면 매우 어렵고 사실상 불가능할 수 있습니다."
-        ],
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A04": {
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A05": {
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A06": {
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A07": {
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A08": {
-        "steps": [
-          "원문 요구 조건: 어둠성 계곡 절벽 아래의 히든 퀘스트 연계 퀘스트를 완료해야 합니다."
-        ],
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      },
-      "A09": {
-        "steps": [
-          "원문 요구 조건: 어둠성 계곡 절벽 아래의 히든 퀘스트 연계 퀘스트를 완료해야 합니다."
-        ],
-        "videoLabels": [
-          "영상 가이드"
-        ]
-      }
-    }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOLY GUARDIANS</title>
+  <meta name="description" content="Raid Monitor, Digidex, Team Builder, calculadora e ferramentas da Holy Guardians para Digimon Super Rumble.">
+  <link rel="canonical" href="https://holyguardians.github.io/">
+
+  <!-- Prévia ao compartilhar o site no WhatsApp, Discord e redes sociais -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Holy Guardians">
+  <meta property="og:url" content="https://holyguardians.github.io/">
+  <meta property="og:title" content="Holy Guardians">
+  <meta property="og:description" content="Raid Monitor, Digidex, Team Builder, calculadora e ferramentas para Digimon Super Rumble.">
+  <meta property="og:image" content="https://holyguardians.github.io/holyguardians_preview.png">
+  <meta property="og:image:secure_url" content="https://holyguardians.github.io/holyguardians_preview.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1241">
+  <meta property="og:image:height" content="1268">
+  <meta property="og:image:alt" content="Logo da Holy Guardians">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Holy Guardians">
+  <meta name="twitter:description" content="Raid Monitor, Digidex, Team Builder, calculadora e ferramentas para Digimon Super Rumble.">
+  <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
+
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=20260823-i18n-v1">
+<style id="hgImpmonMultiLiveStyles">
+  #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
+  #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
+  #hgImpmonLiveNames { display: grid; gap: 3px; min-width: 0; }
+  #hgImpmonLiveNames .hg-impmon-single-name {
+    display: block; color: #f7fcff; font-size: 12px; font-weight: 1000; line-height: 1.25; overflow-wrap: anywhere;
   }
-};
+  #hgImpmonLiveNames .hg-impmon-live-name {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    min-width: 0; margin: 0 -5px; padding: 4px 5px; border-radius: 5px;
+    color: #f7fcff; text-decoration: none; font-size: 11px; font-weight: 1000; line-height: 1.15;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name:hover,
+  #hgImpmonLiveNames .hg-impmon-live-name:focus-visible {
+    color: #fff; background: rgba(67, 191, 255, .12); transform: translateX(2px); outline: 0;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #hgImpmonLiveNames .hg-impmon-live-provider {
+    flex: 0 0 auto; font-size: 7px; font-weight: 1000; letter-spacing: .08em; opacity: .88;
+  }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="kick"] .hg-impmon-live-provider { color: #8cff57; }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="youtube"] .hg-impmon-live-provider { color: #ff7078; }
+  #hgImpmonLiveNames .hg-impmon-live-name[data-provider="twitch"] .hg-impmon-live-provider { color: #b59cff; }
+  @media (max-width: 600px) {
+    #hgImpmonLiveNames .hg-impmon-single-name { font-size: 10px; }
+    #hgImpmonLiveNames .hg-impmon-live-name { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topbar hg-main-header" id="siteTopbar">
+
+  <button
+    id="headerBrand"
+    class="brand hg-header-brand"
+    type="button"
+    aria-label="Ir para Home"
+    title="Holy Guardians"
+    onclick="mostrarPagina('homePagina', document.getElementById('btnHome'))"
+  >
+    <span class="brand-logo-shell" aria-hidden="true">
+      <img id="headerLogoGlow" class="brand-logo brand-logo-glow" src="" alt="">
+      <img id="headerLogo" class="brand-logo brand-logo-main" src="" alt="Holy Guardians">
+    </span>
+    <span class="hg-brand-wordmark" aria-hidden="true">
+      <span>HOLY //</span>
+      <b>GUARDIANS</b>
+    </span>
+  </button>
+
+  <div id="hgHeaderCountdowns" class="hg-header-countdowns" aria-label="Próximos eventos">
+    <button class="hg-header-event hg-header-event-boss" type="button"
+      onclick="mostrarPagina('raidBossPagina', document.getElementById('btnRaidBoss'))"
+      title="Abrir Raid Boss">
+      <small class="hg-header-event-label">PRÓXIMO BOSS</small>
+      <span class="hg-header-event-body">
+        <span class="hg-header-event-icon-shell" aria-hidden="true">
+          <img id="hgHeaderBossIcon" class="hg-header-event-icon" src="icon_raid.png" alt="">
+        </span>
+        <span class="hg-header-event-info">
+          <b id="hgHeaderBossName">CARREGANDO...</b>
+          <strong id="hgHeaderBossCountdown">--:--:--</strong>
+        </span>
+      </span>
+    </button>
+
+    <button class="hg-header-event hg-header-event-dekyu" type="button"
+      onclick="mostrarPagina('dekyuTreasurePagina', document.getElementById('btnDekyuTreasure'))"
+      title="Abrir Dekyu Treasure">
+      <small class="hg-header-event-label">DEKYU TREASURE</small>
+      <span class="hg-header-event-body">
+        <span class="hg-header-event-icon-shell" aria-hidden="true">
+          <img class="hg-header-event-icon" src="dekyu_treasure.png" alt="">
+        </span>
+        <span class="hg-header-event-info">
+          <b id="hgHeaderDekyuTime">PRÓXIMO --:--</b>
+          <strong id="hgHeaderDekyuCountdown">--:--:--</strong>
+        </span>
+      </span>
+    </button>
+
+    <button id="hgHeaderSoundToggle" class="hg-header-sound-toggle" type="button"
+      aria-pressed="false"
+      aria-label="Ligar som de aviso de Boss e Dekyu"
+      title="Ligar som de eventos · aviso 5 min antes"
+      onclick="alternarHgSomEventos()">
+      <span class="hg-header-sound-svg" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path class="hg-sound-speaker" d="M4 9.2h3.2L11.5 6v12l-4.3-3.2H4z"></path>
+          <path class="hg-sound-wave hg-sound-wave-1" d="M14.4 9.1c1.5 1.6 1.5 4.2 0 5.8"></path>
+          <path class="hg-sound-wave hg-sound-wave-2" d="M17.2 6.7c2.8 3 2.8 7.6 0 10.6"></path>
+          <path class="hg-sound-slash" d="M5 5l14 14"></path>
+        </svg>
+      </span>
+      <small id="hgHeaderSoundState">OFF</small>
+    </button>
+
+    <div id="hgLanguageSwitcher" class="hg-language-switcher">
+      <button id="hgLanguageButton" class="hg-language-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="hgLanguageMenu" aria-label="Selecionar idioma" onclick="hgToggleLanguageMenu(event)">
+        <img id="hgLanguageCurrentFlag" src="language_flags/br.svg" alt="" aria-hidden="true">
+        <strong id="hgLanguageCurrentCode">PT</strong>
+        <span aria-hidden="true">⌄</span>
+      </button>
+      <div id="hgLanguageMenu" class="hg-language-menu tech-corners" role="menu" aria-label="Selecionar idioma do site" hidden>
+        <div class="hg-language-menu-head"><small data-i18n="language.kicker">HOLY GUARDIANS // IDIOMAS</small><strong data-i18n="language.title">IDIOMA</strong></div>
+        <button type="button" role="menuitemradio" aria-checked="true" data-hg-lang="pt-BR" onclick="hgDefinirIdioma('pt-BR')"><img src="language_flags/br.svg" alt=""><span><strong>Português</strong><small>Brasil</small></span><i>✓</i></button>
+        <button type="button" role="menuitemradio" aria-checked="false" data-hg-lang="en-US" onclick="hgDefinirIdioma('en-US')"><img src="language_flags/us.svg" alt=""><span><strong>English</strong><small>United States</small></span><i>✓</i></button>
+        <button type="button" role="menuitemradio" aria-checked="false" data-hg-lang="ko-KR" onclick="hgDefinirIdioma('ko-KR')"><img src="language_flags/kr.svg" alt=""><span><strong>한국어</strong><small>대한민국</small></span><i>✓</i></button>
+        <p data-i18n="language.disclaimer">As traduções facilitam o acesso e podem ser revisadas gradualmente. Nomes oficiais do jogo são preservados sempre que possível.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="hg-mobile-page-title" id="hgMobilePageTitle" aria-live="polite">HOME</div>
+
+  <button
+    id="hgMobileNavToggle"
+    class="hg-mobile-nav-toggle"
+    type="button"
+    aria-label="Abrir navegação"
+    aria-controls="siteNavShell"
+    aria-expanded="false"
+    onclick="toggleMobileSiteNav(event)"
+  >
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="hg-nav-shell" id="siteNavShell">
+    <div class="hg-nav-panel-head">
+      <div>
+        <small>HOLY GUARDIANS //</small>
+        <strong>NAVEGAÇÃO</strong>
+      </div>
+      <button type="button" aria-label="Fechar navegação" onclick="fecharMobileSiteNav()">×</button>
+    </div>
+
+    <div class="nav-menu" id="siteNavMenu">
+
+      <button id="btnHome" class="nav-button ativo"
+        onclick="mostrarPagina('homePagina', this)">
+        <img id="navIconHome" alt="">
+        <span>Home</span>
+      </button>
+
+      <button id="btnDatabase" class="nav-button"
+        onclick="mostrarPagina('databasePagina', this)">
+        <img id="navIconDigidex" alt="">
+        <span>DIGIDEX</span>
+      </button>
+
+      <button id="btnBuilder" class="nav-button"
+        onclick="mostrarPagina('builderPagina', this)">
+        <img id="navIconBuilder" alt="">
+        <span>Team Builder</span>
+      </button>
+
+      <button id="btnElementos" class="nav-button"
+        onclick="mostrarPagina('elementosPagina', this)">
+        <img id="navIconElementos" alt="">
+        <span>Elementos</span>
+      </button>
+
+      <button id="btnCalculadora" class="nav-button"
+        onclick="mostrarPagina('calculadoraPagina', this)">
+        <img id="navIconCalculadora" alt="">
+        <span>Calculadora</span>
+      </button>
+
+      <div class="nav-dropdown pvp-nav-dropdown" id="pvpNavDropdown">
+        <button id="btnPvp" class="nav-button nav-button-dropdown" type="button"
+          onclick="togglePvpNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <img id="navIconPvp" alt="">
+          <span>PvP</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu pvp-nav-menu" id="pvpNavMenu" role="menu">
+          <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
+          <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+        </div>
+      </div>
+
+      <div class="nav-dropdown features-nav-dropdown" id="featuresNavDropdown">
+        <button id="btnFeatures" class="nav-button nav-button-dropdown" type="button"
+          onclick="toggleFeaturesNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <img class="features-nav-icon" src="conteudo_icon.png" alt="" aria-hidden="true">
+          <span>Conteúdos</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
+          <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+          <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
+          <button type="button" role="menuitem" onclick="abrirTierListDmo()">TIER LIST DMO</button>
+        </div>
+      </div>
+
+      <button id="btnSocial" class="nav-button"
+        onclick="mostrarPagina('socialPagina', this)">
+        <img id="navIconSocial" alt="">
+        <span>Comunidade</span>
+      </button>
+
+      <div class="nav-dropdown nav-more-dropdown" id="moreNavDropdown">
+        <button id="btnMore" class="nav-button nav-button-dropdown hg-nav-more-trigger" type="button"
+          onclick="toggleMoreNavMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <span class="hg-more-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Mais</span>
+          <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu nav-more-menu" id="moreNavMenu" role="menu">
+          <div class="hg-nav-more-heading">
+            <small>MAIS FERRAMENTAS //</small>
+            <strong>ATALHOS HG</strong>
+          </div>
+
+          <button id="btnDigivolution" class="nav-button hg-more-nav-item" type="button" hidden aria-hidden="true" tabindex="-1"
+            onclick="mostrarPagina('digivolutionPagina', this)">
+            <img id="navIconDigivolution" src="icon_digivolution.png" alt="">
+            <span>DIGIVOLUTION</span>
+          </button>
+
+          <button id="btnComparacao" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('comparacaoPagina', this)">
+            <img id="navIconComparacao" alt="">
+            <span>COMPARAÇÃO</span>
+          </button>
+
+          <button id="btnCounterFinder" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('counterFinderPagina', this)">
+            <img src="icon_counter_finder.png" alt="" aria-hidden="true">
+            <span>COUNTER FINDER</span>
+          </button>
+
+          <button id="btnHiddenQuests" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('hiddenQuestsPagina', this)">
+            <img src="icon_hidden_quests.svg" alt="" aria-hidden="true">
+            <span>HIDDEN QUESTS</span>
+          </button>
+
+          <button id="btnStatusSimulator" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('statusSimulatorPagina', this)">
+            <img src="icon_status_simulator.png" alt="">
+            <span>Status Simulator</span>
+          </button>
+
+          <button id="btnRaidBoss" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('raidBossPagina', this)">
+            <img src="icon_raid.png" alt="">
+            <span>Raid Boss</span>
+          </button>
+
+          <button id="btnDekyuTreasure" class="nav-button hg-more-nav-item" type="button"
+            onclick="mostrarPagina('dekyuTreasurePagina', this)">
+            <img src="dekyu_treasure.png" alt="">
+            <span>Dekyu Treasure</span>
+          </button>
+
+          <button
+            id="btnDisplaySettings"
+            class="nav-button hg-display-settings-trigger hg-more-nav-item"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="hgDisplaySettingsPanel"
+            aria-label="Ajuste de tela"
+            title="Ajuste de tela"
+            onclick="toggleHgDisplaySettings(event)"
+          >
+            <span class="hg-display-settings-gear" aria-hidden="true">⚙</span>
+            <span>Ajuste de Tela</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hg-nav-panel-foot">
+      <span>HG SYSTEM // ONLINE</span>
+      <button type="button" onclick="fecharMobileSiteNav()">× FECHAR MENU</button>
+    </div>
+  </div>
+</nav>
+
+<div id="hgSiteNavBackdrop" class="hg-site-nav-backdrop" onclick="fecharMobileSiteNav()" hidden></div>
+
+<div
+  id="hgDisplaySettingsPanel"
+  class="hg-display-settings-panel"
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="hgDisplaySettingsTitle"
+  hidden
+>
+  <div class="hg-display-settings-head">
+    <div>
+      <small>HOLY GUARDIANS // INTERFACE</small>
+      <strong id="hgDisplaySettingsTitle">AJUSTE DE TELA</strong>
+    </div>
+    <button type="button" class="hg-display-settings-close" aria-label="Fechar" onclick="fecharHgDisplaySettings()">×</button>
+  </div>
+
+  <div class="hg-display-screen-info">
+    <div><span>TELA</span><b id="hgDisplayScreenSize">—</b></div>
+    <div><span>VIEWPORT</span><b id="hgDisplayViewportSize">—</b></div>
+    <div><span>ESCALA</span><b id="hgDisplayScaleValue">100%</b></div>
+  </div>
+
+  <div class="hg-display-settings-section">
+    <div class="hg-display-settings-label">
+      <span>PRESET</span>
+      <small>Salvo somente neste navegador</small>
+    </div>
+    <div class="hg-display-preset-grid">
+      <button type="button" data-hg-display-preset="auto" onclick="selecionarHgDisplayPreset('auto')">
+        <b>AUTOMÁTICO</b><small>100% · padrão</small>
+      </button>
+      <button type="button" data-hg-display-preset="compact" onclick="selecionarHgDisplayPreset('compact')">
+        <b>COMPACTO</b><small>90%</small>
+      </button>
+      <button type="button" data-hg-display-preset="comfortable" onclick="selecionarHgDisplayPreset('comfortable')">
+        <b>CONFORTÁVEL</b><small>110%</small>
+      </button>
+      <button type="button" data-hg-display-preset="large" onclick="selecionarHgDisplayPreset('large')">
+        <b>GRANDE</b><small>120%</small>
+      </button>
+      <button type="button" class="hg-display-preset-ultrawide" data-hg-display-preset="ultrawide" onclick="selecionarHgDisplayPreset('ultrawide')">
+        <b>ULTRAWIDE</b><small>mais largura + 112%</small>
+      </button>
+    </div>
+  </div>
+
+  <div class="hg-display-settings-section hg-display-manual-section">
+    <div class="hg-display-settings-label">
+      <span>AJUSTE FINO</span>
+      <small>80% a 150%</small>
+    </div>
+    <div class="hg-display-manual-controls">
+      <button type="button" aria-label="Diminuir escala" onclick="ajustarHgDisplayScale(-5)">−</button>
+      <strong id="hgDisplayManualValue">100%</strong>
+      <button type="button" aria-label="Aumentar escala" onclick="ajustarHgDisplayScale(5)">+</button>
+    </div>
+    <input
+      id="hgDisplayScaleRange"
+      class="hg-display-scale-range"
+      type="range"
+      min="80"
+      max="150"
+      step="5"
+      value="100"
+      aria-label="Escala da interface"
+      oninput="definirHgDisplayScale(this.value)"
+    >
+    <div class="hg-display-scale-marks" aria-hidden="true">
+      <span>80%</span><span>100%</span><span>120%</span><span>135%</span><span>150%</span>
+    </div>
+  </div>
+
+  <button type="button" class="hg-display-reset" onclick="resetarHgDisplaySettings()">
+    RESTAURAR PADRÃO
+  </button>
+
+  <p class="hg-display-settings-note">
+    O ajuste altera somente a visualização neste dispositivo e não muda a resolução real do monitor.
+  </p>
+</div>
+
+<!-- =====================================================
+     HOME
+===================================================== -->
+
+<section
+  id="homePagina"
+  class="pagina ativa"
+>
+
+  <div class="home-wrap">
+
+
+    <!-- HERO -->
+
+    <section
+      id="heroHome"
+      class="hero"
+    >
+
+      <div class="hero-inner">
+
+        <div class="hero-copy">
+
+          <div class="hero-welcome">
+            BEM-VINDO À
+          </div>
+
+
+          <img
+            id="heroLettering"
+            class="hero-lettering"
+            src=""
+            alt="HOLY GUARDIANS DSR"
+          >
+
+
+          <div class="hero-motto">
+            FORÇA • UNIÃO • EVOLUÇÃO
+          </div>
+
+
+          <div class="hero-divider">
+          </div>
+
+
+          <div class="hero-lead">
+
+            <strong>
+              Mais que uma guilda,
+              uma família.
+            </strong>
+
+            <br>
+
+            Desde 2012, construindo história
+            no mundo Digimon e se destacando
+            em diferentes gerações e servers.
+
+            <br>
+
+            Nosso objetivo sempre foi o mesmo:
+            evoluir juntos!
+
+          </div>
+
+
+          <div class="hero-actions">
+
+            <button
+              class="action-button"
+              onclick="
+                mostrarPagina(
+                  'databasePagina',
+                  document.getElementById('btnDatabase')
+                )
+              "
+            >
+
+              <img id="heroIconDigidex">
+
+              <span class="hg-i18n-action-label">ACESSAR DIGIDEX</span>
+
+              <span>→</span>
+
+            </button>
+
+
+            <button
+              class="action-button"
+              onclick="
+                mostrarPagina(
+                  'builderPagina',
+                  document.getElementById('btnBuilder')
+                )
+              "
+            >
+
+              <img id="heroIconBuilder">
+
+              <span class="hg-i18n-action-label">MONTAR TIME</span>
+
+              <span>→</span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="hero-art">
+
+          <img
+            id="heroArt"
+            src=""
+            alt=""
+          >
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div class="home-content">
+
+
+      <div class="home-feature-grid">
+
+      <!-- RAID BOSSES // HOME -->
+
+      <section class="hg-panel raid-home-panel">
+        <div class="panel-heading raid-home-heading">
+          <div class="heading-icon">⚔</div>
+          <h2>Raid Bosses</h2>
+          <div class="heading-line"></div>
+          <span class="raid-home-heading-status"><i></i> <span class="hg-i18n-live-schedule">LIVE SCHEDULE</span></span>
+        </div>
+        <div id="raidHomeCarousel" class="raid-home-carousel" aria-label="Próximos Raid Bosses">
+          <button class="raid-home-arrow raid-home-arrow-prev" type="button" onclick="mudarRaidHome(-1)" aria-label="Boss anterior">‹</button>
+          <div id="raidHomeTrack" class="raid-home-track">
+            <article class="raid-home-card ativo raid-home-loading">
+              <div class="raid-home-loading-pulse"></div>
+              <strong>CARREGANDO AGENDA DE RAIDS...</strong>
+              <small>Sincronizando com o horário KST.</small>
+            </article>
+          </div>
+          <button class="raid-home-arrow raid-home-arrow-next" type="button" onclick="mudarRaidHome(1)" aria-label="Próximo boss">›</button>
+          <div id="raidHomeDots" class="raid-home-dots" aria-label="Selecionar Raid Boss"></div>
+        </div>
+      </section>
+
+
+      <!-- OFDS DO DIA -->
+
+      <section class="hg-panel ofd-home-panel">
+
+        <div class="panel-heading">
+          <div class="heading-icon">▦</div>
+          <h2>OFDs de Hoje</h2>
+          <div class="heading-line"></div>
+        </div>
+
+        <div class="ofd-home-status">
+          <div>
+            <span id="ofdHomeDay">CARREGANDO ROTAÇÃO...</span>
+            <small id="ofdHomeKstDay">ROTAÇÃO CALCULADA PELO HORÁRIO KST</small>
+          </div>
+          <div class="ofd-home-countdown">
+            <small>PRÓXIMA ATUALIZAÇÃO</small>
+            <strong id="ofdHomeCountdown">--:--:--</strong>
+          </div>
+        </div>
+
+        <div id="ofdHomeList" class="ofd-home-list">
+          <div class="ofd-home-empty">Consultando OFDs disponíveis...</div>
+        </div>
+
+        <div class="ofd-time-alert">
+          <span class="ofd-time-alert-icon">!</span>
+          <p><strong>ATENÇÃO AO RESET:</strong> as Overflow Dungeons mudam às <b>00:00 KST</b>, equivalente às <b>12:00 no horário de Brasília</b>. A data principal é brasileira; a disponibilidade segue o dia KST indicado.</p>
+        </div>
+
+      </section>
+
+      <!-- CONSULTA SEMANAL DE OFDS -->
+
+      <section class="hg-panel ofd-week-panel">
+        <div class="panel-heading">
+          <div class="heading-icon">⌁</div>
+          <h2>Overflow Dungeons Semanal</h2>
+          <div class="heading-line"></div>
+        </div>
+
+        <div class="ofd-week-copy">
+          <strong>CONSULTAR OUTRO DIA</strong>
+          <small>Selecione o dia brasileiro. Abaixo mostramos também o dia correspondente na Coreia.</small>
+        </div>
+
+        <div class="ofd-week-days" aria-label="Dias da semana">
+          <button type="button" data-ofd-day="SEG" onclick="selecionarDiaOfdHome('SEG')"><span>SEG</span><small>SEGUNDA</small></button>
+          <button type="button" data-ofd-day="TER" onclick="selecionarDiaOfdHome('TER')"><span>TER</span><small>TERÇA</small></button>
+          <button type="button" data-ofd-day="QUA" onclick="selecionarDiaOfdHome('QUA')"><span>QUA</span><small>QUARTA</small></button>
+          <button type="button" data-ofd-day="QUI" onclick="selecionarDiaOfdHome('QUI')"><span>QUI</span><small>QUINTA</small></button>
+          <button type="button" data-ofd-day="SEX" onclick="selecionarDiaOfdHome('SEX')"><span>SEX</span><small>SEXTA</small></button>
+          <button type="button" data-ofd-day="SAB" onclick="selecionarDiaOfdHome('SAB')"><span>SÁB</span><small>SÁBADO</small></button>
+          <button type="button" data-ofd-day="DOM" onclick="selecionarDiaOfdHome('DOM')"><span>DOM</span><small>DOMINGO</small></button>
+        </div>
+
+        <div id="ofdWeekTitle" class="ofd-week-title">OFDs DO DIA</div>
+        <div class="ofd-week-time-hint">
+          <span>!</span>
+          <p>O ciclo selecionado começa às <b>12:00 BRT</b> e corresponde às <b>00:00 KST</b> do dia seguinte.</p>
+        </div>
+        <div id="ofdWeekList" class="ofd-week-list"></div>
+      </section>
+
+      </div>
+
+
+      <!-- PARTE INFERIOR -->
+
+      <div class="home-bottom">
+
+
+        <!-- SERVERS -->
+
+        <section class="hg-panel servers-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              📍
+            </div>
+
+            <h2>
+              Servers Ativos
+            </h2>
+
+          </div>
+
+
+          <div class="server-grid">
+
+
+            <div class="server-card">
+
+              <div class="server-flag">
+
+                <img
+                  id="serverUsa"
+                  src=""
+                >
+
+              </div>
+
+              <div class="server-name">
+                Omegamon
+              </div>
+
+              <div class="server-region">
+                (NA)
+              </div>
+
+              <div class="server-status">
+                ATIVA •
+              </div>
+
+            </div>
+
+
+            <div class="server-card">
+
+              <div class="server-flag">
+
+                <img
+                  id="serverKorea"
+                  src=""
+                >
+
+              </div>
+
+              <div class="server-name">
+                Server 1
+              </div>
+
+              <div class="server-region">
+                (KOROMON)
+              </div>
+
+              <div class="server-status">
+                ATIVA •
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- STAFF -->
+
+        <section class="hg-panel staff-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              👑
+            </div>
+
+            <h2>
+              Staff DSR
+            </h2>
+
+          </div>
+
+
+          <div class="staff-layout">
+
+            <div
+              id="staffMaster"
+              class="staff-master"
+            >
+            </div>
+
+            <div class="staff-subs-title">
+              SUBS
+            </div>
+
+            <div
+              id="staffSubs"
+              class="staff-subs"
+            >
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- NOSSAS REDES -->
+
+        <section class="hg-panel home-social-panel">
+
+          <div class="panel-heading">
+
+            <div class="heading-icon">
+              🌐
+            </div>
+
+            <h2>
+              Nossas Redes
+            </h2>
+
+          </div>
+
+
+          <div class="home-social-list">
+
+            <a
+              class="home-social-card youtube"
+              href="https://www.youtube.com/@HolyGuardiansDMO"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerYoutube"
+                class="home-social-icon"
+                src=""
+                alt="YouTube"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  YouTube
+                </div>
+
+                <div class="home-social-sub">
+                  @HolyGuardiansDMO
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR CANAL →
+              </div>
+
+            </a>
+
+
+            <a
+              class="home-social-card twitch"
+              href="https://www.twitch.tv/grim_sleepz"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerTwitch"
+                class="home-social-icon"
+                src=""
+                alt="Twitch"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  Twitch
+                </div>
+
+                <div class="home-social-sub">
+                  twitch.tv/grim_sleepz
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR CANAL →
+              </div>
+
+            </a>
+
+
+            <a
+              class="home-social-card discord"
+              href="https://discord.gg/czAvSwPTku"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <img
+                id="footerDiscord"
+                class="home-social-icon"
+                src=""
+                alt="Discord"
+              >
+
+              <div class="home-social-copy">
+
+                <div class="home-social-title">
+                  Discord
+                </div>
+
+                <div class="home-social-sub">
+                  discord.gg/czAvSwPTku
+                </div>
+
+              </div>
+
+              <div class="home-social-action">
+                ACESSAR SERVIDOR →
+              </div>
+
+            </a>
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+
+      <!-- FOOTER -->
+
+      <footer class="home-footer">
+
+        <div class="footer-center">
+
+          <div class="footer-center-title">
+            HOLY • GUARDIANS
+          </div>
+
+          <div class="footer-center-motto">
+            FORÇA • UNIÃO • EVOLUÇÃO
+          </div>
+
+          <div class="footer-line-wrap">
+
+            <div class="footer-line">
+            </div>
+
+            <div class="footer-diamond">
+            </div>
+
+            <div class="footer-line right">
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="footer-right">
+
+          Desde 2012
+
+          <span class="footer-heart">
+            ♥
+          </span>
+
+          Feito para a família HG
+
+        </div>
+
+      </footer>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =====================================================
+     DIGIDEX
+===================================================== -->
+
+<section id="databasePagina" class="pagina">
+  <div class="internal-wrap">
+
+    <div id="digidexHakaseWrap" class="digidex-hakase-wrap" aria-hidden="true">
+      <img id="digidexHakase" class="digidex-hakase" alt="">
+    </div>
+
+    <div class="digidex-header-tech">
+      <div class="digidex-header-copy">
+        <div class="digidex-header-kicker">
+          DIGIMON DATABASE // HOLY GUARDIANS SYSTEM
+        </div>
+        <h2 class="page-title">DIGIDEX</h2>
+        <p class="page-subtitle">
+          Consulte os Digimons da database da Holy Guardians.
+        </p>
+      </div>
+
+      <div class="digidex-header-actions">
+
+        <div class="digidex-view-toggle" aria-label="Modo de visualização">
+          <button
+            id="digidexViewCard"
+            class="digidex-view-button ativo"
+            type="button"
+            onclick="alterarVisualizacaoDigidex('card')"
+          >
+            ▦ CARD VIEW
+          </button>
+
+          <button
+            id="digidexViewTable"
+            class="digidex-view-button"
+            type="button"
+            onclick="alterarVisualizacaoDigidex('table')"
+          >
+            ☷ TABLE VIEW
+          </button>
+        </div>
+
+        <div class="digidex-system-status">
+          <span class="digidex-status-dot"></span>
+          DATABASE ONLINE
+        </div>
+
+      </div>
+    </div>
+
+    <div class="digidex-type-filter-row">
+      <div class="type-filter" aria-label="Filtrar por Type">
+        <button type="button" class="type-filter-btn ativo" title="Todos os Types" onclick="selecionarFiltroType('', this)">ALL</button>
+        <button type="button" class="type-filter-btn" title="Data" onclick="selecionarFiltroType('DATA', this)"><img src="type_icons/type_data.png" alt="DATA"></button>
+        <button type="button" class="type-filter-btn" title="Vaccine" onclick="selecionarFiltroType('VACCINE', this)"><img src="type_icons/type_vaccine.png" alt="VACCINE"></button>
+        <button type="button" class="type-filter-btn" title="Virus" onclick="selecionarFiltroType('VIRUS', this)"><img src="type_icons/type_virus.png" alt="VIRUS"></button>
+        <button type="button" class="type-filter-btn" title="Unknown / UK" onclick="selecionarFiltroType('UNKNOWN', this)"><img src="type_icons/type_unknown.png" alt="UNKNOWN"></button>
+        <button type="button" class="type-filter-btn" title="Free" onclick="selecionarFiltroType('FREE', this)"><img src="type_icons/type_free.png" alt="FREE"></button>
+      </div>
+
+      <div class="stage-filter" aria-label="Filtrar por Stage — permite múltipla seleção">
+        <span class="stage-filter-label">STAGE</span>
+        <button type="button" class="stage-filter-btn ativo" data-stage="" onclick="selecionarFiltroStage('', this)">
+          <strong>ALL</strong><small class="stage-filter-count" data-stage-count="ALL"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="ROOKIE" onclick="selecionarFiltroStage('ROOKIE', this)">
+          <strong>ROOKIE</strong><small class="stage-filter-count" data-stage-count="ROOKIE"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="CHAMPION" onclick="selecionarFiltroStage('CHAMPION', this)">
+          <strong>CHAMPION</strong><small class="stage-filter-count" data-stage-count="CHAMPION"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="ULTIMATE" onclick="selecionarFiltroStage('ULTIMATE', this)">
+          <strong>ULTIMATE</strong><small class="stage-filter-count" data-stage-count="ULTIMATE"></small>
+        </button>
+        <button type="button" class="stage-filter-btn" data-stage="MEGA" onclick="selecionarFiltroStage('MEGA', this)">
+          <strong>MEGA</strong><small class="stage-filter-count" data-stage-count="MEGA"></small>
+        </button>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <input
+        id="pesquisa"
+        class="search"
+        type="text"
+        placeholder="Pesquisar Digimon..."
+        oninput="filtrar()"
+      >
+
+      <details id="filtroSkillElemento" class="digidex-filter-menu">
+        <summary>
+          <span>SKILL ELEMENT</span>
+          <span id="filtroSkillContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel">
+          <div class="digidex-filter-title">PROCURAR EM</div>
+
+          <div class="digidex-skill-scope">
+            <label>
+              <input
+                id="filtroSkill1"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 1
+            </label>
+
+            <label>
+              <input
+                id="filtroSkill2"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 2
+            </label>
+
+            <label>
+              <input
+                id="filtroSkill3"
+                type="checkbox"
+                checked
+                onchange="filtrar()"
+              >
+              SKILL 3
+            </label>
+          </div>
+
+          <div id="filtroSkillElementosLista" class="digidex-check-list"></div>
+        </div>
+      </details>
+
+      <details id="filtroField" class="digidex-filter-menu">
+        <summary>
+          <span>FIELD</span>
+          <span id="filtroFieldContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel">
+          <div id="filtroFieldsLista" class="digidex-check-list"></div>
+        </div>
+      </details>
+
+      <details id="filtroEfeito" class="digidex-filter-menu">
+        <summary>
+          <span>EFFECT TYPE</span>
+          <span id="filtroEfeitoContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-effect-panel">
+          <div class="digidex-filter-title">TIPO DE EFEITO</div>
+
+          <div class="digidex-effect-list">
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="DOT" onchange="filtrar()">
+              <span class="digidex-effect-mark">D</span>
+              <span>DOT</span>
+            </label>
+
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="CC" onchange="filtrar()">
+              <span class="digidex-effect-mark">C</span>
+              <span>CC</span>
+            </label>
+
+            <label class="digidex-check-item digidex-effect-item">
+              <input class="digidex-effect-check" type="checkbox" value="DEF_BREAK" onchange="filtrar()">
+              <span class="digidex-effect-mark">↓</span>
+              <span>DEF BREAK</span>
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details id="filtroStatusEffect" class="digidex-filter-menu">
+        <summary>
+          <span>STATUS EFFECT</span>
+          <span id="filtroStatusEffectContador" class="digidex-filter-count"></span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-status-effect-panel">
+          <div class="digidex-filter-title">EFEITO ESPECÍFICO</div>
+          <div id="filtroStatusEffectsLista" class="digidex-check-list digidex-status-effect-list"></div>
+        </div>
+      </details>
+
+      <details id="filtroOrdenacao" class="digidex-filter-menu digidex-sort-menu">
+        <summary>
+          <span id="digidexOrdenacaoLabel">ORDEM ALFABÉTICA</span>
+        </summary>
+
+        <div class="digidex-filter-panel digidex-sort-panel">
+          <div class="digidex-filter-title">ORDENAR RESULTADOS</div>
+
+          <div class="digidex-sort-options" role="menu">
+            <button type="button" class="digidex-sort-option ativo" data-sort=""
+              onclick="selecionarOrdenacaoDigidex('', 'ORDEM ALFABÉTICA', this)">ORDEM ALFABÉTICA</button>
+
+            <button type="button" class="digidex-sort-option" data-sort="STR"
+              onclick="selecionarOrdenacaoDigidex('STR', 'MAIOR STR', this)">MAIOR STR</button>
+            <button type="button" class="digidex-sort-option" data-sort="INT"
+              onclick="selecionarOrdenacaoDigidex('INT', 'MAIOR INT', this)">MAIOR INT</button>
+            <button type="button" class="digidex-sort-option" data-sort="DEF"
+              onclick="selecionarOrdenacaoDigidex('DEF', 'MAIOR DEF', this)">MAIOR DEF</button>
+            <button type="button" class="digidex-sort-option" data-sort="HP"
+              onclick="selecionarOrdenacaoDigidex('HP', 'MAIOR HP', this)">MAIOR HP</button>
+            <button type="button" class="digidex-sort-option" data-sort="SP"
+              onclick="selecionarOrdenacaoDigidex('SP', 'MAIOR SP', this)">MAIOR SP</button>
+            <button type="button" class="digidex-sort-option" data-sort="RES"
+              onclick="selecionarOrdenacaoDigidex('RES', 'MAIOR RES', this)">MAIOR RES</button>
+            <button type="button" class="digidex-sort-option" data-sort="SPD"
+              onclick="selecionarOrdenacaoDigidex('SPD', 'MAIOR SPEED', this)">MAIOR SPEED</button>
+
+            <div class="digidex-sort-divider"></div>
+
+            <button type="button" class="digidex-sort-option" data-sort="STR_ASC"
+              onclick="selecionarOrdenacaoDigidex('STR_ASC', 'MENOR STR', this)">MENOR STR</button>
+            <button type="button" class="digidex-sort-option" data-sort="INT_ASC"
+              onclick="selecionarOrdenacaoDigidex('INT_ASC', 'MENOR INT', this)">MENOR INT</button>
+            <button type="button" class="digidex-sort-option" data-sort="DEF_ASC"
+              onclick="selecionarOrdenacaoDigidex('DEF_ASC', 'MENOR DEF', this)">MENOR DEF</button>
+            <button type="button" class="digidex-sort-option" data-sort="HP_ASC"
+              onclick="selecionarOrdenacaoDigidex('HP_ASC', 'MENOR HP', this)">MENOR HP</button>
+            <button type="button" class="digidex-sort-option" data-sort="SP_ASC"
+              onclick="selecionarOrdenacaoDigidex('SP_ASC', 'MENOR SP', this)">MENOR SP</button>
+            <button type="button" class="digidex-sort-option" data-sort="RES_ASC"
+              onclick="selecionarOrdenacaoDigidex('RES_ASC', 'MENOR RES', this)">MENOR RES</button>
+            <button type="button" class="digidex-sort-option" data-sort="SPD_ASC"
+              onclick="selecionarOrdenacaoDigidex('SPD_ASC', 'MENOR SPEED', this)">MENOR SPEED</button>
+          </div>
+        </div>
+      </details>
+
+      <button type="button" class="digidex-clear-filters" onclick="limparFiltrosDigidex()">
+        LIMPAR FILTROS
+      </button>
+    </div>
+
+    <div id="lista" class="grid"></div>
+
+    <section id="digidexProfile" class="digidex-profile-view" hidden aria-live="polite">
+      <div class="digidex-profile-loading">
+        CARREGANDO PERFIL // DIGIVOLUTION MASTER...
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- =====================================================
+     COMPARAÇÃO
+===================================================== -->
+
+<section id="digivolutionPagina" class="pagina">
+  <div class="internal-wrap digivolution-wrap">
+    <header class="digivolution-header">
+      <div>
+        <div class="digivolution-kicker">EVOLUTION DATABASE // HOLY GUARDIANS</div>
+        <h2 class="page-title">DIGIVOLUTION</h2>
+        <p class="page-subtitle">Consulte linhas anteriores, requisitos, itens e o potencial necessário para cada evolução.</p>
+      </div>
+    </header>
+
+    <div class="digivolution-filters">
+      <input id="digivolutionBusca" class="search" type="search" placeholder="Pesquisar evolução ou Digimon anterior..." oninput="filtrarDigivolutions()">
+      <select id="digivolutionCategory" class="filtro-select" onchange="filtrarDigivolutions()">
+        <option value="">TODAS AS CATEGORIAS</option>
+        <option value="MEGA">MEGA NORMAL</option>
+        <option value="SPECIAL EVOLUTION">SPECIAL EVOLUTION</option>
+        <option value="DARK EVOLUTION">DARK EVOLUTION</option>
+        <option value="JOGRESS">JOGRESS</option>
+      </select>
+      <select id="digivolutionRequirement" class="filtro-select" onchange="filtrarDigivolutions()">
+        <option value="">TODOS OS REQUISITOS</option>
+        <option value="STATUS">EXIGE STATUS</option>
+        <option value="ITEM">EXIGE ITEM</option>
+        <option value="BOND">EXIGE FRIENDSHIP</option>
+      </select>
+      <button class="digivolution-clear" type="button" onclick="limparFiltrosDigivolution()">LIMPAR FILTROS</button>
+    </div>
+
+    <div id="digivolutionResumo" class="digivolution-summary"></div>
+    <div id="digivolutionLista" class="digivolution-grid"></div>
+  </div>
+</section>
+
+<div id="potentialModal" class="potential-modal" aria-hidden="true">
+  <div class="potential-dialog" role="dialog" aria-modal="true" aria-labelledby="potentialTitle">
+    <button class="potential-close" type="button" onclick="fecharPotentialModal()" aria-label="Fechar">×</button>
+    <div class="potential-heading">
+      <div class="digivolution-kicker">POTENTIAL PLANNER</div>
+      <h3 id="potentialTitle">PLANO DE POTENCIAL</h3>
+      <p id="potentialSubtitle"></p>
+    </div>
+
+    <div class="potential-layout">
+      <section class="potential-panel">
+        <h4>BABY CORRECTION</h4>
+        <p class="potential-help">Máximo de 14% por atributo e 28% no total.</p>
+        <div id="babyCorrectionFields" class="baby-correction-grid"></div>
+        <div class="baby-total-line">
+          <span>CORREÇÃO TOTAL</span>
+          <strong id="babyCorrectionTotal">0% / 28%</strong>
+        </div>
+        <div class="baby-total-track"><span id="babyCorrectionTrack"></span></div>
+        <div id="babyCorrectionMessage" class="potential-message"></div>
+      </section>
+
+      <section class="potential-panel">
+        <h4>ATRIBUTOS NECESSÁRIOS</h4>
+        <div id="potentialRequirements" class="potential-requirements"></div>
+      </section>
+
+      <section class="potential-panel potential-board-panel">
+        <div class="potential-board-head">
+          <h4>TETRIS SUGERIDO</h4>
+          <strong id="potentialCubeTotal">0 CUBOS</strong>
+        </div>
+        <div id="potentialBoard" class="potential-board"></div>
+        <div id="potentialResult" class="potential-result"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<section id="comparacaoPagina" class="pagina">
+  <div class="internal-wrap comparacao-wrap">
+
+    <div class="comparacao-header">
+      <div>
+        <div class="comparacao-kicker">
+          DIGIMON ANALYSIS // HOLY GUARDIANS SYSTEM
+        </div>
+        <h2 class="page-title">COMPARAÇÃO</h2>
+        <p id="comparacaoSubtitle" class="page-subtitle">
+          Selecione dois Digimons e compare seus dados lado a lado.
+        </p>
+      </div>
+
+      <div class="comparacao-header-actions">
+        <div class="comparacao-quantidade" aria-label="Quantidade de Digimons para comparar">
+          <span class="comparacao-quantidade-label">COMPARAR</span>
+          <button type="button" class="comparacao-qtd-btn ativo" data-qtd="2" onclick="setQuantidadeComparacao(2)">2</button>
+          <button type="button" class="comparacao-qtd-btn" data-qtd="4" onclick="setQuantidadeComparacao(4)">4</button>
+          <button type="button" class="comparacao-qtd-btn" data-qtd="8" onclick="setQuantidadeComparacao(8)">8</button>
+        </div>
+
+        <img id="comparacaoHeroIcon" class="comparacao-hero-icon" alt="Comparação">
+      </div>
+    </div>
+
+    <div id="comparacaoSelectores" class="comparacao-selectores comparacao-selectores-2">
+      <div class="comparacao-selector">
+        <label for="comparacaoDigimonA">DIGIMON 1</label>
+        <input
+          id="comparacaoDigimonA"
+          class="comparacao-input"
+          type="text"
+          placeholder="Digite o nome do Digimon..."
+          autocomplete="off"
+          oninput="atualizarSugestoesComparacao('A')"
+          onfocus="atualizarSugestoesComparacao('A')"
+        >
+        <div id="comparacaoSugestoesA" class="comparacao-sugestoes"></div>
+      </div>
+
+      <div class="comparacao-vs">VS</div>
+
+      <div class="comparacao-selector">
+        <label for="comparacaoDigimonB">DIGIMON 2</label>
+        <input
+          id="comparacaoDigimonB"
+          class="comparacao-input"
+          type="text"
+          placeholder="Digite o nome do Digimon..."
+          autocomplete="off"
+          oninput="atualizarSugestoesComparacao('B')"
+          onfocus="atualizarSugestoesComparacao('B')"
+        >
+        <div id="comparacaoSugestoesB" class="comparacao-sugestoes"></div>
+      </div>
+    </div>
+
+    <div id="comparacaoResultado" class="comparacao-resultado">
+      <div class="comparacao-empty">
+        Escolha dois Digimons para iniciar a comparação.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     TEAM BUILDER
+===================================================== -->
+
+<section id="builderPagina" class="pagina">
+  <div class="internal-wrap">
+    <div class="builder-topline">
+      <div class="builder-heading">
+        <h2 class="page-title">TEAM BUILDER</h2>
+        <p class="page-subtitle">Selecione até 8 Digimons e monte seu time para o Guild Boss.</p>
+      </div>
+
+      <div class="builder-actions" data-html2canvas-ignore="true">
+        <button id="builderSaveImageBtn" class="builder-action-btn builder-action-image" type="button" onclick="salvarImagemDoTime()">
+          <span>▣</span> SALVAR IMAGEM DO TIME
+        </button>
+        <button id="builderExportBtn" class="builder-action-btn" type="button" onclick="exportarTimeBuilder()">
+          <span>⇩</span> EXPORTAR TIME
+        </button>
+        <button id="builderImportBtn" class="builder-action-btn" type="button" onclick="abrirImportacaoTimeBuilder()">
+          <span>⇧</span> IMPORTAR TIME
+        </button>
+        <input id="builderImportFile" type="file" accept="application/json,.json" hidden onchange="importarTimeBuilder(this.files && this.files[0])">
+      </div>
+    </div>
+
+    <div class="builder-workspace">
+      <div id="slots" class="builder-grid"></div>
+      <aside id="builderAnalysis" class="builder-analysis" aria-live="polite">
+        <section class="builder-analysis-box synergy-box">
+          <div class="builder-analysis-title"><span>FIELD SYNERGY</span><small>2 / 3 DIGIMONS DIFERENTES</small></div>
+          <div id="builderSynergyActive" class="builder-analysis-content"></div>
+          <div id="builderSynergyReference" class="synergy-reference"></div>
+        </section>
+        <section class="builder-analysis-box utility-box">
+          <div class="builder-analysis-title"><span>TEAM UTILITY</span><small>EFEITOS PRESENTES NO TIME</small></div>
+          <div id="builderUtility" class="builder-analysis-content"></div>
+        </section>
+        <section class="builder-analysis-box coverage-box">
+          <div class="builder-analysis-title"><span>ELEMENT COVERAGE</span><small>SKILLS ATUALMENTE SELECIONADAS</small></div>
+          <div id="builderElementCoverage" class="builder-analysis-content"></div>
+        </section>
+        <div class="builder-export-logo" aria-hidden="true">
+          <img id="builderExportLogoImg" alt="Holy Guardians">
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     STATUS SIMULATOR
+===================================================== -->
+
+<section id="statusSimulatorPagina" class="pagina">
+  <div class="internal-wrap status-simulator-wrap">
+    <header class="status-simulator-header tech-panel">
+      <div>
+        <div class="status-simulator-kicker">BUILD LAB // DATABASE NOVA</div>
+        <h2 class="page-title">STATUS SIMULATOR</h2>
+        <p class="page-subtitle">Combine Baby Correction, Tetris, acessórios e deck para visualizar os status finais do Digimon.</p>
+      </div>
+      <div class="status-simulator-hero-side">
+        <div class="status-simulator-accuracy-note"><strong>VALORES APROXIMADOS</strong><span>Os cálculos críticos podem apresentar pequenas variações em relação ao jogo.</span></div>
+        <img src="icon_status_simulator.png" alt="Status Simulator" class="status-simulator-hero-icon">
+      </div>
+    </header>
+
+    <div class="status-simulator-search tech-panel">
+      <label for="statusSimulatorSearch">SELECIONE O DIGIMON</label>
+      <div class="status-simulator-searchbox">
+        <input id="statusSimulatorSearch" type="text" placeholder="Digite o nome do Digimon..." autocomplete="off">
+        <button type="button" onclick="limparStatusSimulator()">LIMPAR</button>
+        <div id="statusSimulatorSuggestions" class="status-simulator-suggestions"></div>
+      </div>
+    </div>
+
+    <div class="status-simulator-main">
+      <aside id="statusSimulatorDigiCard" class="status-simulator-digi-card tech-panel"></aside>
+
+      <section class="status-simulator-panel status-simulator-tetris-panel tech-panel">
+          <div class="status-simulator-panel-title status-simulator-tetris-title"><span>02</span><div><strong>TETRIS</strong><small>Escolha o valor e preencha até 16 espaços.</small></div>
+            <aside class="status-simulator-mega-potential">
+              <span>MEGA POTENTIAL</span>
+              <div class="status-simulator-mega-buttons">
+                <button type="button" class="mp4" onclick="alterarMegaPotentialStatus(4)" title="Mega Potential 4 — melhora até 4 cubos"><img src="mega_potential_4.png" alt="Mega Potential 4"><b>4</b></button>
+                <button type="button" class="mp5" onclick="alterarMegaPotentialStatus(5)" title="Mega Potential 5 — melhora até 5 cubos"><img src="mega_potential_5.png" alt="Mega Potential 5"><b>5</b></button>
+                <button type="button" class="mp6" onclick="alterarMegaPotentialStatus(6)" title="Mega Potential 6 — melhora até 6 cubos"><img src="mega_potential_6.png" alt="Mega Potential 6"><b>6</b></button>
+              </div>
+              <small id="statusSimulatorMegaHint">Escolha um ícone e clique nos cubos.</small>
+            </aside>
+          </div>
+          <div class="status-simulator-tetris-workspace">
+            <div>
+              <div class="status-simulator-cube-mode" role="group" aria-label="Valor do próximo cubo">
+                <button id="statusCube4" class="ativo" type="button" onclick="alterarModoCuboStatus(4)">CUBOS DE <strong>4%</strong></button>
+                <button id="statusCube5" type="button" onclick="alterarModoCuboStatus(5)">CUBOS DE <strong>5%</strong></button>
+              </div>
+              <div id="statusSimulatorTetris" class="status-simulator-tetris"></div>
+            </div>
+            <aside class="status-simulator-cube-palette">
+              <span>ADICIONAR CUBO</span>
+              <div id="statusSimulatorCubeButtons" class="status-simulator-cube-buttons"></div>
+            </aside>
+          </div>
+          <div class="status-simulator-tetris-actions">
+            <span id="statusSimulatorCubeCount">0 / 16 ESPAÇOS</span>
+            <button type="button" onclick="removerUltimoCuboStatus()">DESFAZER</button>
+            <button type="button" onclick="resetarTetrisStatus()">RESET</button>
+          </div>
+      </section>
+
+      <section id="statusSimulatorStagePanel" class="status-simulator-panel status-simulator-stage-panel tech-panel" data-step="0">
+        <div class="status-simulator-progress"><span id="statusSimulatorProgressTrack"></span></div>
+
+        <div class="status-simulator-step ativo" data-status-step="0">
+          <div class="status-simulator-panel-title"><span>01</span><div><strong>BABY CORRECTION</strong><small>Máximo de 14% por status e 28% no total.</small></div></div>
+          <div id="statusSimulatorBabyFields" class="status-simulator-baby-grid"></div>
+          <div class="status-simulator-meter-line"><span>TOTAL UTILIZADO</span><strong id="statusSimulatorBabyTotal">0% / 28%</strong></div>
+          <div class="status-simulator-meter"><span id="statusSimulatorBabyTrack"></span></div>
+        </div>
+
+        <div class="status-simulator-step" data-status-step="1">
+          <div class="status-simulator-panel-title"><span>03</span><div><strong>ACESSÓRIOS</strong><small>Informe os valores fixos presentes nos equipamentos.</small></div></div>
+          <div id="statusSimulatorAccessoryFields" class="status-simulator-flat-grid"></div>
+        </div>
+
+        <div class="status-simulator-step" data-status-step="2">
+          <div class="status-simulator-panel-title"><span>04</span><div><strong>STATUS EM ROUPA</strong><small>Informe os bônus fixos presentes nas roupas.</small></div></div>
+          <div id="statusSimulatorClothingFields" class="status-simulator-flat-grid"></div>
+        </div>
+
+        <div class="status-simulator-step" data-status-step="3">
+          <div class="status-simulator-panel-title"><span>05</span><div><strong>STATUS OBTIDOS POR DECK</strong><small>Informe os bônus fixos concedidos pelo deck.</small></div></div>
+          <div id="statusSimulatorDeckFields" class="status-simulator-flat-grid status-simulator-flat-grid-all"></div>
+        </div>
+
+        <div class="status-simulator-step status-simulator-result" data-status-step="4">
+          <div class="status-simulator-panel-title"><span>06</span><div><strong>RESULTADO FINAL</strong><small>Composição completa pronta para captura.</small></div></div>
+          <div id="statusSimulatorResultTable" class="status-simulator-result-table"></div>
+        </div>
+
+        <div class="status-simulator-step-actions">
+          <button id="statusSimulatorBack" type="button" onclick="mudarEtapaStatusSimulator(-1)">VOLTAR</button>
+          <span id="statusSimulatorStepLabel">ETAPA 1 DE 5</span>
+          <button id="statusSimulatorNext" type="button" onclick="mudarEtapaStatusSimulator(1)">NEXT</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     ELEMENTOS
+===================================================== -->
+
+<section id="elementosPagina" class="pagina">
+  <div class="internal-wrap">
+    <div class="elementos-scene">
+
+      <div class="elementos-info-tab elementos-info-tab-buff">
+        <button
+          class="elementos-info-tab-handle"
+          type="button"
+          aria-expanded="false"
+          onclick="toggleElementosInfoTab(this)"
+        >
+          <span class="elementos-info-tab-dot"></span>
+          <span>BUFF</span>
+          <span class="elementos-info-tab-arrow">‹</span>
+        </button>
+
+        <div class="elementos-info-tab-panel">
+          <strong>BUFF</strong>
+          <p>
+            Elemento que ganha vantagem de dano ao atingir um alvo afetado por
+            Stun ou DoT causado pelo elemento selecionado.
+          </p>
+        </div>
+      </div>
+
+      <div class="elementos-info-tab elementos-info-tab-remove">
+        <button
+          class="elementos-info-tab-handle"
+          type="button"
+          aria-expanded="false"
+          onclick="toggleElementosInfoTab(this)"
+        >
+          <span class="elementos-info-tab-arrow">›</span>
+          <span>REMOVE</span>
+          <span class="elementos-info-tab-dot"></span>
+        </button>
+
+        <div class="elementos-info-tab-panel">
+          <strong>REMOVE</strong>
+          <p>
+            Elemento capaz de remover o Stun ou DoT causado pelo elemento
+            selecionado.
+          </p>
+        </div>
+      </div>
+
+      <img
+        id="elementosSceneArt"
+        class="elementos-scene-art"
+        alt="Elementos"
+      >
+
+      <div class="elementos-board-ui">
+        <div class="elementos-box">
+
+          <h2>ELEMENTOS</h2>
+
+          <p class="elementos-subtitulo">
+            SELECIONAR ELEMENTO
+          </p>
+
+          <div class="elemento-seletor">
+            <select
+              id="elementoSelect"
+              class="filtro-select"
+              onchange="mostrarElementoSelecionado()"
+            >
+              <option value="">
+                — Escolha um elemento —
+              </option>
+            </select>
+          </div>
+
+          <div id="elementoResultado" class="elemento-resultado">
+            Lembrando que o Buff é o elemento favorecido.
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     PVP
+===================================================== -->
+
+<section id="pvpPagina" class="pagina">
+  <div class="internal-wrap pvp-wrap">
+    <div id="pvpBuildView" class="pvp-view ativa">
+      <div class="pvp-topline">
+        <div>
+          <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE SYSTEM</div>
+          <h2 class="page-title">PVP TEAM BUILDER</h2>
+          <p class="page-subtitle">Monte um time de 8 Digimons para PvP. Cada desafio utilizará uma única Stage para os dois jogadores.</p>
+        </div>
+        <div class="pvp-stage-panel tech-corners">
+          <label>CHALLENGE STAGE</label>
+          <div class="pvp-stage-select" id="pvpStageSelect">
+            <button type="button" class="pvp-stage-trigger" onclick="pvpToggleStageMenu(event)">
+              <span id="pvpStageLabel">MEGA · LV. 100</span>
+              <span class="pvp-stage-arrow">⌄</span>
+            </button>
+            <div class="pvp-stage-options" id="pvpStageOptions">
+              <button type="button" onclick="pvpSelecionarStage('Rookie',15)">ROOKIE · LV. 15</button>
+              <button type="button" onclick="pvpSelecionarStage('Champion',60)">CHAMPION · LV. 60</button>
+              <button type="button" onclick="pvpSelecionarStage('Ultimate',90)">ULTIMATE · LV. 90</button>
+              <button type="button" onclick="pvpSelecionarStage('Mega',100)">MEGA · LV. 100</button>
+            </div>
+          </div>
+          <small>Skills 1, 2 e 3 sempre no Lv. 10.</small>
+        </div>
+      </div>
+      <div class="pvp-toolbar tech-corners">
+        <div class="pvp-toolbar-note">
+          <strong>BUILD PVP TEAM</strong>
+          <span>Selecione a Stage do desafio e escolha os 8 Digimons. A configuração individual de status entra na próxima etapa.</span>
+        </div>
+        <div class="pvp-toolbar-actions">
+          <button id="pvpGoBuildBtn" type="button" class="pvp-next-stage-btn" onclick="pvpIrParaBuildIndividual()" disabled>
+            <span>CONFIGURE BUILDS</span>
+            <span class="pvp-next-stage-arrow">→</span>
+          </button>
+        </div>
+      </div>
+      <div id="pvpSlots" class="pvp-grid" aria-label="PvP Team Slots"></div>
+    </div>
+
+    <div id="pvpPickerOverlay" class="pvp-picker-overlay" aria-hidden="true">
+      <div class="pvp-picker-modal tech-corners" role="dialog" aria-modal="true" aria-labelledby="pvpPickerTitle">
+        <div class="pvp-picker-head">
+          <div>
+            <div class="pvp-kicker">PVP DATABASE</div>
+            <h3 id="pvpPickerTitle">SELECT DIGIMON</h3>
+          </div>
+          <button type="button" class="pvp-picker-close" onclick="pvpFecharPicker()" aria-label="Fechar">×</button>
+        </div>
+        <div class="pvp-picker-search-wrap">
+          <input id="pvpPickerSearch" class="pvp-picker-search" type="search" placeholder="Search Digimon..." autocomplete="off" oninput="pvpRenderPicker()">
+          <div id="pvpPickerCount" class="pvp-picker-count"></div>
+        </div>
+        <div id="pvpPickerGrid" class="pvp-picker-grid"></div>
+      </div>
+    </div>
+
+
+    <div id="pvpIndividualView" class="pvp-view">
+      <div class="pvp-build-head tech-corners">
+        <div>
+          <div class="pvp-kicker">PVP TEAM // INDIVIDUAL BUILD</div>
+          <h2 class="page-title">CONFIGURE DIGIMONS</h2>
+          <p class="page-subtitle">Configure Baby Correction, Buff Deck, Skills Lv.10 e Tetris 3% para cada um dos 8 Digimons.</p>
+        </div>
+
+        <div class="pvp-build-top-actions">
+          <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpVoltarSelecao()">← VOLTAR</button>
+          <button type="button" class="pvp-action-btn pvp-action-warning" onclick="pvpLimparBuildAtual()">LIMPAR BUILD</button>
+          <button type="button" class="pvp-action-btn pvp-action-danger" onclick="pvpLimparTimeCompleto()">LIMPAR TIME</button>
+        </div>
+      </div>
+
+      <div id="pvpBuildTabs" class="pvp-build-tabs"></div>
+
+      <div class="pvp-build-layout">
+        <section class="pvp-build-config tech-corners">
+          <div class="pvp-build-current">
+            <div class="pvp-current-icon tech-icon-frame">
+              <img id="pvpBuildCurrentImg" alt="">
+            </div>
+            <div>
+              <div id="pvpBuildCurrentSlot" class="pvp-current-slot">SLOT 01</div>
+              <h3 id="pvpBuildCurrentName">DIGIMON</h3>
+              <div id="pvpBuildCurrentMeta" class="pvp-current-meta"></div>
+            </div>
+          </div>
+
+          <div id="pvpStepBaby" class="pvp-wizard-step" data-pvp-step="0">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(0)">
+              <span class="pvp-wizard-index">01</span>
+              <span class="pvp-wizard-title">
+                <strong>BABY CORRECTION</strong>
+                <small>Máximo 14% por atributo · 28% total</small>
+              </span>
+              <span id="pvpBabyStepSummary" class="pvp-wizard-summary">0 / 28%</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpBabyGrid" class="pvp-stat-input-grid"></div>
+              <div id="pvpBabyTotal" class="pvp-total-line">TOTAL: 0%</div>
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" disabled>← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpNextDepoisBaby()">NEXT →</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="pvpStepDeck" class="pvp-wizard-step" data-pvp-step="1">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(1)">
+              <span class="pvp-wizard-index">02</span>
+              <span class="pvp-wizard-title">
+                <strong>BUFF DECK · GLOBAL DO TIME</strong>
+                <small>Preencha uma vez · os mesmos valores são aplicados aos 8 Digimons</small>
+              </span>
+              <span id="pvpDeckStepSummary" class="pvp-wizard-summary">ATTRBOOST 0% · REDUCE 0%</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div class="pvp-subsection-title">
+                <strong>STATUS BONUS</strong>
+                <span>Valor inteiro por status</span>
+              </div>
+              <div id="pvpBuffGrid" class="pvp-stat-input-grid"></div>
+
+              <div class="pvp-subsection-title pvp-element-deck-title">
+                <strong>ELEMENT ATTRIBUTES</strong>
+                <span>DMG e DMG REDUCE em %</span>
+              </div>
+              <div id="pvpElementDeckGrid" class="pvp-element-deck-grid"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(0)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpConcluirDeckGlobal()">NEXT →</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="pvpStepSkills" class="pvp-wizard-step" data-pvp-step="2">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(2)">
+              <span class="pvp-wizard-index">03</span>
+              <span class="pvp-wizard-title">
+                <strong>SKILLS</strong>
+                <small>F1 / F2 / F3 Mastered + elemento aplicado + Burst</small>
+              </span>
+              <span id="pvpSkillsStepSummary" class="pvp-wizard-summary">F1 · F2 · F3 · BURST</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpSkillsGrid" class="pvp-skills-grid"></div>
+              <div id="pvpBurstSkillPanel" class="pvp-burst-panel"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(1)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn" onclick="pvpSetBuildStep(3)">NEXT →</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="pvpStepTetris" class="pvp-wizard-step" data-pvp-step="3">
+            <button type="button" class="pvp-wizard-step-head" onclick="pvpSetBuildStep(3)">
+              <span class="pvp-wizard-index">04</span>
+              <span class="pvp-wizard-title">
+                <strong>TETRIS</strong>
+                <small>16 espaços · somente cubos de 3%</small>
+              </span>
+              <span id="pvpTetrisStepSummary" class="pvp-wizard-summary">0 / 16 ESPAÇOS</span>
+              <span class="pvp-wizard-chevron">⌄</span>
+            </button>
+            <div class="pvp-wizard-step-body">
+              <div id="pvpTetrisGrid" class="pvp-tetris-grid"></div>
+
+              <div class="pvp-wizard-nav">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpSetBuildStep(2)">← PREVIOUS</button>
+                <button type="button" class="pvp-action-btn pvp-action-success" onclick="pvpConcluirBuildAtual()">CONCLUIR BUILD →</button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <aside class="pvp-build-summary tech-corners">
+          <div class="pvp-build-section-title">
+            <span>STATUS SUMMARY</span>
+            <small>Base + bônus configurados</small>
+          </div>
+          <div id="pvpSummaryStats" class="pvp-summary-stats"></div>
+          <button id="pvpMarkDoneBtn" type="button" class="pvp-complete-btn" onclick="pvpConcluirBuildAtual()">✓ MARCAR BUILD COMO CONCLUÍDO</button>
+        </aside>
+      </div>
+
+      <div id="pvpFinalActions" class="pvp-final-actions tech-corners">
+        <div>
+          <strong>TEAM READY</strong>
+          <span>Os 8 Digimons estão configurados.</span>
+        </div>
+        <div class="pvp-final-buttons">
+          <button type="button" class="pvp-action-btn pvp-action-success" onclick="pvpSalvarTime()">SAVE TEAM → MATCH</button>
+          <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">EXPORT TEAM</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="pvpImportView" class="pvp-view">
+      <div class="pvp-import-page tech-corners">
+        <div class="pvp-import-copy">
+          <div class="pvp-kicker">PVP TEAM // IMPORT</div>
+          <h2 class="page-title">IMPORT TEAM</h2>
+          <p class="page-subtitle">Carregue um time PvP exportado anteriormente pela Holy Guardians.</p>
+
+          <div class="pvp-import-drop tech-corners">
+            <div class="pvp-import-placeholder-icon">⇧</div>
+            <strong>CARREGUE SEU TIME AQUI</strong>
+            <span>Arquivo JSON exportado pelo PvP Team Builder.</span>
+
+            <button type="button" class="pvp-action-btn pvp-import-main-btn"
+              onclick="document.getElementById('pvpImportFile').click()">
+              SELECIONAR ARQUIVO
+            </button>
+
+            <input id="pvpImportFile" type="file" accept="application/json,.json" hidden
+              onchange="importarTimePvp(this.files && this.files[0])">
+          </div>
+
+          <button type="button" class="pvp-action-btn pvp-action-secondary pvp-import-back"
+            onclick="abrirPvpBuild()">← VOLTAR AO PVP BUILDER</button>
+        </div>
+
+        <div class="pvp-import-art-placeholder tech-corners" aria-hidden="true">
+          <span>ARTE DO IMPORT TEAM</span>
+          <small>Espaço reservado para a arte que você vai escolher depois.</small>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="pvpImportedReadyView" class="pvp-view">
+      <div class="pvp-imported-ready tech-corners">
+        <div class="pvp-imported-ready-head">
+          <div>
+            <div class="pvp-kicker">PVP TEAM // LOADED TEAM</div>
+            <h2 class="page-title">TIME CARREGADO</h2>
+            <p class="page-subtitle">Confira o time importado antes de editar ou seguir para a Match.</p>
+          </div>
+          <div class="pvp-imported-ready-actions">
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpEditarTimeImportado()">EDITAR TIME</button>
+            <button id="pvpImportedMatchBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchComTimeImportado()">MATCH</button>
+          </div>
+        </div>
+
+        <div id="pvpImportedReadyGrid" class="pvp-imported-ready-grid"></div>
+
+        <div id="pvpImportedReadyWarning" class="pvp-imported-ready-warning">
+          Este time possui builds incompletos. Use EDITAR TIME para concluir antes de entrar em uma Match.
+        </div>
+      </div>
+    </div>
+
+    <div id="pvpMatchView" class="pvp-view">
+      <div class="pvp-match-shell">
+        <div class="pvp-match-head tech-corners">
+          <div>
+            <div class="pvp-kicker">HOLY GUARDIANS // CHALLENGE ROOM ALPHA</div>
+            <h2 class="page-title">PVP MATCH</h2>
+            <p class="page-subtitle">Crie uma sala, desafie outro jogador e jogue usando a mesma Stage dos dois lados.</p>
+          </div>
+          <div class="pvp-match-head-actions">
+            <span id="pvpMatchConnectionBadge" class="pvp-match-connection-badge">OFFLINE</span>
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpMatchVoltarAoTime()">← EDITAR TIME</button>
+          </div>
+        </div>
+
+        <section id="pvpMatchLobby" class="pvp-match-screen ativa">
+          <div class="pvp-match-lobby-grid">
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>PLAYER PROFILE</small>
+                <strong>SEU NOME NO PVP</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>NICK</span>
+                <input id="pvpMatchNick" type="text" maxlength="16" autocomplete="off" placeholder="Ex: Allforkwanzas" oninput="pvpMatchSanitizarNick(this)">
+                <small>Somente letras e números · 3 a 16 caracteres.</small>
+              </label>
+
+              <div id="pvpMatchTeamCheck" class="pvp-match-team-check"></div>
+            </article>
+
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>CREATE CHALLENGE</small>
+                <strong>CRIAR SALA</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>BATTLE STAGE</span>
+                <select id="pvpMatchCreateStage" onchange="pvpMatchAtualizarStageLobby()">
+                  <option value="Rookie">ROOKIE · LV. 15</option>
+                  <option value="Champion">CHAMPION · LV. 60</option>
+                  <option value="Ultimate">ULTIMATE · LV. 90</option>
+                  <option value="Mega">MEGA · LV. 100</option>
+                </select>
+                <small>A Stage fica travada depois que a sala é criada.</small>
+              </label>
+
+              <button id="pvpMatchCreateBtn" type="button" class="pvp-action-btn pvp-action-success pvp-match-main-action" onclick="pvpMatchCriarSala()">CRIAR CHALLENGE ROOM</button>
+              <button type="button" class="pvp-action-btn pvp-action-secondary pvp-match-local-btn" onclick="pvpMatchIniciarTesteLocal()">TESTAR ALPHA LOCAL</button>
+            </article>
+
+            <article class="pvp-match-card tech-corners">
+              <div class="pvp-match-card-title">
+                <small>JOIN CHALLENGE</small>
+                <strong>ENTRAR EM SALA</strong>
+              </div>
+
+              <label class="pvp-match-field">
+                <span>ROOM ID</span>
+                <input id="pvpMatchJoinCode" type="text" maxlength="12" autocomplete="off" placeholder="HG7K3Q" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+                <small>Também funciona abrindo diretamente o link de convite.</small>
+              </label>
+
+              <button id="pvpMatchJoinBtn" type="button" class="pvp-action-btn pvp-match-main-action" onclick="pvpMatchEntrarSala()">ENTRAR NA SALA</button>
+            </article>
+          </div>
+        </section>
+
+        <section id="pvpMatchWaiting" class="pvp-match-screen">
+          <div class="pvp-match-waiting tech-corners">
+            <div class="pvp-match-room-title">
+              <div>
+                <small>CHALLENGE ROOM</small>
+                <strong id="pvpMatchRoomCode">------</strong>
+              </div>
+              <div class="pvp-match-room-stage">
+                <span>STAGE LOCK</span>
+                <b id="pvpMatchRoomStage">MEGA</b>
+              </div>
+            </div>
+
+            <div class="pvp-match-versus">
+              <article id="pvpMatchHostCard" class="pvp-match-player-card">
+                <small>PLAYER 1</small>
+                <strong>AGUARDANDO...</strong>
+                <span>HOST</span>
+              </article>
+              <div class="pvp-match-vs-mark">VS</div>
+              <article id="pvpMatchGuestCard" class="pvp-match-player-card">
+                <small>PLAYER 2</small>
+                <strong>AGUARDANDO...</strong>
+                <span>CHALLENGER</span>
+              </article>
+            </div>
+
+            <div class="pvp-match-invite-line">
+              <input id="pvpMatchInviteLink" type="text" readonly>
+              <button type="button" class="pvp-action-btn" onclick="pvpMatchCopiarConvite()">COPIAR LINK</button>
+            </div>
+
+            <div id="pvpMatchWaitingMessage" class="pvp-match-waiting-message">Aguardando oponente...</div>
+
+            <div class="pvp-match-ready-actions">
+              <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="pvpMatchSairSala()">SAIR DA SALA</button>
+              <button id="pvpMatchReadyBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchToggleReady()">READY</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="pvpMatchDraft" class="pvp-match-screen">
+          <div class="pvp-draft-head tech-corners">
+            <div>
+              <small id="pvpDraftPhaseLabel">DRAFT PHASE</small>
+              <strong id="pvpDraftInstruction">AGUARDANDO...</strong>
+            </div>
+            <div class="pvp-draft-stage-lock"><span>STAGE</span><b id="pvpDraftStage">MEGA</b></div>
+          </div>
+
+          <div class="pvp-draft-scoreboard">
+            <article class="pvp-draft-side p1">
+              <div class="pvp-draft-player-name" id="pvpDraftHostName">PLAYER 1</div>
+              <div id="pvpDraftHostPicks" class="pvp-draft-picks"></div>
+            </article>
+            <div class="pvp-draft-center-mark">PICK</div>
+            <article class="pvp-draft-side p2">
+              <div class="pvp-draft-player-name" id="pvpDraftGuestName">PLAYER 2</div>
+              <div id="pvpDraftGuestPicks" class="pvp-draft-picks"></div>
+            </article>
+          </div>
+
+          <div class="pvp-draft-roster tech-corners">
+            <div class="pvp-draft-roster-head">
+              <div>
+                <small>YOUR PVP TEAM</small>
+                <strong>SELECIONE O DIGIMON</strong>
+              </div>
+              <span>Passe o mouse para ver status e skills.</span>
+            </div>
+            <div id="pvpDraftRosterGrid" class="pvp-draft-roster-grid"></div>
+          </div>
+        </section>
+
+        <section id="pvpMatchBan" class="pvp-match-screen">
+          <div class="pvp-ban-shell tech-corners">
+            <div class="pvp-ban-head">
+              <small>BAN PHASE</small>
+              <strong id="pvpBanInstruction">Escolha 1 Digimon do adversário para banir.</strong>
+            </div>
+            <div id="pvpBanTargetGrid" class="pvp-ban-target-grid"></div>
+            <div id="pvpBanStatus" class="pvp-ban-status"></div>
+          </div>
+        </section>
+
+        <section id="pvpMatchFormation" class="pvp-match-screen">
+          <div class="pvp-formation-shell tech-corners">
+            <div class="pvp-formation-head">
+              <div>
+                <small>DEPLOY PHASE</small>
+                <strong>FRONT / BACK</strong>
+              </div>
+              <span>Defina a posição dos 3 Digimons que sobreviveram ao ban.</span>
+            </div>
+            <div id="pvpFormationGrid" class="pvp-formation-grid"></div>
+            <div class="pvp-formation-actions">
+              <span id="pvpFormationHint">É obrigatório manter pelo menos 1 Digimon na Front.</span>
+              <button id="pvpFormationConfirmBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpMatchConfirmarFormacao()">CONFIRMAR FORMAÇÃO</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="pvpMatchBattle" class="pvp-match-screen">
+          <div id="pvpBattleHud" class="pvp-battle-hud">
+            <div id="pvpBattleOpponentLabel" class="pvp-battle-opponent-label" aria-live="polite"></div>
+            <div class="pvp-battle-arena tech-corners">
+              <div class="pvp-arena-lines" aria-hidden="true"></div>
+              <div id="pvpBattleTarget" class="pvp-battle-target tech-corners"></div>
+              <aside class="pvp-turn-panel tech-corners">
+                <div class="pvp-turn-title">TURN</div>
+                <div id="pvpTurnQueue" class="pvp-turn-queue"></div>
+              </aside>
+              <div id="pvpBattleEnemyField" class="pvp-battle-field enemy"></div>
+              <div id="pvpBattleImpactLayer" class="pvp-battle-impact-layer" aria-hidden="true"></div>
+              <div id="pvpBattleOwnField" class="pvp-battle-field own"></div>
+            </div>
+
+            <div class="pvp-battle-bottom">
+              <section class="pvp-battle-log tech-corners">
+                <div class="pvp-battle-log-head"><span>BATTLE LOG</span><small id="pvpBattleRoundLabel">ROUND 1</small></div>
+                <div id="pvpBattleLogLines" class="pvp-battle-log-lines"></div>
+              </section>
+
+              <section id="pvpBattleSkills" class="pvp-battle-skills tech-corners"></section>
+
+              <aside class="pvp-battle-controls tech-corners">
+                <div class="pvp-gauge-block">
+                  <div class="pvp-gauge-label"><span>GAUGE</span><b id="pvpBattleGaugeText">1.00 / 5</b></div>
+                  <div id="pvpBattleGaugeSegments" class="pvp-gauge-track pvp-gauge-segments" aria-label="Gauge de substituição"></div>
+                </div>
+                <div id="pvpBattleActionHint" class="pvp-battle-action-hint">SELECT SKILL</div>
+                <button id="pvpSubstitutionBtn" type="button" class="pvp-action-btn pvp-substitution-btn" onclick="pvpBattleAbrirSubstituicao()">SUBSTITUTION <span id="pvpSubstitutionCount">3/3</span></button>
+                <button id="pvpSurrenderBtn" type="button" class="pvp-action-btn pvp-surrender-btn" onclick="pvpBattleSurrender()">SURRENDER</button>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <div id="pvpSubstitutionOverlay" class="pvp-sub-overlay" aria-hidden="true">
+          <div class="pvp-sub-modal tech-corners">
+            <div class="pvp-sub-head">
+              <div><small id="pvpSubModeKicker">SUBSTITUTION</small><strong id="pvpSubModeTitle">TROCAR DIGIMON</strong></div>
+              <button id="pvpSubCloseBtn" type="button" onclick="pvpBattleFecharSubstituicao()">×</button>
+            </div>
+            <div class="pvp-sub-section">
+              <span>DEPLOY DIGIMON</span>
+              <div id="pvpSubDeployGrid" class="pvp-sub-grid"></div>
+            </div>
+            <div class="pvp-sub-arrow">⇅</div>
+            <div class="pvp-sub-section">
+              <span>STANDBY DIGIMON</span>
+              <div id="pvpSubStandbyGrid" class="pvp-sub-grid"></div>
+            </div>
+            <div class="pvp-sub-foot">
+              <small id="pvpSubFootText">Remaining Substitution Count <b id="pvpSubModalCount">3/3</b> · Cost 1 Gauge</small>
+              <button id="pvpSubConfirmBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpBattleConfirmarSubstituicao()" disabled>SUBSTITUIR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     CALCULADORA
+===================================================== -->
+
+<section id="calculadoraPagina" class="pagina">
+  <div class="internal-wrap">
+
+    <h2 class="page-title">CALCULADORA</h2>
+
+    <p class="page-subtitle">
+      Calcule o dano total das Skills Lv.10 com o seu bônus elemental.
+    </p>
+
+    <div class="calc-layout">
+      <div class="calc-shell">
+
+        <div class="calc-top">
+
+          <div class="calc-field">
+            <label for="calcDigimon">Digimon</label>
+            <input
+              id="calcDigimon"
+              class="calc-input"
+              type="text"
+              placeholder="Digite ou selecione um Digimon..."
+              autocomplete="off"
+              oninput="atualizarCalculadora()"
+              onchange="atualizarCalculadora()"
+            >
+            <div
+              id="calcDigimonSugestoes"
+              class="calc-autocomplete"
+              hidden
+            ></div>
+          </div>
+
+          <div class="calc-field">
+            <label for="calcElemento">Elemento aplicado</label>
+            <select
+              id="calcElemento"
+              class="calc-select"
+              onchange="atualizarCalculadora()"
+            >
+              <option value="DARKNESS">DARKNESS</option>
+              <option value="PHYSICAL">PHYSICAL</option>
+              <option value="FIRE">FIRE</option>
+              <option value="THUNDER">THUNDER</option>
+              <option value="WIND">WIND</option>
+              <option value="ICE">ICE</option>
+              <option value="WATER">WATER</option>
+              <option value="EARTH">EARTH</option>
+              <option value="WOOD">WOOD</option>
+              <option value="STEEL">STEEL</option>
+              <option value="LIGHT">LIGHT</option>
+            </select>
+          </div>
+
+          <div class="calc-field calc-percent-wrap">
+            <label for="calcElementoValor">Elemento Total do Tamer</label>
+            <input
+              id="calcElementoValor"
+              class="calc-input"
+              type="number"
+              min="0"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="Ex.: 30,08"
+              oninput="atualizarCalculadora()"
+            >
+            <span class="calc-percent-sign">%</span>
+          </div>
+
+        </div>
+
+        <div class="calc-help">
+          O bônus só entra nas Skills compatíveis com o elemento selecionado.
+          Em cada hit: bônus elemental = dano base do hit × Elemento Total do Tamer.
+          O total final soma esse bônus em todos os hits da Skill Lv.10.
+          Passe o mouse sobre o ícone/nome da Skill para ver os detalhes; Skills de efeito não entram como Burst de dano.
+        </div>
+
+        <div id="calcSelected" class="calc-selected" style="display:none;"></div>
+
+        <div id="calcResultados" class="calc-results">
+          <div class="calc-empty">
+            Selecione um Digimon e informe o Elemento Total do Tamer para calcular.
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="calc-guide" aria-label="Como usar a calculadora">
+        <div class="calc-guide-title">
+          COMO USAR A CALCULADORA
+        </div>
+
+        <div class="calc-guide-text">
+          Abra a guia do seu Digimon e consulte qual é o seu valor total do elemento em
+          <strong>AttrBoost</strong>.
+        </div>
+
+        <div class="calc-guide-text">
+          Insira esse valor no campo
+          <strong>“Elemento Total do Tamer”</strong>.
+        </div>
+
+        <div class="calc-guide-note">
+          Esse valor representa a soma dos bônus provenientes de
+          <strong>roupas, acessórios e deck</strong>.
+          Na <strong>Burst Skill</strong>, escolha a Skill base pelo ícone e nome.
+          Skills marcadas com <strong>CC, DOT ou DEF BREAK</strong> ficam fora do cálculo de Burst de dano.
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =====================================================
+     HIDDEN QUESTS
+===================================================== -->
+<section id="hiddenQuestsPagina" class="pagina">
+  <div class="internal-wrap hidden-quests-wrap">
+    <header class="hidden-quests-header tech-corners">
+      <div class="hidden-quests-header-icon" aria-hidden="true"><img src="icon_hidden_quests.svg" alt=""></div>
+      <div class="hidden-quests-header-copy">
+        <div class="hidden-quests-kicker">QUEST ARCHIVE // HOLY GUARDIANS</div>
+        <h2 class="page-title">HIDDEN QUESTS</h2>
+        <p class="page-subtitle">Guia traduzido com rotas, objetivos, recompensas, imagens e vídeos do post original do DSR.</p>
+      </div>
+      <a class="hidden-quests-source" href="https://cafe.naver.com/movedsr/77" target="_blank" rel="noopener noreferrer"><i></i><span>FONTE ORIGINAL</span><strong>NAVER CAFE</strong></a>
+    </header>
+
+    <section class="hidden-quests-alert tech-corners" aria-label="Informações importantes">
+      <div class="hidden-quests-alert-head"><span>!</span><div><small>ANTES DE COMEÇAR</small><strong>INFORMAÇÕES IMPORTANTES DO AUTOR</strong></div></div>
+      <div id="hiddenQuestIntro" class="hidden-quests-alert-grid"></div>
+    </section>
+
+    <section class="hidden-quests-toolbar tech-corners">
+      <div class="hidden-quests-search">
+        <label for="hiddenQuestSearch">BUSCAR QUEST / NPC / DIGIMON / ITEM</label>
+        <div><span aria-hidden="true">⌕</span><input id="hiddenQuestSearch" type="search" autocomplete="off" placeholder="Ex.: Dekyu, Dark Castle, Leafmon..." oninput="hiddenQuestAplicarFiltros()"></div>
+      </div>
+      <div class="hidden-quests-summary"><small>ARQUIVO HG</small><strong id="hiddenQuestCount">0 QUESTS</strong><span id="hiddenQuestFilterStatus">TODAS AS REGIÕES</span></div>
+      <div id="hiddenQuestRegionFilters" class="hidden-quests-region-filters" aria-label="Filtrar por região"></div>
+    </section>
+
+    <div id="hiddenQuestResults" class="hidden-quests-results"></div>
+  </div>
+
+  <div id="hiddenQuestImageModal" class="hidden-quest-image-modal" hidden aria-hidden="true" onclick="hiddenQuestFecharImagem(event)">
+    <button type="button" class="hidden-quest-image-close" aria-label="Fechar imagem" onclick="hiddenQuestFecharImagem(event, true)">×</button>
+    <figure><img id="hiddenQuestImageModalImg" src="" alt=""><figcaption id="hiddenQuestImageModalCaption"></figcaption></figure>
+  </div>
+</section>
+
+<!-- =====================================================
+     COUNTER FINDER
+===================================================== -->
+
+<section id="counterFinderPagina" class="pagina">
+  <div class="internal-wrap counter-finder-wrap">
+    <header class="counter-finder-header">
+      <div class="counter-finder-header-copy">
+        <div class="counter-finder-kicker">MATCHUP ANALYSIS // HOLY GUARDIANS</div>
+        <h2 class="page-title">COUNTER FINDER</h2>
+        <p class="page-subtitle">Escolha um Digimon e encontre os melhores matchups usando Skills e status da DATABASE MASTER.</p>
+      </div>
+
+      <div class="counter-finder-header-icon-shell" aria-hidden="true">
+        <img class="counter-finder-header-icon" src="icon_counter_finder.png" alt="">
+      </div>
+
+      <div class="counter-finder-source"><i></i><span>FONTE</span><strong>DATABASE MASTER</strong></div>
+    </header>
+
+    <div class="counter-finder-rule-strip" aria-label="Regras de Type usadas pelo Counter Finder">
+      <span><b>TYPE DAMAGE</b> vantagem <strong>+25%</strong> · desvantagem <strong>-25%</strong> · neutro <strong>0%</strong></span>
+      <span>DATA &gt; VACCINE &gt; VIRUS &gt; DATA</span>
+      <span>UNKNOWN &gt; DATA / VACCINE / VIRUS · FREE &gt; UNKNOWN</span>
+    </div>
+
+    <div class="counter-finder-layout">
+      <aside class="counter-finder-controls">
+        <div class="counter-finder-control-head">
+          <small>01 // TARGET</small>
+          <strong>QUAL DIGIMON VOCÊ QUER COUNTERAR?</strong>
+        </div>
+
+        <label class="counter-finder-field" for="counterFinderTargetInput">
+          <span>DIGIMON ALVO</span>
+          <div class="counter-finder-search">
+            <input id="counterFinderTargetInput" type="text" autocomplete="off" placeholder="Digite o nome do Digimon..."
+              oninput="counterFinderPesquisarAlvo()" onkeydown="counterFinderTeclaAlvo(event)">
+            <div id="counterFinderSuggestions" class="counter-finder-suggestions" hidden></div>
+          </div>
+        </label>
+
+        <label class="counter-finder-field" for="counterFinderStage">
+          <span>STAGE DOS CANDIDATOS</span>
+          <select id="counterFinderStage" onchange="counterFinderRenderizarResultados()">
+            <option value="MEGA" selected>MEGA</option>
+            <option value="ULTIMATE">ULTIMATE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="ROOKIE">ROOKIE</option>
+            <option value="ALL">TODOS</option>
+          </select>
+        </label>
+
+        <label class="counter-finder-field" for="counterFinderTargetPosition">
+          <span>POSIÇÃO DO ALVO</span>
+          <select id="counterFinderTargetPosition" onchange="counterFinderRenderizarResultados()">
+            <option value="ANY" selected>NÃO DEFINIDA</option>
+            <option value="FRONT">FRONT LINE</option>
+            <option value="BACK">BACK LINE</option>
+          </select>
+        </label>
+
+        <div class="counter-finder-how">
+          <strong>COMO O MATCHUP É LIDO</strong>
+          <p>TYPE usa o modificador real de dano (+25% / -25% / 0%). Skills são analisadas individualmente, incluindo elemento base e conversões, Strong/Weak e seu efeito, SPD, CC, DOT, DEF BREAK e pressão ofensiva nos dois sentidos. O score é um índice comparativo de matchup — não uma porcentagem de vitória.</p>
+        </div>
+      </aside>
+
+      <main class="counter-finder-main">
+        <div id="counterFinderTargetCard" class="counter-finder-target-card">
+          <div class="counter-finder-target-empty">
+            <span>⌖</span>
+            <strong>SELECIONE UM DIGIMON</strong>
+            <small>Os counters aparecerão aqui automaticamente.</small>
+          </div>
+        </div>
+
+        <div class="counter-finder-results-head">
+          <div><small>02 // ANALYSIS</small><strong>MELHORES COUNTERS</strong></div>
+          <span id="counterFinderResultCount">AGUARDANDO ALVO</span>
+        </div>
+
+        <div id="counterFinderResults" class="counter-finder-results">
+          <div class="counter-finder-results-empty">
+            <span>⌁</span>
+            <strong>ESCOLHA UM DIGIMON PARA INICIAR</strong>
+            <small>A análise é feita com os dados da DATABASE MASTER.</small>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     RAID BOSS
+===================================================== -->
+
+<section id="raidBossPagina" class="pagina">
+  <div class="internal-wrap raid-wrap">
+    <div class="raid-header">
+      <div>
+        <div class="raid-kicker">KST RAID MONITOR // HOLY GUARDIANS</div>
+        <h2 class="page-title">RAID BOSS</h2>
+        <p class="page-subtitle">Próximos nascimentos sincronizados com o horário do servidor coreano.</p>
+      </div>
+
+      <div class="raid-how-to" aria-label="Como usar a agenda de raids">
+        <strong>COMO USAR</strong>
+        <span>Passe o mouse sobre o ícone para saber os status e clique no nome do mapa para ver os possíveis spots de spawn dos bosses.</span>
+      </div>
+
+      <div class="raid-controls">
+        <label class="raid-alarm-control">
+          <input id="raidAlarmToggle" type="checkbox">
+          <span>AVISAR</span>
+        </label>
+        <label class="raid-notice-control">
+          <span>MINUTOS ANTES</span>
+          <input id="raidNoticeMinutes" type="number" min="1" max="60" value="5">
+        </label>
+      </div>
+
+      <a class="hg-discord-bot-link" href="https://discord.com/oauth2/authorize?client_id=1537618369564381214&permissions=2147503104&integration_type=0&scope=bot+applications.commands" target="_blank" rel="noopener noreferrer" aria-label="Adicionar Evil Guardians ao seu Discord" title="Adicionar Evil Guardians ao seu Discord">
+        <img src="evilguardians_logo.png" alt="Evil Guardians">
+        <span>ADICIONAR<br>BOT</span>
+      </a>
+    </div>
+
+    <div class="raid-time-strip">
+      <span>HORÁRIO DO SERVIDOR (KST)</span>
+      <strong id="raidKstClock">--/--/---- --:--:--</strong>
+      <small>Os avisos funcionam enquanto esta página estiver aberta.</small>
+    </div>
+
+    <div id="raidList" class="raid-grid">
+      <div class="raid-empty">Carregando agenda de raids...</div>
+    </div>
+  </div>
+</section>
+
+<div id="raidMapModal" class="raid-modal" aria-hidden="true">
+  <div class="raid-modal-card" role="dialog" aria-modal="true" aria-labelledby="raidMapTitle">
+    <button id="raidMapClose" class="raid-modal-close" type="button" aria-label="Fechar">×</button>
+    <h3 id="raidMapTitle">MAPA DO RAID</h3>
+    <div id="raidMapStage" class="raid-map-stage">
+      <img id="raidMapImage" alt="Mapa do raid">
+      <div id="raidMapSpots" class="raid-map-spots"></div>
+    </div>
+  </div>
+</div>
+
+<div id="raidAlert" class="raid-alert" role="alert" aria-live="assertive">
+  <img id="raidAlertIcon" alt="">
+  <div>
+    <strong id="raidAlertTitle">RAID PRÓXIMA</strong>
+    <span id="raidAlertText"></span>
+  </div>
+  <button type="button" onclick="fecharRaidAlerta()">×</button>
+</div>
+
+<!-- =====================================================
+     DEKYU TREASURE
+===================================================== -->
+
+<section id="dekyuTreasurePagina" class="pagina">
+  <div class="internal-wrap dekyu-wrap">
+    <header class="dekyu-header">
+      <div class="dekyu-header-copy">
+        <div class="dekyu-kicker">TREASURE COORDINATES // HOLY GUARDIANS</div>
+        <h2 class="page-title">DEKYU TREASURE</h2>
+        <p class="page-subtitle">Selecione uma área e um mapa para localizar todos os Dekyu Treasures disponíveis.</p>
+
+        <aside class="dekyu-alert" role="note">
+          <span class="dekyu-alert-symbol" aria-hidden="true">!</span>
+          <p><strong>ATENÇÃO:</strong> O Dekyu Treasure pode surgir de forma aleatória em qualquer um dos spots mostrados nos mapas abaixo, de 6 em 6 horas, a partir do momento em que surgiu pela última vez.</p>
+        </aside>
+      </div>
+
+      <div class="dekyu-header-icon" aria-hidden="true">
+        <img src="dekyu_treasure.png" alt="">
+      </div>
+
+      <a class="hg-discord-bot-link dekyu-discord-bot-link" href="https://discord.com/oauth2/authorize?client_id=1537618369564381214&permissions=2147503104&integration_type=0&scope=bot+applications.commands" target="_blank" rel="noopener noreferrer" aria-label="Adicionar Evil Guardians ao seu Discord" title="Adicionar Evil Guardians ao seu Discord">
+        <img src="evilguardians_logo.png" alt="Evil Guardians">
+        <span>ADICIONAR<br>BOT</span>
+      </a>
+    </header>
+
+    <div class="dekyu-dashboard">
+      <div class="dekyu-map-card">
+        <div class="dekyu-map-title-row">
+          <div>
+            <small id="dekyuZoneLabel">ÁREA</small>
+            <h3 id="dekyuMapTitle">Selecione um mapa</h3>
+          </div>
+          <span id="dekyuMapStatus">Carregando coordenadas...</span>
+        </div>
+
+        <div id="dekyuMapStage" class="dekyu-map-stage">
+          <img id="dekyuMapImage" alt="Mapa com localizações de Dekyu Treasure">
+          <div id="dekyuSpots" class="dekyu-spots"></div>
+          <div id="dekyuEmpty" class="dekyu-empty">Carregando mapa...</div>
+        </div>
+      </div>
+
+      <aside class="dekyu-side-panel" aria-label="Controles do mapa">
+        <div class="dekyu-panel-kicker">MAP NAVIGATION // HG</div>
+        <h3>LOCALIZAR TESOUROS</h3>
+
+        <div class="dekyu-controls">
+          <label class="dekyu-select-field">
+            <span>ÁREA</span>
+            <select id="dekyuZone" onchange="alterarZonaDekyu()">
+              <option value="">Carregando áreas...</option>
+            </select>
+          </label>
+
+          <label class="dekyu-select-field">
+            <span>MAPA</span>
+            <select id="dekyuMap" onchange="renderizarMapaDekyu()">
+              <option value="">Carregando mapas...</option>
+            </select>
+          </label>
+
+          <div class="dekyu-summary">
+            <span>LOCALIZAÇÕES</span>
+            <strong id="dekyuCount">0</strong>
+            <small>SPOTS MAPEADOS</small>
+          </div>
+
+          <div class="dekyu-respawn">
+            <span>PRÓXIMO SURGIMENTO</span>
+            <strong id="dekyuCountdown">--:--:--</strong>
+            <small>ÀS <b id="dekyuNextTime">--:--</b> • HORÁRIO DE BRASÍLIA</small>
+            <div class="dekyu-schedule" aria-label="Horários de surgimento">
+              <i>02:00</i><i>08:00</i><i>14:00</i><i>20:00</i>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     FERRAMENTAS HG — SORTEIO
+===================================================== -->
+
+<section id="tierListPagina" class="pagina">
+  <div class="tierlist-wrap">
+    <header class="tierlist-hero">
+      <div>
+        <div class="tierlist-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
+        <h1>TIER LIST DSR</h1>
+        <p>Monte sua própria Tier List com os Digimons da nossa base. Crie quantas tiers quiser, renomeie, escolha as cores e arraste os ícones livremente.</p>
+      </div>
+      <div class="tierlist-hero-badge" aria-hidden="true">
+        <span>DRAG</span>
+        <strong>&amp;</strong>
+        <span>DROP</span>
+      </div>
+    </header>
+
+    <section class="tierlist-toolbar tech-corners" data-html2canvas-ignore="true">
+      <label class="tierlist-field tierlist-title-field">
+        <span>TÍTULO DA TIER LIST</span>
+        <input id="tierListTitleInput" type="text" maxlength="70" value="TIER LIST DSR" autocomplete="off" oninput="tierListAtualizarTitulo(this.value, this)">
+      </label>
+
+      <div class="tierlist-toolbar-actions">
+        <button type="button" class="tierlist-action primary" onclick="tierListAdicionarTier()"><span>＋</span> ADICIONAR TIER</button>
+        <button type="button" class="tierlist-action" onclick="tierListAlternarModoStream()"><span>◉</span> MODO STREAM</button>
+        <button type="button" class="tierlist-action export" id="tierListExportBtn" onclick="tierListExportarPng()"><span>▣</span> EXPORTAR PNG</button>
+        <button type="button" class="tierlist-action danger" onclick="tierListResetar()"><span>↺</span> RESETAR</button>
+      </div>
+    </section>
+
+    <section id="tierListExportArea" class="tierlist-export-area tech-corners">
+      <div class="tierlist-export-head">
+        <div class="tierlist-export-brand">
+          <span class="tierlist-export-logo-shell"><img src="holyguardians_logo.png" alt="Holy Guardians"></span>
+          <div>
+            <small>HOLY GUARDIANS // DSR TOOLS</small>
+            <strong id="tierListBoardTitle" class="tierlist-board-title-editable" contenteditable="true" spellcheck="false" role="textbox" aria-label="Título da Tier List" title="Clique para editar o título desta sessão" oninput="tierListAtualizarTitulo(this.textContent, this)" onkeydown="tierListTituloKeydown(event, this)" onblur="tierListTituloBlur(this)">TIER LIST DSR</strong>
+          </div>
+        </div>
+        <div class="tierlist-export-signature">holyguardians.github.io</div>
+      </div>
+
+      <div id="tierListRows" class="tierlist-rows" aria-live="polite"></div>
+    </section>
+
+    <section class="tierlist-pool-panel tech-corners">
+      <div class="tierlist-pool-head">
+        <div>
+          <small>DIGIMONS DISPONÍVEIS</small>
+          <strong>ARRASTE PARA A TIER DESEJADA</strong>
+        </div>
+        <div class="tierlist-pool-count"><b id="tierListPoolVisible">0</b><span>/</span><em id="tierListPoolTotal">0</em></div>
+      </div>
+
+      <div class="tierlist-filters" data-html2canvas-ignore="true">
+        <label class="tierlist-search">
+          <span class="tierlist-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="5.75"></circle><path d="M14.8 14.8L20 20"></path></svg></span>
+          <input id="tierListSearch" type="search" autocomplete="off" placeholder="Procurar Digimon..." oninput="tierListAplicarFiltros()">
+        </label>
+
+        <div class="tierlist-filter-field tierlist-custom-filter" data-tier-filter="tierListStageFilter">
+          <span>STAGE</span>
+          <select id="tierListStageFilter" class="tierlist-native-select" tabindex="-1" onchange="tierListAplicarFiltros()">
+            <option value="">TODOS</option>
+            <option value="ROOKIE">ROOKIE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="ULTIMATE">ULTIMATE</option>
+            <option value="MEGA">MEGA</option>
+          </select>
+          <button type="button" class="tierlist-select-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="tierListAlternarFiltroCustom(this)"><b>TODOS</b><i aria-hidden="true"></i></button>
+          <div class="tierlist-select-options" role="listbox"></div>
+        </div>
+
+        <div class="tierlist-filter-field tierlist-custom-filter" data-tier-filter="tierListTypeFilter">
+          <span>TYPE</span>
+          <select id="tierListTypeFilter" class="tierlist-native-select" tabindex="-1" onchange="tierListAplicarFiltros()">
+            <option value="">TODOS</option>
+            <option value="VACCINE">VACCINE</option>
+            <option value="VIRUS">VIRUS</option>
+            <option value="DATA">DATA</option>
+            <option value="FREE">FREE</option>
+            <option value="UNKNOWN">UNKNOWN</option>
+          </select>
+          <button type="button" class="tierlist-select-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="tierListAlternarFiltroCustom(this)"><b>TODOS</b><i aria-hidden="true"></i></button>
+          <div class="tierlist-select-options" role="listbox"></div>
+        </div>
+
+        <button type="button" class="tierlist-clear-filter" onclick="tierListLimparFiltros()">LIMPAR FILTROS</button>
+      </div>
+
+      <div id="tierListPool" class="tierlist-digi-zone tierlist-pool" data-zone="pool"></div>
+      <div id="tierListEmpty" class="tierlist-empty" hidden>Nenhum Digimon corresponde aos filtros.</div>
+    </section>
+
+    <div class="tierlist-tip" data-html2canvas-ignore="true">
+      <span>💡</span>
+      <p><strong>Dica:</strong> arraste os Digimons entre as tiers ou de volta para a lista. As alterações são salvas automaticamente neste navegador.</p>
+    </div>
+  </div>
+
+  <button id="tierListStreamExit" type="button" class="tierlist-stream-exit" onclick="tierListAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+</section>
+
+
+<section id="tierListDmoPagina" class="pagina">
+  <div class="tierlist-wrap">
+    <header class="tierlist-hero tierlist-dmo-hero">
+      <div>
+        <div class="tierlist-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
+        <h1>TIER LIST DMO</h1>
+        <p>Monte sua Tier List com os Digimons de rank U, SSS+ e SSS do DMO. Pesquise por nome, filtre por rank ou adicione seu próprio ícone sem depender de atualização do site.</p>
+      </div>
+      <div class="tierlist-hero-badge tierlist-dmo-badge" aria-hidden="true">
+        <span>DMO</span>
+        <strong>U</strong>
+        <span>SSS+</span>
+      </div>
+    </header>
+
+    <section class="tierlist-toolbar tech-corners" data-html2canvas-ignore="true">
+      <label class="tierlist-field tierlist-title-field">
+        <span>TÍTULO DA TIER LIST</span>
+        <input id="tierListDmoTitleInput" type="text" maxlength="70" value="TIER LIST DMO" autocomplete="off" oninput="tierListDmoAtualizarTitulo(this.value, this)">
+      </label>
+
+      <div class="tierlist-toolbar-actions">
+        <button type="button" class="tierlist-action primary" onclick="tierListDmoAdicionarTier()"><span>＋</span> ADICIONAR TIER</button>
+        <button type="button" class="tierlist-action upload" onclick="tierListDmoAbrirUpload()"><span>⬆</span> ADICIONAR ÍCONE</button>
+        <button type="button" class="tierlist-action" onclick="tierListDmoAlternarModoStream()"><span>◉</span> MODO STREAM</button>
+        <button type="button" class="tierlist-action export" id="tierListDmoExportBtn" onclick="tierListDmoExportarPng()"><span>▣</span> EXPORTAR PNG</button>
+        <button type="button" class="tierlist-action danger" onclick="tierListDmoResetar()"><span>↺</span> RESETAR</button>
+      </div>
+    </section>
+
+    <section id="tierListDmoExportArea" class="tierlist-export-area tech-corners">
+      <div class="tierlist-export-head">
+        <div class="tierlist-export-brand">
+          <span class="tierlist-export-logo-shell"><img src="holyguardians_logo.png" alt="Holy Guardians"></span>
+          <div>
+            <small>HOLY GUARDIANS // DMO TOOLS</small>
+            <strong id="tierListDmoBoardTitle" class="tierlist-board-title-editable" contenteditable="true" spellcheck="false" role="textbox" aria-label="Título da Tier List" title="Clique para editar o título desta sessão" oninput="tierListDmoAtualizarTitulo(this.textContent, this)" onkeydown="tierListDmoTituloKeydown(event, this)" onblur="tierListDmoTituloBlur(this)">TIER LIST DMO</strong>
+          </div>
+        </div>
+        <div class="tierlist-export-signature">holyguardians.github.io</div>
+      </div>
+
+      <div id="tierListDmoRows" class="tierlist-rows" aria-live="polite"></div>
+    </section>
+
+    <section class="tierlist-pool-panel tech-corners">
+      <div class="tierlist-pool-head">
+        <div>
+          <small>CATÁLOGO DMO</small>
+          <strong>U • SSS+ • SSS // ARRASTE PARA A TIER DESEJADA</strong>
+        </div>
+        <div class="tierlist-pool-count"><b id="tierListDmoPoolVisible">0</b><span>/</span><em id="tierListDmoPoolTotal">0</em></div>
+      </div>
+
+      <div class="tierlist-filters tierlist-dmo-filters" data-html2canvas-ignore="true">
+        <label class="tierlist-search">
+          <span class="tierlist-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="5.75"></circle><path d="M14.8 14.8L20 20"></path></svg></span>
+          <input id="tierListDmoSearch" type="search" autocomplete="off" placeholder="Procurar Digimon por nome..." oninput="tierListDmoAplicarFiltros()">
+        </label>
+
+        <div class="tierlist-dmo-ranks" role="group" aria-label="Filtrar por rank">
+          <button type="button" class="ativo" data-rank="" onclick="tierListDmoSelecionarRank('', this)">ALL <small>56</small></button>
+          <button type="button" data-rank="U" onclick="tierListDmoSelecionarRank('U', this)">U <small>22</small></button>
+          <button type="button" data-rank="SSS+" onclick="tierListDmoSelecionarRank('SSS+', this)">SSS+ <small>17</small></button>
+          <button type="button" data-rank="SSS" onclick="tierListDmoSelecionarRank('SSS', this)">SSS <small>17</small></button>
+          <button type="button" data-rank="CUSTOM" onclick="tierListDmoSelecionarRank('CUSTOM', this)">CUSTOM</button>
+        </div>
+
+        <button type="button" class="tierlist-clear-filter" onclick="tierListDmoLimparFiltros()">LIMPAR FILTROS</button>
+      </div>
+
+      <div id="tierListDmoPool" class="tierlist-digi-zone tierlist-pool" data-zone="pool"></div>
+      <div id="tierListDmoEmpty" class="tierlist-empty" hidden>Nenhum Digimon corresponde aos filtros.</div>
+    </section>
+
+    <div class="tierlist-tip" data-html2canvas-ignore="true">
+      <span>💡</span>
+      <p><strong>Dica:</strong> o catálogo base usa os ranks U, SSS+ e SSS. Ícones adicionados por você ficam salvos somente neste navegador e também funcionam no Modo Stream.</p>
+    </div>
+  </div>
+
+  <button id="tierListDmoStreamExit" type="button" class="tierlist-stream-exit" onclick="tierListDmoAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+
+  <input id="tierListDmoUploadInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onchange="tierListDmoReceberArquivo(this.files && this.files[0])">
+
+  <div id="tierListDmoUploadModal" class="tierlist-dmo-upload-modal" hidden>
+    <div class="tierlist-dmo-upload-backdrop" onclick="tierListDmoFecharUpload()"></div>
+    <section class="tierlist-dmo-upload-card tech-corners" role="dialog" aria-modal="true" aria-labelledby="tierListDmoUploadTitle">
+      <div class="tierlist-dmo-upload-head">
+        <div>
+          <small>HOLY GUARDIANS // DMO</small>
+          <strong id="tierListDmoUploadTitle">ADICIONAR ÍCONE</strong>
+        </div>
+        <button type="button" onclick="tierListDmoFecharUpload()" aria-label="Fechar">×</button>
+      </div>
+      <div class="tierlist-dmo-upload-body">
+        <div class="tierlist-dmo-upload-preview">
+          <img id="tierListDmoUploadPreview" alt="Prévia do ícone" hidden>
+          <span id="tierListDmoUploadPreviewEmpty">PNG / JPG / WEBP</span>
+        </div>
+        <label>
+          <span>NOME DO DIGIMON</span>
+          <input id="tierListDmoUploadName" type="text" maxlength="60" placeholder="Ex.: Omegamon Alter-S" autocomplete="off">
+        </label>
+        <label>
+          <span>RANK</span>
+          <select id="tierListDmoUploadRank">
+            <option value="U">U</option>
+            <option value="SSS+">SSS+</option>
+            <option value="SSS">SSS</option>
+            <option value="CUSTOM" selected>CUSTOM</option>
+          </select>
+        </label>
+        <p>O arquivo é reduzido automaticamente e salvo apenas no navegador deste dispositivo.</p>
+      </div>
+      <div class="tierlist-dmo-upload-actions">
+        <button type="button" class="tierlist-action" onclick="tierListDmoFecharUpload()">CANCELAR</button>
+        <button type="button" class="tierlist-action primary" onclick="tierListDmoConfirmarUpload()">ADICIONAR</button>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section id="sorteioPagina" class="pagina">
+  <div class="sorteio-wrap">
+    <div class="sorteio-hero">
+      <div>
+        <div class="sorteio-kicker">HOLY GUARDIANS // FERRAMENTAS HG</div>
+        <h2 class="page-title">SORTEIO</h2>
+        <p class="page-subtitle">
+          Monte a lista manualmente, conecte uma plataforma individual ou una YouTube, Twitch e Kick no Multi Stream em tempo real.
+        </p>
+      </div>
+
+      <div class="sorteio-status-card">
+        <small>STATUS DA SESSÃO</small>
+        <strong id="sorteioStatusTopo">INSCRIÇÕES ABERTAS</strong>
+        <span id="sorteioStatusDot" class="aberto"></span>
+      </div>
+    </div>
+
+    <div class="sorteio-source-strip tech-corners">
+      <div class="sorteio-source-copy">
+        <small>FONTE DOS PARTICIPANTES</small>
+        <strong>ESCOLHA COMO ALIMENTAR A ROLETA</strong>
+      </div>
+
+      <div class="sorteio-source-options">
+        <button type="button" class="sorteio-source-btn manual ativo" aria-pressed="true" onclick="sorteioSelecionarFonte('manual')">
+          <span class="sorteio-source-mark">✎</span>
+          <span><b>MANUAL</b><small>Disponível agora</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn youtube" aria-pressed="false" onclick="sorteioSelecionarFonte('youtube')">
+          <span class="sorteio-source-mark"><img src="youtube.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
+          <span><b>YOUTUBE</b><small>Evil Guardians · disponível</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn twitch" aria-pressed="false" onclick="sorteioSelecionarFonte('twitch')">
+          <span class="sorteio-source-mark"><img src="twitch.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
+          <span><b>TWITCH</b><small>Evil Guardians · disponível</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn kick" aria-pressed="false" onclick="sorteioSelecionarFonte('kick')">
+          <span class="sorteio-source-mark"><img src="kick_icon.png" alt="" class="sorteio-source-icon" aria-hidden="true"></span>
+          <span><b>KICK</b><small>Evil Guardians · disponível</small></span>
+        </button>
+
+        <button type="button" class="sorteio-source-btn multi" aria-pressed="false" onclick="sorteioSelecionarFonte('multi')">
+          <span class="sorteio-source-mark">⚡</span>
+          <span><b>MULTI STREAM</b><small>YouTube · Twitch · Kick</small></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sorteio-main-grid">
+      <section class="sorteio-wheel-panel tech-corners">
+        <div class="sorteio-panel-head">
+          <div>
+            <small>ROLETA HG</small>
+            <strong>SORTEIO ATUAL</strong>
+          </div>
+
+          <div class="sorteio-panel-head-actions">
+            <button id="sorteioStreamBtn" type="button" class="sorteio-stream-btn" aria-pressed="false" onclick="sorteioAlternarModoStream()" title="Exibir a roleta em modo limpo para OBS/stream">
+              <span aria-hidden="true">◉</span> MODO STREAM
+            </button>
+            <div class="sorteio-participant-counter">
+              <span>PARTICIPANTES</span>
+              <b id="sorteioTotal">0</b>
+              <div id="sorteioPlatformCounters" class="sorteio-platform-counters" hidden>
+                <span class="youtube" title="YouTube"><img src="youtube.png" alt=""><b id="sorteioTotalYoutube">0</b></span>
+                <span class="twitch" title="Twitch"><img src="twitch.png" alt=""><b id="sorteioTotalTwitch">0</b></span>
+                <span class="kick" title="Kick"><img src="kick_icon.png" alt=""><b id="sorteioTotalKick">0</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sorteio-wheel-stage">
+          <div class="sorteio-wheel-frame">
+            <canvas id="sorteioCanvas" width="720" height="720" aria-label="Roleta de participantes"></canvas>
+            <div class="sorteio-wheel-core" aria-hidden="true">
+              <span class="sorteio-wheel-core-glow"></span>
+              <img src="holyguardians_logo.png" alt="" class="sorteio-wheel-logo">
+            </div>
+
+            <span class="sorteio-logo-pointer" aria-hidden="true"></span>
+
+            <div id="sorteioDigitamaReveal" class="sorteio-digitama-reveal" aria-hidden="true">
+              <div class="sorteio-digitama-aura"></div>
+              <img id="sorteioDigitamaFrame" src="features_assets/sorteio/digitama/digitama_00.png" alt="" draggable="false">
+              <div id="sorteioDigitamaSparks" class="sorteio-digitama-sparks"></div>
+              <div id="sorteioDigitamaName" class="sorteio-digitama-name">
+                <span aria-hidden="true">👑</span>
+                <strong></strong>
+              </div>
+            </div>
+
+            <div id="sorteioWinnerBox" class="sorteio-winner-box" aria-live="polite" aria-hidden="true">
+              <small><span class="sorteio-winner-crown" aria-hidden="true">👑</span> VENCEDOR DO SORTEIO</small>
+              <strong id="sorteioWinnerName"></strong>
+              <span id="sorteioWinnerMeta"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sorteio-wheel-actions">
+          <button id="sorteioLockBtn" type="button" class="sorteio-btn secondary" onclick="sorteioAlternarInscricoes()">
+            FECHAR INSCRIÇÕES
+          </button>
+          <button id="sorteioSpinBtn" type="button" class="sorteio-btn primary" onclick="sorteioGirar()" disabled>
+            GIRAR ROLETA
+          </button>
+        </div>
+
+        <div id="sorteioFeedback" class="sorteio-feedback" aria-live="polite"></div>
+      </section>
+
+      <aside class="sorteio-control-column">
+        <section class="sorteio-control-card tech-corners">
+          <div class="sorteio-control-title">
+            <div>
+              <small id="sorteioEntryKicker">ENTRADA MANUAL</small>
+              <div class="sorteio-entry-title-row">
+                <img id="sorteioEntryPlatformIcon" class="sorteio-entry-platform-icon" src="youtube.png" alt="" aria-hidden="true" hidden>
+                <span id="sorteioEntryMultiIcon" class="sorteio-entry-multi-icon" aria-hidden="true" hidden>⚡</span>
+                <strong id="sorteioEntryTitle">PARTICIPANTES</strong>
+              </div>
+            </div>
+            <span id="sorteioEntryState" class="sorteio-entry-badge aberto">ABERTO</span>
+          </div>
+
+          <div id="sorteioManualPanel">
+            <label class="sorteio-field">
+              <span>ADICIONAR UM NOME</span>
+              <div class="sorteio-inline-input">
+                <input id="sorteioNomeInput" type="text" maxlength="80" autocomplete="off" placeholder="Ex: GrimSleep">
+                <button id="sorteioAddBtn" type="button" onclick="sorteioAdicionarNome()">+</button>
+              </div>
+            </label>
+
+            <label class="sorteio-field">
+              <span>COLAR UMA LISTA</span>
+              <textarea id="sorteioListaInput" rows="5" placeholder="Um nome por linha, vírgula ou ponto e vírgula..."></textarea>
+            </label>
+
+            <div class="sorteio-import-actions">
+              <button id="sorteioAddListBtn" type="button" class="sorteio-mini-btn" onclick="sorteioAdicionarLista()">ADICIONAR LISTA</button>
+              <button id="sorteioImportBtn" type="button" class="sorteio-mini-btn ghost" onclick="document.getElementById('sorteioImportFile').click()">IMPORTAR TXT/CSV</button>
+              <input id="sorteioImportFile" type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="sorteioImportarArquivo(this.files && this.files[0])">
+            </div>
+          </div>
+
+          <div id="sorteioYoutubePanel" class="sorteio-live-panel" hidden>
+            <label class="sorteio-field">
+              <span>LINK DA LIVE DO YOUTUBE</span>
+              <input id="sorteioYoutubeUrl" type="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=...">
+            </label>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioLiveCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioYoutubeConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioYoutubeConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioYoutubeDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioYoutubeDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioLiveConnection" class="sorteio-live-connection offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge" aria-hidden="true"><img src="youtube.png" alt=""></span>
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Cole o link de uma live com chat ativo para começar.</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="sorteioTwitchPanel" class="sorteio-live-panel" hidden>
+            <div class="sorteio-twitch-auth-note">
+              <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+              <div>
+                <b>CONEXÃO SEGURA COM A TWITCH</b>
+                <small>O canal usado será a conta que autorizar o Evil Guardians na janela oficial da Twitch.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioTwitchCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioTwitchConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioTwitchConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioTwitchDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioTwitchDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioTwitchConnection" class="sorteio-live-connection twitch offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Autorize a Twitch para ligar seu canal ao sorteio.</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="sorteioKickPanel" class="sorteio-live-panel" hidden>
+            <div class="sorteio-kick-auth-note">
+              <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+              <div>
+                <b>CONEXÃO SEGURA COM A KICK</b>
+                <small>O canal usado será a conta que autorizar o Evil Guardians. Ao conectar e ao abrir o sorteio, ele também avisa no chat.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR</span>
+              <input id="sorteioKickCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-live-actions">
+              <button id="sorteioKickConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioKickConectar()">CONECTAR EVIL GUARDIANS</button>
+              <button id="sorteioKickDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioKickDesconectar()" disabled>DESCONECTAR</button>
+            </div>
+
+            <div id="sorteioKickConnection" class="sorteio-live-connection kick offline" aria-live="polite">
+              <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+              <span class="sorteio-live-dot"></span>
+              <div>
+                <b>EVIL GUARDIANS DESCONECTADO</b>
+                <small>Autorize a Kick para ligar seu canal ao sorteio.</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="sorteioMultiPanel" class="sorteio-live-panel sorteio-multi-panel" hidden>
+            <div class="sorteio-multi-note">
+              <span class="sorteio-multi-bolt" aria-hidden="true">⚡</span>
+              <div>
+                <b>MULTI STREAM // LISTA ÚNICA</b>
+                <small>Conecte quantas plataformas quiser. Todos os <strong>!sorteio</strong> entram na mesma roleta em tempo real.</small>
+              </div>
+            </div>
+
+            <label class="sorteio-field">
+              <span>COMANDO PARA ENTRAR EM TODAS</span>
+              <input id="sorteioMultiCommand" type="text" maxlength="32" value="!sorteio" autocomplete="off" spellcheck="false">
+            </label>
+
+            <div class="sorteio-multi-platform-card youtube">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge" aria-hidden="true"><img src="youtube.png" alt=""></span>
+                <div><b>YOUTUBE</b><small id="sorteioMultiYoutubeStatus">DESCONECTADO</small></div>
+              </div>
+              <label class="sorteio-field compact">
+                <span>LINK DA LIVE</span>
+                <input id="sorteioMultiYoutubeUrl" type="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=...">
+              </label>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiYoutubeConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioYoutubeConectar()">CONECTAR</button>
+                <button id="sorteioMultiYoutubeDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioYoutubeDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-platform-card twitch">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge twitch" aria-hidden="true"><img src="twitch.png" alt=""></span>
+                <div><b>TWITCH</b><small id="sorteioMultiTwitchStatus">DESCONECTADO</small></div>
+              </div>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiTwitchConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioTwitchConectar()">CONECTAR</button>
+                <button id="sorteioMultiTwitchDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioTwitchDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-platform-card kick">
+              <div class="sorteio-multi-platform-head">
+                <span class="sorteio-live-platform-badge kick" aria-hidden="true"><img src="kick_icon.png" alt=""></span>
+                <div><b>KICK</b><small id="sorteioMultiKickStatus">DESCONECTADO</small></div>
+              </div>
+              <div class="sorteio-live-actions">
+                <button id="sorteioMultiKickConnectBtn" type="button" class="sorteio-mini-btn" onclick="sorteioKickConectar()">CONECTAR</button>
+                <button id="sorteioMultiKickDisconnectBtn" type="button" class="sorteio-mini-btn ghost" onclick="sorteioKickDesconectar()" disabled>DESCONECTAR</button>
+              </div>
+            </div>
+
+            <div class="sorteio-multi-summary">
+              <span><b id="sorteioMultiConnectedCount">0</b>/3 PLATAFORMAS CONECTADAS</span>
+              <small>Uma conta pode participar uma vez em cada plataforma.</small>
+            </div>
+          </div>
+
+          <label class="sorteio-check">
+            <input id="sorteioBloquearDuplicados" type="checkbox" checked onchange="sorteioSalvarEstado()">
+            <span class="sorteio-check-ui" aria-hidden="true"></span>
+            <span class="sorteio-check-copy">
+              <b id="sorteioDuplicateTitle">UMA ENTRADA POR NOME</b>
+              <small id="sorteioDuplicateDesc">Ignora duplicados mesmo com maiúsculas/minúsculas diferentes.</small>
+            </span>
+          </label>
+
+          <label class="sorteio-check">
+            <input id="sorteioRemoverVencedor" type="checkbox" checked onchange="sorteioSalvarEstado()">
+            <span class="sorteio-check-ui" aria-hidden="true"></span>
+            <span class="sorteio-check-copy">
+              <b>REMOVER VENCEDOR APÓS SORTEAR</b>
+              <small>Útil para várias rodadas seguidas.</small>
+            </span>
+          </label>
+        </section>
+
+        <section class="sorteio-control-card sorteio-participants-card tech-corners">
+          <div class="sorteio-control-title compact">
+            <div>
+              <small>LISTA ATUAL</small>
+              <strong>PARTICIPANTES VÁLIDOS</strong>
+            </div>
+            <button id="sorteioClearBtn" type="button" class="sorteio-clear-btn" onclick="sorteioLimparParticipantes()">LIMPAR</button>
+          </div>
+
+          <div id="sorteioParticipants" class="sorteio-participants-list">
+            <div class="sorteio-empty-list">
+              <b>NENHUM PARTICIPANTE</b>
+              <span>Adicione nomes para montar a roleta.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sorteio-control-card sorteio-history-card tech-corners">
+          <div class="sorteio-control-title compact">
+            <div>
+              <small>HISTÓRICO LOCAL</small>
+              <strong>ÚLTIMOS VENCEDORES</strong>
+            </div>
+            <button type="button" class="sorteio-clear-btn" onclick="sorteioLimparHistorico()">LIMPAR</button>
+          </div>
+
+          <div id="sorteioHistory" class="sorteio-history-list">
+            <div class="sorteio-empty-history">Nenhum sorteio realizado nesta sessão.</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <button id="sorteioStreamExit" type="button" class="sorteio-stream-exit" onclick="sorteioAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+  </div>
+</section>
+
+<!-- =====================================================
+     COMUNIDADE
+===================================================== -->
+
+<section id="socialPagina" class="pagina">
+  <div class="social-stage">
+
+    <div class="social-content">
+
+      <div class="social-kicker">
+        DIGIMON SUPER RUMBLE COMMUNITY
+      </div>
+
+      <h2 class="social-title-main">
+        NOSSA <span>COMUNIDADE</span>
+      </h2>
+
+      <p class="social-intro">
+        Acompanhe conteúdos, lives e novidades do mundo digital.
+      </p>
+
+      <div class="community-platforms" id="communityPlatforms">
+        <article class="community-platform youtube" data-community-platform="youtube">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('youtube', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialYoutube" alt="YouTube"></span>
+            <span class="social-card-copy"><strong>YouTube</strong><small>Canais e conteúdos da comunidade</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListYoutube" class="community-link-list" hidden></div>
+        </article>
+
+        <article class="community-platform twitch" data-community-platform="twitch">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('twitch', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialTwitch" alt="Twitch"></span>
+            <span class="social-card-copy"><strong>Twitch</strong><small>Lives e transmissões da comunidade</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListTwitch" class="community-link-list" hidden></div>
+        </article>
+
+        <article class="community-platform kick" data-community-platform="kick">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('kick', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img src="kick_icon.png" alt="Kick"></span>
+            <span class="social-card-copy"><strong>Kick</strong><small>Lives e canais parceiros</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListKick" class="community-link-list" hidden></div>
+        </article>
+
+        <article class="community-platform discord" data-community-platform="discord">
+          <button type="button" class="community-platform-trigger" onclick="toggleCommunityPlatform('discord', this)" aria-expanded="false">
+            <span class="community-icon-aura"><img id="socialDiscord" alt="Discord"></span>
+            <span class="social-card-copy"><strong>Discord</strong><small>Servidores e comunidades</small></span>
+            <span class="community-open-label">ABRIR LISTA <b>⌄</b></span>
+          </button>
+          <div id="communityListDiscord" class="community-link-list" hidden></div>
+        </article>
+      </div>
+
+      <aside class="community-wiki-card">
+        <div>
+          <strong>Precisa de guias ou informações detalhadas sobre drops e etc.?</strong>
+          <small>Consulte a DSR Wiki para informações completas do jogo.</small>
+        </div>
+        <a href="https://dsrworldwiki.com/pt/home" target="_blank" rel="noopener noreferrer" aria-label="Abrir DSR Wiki">
+          <span class="community-wiki-aura"><img src="dsr_wiki_icon.png" alt="DSR Wiki"></span>
+          <b>DSR WIKI ↗</b>
+        </a>
+      </aside>
+
+      <aside class="community-wiki-card">
+        <div>
+          <strong>A fim de fazer parte da maior comunidade BR de Digimon Super Rumble? Junte-se já.</strong>
+          <small>Entre no Discord da CODEBR e faça parte da comunidade.</small>
+        </div>
+        <a href="https://discord.gg/jXSaAwj56" target="_blank" rel="noopener noreferrer" aria-label="Entrar no Discord da CODEBR">
+          <span class="community-wiki-aura"><img src="code_icon.png" alt="CODEBR"></span>
+          <b>ENTRAR NO DISCORD ↗</b>
+        </a>
+      </aside>
+
+      <aside class="community-wiki-card community-alo-card">
+        <div>
+          <strong>Faça parte da comunidade Alo Tamers! Se junte já</strong>
+          <small>Entre no Discord da Alo Tamers e faça parte da comunidade.</small>
+        </div>
+        <a href="https://discord.gg/HxfsjHySx" target="_blank" rel="noopener noreferrer" aria-label="Entrar no Discord da Alo Tamers">
+          <span class="community-wiki-aura community-alo-logo">
+            <img src="alo_tamers_icon.png" alt="Alo Tamers">
+          </span>
+          <b>ENTRAR NO DISCORD ↗</b>
+        </a>
+      </aside>
+    </div>
+
+    <div class="social-art-wrap" aria-hidden="true">
+      <div class="social-art-glow"></div>
+      <img id="socialMikomode" class="social-mikomode" alt="">
+    </div>
+
+  </div>
+</section>
+
+<div id="loading">
+  Carregando Holy Guardians...
+</div>
+
+
+<div id="hgImpmonLive" class="hg-impmon-live" hidden aria-live="polite">
+  <button
+    id="hgImpmonLiveToggle"
+    class="hg-impmon-live-toggle"
+    type="button"
+    aria-label="Minimizar aviso de lives"
+    title="Minimizar"
+    aria-expanded="true"
+    onclick="hgAlternarImpmonLive(event)"
+  ><span aria-hidden="true">‹</span></button>
+  <div id="hgImpmonLiveCard" class="hg-impmon-live-card">
+    <div class="hg-impmon-runner" aria-hidden="true"></div>
+    <div class="hg-impmon-sign">
+      <small id="hgImpmonLiveStatus">🔴 AO VIVO AGORA</small>
+      <div id="hgImpmonLiveNames">STREAMERS HG</div>
+      <span id="hgImpmonLiveHint">CLIQUE PARA ASSISTIR</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="locales/pt-BR.js?v=20260823-i18n-v1"></script>
+<script src="locales/en-US.js?v=20260823-i18n-v1"></script>
+<script src="locales/ko-KR.js?v=20260823-i18n-v1"></script>
+<script src="i18n.js?v=20260823-i18n-v1"></script>
+<script src="hidden_quests_data.js?v=20260823-v1"></script>
+<script src="script.js?v=20260823-i18n-v1"></script>
+</body>
+</html>
