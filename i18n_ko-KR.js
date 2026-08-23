@@ -122,7 +122,6 @@ window.HG_I18N["ko-KR"] = {
   "hidden.alertAria": "중요 안내",
   "hidden.filterAria": "지역별 필터",
   "hidden.regionAll": "전체 지역",
-
   "digidex.subtitle": "Holy Guardians 데이터베이스의 디지몬 정보를 확인하세요.",
   "digidex.viewAria": "보기 방식",
   "digidex.cardView": "▦ 카드 보기",
@@ -130,14 +129,14 @@ window.HG_I18N["ko-KR"] = {
   "digidex.databaseOnline": "데이터베이스 온라인",
   "digidex.typeFilterAria": "타입 (Type)으로 필터",
   "digidex.allTypesTitle": "모든 타입 (Type)",
-  "digidex.stageFilterAria": "Stage로 필터 — 여러 항목 선택 가능",
+  "digidex.stageFilterAria": "진화 단계 (Stage)로 필터 — 여러 항목 선택 가능",
   "digidex.all": "전체",
   "digidex.searchPlaceholder": "디지몬 검색...",
-  "digidex.skillElement": "스킬 (Skill) 속성",
+  "digidex.skillElement": "스킬 속성 (Skill Element)",
   "digidex.searchIn": "검색 대상",
-  "digidex.effectType": "효과 유형",
+  "digidex.effectType": "스킬 효과 (Skill Effect)",
   "digidex.effectKind": "효과 종류",
-  "digidex.statusEffect": "상태 이상",
+  "digidex.statusEffect": "상태 이상 (Status Effect)",
   "digidex.specificEffect": "세부 상태 이상",
   "digidex.sortResults": "결과 정렬",
   "digidex.sort.alpha": "이름순",
@@ -253,22 +252,70 @@ window.HG_I18N["ko-KR"] = {
   "counter.reason.backMelee": "대상이 BACK: Front가 남아 있으면 이 후보는 Melee Skills에 의존합니다",
   "counter.reason.backRanged": "대상이 BACK: back line에 닿는 Ranged 옵션이 있습니다",
   "__referenceLabels": {
-    "TYPE": {"ko":"타입","ref":"Type"},
-    "SKILL": {"ko":"스킬","ref":"Skill"},
-    "NO": {"ko":"없음","ref":"NO"},
-    "FIELD": {"ko":"필드","ref":"Field"},
-    "STRONG": {"ko":"유리","ref":"Strong"},
-    "WEAK": {"ko":"불리","ref":"Weak"},
-    "DEF BREAK": {"ko":"방어력 감소","ref":"DEF BREAK"},
-    "CC": {"ko":"군중 제어","ref":"CC · Crowd Control"},
-    "DOT": {"ko":"지속 피해","ref":"DoT · Damage over Time"},
-    "HP": {"ko":"체력","ref":"HP · Health"},
-    "SP": {"ko":"스태미나","ref":"SP · Stamina"},
-    "STR": {"ko":"힘","ref":"STR · Strong"},
-    "INT": {"ko":"지능","ref":"INT · Intelligence"},
-    "DEF": {"ko":"방어력","ref":"DEF · Defense"},
-    "RES": {"ko":"저항","ref":"RES · Resistance"},
-    "SPD": {"ko":"속도","ref":"SPD · Speed"}
+    "TYPE": {
+      "ko": "타입",
+      "ref": "Type"
+    },
+    "SKILL": {
+      "ko": "스킬",
+      "ref": "Skill"
+    },
+    "NO": {
+      "ko": "없음",
+      "ref": "NO"
+    },
+    "FIELD": {
+      "ko": "필드",
+      "ref": "Field"
+    },
+    "STRONG": {
+      "ko": "유리",
+      "ref": "Strong"
+    },
+    "WEAK": {
+      "ko": "불리",
+      "ref": "Weak"
+    },
+    "DEF BREAK": {
+      "ko": "방어력 감소",
+      "ref": "DEF BREAK"
+    },
+    "CC": {
+      "ko": "군중 제어",
+      "ref": "CC · Crowd Control"
+    },
+    "DOT": {
+      "ko": "지속 피해",
+      "ref": "DoT · Damage over Time"
+    },
+    "HP": {
+      "ko": "체력",
+      "ref": "HP · Health"
+    },
+    "SP": {
+      "ko": "스태미나",
+      "ref": "SP · Stamina"
+    },
+    "STR": {
+      "ko": "힘",
+      "ref": "STR · Strong"
+    },
+    "INT": {
+      "ko": "지능",
+      "ref": "INT · Intelligence"
+    },
+    "DEF": {
+      "ko": "방어력",
+      "ref": "DEF · Defense"
+    },
+    "RES": {
+      "ko": "저항",
+      "ref": "RES · Resistance"
+    },
+    "SPD": {
+      "ko": "속도",
+      "ref": "SPD · Speed"
+    }
   },
   "__hiddenQuests": {
     "intro": [
@@ -590,6 +637,578 @@ window.HG_I18N["ko-KR"] = {
           "영상 가이드"
         ]
       }
+    }
+  },
+  "digidex.stageLabel": "진화 단계 (Stage)",
+  "digidex.fieldFilter": "필드 (Field)",
+  "__digimonNames": {
+    "Agumon": "아구몬",
+    "Agumon(S)": "아구몬(S)",
+    "Agumon(S):Burstmode": "아구몬(S):버스트모드",
+    "Armadillomon": "아르마몬",
+    "Betamon": "베타몬",
+    "Biyomon": "피요몬",
+    "Candlemon": "캔들몬",
+    "Chuumon": "츄몬",
+    "Crabmon": "크랩몬",
+    "Demidevimon": "피코데블몬",
+    "Dorumon": "돌몬",
+    "Dracmon": "드라큐몬",
+    "Dracomon": "드라코몬",
+    "Elecmon": "에렉몬",
+    "Elecmon(Violet)": "에렉몬(보라)",
+    "Falcomon": "팔코몬",
+    "Floramon": "플로라몬",
+    "Funbeemon": "아기벌몬",
+    "Gabumon": "파피몬",
+    "Gaomon": "가오몬",
+    "Gazimon": "가지몬",
+    "Gizamon": "기자몬",
+    "Goblimon": "고부리몬",
+    "Gomamon": "쉬라몬",
+    "Gotsumon": "울퉁몬",
+    "Guilmon": "길몬",
+    "Hagurumon": "톱니몬",
+    "Hawkmon": "호크몬",
+    "Impmon": "임프몬",
+    "Keramon": "케라몬",
+    "Kokuwamon": "코쿠와몬",
+    "Kotemon": "코테몬",
+    "Kudamon": "쿠다몬",
+    "Kunemon": "쿠네몬",
+    "Lopmon": "로프몬",
+    "Lopmon(White)": "로프몬(화이트)",
+    "Monmon": "코에몬",
+    "Monodramon": "모노드라몬",
+    "Mushroomon": "머슈몬",
+    "Otamamon": "올챙몬",
+    "Palmon": "팔몬",
+    "Patamon": "파닥몬",
+    "Penmon": "펭귄몬",
+    "Pomumon": "포무몬",
+    "Renamon": "레나몬",
+    "Salamon": "플롯트몬",
+    "Shakomon": "샤코몬",
+    "Solarmon": "황금톱니몬",
+    "Soundbirdmon": "사운드버드몬",
+    "Sunarizamon": "샌드리자몬",
+    "Tapirmon": "테이파몬",
+    "Tentomon": "텐타몬",
+    "Terriermon": "테리어몬",
+    "Toyagumon": "토이아구몬",
+    "Toyagumon_Black": "토이아구몬(흑)",
+    "Veemon": "브이몬",
+    "Wormmon": "추추몬",
+    "Airdramon": "에어드라몬",
+    "Angemon": "엔젤몬",
+    "Ankylomon": "황금아르마몬",
+    "Apemon": "에이프몬",
+    "Aquilamon": "아큐라몬",
+    "Bakemon": "고스몬",
+    "Birdramon": "버드라몬",
+    "Bladekuwagamon": "블레이드쿠가몬",
+    "Centarumon": "켄터스몬",
+    "Clockmon": "타임몬",
+    "Coelamon": "씨라몬",
+    "Coredramon(Green)": "코어드라몬(녹)",
+    "Darklizamon": "다크리자몬",
+    "Darktyrannomon": "다크티라노몬",
+    "Deltamon": "델타몬",
+    "Deputymon": "카우보이몬",
+    "Devidramon": "데블드라몬",
+    "Devimon": "데블몬",
+    "Dokugumon": "스파이더몬",
+    "Dolphmon": "돌핀몬",
+    "Dorugamon": "돌가몬",
+    "Drimogemon": "두리몬",
+    "Ebidramon": "에비드라몬",
+    "Exveemon": "엑스브이몬",
+    "Eyesmon": "아이즈몬",
+    "Eyesmon:Scattermode": "아이즈몬:스캐터모드",
+    "Flarelizamon": "화염리자몬",
+    "Flymon": "플라이몬",
+    "Frigimon": "프리지몬",
+    "Gaogamon": "가오가몬",
+    "Gargomon": "가르고몬",
+    "Garurumon": "가루몬",
+    "Gatomon": "가트몬",
+    "Gekomon": "개굴몬",
+    "Geogreymon": "지오그레이몬",
+    "Gesomon": "연체몬",
+    "Golemon": "록몬",
+    "Gorillamon": "고릴라몬",
+    "Greymon": "그레이몬",
+    "Growlmon": "그라우몬",
+    "Guardromon": "가드로몬",
+    "Icemon": "아이스몬",
+    "Ikkakumon": "원뿔몬",
+    "Kabuterimon": "캅테리몬",
+    "Kiwimon": "키위몬",
+    "Kokatorimon": "꼬끼몬",
+    "Kurisarimon": "크리사리몬",
+    "Kuwagamon": "쿠가몬",
+    "Kyubimon": "구미호몬",
+    "Leomon": "레오몬",
+    "Madleomon": "매드레오몬",
+    "Mechanorimon": "메카노몬",
+    "Meramon": "메라몬",
+    "Minotaurmon": "미노타르몬",
+    "Mojyamon": "모털몬",
+    "Monochromon": "모노크로몬",
+    "Musyamon": "무사몬",
+    "Nanimon": "모야몬",
+    "Ninjamon": "닌자몬",
+    "Numemon": "워매몬",
+    "Octomon": "옥토몬",
+    "Opossummon": "토토몬",
+    "Orgemon": "우가몬",
+    "Peckmon": "펙크몬",
+    "Raptordramon": "라프타드라몬",
+    "Raremon": "레어몬",
+    "Redvegiemon": "레드베지몬",
+    "Reppamon": "레파몬",
+    "Roachmon": "로오치몬",
+    "Sangloupmon": "상굴몬",
+    "Seadramon": "시드라몬",
+    "Shellmon": "쉘몬",
+    "Snimon": "스나이몬",
+    "Soulmon": "소울몬",
+    "Starmon": "스타몬",
+    "Stingmon": "스팅몬",
+    "Strikedramon": "스트라이크드라몬",
+    "Sukamon": "스카몬",
+    "Sunflowmon": "해바라기몬",
+    "Tankmon": "탱크몬",
+    "Thundermon": "번개콩알몬",
+    "Togemon": "니드몬",
+    "Tortomon": "토타몬",
+    "Turuiemon": "토리에몬",
+    "Tuskmon": "태스크몬",
+    "Tyrannomon": "티라노몬",
+    "Unimon": "유니몬",
+    "Veedramon": "브이드라몬",
+    "Vegiemon": "베지몬",
+    "Vilemon": "이블몬",
+    "Waspmon": "말벌몬",
+    "Wendigomon": "웬디몬",
+    "Wizardmon": "위자몬",
+    "Woodmon": "우드몬",
+    "Youkomon": "요우코몬",
+    "Aeroveedramon": "에어로브이드라몬",
+    "Andromon": "안드로몬",
+    "Angewomon": "엔젤우몬",
+    "Antylamon": "안티라몬",
+    "Antylamon(Deva)": "안티라몬(데바)",
+    "Arukenimon": "아라크네몬",
+    "Astamon": "아스타몬",
+    "Asuramon": "아수라몬",
+    "Baalmon": "바알몬",
+    "Bigmamemon": "빅콩알몬",
+    "Blossomon": "브롯사몬",
+    "Bluemeramon": "블루메라몬",
+    "Cannonbeemon": "캐논벌몬",
+    "Cherrymon": "쥬레이몬",
+    "Chirinmon": "치린몬",
+    "Chohakkaimon": "초핫카이몬",
+    "Crowmon": "야타가라몬",
+    "Cyberdramon": "사이버드라몬",
+    "Datamon": "데이터몬",
+    "Deramon": "뿌띠몬",
+    "Digitamamon": "디지타몬",
+    "Divermon": "다이버몬",
+    "Doumon": "도우몬",
+    "Dragomon": "드라고몬",
+    "Etemon": "에테몬",
+    "Garbagemon": "가비지몬",
+    "Garudamon": "가루다몬",
+    "Gigadramon": "기가드라몬",
+    "Giromon": "폭탄몬",
+    "Gogmamon": "고그마몬",
+    "Grademon": "그레이드몬",
+    "Groundramon": "그라운드라몬",
+    "Hippogryphonmon": "히포그리포몬",
+    "Iceleomon": "화이트레오몬",
+    "Infermon": "인펠몬",
+    "Jokermon": "조커몬",
+    "Karatenmon": "크로우몬",
+    "Kimeramon": "키메라몬",
+    "Knightmon": "나이트몬",
+    "Ladydevimon": "레이디데블몬",
+    "Lilamon": "라일라몬",
+    "Lillymon": "릴리몬",
+    "Loaderleomon": "로더레오몬",
+    "Machgaogamon": "마하가오가몬",
+    "Magnaangemon": "홀리엔젤몬",
+    "Magnaangemon:Priestmode": "홀리엔젤몬:신관형태",
+    "Makuramon": "마구라몬",
+    "Mamemon": "콩알몬",
+    "Mammothmon": "맘몬",
+    "Marindevimon": "마린데블몬",
+    "Mastertyrannomon": "마스터티라노몬",
+    "Megadramon": "메가드라몬",
+    "Megakabuterimon": "아트라캅테리몬",
+    "Megaseadramon": "메가시드라몬",
+    "Mephistomon": "메피스몬",
+    "Metalgreymon": "메탈그레이몬",
+    "Metalgreymon:Alterous Mode": "메탈그레이몬:알타라우스모드",
+    "Metalgreymon:Virus": "메탈그레이몬(바이러스)",
+    "Metalmamemon": "메탈콩알몬",
+    "Metalphantomon": "메탈팬텀몬",
+    "Metaltyrannomon": "메탈티라노몬",
+    "Meteormon": "운석몬",
+    "Mistymon": "미스티몬",
+    "Monzaemon": "퍼펫몬",
+    "Mummymon": "미이라몬",
+    "Myotismon": "묘티스몬",
+    "Neodevimon": "네오데블몬",
+    "Okuwamon": "오쿠와몬",
+    "Orochimon": "오로치몬",
+    "Paildramon": "파일드라몬",
+    "Parrotmon": "패롯몬",
+    "Phantomon": "팬텀몬",
+    "Piximon": "피콜몬",
+    "Pumpkinmon": "펌프몬",
+    "Rapidmon": "래피드몬",
+    "Rebellimon": "리벨리몬",
+    "Rizegreymon": "라이즈그레이몬",
+    "Scorpiomon": "스콜피온몬",
+    "Shakkoumon": "토우몬",
+    "Shogungekomon": "왕개굴몬",
+    "Silphymon": "실피드몬",
+    "Skullgreymon": "스컬그레이몬",
+    "Skullmeramon": "데드메라몬",
+    "Skullsatamon": "스컬사탄몬",
+    "Skullscorpiomon": "전갈몬",
+    "Superstarmon": "슈퍼스타몬",
+    "Taomon": "도사몬",
+    "Triceramon": "트리케라몬",
+    "Vademon": "베이더몬",
+    "Volcanomon": "볼케몬",
+    "Wargrowlmon": "메가로그라우몬",
+    "Warumonzaemon": "배드퍼펫몬",
+    "Weregarurumon": "워가루몬",
+    "Weregarurumon:Sagittariusmode": "워가루몬:사지타리우스모드",
+    "Whamon": "고래몬",
+    "Zudomon": "쥬드몬",
+    "Agumon_Kizuna": "아구몬-용기의유대-",
+    "Apocalymon": "아포카리몬",
+    "Armageddemon": "아마게몬",
+    "Azulongmon": "청룡몬",
+    "Babamon": "할매몬",
+    "Baihumon": "백호몬",
+    "Bancholeomon": "반쵸레오몬",
+    "Bancholeomon:Burstmode": "반쵸레오몬:버스트모드",
+    "Banchomamemon": "반쵸콩알몬",
+    "Beelzemon": "베르제브몬",
+    "Beelzemon-Xwars": "베르제브몬(C)",
+    "Beelzemon:Blastmode": "베르제브몬:블래스트모드",
+    "Belphemon:Ragemode": "벨페몬:레이지모드",
+    "Belphemon:Sleepmode": "벨페몬:슬립모드",
+    "Blackseraphimon": "블랙세라피몬",
+    "Blackwargreymon": "블랙워그레이몬",
+    "Blastmon": "블래스트몬",
+    "Blitzgreymon": "블리츠그레이몬",
+    "Bloomlordmon": "블룸로드몬",
+    "Breakdramon": "브레이크드라몬",
+    "Cherubimon(Black)": "케루비몬(악)",
+    "Cherubimon(Good)": "케루비몬(선)",
+    "Clavisangemon": "클라비스엔젤몬",
+    "Craniamon": "크레니엄몬",
+    "Creepymon": "마왕몬",
+    "Cresgarurumon": "크레스가루몬",
+    "Diaboromon": "디아블로몬",
+    "Donedevimon": "던데블몬",
+    "Dynasmon": "듀나스몬",
+    "Eaglemon": "크로스몬",
+    "Ebemon": "이바몬",
+    "Ebonwumon": "현무몬",
+    "Examon": "엑자몬",
+    "Fanglongmon": "황룡몬",
+    "Gabumon_Kizuna": "파피몬-우정의유대-",
+    "Gaiomon": "가이오몬",
+    "Gallantmon": "듀크몬",
+    "Gallantmon:Crimsonmode": "듀크몬:크림슨모드",
+    "Ghoulmon": "데스몬",
+    "Goldramon": "갓드라몬",
+    "Grandiskuwagamon": "그랑디스쿠가몬",
+    "Grankuwagamon": "그랜쿠가몬",
+    "Gryphonmon": "그리포몬",
+    "Gulfmon": "가르프몬",
+    "Herculeskabuterimon": "헤라클레스캅테리몬",
+    "Himachinedramon": "하이파워드라몬",
+    "Imperialdramon:Dragonmode": "황제드라몬:드래곤모드",
+    "Imperialdramon:Dragonmode(Infected)": "황제드라몬:드래곤모드(감염)",
+    "Imperialdramon:Fightermode": "황제드라몬:파이터모드",
+    "Imperialdramon:Paladinmode": "황제드라몬:팔라딘모드",
+    "Justimon_Accelarm": "저스티몬:액셀암",
+    "Justimon_Blitzarm": "저스티몬:블리츠암",
+    "Justimon_Criticalarm": "저스티몬:크리티컬암",
+    "Kentaurosmon": "슬레이프몬",
+    "Kingwhamon": "킹고래몬",
+    "Kuzuhamon": "쿠즈하몬",
+    "Kuzuhamon:Maidmode": "쿠즈하몬:무녀모드",
+    "Leopardmon": "두프트몬",
+    "Leviamon": "리바이어몬",
+    "Lilithmon": "리리스몬",
+    "Lordknightmon": "로드나이트몬",
+    "Machinedramon": "파워드라몬",
+    "Machinedramonkai": "파워드라몬改",
+    "Magnadramon": "홀리드라몬",
+    "Malomyotismon": "베리얼묘티스몬",
+    "Marineangemon": "마린엔젤몬",
+    "Marsmon": "마르스몬",
+    "Mastemon": "마스테몬",
+    "Megagargomon": "세인트가르고몬",
+    "Megidramon": "메기드라몬",
+    "Metaletemon": "메탈에테몬",
+    "Metalgarurumon": "메탈가루몬",
+    "Metalseadramon": "메탈시드라몬",
+    "Millenniumon": "밀레니엄몬",
+    "Miragegaogamon": "미라쥬가오가몬",
+    "Miragegaogamon:Burstmode": "미라쥬가오가몬:버스트모드",
+    "Moonmillenniumon": "문밀레니엄몬",
+    "Neomyotismon": "네오반데몬",
+    "Neptunemon": "넵튠몬",
+    "Omnimon": "오메가몬",
+    "Omnimon:Mercifulmode": "오메가몬:머시풀모드",
+    "Omnimon_Alter-S": "오메가몬Alter-S",
+    "Ophanimon": "오파니몬",
+    "Ophanimon:Falldownmode": "오파니몬:폴다운모드",
+    "Parasimon": "파라사이몬",
+    "Pharaohmon": "파라오몬",
+    "Phoenixmon": "페닉스몬",
+    "Piedmon": "피에몬",
+    "Plesiomon": "프레시오몬",
+    "Pukumon": "푸쿠몬",
+    "Puppetmon": "피노키몬",
+    "Ravemon": "레이브몬",
+    "Ravemon:Burstmode": "레이브몬:버스트모드",
+    "Reapermon": "고크몬",
+    "Rosemon": "로제몬",
+    "Rosemon:Burstmode": "로제몬:버스트모드",
+    "Saberleomon": "샤벨레오몬",
+    "Sakuyamon": "샤크라몬",
+    "Seraphimon": "세라피몬",
+    "Shinegreymon": "샤인그레이몬",
+    "Shinegreymon:Burstmode": "샤인그레이몬:버스트모드",
+    "Shinegreymon:Ruinmode": "샤인그레이몬:루인모드",
+    "Skullmammothmon": "스컬맘몬",
+    "Slashangemon": "슬래쉬엔젤몬",
+    "Tigervespamon": "타이거베스파몬",
+    "Titamon": "타이타몬",
+    "Ulforceveedramon": "알포스브이드라몬",
+    "Valkyrimon": "발키리몬",
+    "Varodurumon": "발두르몬",
+    "Venommyotismon": "베놈묘티스몬",
+    "Vikemon": "바이킹몬",
+    "Wargreymon": "워그레이몬",
+    "Zanbamon": "황금무사몬",
+    "Zeedmillenniumon": "지드밀레니엄몬",
+    "Zhuqiaomon": "주작몬"
+  },
+  "__stages": {
+    "ROOKIE": {
+      "ko": "성장기",
+      "ref": "Rookie"
+    },
+    "CHAMPION": {
+      "ko": "성숙기",
+      "ref": "Champion"
+    },
+    "ULTIMATE": {
+      "ko": "완전체",
+      "ref": "Ultimate"
+    },
+    "MEGA": {
+      "ko": "궁극체",
+      "ref": "Mega"
+    },
+    "ALL": {
+      "ko": "전체",
+      "ref": "All"
+    }
+  },
+  "__elements": {
+    "IRON": {
+      "ko": "강철",
+      "ref": "Iron"
+    },
+    "STEEL": {
+      "ko": "강철",
+      "ref": "Steel"
+    },
+    "WOOD": {
+      "ko": "나무",
+      "ref": "Wood"
+    },
+    "EARTH": {
+      "ko": "흙",
+      "ref": "Earth"
+    },
+    "WATER": {
+      "ko": "물",
+      "ref": "Water"
+    },
+    "PHYSICAL": {
+      "ko": "물리",
+      "ref": "Physical"
+    },
+    "WIND": {
+      "ko": "바람",
+      "ref": "Wind"
+    },
+    "FIRE": {
+      "ko": "불",
+      "ref": "Fire"
+    },
+    "LIGHT": {
+      "ko": "빛",
+      "ref": "Light"
+    },
+    "DARK": {
+      "ko": "어둠",
+      "ref": "Dark"
+    },
+    "DARKNESS": {
+      "ko": "어둠",
+      "ref": "Darkness"
+    },
+    "ICE": {
+      "ko": "얼음",
+      "ref": "Ice"
+    },
+    "THUNDER": {
+      "ko": "천둥",
+      "ref": "Thunder"
+    }
+  },
+  "__relationEffects": {
+    "RESISTANCE": {
+      "ko": "내성",
+      "ref": "Resistance",
+      "desc": "이 속성 공격으로 받는 피해가 25% 감소합니다."
+    },
+    "EVASION": {
+      "ko": "회피",
+      "ref": "Evasion",
+      "desc": "이 속성 공격에 대한 회피율이 2배로 적용됩니다."
+    },
+    "REFLECTION": {
+      "ko": "반사",
+      "ref": "Reflection",
+      "desc": "이 속성 공격을 받으면 받은 피해의 25%를 되돌려 줍니다."
+    },
+    "REFLECT": {
+      "ko": "반사",
+      "ref": "Reflection",
+      "desc": "이 속성 공격을 받으면 받은 피해의 25%를 되돌려 줍니다."
+    },
+    "WEAKNESS": {
+      "ko": "약점",
+      "ref": "Weakness",
+      "desc": "이 속성 공격으로 받는 피해가 25% 증가합니다."
+    },
+    "CANNOT EVADE": {
+      "ko": "회피 불가",
+      "ref": "Cannot Evade",
+      "desc": "이 속성 공격은 회피할 수 없습니다."
+    },
+    "UNAVOIDABLE": {
+      "ko": "회피 불가",
+      "ref": "Cannot Evade",
+      "desc": "이 속성 공격은 회피할 수 없습니다."
+    },
+    "EFFECT PROBABILITY": {
+      "ko": "효과 확률",
+      "ref": "Effect Probability",
+      "desc": "이 속성 공격에 효과가 있으면 해당 효과에 걸릴 확률이 증가합니다."
+    },
+    "EFFECT CHANCE": {
+      "ko": "효과 확률",
+      "ref": "Effect Probability",
+      "desc": "이 속성 공격에 효과가 있으면 해당 효과에 걸릴 확률이 증가합니다."
+    }
+  },
+  "__statusEffects": {
+    "STUN": {
+      "ko": "스턴",
+      "ref": "Stun"
+    },
+    "FREEZE": {
+      "ko": "빙결",
+      "ref": "Freeze"
+    },
+    "PETRIFY": {
+      "ko": "석화",
+      "ref": "Petrify"
+    },
+    "CHARM": {
+      "ko": "매료",
+      "ref": "Charm"
+    },
+    "CONFUSION": {
+      "ko": "혼란",
+      "ref": "Confusion"
+    },
+    "SLEEP": {
+      "ko": "영원한 잠",
+      "ref": "Sleep"
+    },
+    "PARALYSIS": {
+      "ko": "마비",
+      "ref": "Paralysis"
+    },
+    "SILENCE": {
+      "ko": "침묵",
+      "ref": "Silence"
+    },
+    "SEAL": {
+      "ko": "봉인",
+      "ref": "Seal"
+    },
+    "PRESSURE": {
+      "ko": "중압",
+      "ref": "Pressure"
+    },
+    "VACUUM": {
+      "ko": "진공",
+      "ref": "Vacuum"
+    },
+    "ISOLATION": {
+      "ko": "격리",
+      "ref": "Isolation"
+    },
+    "PANIC": {
+      "ko": "공황",
+      "ref": "Panic"
+    },
+    "METALLIZATION": {
+      "ko": "금속화",
+      "ref": "Metallization"
+    },
+    "PUPPET": {
+      "ko": "꼭두각시",
+      "ref": "Puppet"
+    },
+    "SUBMERGE": {
+      "ko": "침잠",
+      "ref": "Submerge"
+    },
+    "SNIPER": {
+      "ko": "스나이퍼 미사일",
+      "ref": "Sniper Missile"
+    },
+    "BIND": {
+      "ko": "속박",
+      "ref": "Bind"
+    },
+    "BLIND": {
+      "ko": "실명",
+      "ref": "Blind"
+    },
+    "FEAR": {
+      "ko": "공포",
+      "ref": "Fear"
     }
   }
 };

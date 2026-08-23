@@ -164,6 +164,178 @@
     setText(element, currentLanguage === "ko-KR" ? "없음 (NO)" : "NO");
   }
 
+
+  function koDataMap(name) {
+    return dictionary("ko-KR")[name] || {};
+  }
+
+  function koStageData(value) {
+    return koDataMap("__stages")[String(value || "").trim().toUpperCase()] || null;
+  }
+
+  function koElementData(value) {
+    return koDataMap("__elements")[String(value || "").trim().toUpperCase()] || null;
+  }
+
+  function koRelationEffectData(value) {
+    return koDataMap("__relationEffects")[String(value || "").replace(/\s+/g, " ").trim().toUpperCase()] || null;
+  }
+
+  function koStatusEffectData(value) {
+    return koDataMap("__statusEffects")[String(value || "").trim().toUpperCase()] || null;
+  }
+
+  function koDigimonName(value) {
+    var raw = String(value || "").trim();
+    return koDataMap("__digimonNames")[raw] || "";
+  }
+
+  function koReferenceInline(info) {
+    if (!info) return "";
+    return escapeHtml(info.ko) + ' <small class="hg-ko-inline-ref">(' + escapeHtml(info.ref) + ')</small>';
+  }
+
+  function applyKoreanStageLabel(element, stage) {
+    if (!element) return;
+    var original = String(stage || element.getAttribute("data-hg-stage-original") || element.textContent || "").trim();
+    if (!element.getAttribute("data-hg-stage-original")) element.setAttribute("data-hg-stage-original", original);
+    var info = koStageData(original);
+    if (currentLanguage === "ko-KR" && info) {
+      if (String(element.tagName || "").toUpperCase() === "OPTION") setText(element, info.ko + " (" + info.ref + ")");
+      else setHtml(element, koReferenceInline(info));
+    } else setText(element, original);
+  }
+
+  function applyKoreanDigimonName(element) {
+    if (!element) return;
+    var original = element.getAttribute("data-hg-digimon-original") || String(element.textContent || "").replace(/\s+/g, " ").trim();
+    if (!original || original === "-") return;
+    if (!element.getAttribute("data-hg-digimon-original")) element.setAttribute("data-hg-digimon-original", original);
+    var translated = koDigimonName(original);
+    if (currentLanguage === "ko-KR" && translated) {
+      element.classList.add("hg-ko-digimon-name-host");
+      setHtml(element, '<span class="hg-ko-digimon-name">' + escapeHtml(translated) + '</span><small class="hg-ko-digimon-name-ref">(' + escapeHtml(original) + ')</small>');
+    } else {
+      element.classList.remove("hg-ko-digimon-name-host");
+      setText(element, original);
+    }
+  }
+
+  function applyKoreanDigimonNames() {
+    var root = document.getElementById("databasePagina");
+    if (root) {
+      all(".card .card-name, .digidex-table-name strong, .digidex-profile-identity h2, .digidex-profile-breadcrumb button, .digidex-evo-node-copy > strong", root).forEach(applyKoreanDigimonName);
+    }
+    var counter = document.getElementById("counterFinderPagina");
+    if (counter) {
+      all(".counter-finder-suggestion b, .counter-finder-target-copy h3, .counter-finder-result-ident h3", counter).forEach(applyKoreanDigimonName);
+    }
+    var tooltip = document.getElementById("counterFinderDigiTooltip");
+    if (tooltip && !tooltip.hidden) all(".counter-finder-tooltip-head > div > strong", tooltip).forEach(applyKoreanDigimonName);
+  }
+
+  function applyKoreanRelationTooltips(root) {
+    all(".hg-relation-tooltip", root || document).forEach(function (tooltip) {
+      var elementEl = one(".hg-relation-tooltip-head small", tooltip);
+      var effectEl = one(".hg-relation-tooltip-head strong", tooltip);
+      var copyEl = one(".hg-relation-tooltip-copy", tooltip);
+      if (!elementEl || !effectEl) return;
+
+      var originalElement = elementEl.getAttribute("data-hg-original") || String(elementEl.textContent || "").trim();
+      var originalEffect = effectEl.getAttribute("data-hg-original") || String(effectEl.textContent || "").trim();
+      if (!elementEl.getAttribute("data-hg-original")) elementEl.setAttribute("data-hg-original", originalElement);
+      if (!effectEl.getAttribute("data-hg-original")) effectEl.setAttribute("data-hg-original", originalEffect);
+      var originalCopy = copyEl ? (copyEl.getAttribute("data-hg-original") || String(copyEl.textContent || "").trim()) : "";
+      if (copyEl && !copyEl.getAttribute("data-hg-original")) copyEl.setAttribute("data-hg-original", originalCopy);
+
+      if (currentLanguage === "ko-KR") {
+        var elementInfo = koElementData(originalElement);
+        var effectInfo = koRelationEffectData(originalEffect);
+        if (elementInfo) setHtml(elementEl, koReferenceInline(elementInfo));
+        if (effectInfo) {
+          setHtml(effectEl, koReferenceInline(effectInfo));
+          if (copyEl) setText(copyEl, effectInfo.desc || originalCopy);
+        }
+      } else {
+        setText(elementEl, originalElement);
+        setText(effectEl, originalEffect);
+        if (copyEl) setText(copyEl, originalCopy);
+      }
+    });
+  }
+
+  function applyKoreanDigidexFilters() {
+    var root = document.getElementById("databasePagina");
+    if (!root) return;
+
+    var stageLabel = one(".stage-filter-label", root);
+    if (stageLabel) setText(stageLabel, currentLanguage === "ko-KR" ? translate("digidex.stageLabel", "진화 단계 (Stage)") : "STAGE");
+    all(".stage-filter-btn[data-stage] strong", root).forEach(function (el) {
+      var btn = el.closest(".stage-filter-btn");
+      var stage = btn ? (btn.getAttribute("data-stage") || "ALL") : "";
+      if (stage) applyKoreanStageLabel(el, stage);
+    });
+
+    var fieldSummary = one("#filtroField summary > span:first-child", root);
+    if (fieldSummary) setText(fieldSummary, currentLanguage === "ko-KR" ? translate("digidex.fieldFilter", "필드 (Field)") : "FIELD");
+
+    all("#filtroEfeito .digidex-effect-item", root).forEach(function (label) {
+      var input = one("input.digidex-effect-check", label);
+      var visible = all(":scope > span", label).slice(-1)[0];
+      if (!input || !visible) return;
+      var key = String(input.value || "").toUpperCase().replace("_", " ");
+      if (key === "DEF BREAK" || key === "CC" || key === "DOT") applyReferenceLabel(visible, key, false);
+    });
+
+    all("#filtroSkillElementosLista label", root).forEach(function (label) {
+      var input = one("input.digidex-skill-element-check", label);
+      var visible = all(":scope > span", label).slice(-1)[0];
+      if (!input || !visible) return;
+      var original = input.value;
+      var info = koElementData(original);
+      if (currentLanguage === "ko-KR" && info) setHtml(visible, koReferenceInline(info));
+      else setText(visible, original);
+    });
+
+    all("#filtroStatusEffectsLista .digidex-status-effect-item", root).forEach(function (label) {
+      var input = one("input.digidex-status-effect-check", label);
+      var spans = all(":scope > span", label);
+      var visible = spans.length ? spans[spans.length - 1] : null;
+      if (!input || !visible) return;
+      var original = input.getAttribute("data-hg-status-original") || String(input.value || "").toUpperCase();
+      input.setAttribute("data-hg-status-original", original);
+      var info = koStatusEffectData(original);
+      if (currentLanguage === "ko-KR" && info) setHtml(visible, koReferenceInline(info));
+      else {
+        var mainStatus = {PETRIFY:"PETRIFY", CONFUSION:"CONFUSION", PARALYSIS:"PARALYSIS", METALLIZATION:"METALLIZATION", ISOLATION:"ISOLATION", PRESSURE:"PRESSURE", VACUUM:"VACUUM", SUBMERGE:"SUBMERGE", SNIPER:"SNIPER", SILENCE:"SILENCE", CHARM:"CHARM", FREEZE:"FREEZE", STUN:"STUN", SEAL:"SEAL", SLEEP:"SLEEP", PANIC:"PANIC", PUPPET:"PUPPET", BIND:"BIND", BLIND:"BLIND", FEAR:"FEAR"};
+        setText(visible, mainStatus[original] || original);
+      }
+    });
+  }
+
+  function applyKoreanCounterStages() {
+    var root = document.getElementById("counterFinderPagina");
+    if (!root) return;
+    all("#counterFinderStage option", root).forEach(function (option) {
+      var value = String(option.value || "").toUpperCase();
+      if (value === "ALL") {
+        setText(option, currentLanguage === "ko-KR" ? "전체 (All)" : translate("counter.all", "TODOS"));
+      } else if (koStageData(value)) applyKoreanStageLabel(option, value);
+    });
+    all(".counter-finder-target-tags > span", root).forEach(function (el) {
+      var raw = el.getAttribute("data-hg-stage-original") || String(el.textContent || "").trim();
+      if (koStageData(raw)) applyKoreanStageLabel(el, raw);
+    });
+    all(".counter-finder-suggestion small", root).forEach(function (el) {
+      var raw = el.getAttribute("data-hg-original") || String(el.textContent || "").trim();
+      if (!el.getAttribute("data-hg-original")) el.setAttribute("data-hg-original", raw);
+      var parts = raw.split("•").map(function (x) { return x.trim(); });
+      var info = koStageData(parts[0]);
+      if (currentLanguage === "ko-KR" && info) setText(el, info.ko + " (" + info.ref + ")" + (parts[1] ? " • " + parts[1] : ""));
+      else setText(el, raw);
+    });
+  }
+
   function applyKoreanReferenceTranslations() {
     var digidex = document.getElementById("databasePagina");
     if (digidex) {
@@ -237,12 +409,18 @@
 
     var tooltip = document.getElementById("counterFinderDigiTooltip");
     if (tooltip && !tooltip.hidden) applyCounterTooltipReferenceTranslations(tooltip);
+
+    applyKoreanDigidexFilters();
+    applyKoreanCounterStages();
+    applyKoreanDigimonNames();
+    applyKoreanRelationTooltips(document.getElementById("databasePagina"));
   }
 
   function applyCounterTooltipReferenceTranslations(tooltip) {
     if (!tooltip) return;
     all(".counter-finder-tooltip-profile-meta em", tooltip).forEach(function (el) { applyReferenceLabel(el, "", true); });
     all(".counter-finder-tooltip-stats i", tooltip).forEach(function (el) { applyReferenceLabel(el, "", true); });
+    applyKoreanDigimonNames();
   }
 
   function applyStaticTranslations() {

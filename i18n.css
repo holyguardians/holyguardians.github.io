@@ -304,3 +304,56 @@ html[lang="ko"] #counterFinderPagina .counter-finder-target-spd small.hg-ko-ref-
 html[lang="ko"] #counterFinderDigiTooltip .hg-ko-ref-en {
   font-size: 7px;
 }
+
+
+/* =====================================================
+   KO COMPLETE DIGIDEX PATCH — names, filters & tooltips
+===================================================== */
+html[lang="ko"] .hg-ko-inline-ref {
+  color: #6387a8;
+  font-size: .68em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+html[lang="ko"] .hg-ko-digimon-name-host {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.05;
+}
+html[lang="ko"] .hg-ko-digimon-name { color: inherit; font: inherit; }
+html[lang="ko"] .hg-ko-digimon-name-ref {
+  display: block;
+  max-width: 100%;
+  color: #6488aa;
+  font-size: .55em;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+html[lang="ko"] #databasePagina .digidex-table-name strong.hg-ko-digimon-name-host,
+html[lang="ko"] #counterFinderPagina .counter-finder-suggestion b.hg-ko-digimon-name-host,
+html[lang="ko"] #counterFinderPagina .counter-finder-result-ident h3.hg-ko-digimon-name-host,
+html[lang="ko"] #counterFinderPagina .counter-finder-target-copy h3.hg-ko-digimon-name-host {
+  align-items: flex-start;
+}
+html[lang="ko"] #databasePagina .stage-filter-btn strong .hg-ko-inline-ref {
+  display: inline;
+  font-size: 7px;
+}
+html[lang="ko"] #databasePagina .digidex-check-item > span:last-of-type .hg-ko-inline-ref {
+  display: inline;
+  font-size: 7px;
+}
+html[lang="ko"] #databasePagina .hg-relation-tooltip-head small .hg-ko-inline-ref,
+html[lang="ko"] #databasePagina .hg-relation-tooltip-head strong .hg-ko-inline-ref {
+  font-size: 7px;
+}
+html[lang="ko"] #databasePagina .hg-relation-tooltip-copy {
+  word-break: keep-all;
+  line-height: 1.55;
+}
