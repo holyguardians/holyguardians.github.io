@@ -27,6 +27,7 @@
 
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=20260823-hidden-quests-v1">
+  <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single:focus-visible { outline: 0; }
@@ -291,6 +292,52 @@
         </div>
       </div>
 
+    </div>
+
+    <div class="hg-language-switcher" id="hgLanguageSwitcher">
+      <button
+        id="hgLanguageTrigger"
+        class="hg-language-trigger"
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="hgLanguageMenu"
+        aria-label="Selecionar idioma"
+        data-i18n-aria-label="language.select"
+      >
+        <img id="hgLanguageCurrentFlag" src="i18n_flag_br.svg" alt="" aria-hidden="true">
+        <span id="hgLanguageCurrentCode">PT</span>
+        <b aria-hidden="true">⌄</b>
+      </button>
+
+      <div id="hgLanguageMenu" class="hg-language-menu" role="menu" hidden>
+        <div class="hg-language-menu-head">
+          <small>HOLY GUARDIANS //</small>
+          <strong data-i18n="language.title">IDIOMA</strong>
+        </div>
+
+        <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="pt-BR" aria-checked="true">
+          <img src="i18n_flag_br.svg" alt="" aria-hidden="true">
+          <span><strong>Português</strong><small>PT-BR</small></span>
+          <b class="hg-language-check" aria-hidden="true">✓</b>
+        </button>
+
+        <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="en-US" aria-checked="false">
+          <img src="i18n_flag_us.svg" alt="" aria-hidden="true">
+          <span><strong>English</strong><small>EN-US</small></span>
+          <b class="hg-language-check" aria-hidden="true">✓</b>
+        </button>
+
+        <button type="button" class="hg-language-option" role="menuitemradio" data-hg-language="ko-KR" aria-checked="false">
+          <img src="i18n_flag_kr.svg" alt="" aria-hidden="true">
+          <span><strong>한국어</strong><small>KO-KR</small></span>
+          <b class="hg-language-check" aria-hidden="true">✓</b>
+        </button>
+
+        <p class="hg-language-disclaimer" data-i18n="language.disclaimer">
+          As traduções facilitam o acesso e podem ser revisadas gradualmente. Nomes oficiais do jogo são preservados sempre que possível.
+        </p>
+      </div>
     </div>
 
     <div class="hg-nav-panel-foot">
@@ -3192,6 +3239,10 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
+<script src="i18n_pt-BR.js?v=20260823-language-switch-fix"></script>
+<script src="i18n_en-US.js?v=20260823-language-switch-fix"></script>
+<script src="i18n_ko-KR.js?v=20260823-language-switch-fix"></script>
+<script src="i18n.js?v=20260823-language-switch-fix"></script>
 <script src="script.js?v=20260823-hidden-quests-v1"></script>
 </body>
 </html>
