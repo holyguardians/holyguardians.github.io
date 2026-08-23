@@ -54,6 +54,14 @@
     return fallback == null ? key : fallback;
   }
 
+  function formatTranslation(key, fallback, values) {
+    var text = String(translate(key, fallback));
+    Object.keys(values || {}).forEach(function (name) {
+      text = text.split("{" + name + "}").join(String(values[name] == null ? "" : values[name]));
+    });
+    return text;
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -109,6 +117,8 @@
 
     applyHomeStaticTranslations();
     applyHiddenStaticTranslations();
+    applyDigidexStaticTranslations();
+    applyCounterStaticTranslations();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
@@ -445,9 +455,362 @@
     });
   }
 
+
+  function digidexSortTranslationKey(sort) {
+    var value = String(sort == null ? "" : sort).toUpperCase();
+    if (!value) return "digidex.sort.alpha";
+    var asc = /_ASC$/.test(value);
+    var stat = value.replace(/_ASC$/, "");
+    return "digidex.sort." + (asc ? "low" : "high") + "." + stat;
+  }
+
+  function applyDigidexStaticTranslations() {
+    var root = document.getElementById("databasePagina");
+    if (!root) return;
+
+    setText(one(".digidex-header-copy .page-subtitle", root), translate("digidex.subtitle", "Consulte os Digimons da database da Holy Guardians."));
+    setAttr(one(".digidex-view-toggle", root), "aria-label", translate("digidex.viewAria", "Modo de visualização"));
+    setText(document.getElementById("digidexViewCard"), translate("digidex.cardView", "▦ CARD VIEW"));
+    setText(document.getElementById("digidexViewTable"), translate("digidex.tableView", "☷ TABLE VIEW"));
+    setText(one(".digidex-system-status", root), translate("digidex.databaseOnline", "DATABASE ONLINE"));
+
+    var typeFilter = one(".type-filter", root);
+    setAttr(typeFilter, "aria-label", translate("digidex.typeFilterAria", "Filtrar por Type"));
+    var allType = one(".type-filter-btn", root);
+    if (allType) {
+      setText(allType, translate("digidex.all", "ALL"));
+      setAttr(allType, "title", translate("digidex.allTypesTitle", "Todos os Types"));
+    }
+
+    var stageFilter = one(".stage-filter", root);
+    setAttr(stageFilter, "aria-label", translate("digidex.stageFilterAria", "Filtrar por Stage — permite múltipla seleção"));
+    var stageAll = one('.stage-filter-btn[data-stage=""] strong', root);
+    if (stageAll) setText(stageAll, translate("digidex.all", "ALL"));
+
+    setAttr(document.getElementById("pesquisa"), "placeholder", translate("digidex.searchPlaceholder", "Pesquisar Digimon..."));
+    setText(one("#filtroSkillElemento summary > span:first-child", root), translate("digidex.skillElement", "SKILL ELEMENT"));
+    setText(one("#filtroSkillElemento .digidex-filter-title", root), translate("digidex.searchIn", "PROCURAR EM"));
+    setText(one("#filtroEfeito summary > span:first-child", root), translate("digidex.effectType", "EFFECT TYPE"));
+    setText(one("#filtroEfeito .digidex-filter-title", root), translate("digidex.effectKind", "TIPO DE EFEITO"));
+    setText(one("#filtroStatusEffect summary > span:first-child", root), translate("digidex.statusEffect", "STATUS EFFECT"));
+    setText(one("#filtroStatusEffect .digidex-filter-title", root), translate("digidex.specificEffect", "EFEITO ESPECÍFICO"));
+    setText(one("#filtroOrdenacao .digidex-filter-title", root), translate("digidex.sortResults", "ORDENAR RESULTADOS"));
+    setText(one(".digidex-clear-filters", root), translate("digidex.clearFilters", "LIMPAR FILTROS"));
+
+    all("#filtroOrdenacao .digidex-sort-option", root).forEach(function (button) {
+      var key = digidexSortTranslationKey(button.getAttribute("data-sort"));
+      setText(button, translate(key, button.textContent));
+    });
+    var activeSort = one("#filtroOrdenacao .digidex-sort-option.ativo", root);
+    var sortLabel = document.getElementById("digidexOrdenacaoLabel");
+    if (sortLabel) {
+      var activeSortValue = activeSort ? activeSort.getAttribute("data-sort") : "";
+      setText(sortLabel, translate(digidexSortTranslationKey(activeSortValue), translate("digidex.sort.alpha", "ORDEM ALFABÉTICA")));
+    }
+  }
+
+  function translateDigidexTooltipLabel(label) {
+    var normalized = String(label || "").trim().toLowerCase();
+    var keys = {
+      "level": "digidex.tip.level", "nível": "digidex.tip.level", "레벨": "digidex.tip.level",
+      "type": "digidex.tip.type", "tipo": "digidex.tip.type", "타입": "digidex.tip.type",
+      "range": "digidex.tip.range", "alcance": "digidex.tip.range", "범위": "digidex.tip.range",
+      "base": "digidex.tip.base", "기본": "digidex.tip.base",
+      "damage": "digidex.tip.damage", "dano": "digidex.tip.damage", "데미지": "digidex.tip.damage",
+      "effect": "digidex.tip.effect", "efeito": "digidex.tip.effect", "효과": "digidex.tip.effect",
+      "chance": "digidex.tip.chance", "확률": "digidex.tip.chance",
+      "can change to": "digidex.tip.canChangeTo", "pode mudar para": "digidex.tip.canChangeTo", "변경 가능": "digidex.tip.canChangeTo"
+    };
+    var key = keys[normalized];
+    return key ? translate(key, label) : label;
+  }
+
+  function applyDigidexDynamicTranslations() {
+    var root = document.getElementById("databasePagina");
+    if (!root) return;
+    applyDigidexStaticTranslations();
+
+    all(".digidex-status-effect-empty", root).forEach(function (el) {
+      setText(el, translate("digidex.noCcSubtype", "NENHUM SUBTIPO DE CC ENCONTRADO NA DATABASE"));
+    });
+
+    var profile = document.getElementById("digidexProfile");
+    if (!profile || profile.hidden) return;
+
+    all(".digidex-profile-loading", profile).forEach(function (el) {
+      if (one(".digidex-profile-loading-dot", el)) {
+        replaceDirectText(el, /CARREGANDO|LOADING|불러오는|로드/i, translate("digidex.profileLoading", "CARREGANDO DIGIVOLUTION MASTER..."));
+      } else {
+        setText(el, translate("digidex.profileLoadingFull", "CARREGANDO PERFIL // DIGIVOLUTION MASTER..."));
+      }
+    });
+
+    var errorBox = one(".digidex-profile-error", profile);
+    if (errorBox) {
+      setText(one("strong", errorBox), translate("digidex.profileError", "Não foi possível abrir o perfil."));
+      setText(one("button", errorBox), translate("digidex.back", "VOLTAR PARA A DIGIDEX"));
+    }
+
+    var back = one(".digidex-profile-back", profile);
+    if (back) setText(back, translate("digidex.backArrow", "← VOLTAR PARA DIGIDEX"));
+
+    var kicker = one(".digidex-profile-kicker", profile);
+    if (kicker) {
+      var parts = String(kicker.textContent || "").split("//");
+      var stage = parts.length > 1 ? String(parts.slice(1).join("//")).trim() : "";
+      setText(kicker, translate("digidex.currentDigimon", "CURRENT DIGIMON") + (stage ? " // " + stage : ""));
+    }
+
+    var skillTitle = one(".digidex-profile-skills-section .digidex-profile-section-title span", profile);
+    if (skillTitle) setText(skillTitle, translate("digidex.skillsTitle", "SKILLS // LEVEL 10"));
+    var skillHint = one(".digidex-profile-skills-section .digidex-profile-section-title small", profile);
+    if (skillHint) setText(skillHint, translate("digidex.skillsHint", "Passe o mouse no ícone ou nome para ver os detalhes."));
+
+    all(".digidex-profile-skill.is-empty strong", profile).forEach(function (el) { setText(el, translate("digidex.noSkill", "SEM SKILL")); });
+    all(".digidex-profile-no-stats", profile).forEach(function (el) { setText(el, translate("digidex.noStats", "Stats completos indisponíveis nesta entrada da Digidex.")); });
+
+    var evoFrom = one(".digidex-evo-from-column > header strong", profile);
+    var evoTo = one(".digidex-evo-to-column > header strong", profile);
+    if (evoFrom) setText(evoFrom, translate("digidex.evolvesFrom", "EVOLVES FROM"));
+    if (evoTo) setText(evoTo, translate("digidex.evolvesTo", "EVOLVES TO"));
+    var fromEmpty = one(".digidex-evo-from-column .digidex-evo-empty", profile);
+    var toEmpty = one(".digidex-evo-to-column .digidex-evo-empty", profile);
+    if (fromEmpty) setText(fromEmpty, translate("digidex.lineStart", "INÍCIO DA LINHA"));
+    if (toEmpty) setText(toEmpty, translate("digidex.lineEnd", "FIM DA LINHA"));
+
+    all(".digidex-evo-requirements-box", profile).forEach(function (box) {
+      setText(one(".digidex-evo-req-head strong", box), translate("digidex.evolutionRequirements", "EVOLUTION REQUIREMENTS"));
+      var potential = one(".digidex-evo-potential-btn", box);
+      if (potential) setText(potential, translate("digidex.showPotential", "MOSTRAR POTENCIAL"));
+      all(".digidex-evo-req-empty", box).forEach(function (el) { setText(el, translate("digidex.noAdditionalReq", "SEM REQUISITO ADICIONAL REGISTRADO")); });
+      all(".digidex-evo-req-item i", box).forEach(function (label) {
+        var txt = String(label.textContent || "").trim().toUpperCase();
+        if (txt === "LEVEL" || txt === "NÍVEL" || txt === "레벨") setText(label, translate("digidex.reqLevel", "LEVEL"));
+        else if (txt === "BOND" || txt === "친밀도") setText(label, translate("digidex.reqBond", "BOND"));
+        else if (txt === "ITEM" || txt === "아이템") setText(label, translate("digidex.reqItem", "ITEM"));
+      });
+    });
+
+    all(".digidex-profile-skill-tooltip-grid i", profile).forEach(function (label) {
+      setText(label, translateDigidexTooltipLabel(label.textContent));
+    });
+  }
+
+  function applyCounterStaticTranslations() {
+    var root = document.getElementById("counterFinderPagina");
+    if (!root) return;
+
+    setText(one(".counter-finder-header .page-subtitle", root), translate("counter.subtitle", "Escolha um Digimon e encontre os melhores matchups usando Skills e status da DATABASE MASTER."));
+    setText(one(".counter-finder-source span", root), translate("counter.source", "FONTE"));
+
+    var rules = all(".counter-finder-rule-strip > span", root);
+    if (rules[0]) setHtml(rules[0], translate("counter.typeRule", rules[0].innerHTML));
+
+    setText(one(".counter-finder-control-head small", root), translate("counter.targetKicker", "01 // TARGET"));
+    setText(one(".counter-finder-control-head strong", root), translate("counter.targetQuestion", "QUAL DIGIMON VOCÊ QUER COUNTERAR?"));
+    setText(one('label[for="counterFinderTargetInput"] > span', root), translate("counter.targetDigimon", "DIGIMON ALVO"));
+    setAttr(document.getElementById("counterFinderTargetInput"), "placeholder", translate("counter.searchPlaceholder", "Digite o nome do Digimon..."));
+    setText(one('label[for="counterFinderStage"] > span', root), translate("counter.candidateStage", "STAGE DOS CANDIDATOS"));
+    var stageAll = one('#counterFinderStage option[value="ALL"]', root);
+    if (stageAll) setText(stageAll, translate("counter.all", "TODOS"));
+    setText(one('label[for="counterFinderTargetPosition"] > span', root), translate("counter.targetPosition", "POSIÇÃO DO ALVO"));
+    setText(one('#counterFinderTargetPosition option[value="ANY"]', root), translate("counter.position.any", "NÃO DEFINIDA"));
+    setText(one('#counterFinderTargetPosition option[value="FRONT"]', root), translate("counter.position.front", "FRONT LINE"));
+    setText(one('#counterFinderTargetPosition option[value="BACK"]', root), translate("counter.position.back", "BACK LINE"));
+    setText(one(".counter-finder-how strong", root), translate("counter.howTitle", "COMO O MATCHUP É LIDO"));
+    setText(one(".counter-finder-how p", root), translate("counter.howText", one(".counter-finder-how p", root) ? one(".counter-finder-how p", root).textContent : ""));
+
+    var resultsHead = one(".counter-finder-results-head", root);
+    if (resultsHead) {
+      setText(one("div small", resultsHead), translate("counter.analysisKicker", "02 // ANALYSIS"));
+      setText(one("div strong", resultsHead), translate("counter.bestCounters", "MELHORES COUNTERS"));
+    }
+  }
+
+  function counterMatchLabelForCard(card) {
+    if (!card) return "";
+    if (card.classList.contains("counter-finder-elite")) return translate("counter.match.great", "ÓTIMO MATCHUP");
+    if (card.classList.contains("counter-finder-forte")) return translate("counter.match.advantage", "VANTAGEM");
+    if (card.classList.contains("counter-finder-neutro")) return translate("counter.match.balanced", "EQUILIBRADO");
+    return translate("counter.match.risky", "ARRISCADO");
+  }
+
+  function translateCounterReason(raw) {
+    var text = String(raw || "").trim();
+    var m;
+
+    m = text.match(/^TYPE: causa\s+([^ ]+)\s+de modificador de dano contra\s+(.+)$/i);
+    if (m) return formatTranslation("counter.reason.typeDamage", "TYPE: causa {mod} de modificador de dano contra {type}", { mod: m[1], type: m[2] });
+    if (/^TYPE ofensivo neutro:/i.test(text)) return translate("counter.reason.typeNeutral", "TYPE ofensivo neutro: 0% de modificador de dano");
+
+    m = text.match(/^TYPE defensivo: o alvo causa\s+([^ ]+)\s+contra este candidato$/i);
+    if (m) return formatTranslation("counter.reason.typeDefense", "TYPE defensivo: o alvo causa {mod} contra este candidato", { mod: m[1] });
+
+    m = text.match(/^Melhor Skill:\s*S([^ ]+)\s+(.+?)\s+·\s+(BASE|CONVERSÃO)\s+(.+?)\s+·\s+coef\.\s+([\d.,]+)%$/i);
+    if (m) return formatTranslation("counter.reason.bestSkill", "Melhor Skill: S{slot} {skill} · {mode} {element} · coef. {coef}%", {
+      slot: m[1], skill: m[2], mode: String(m[3]).toUpperCase() === "BASE" ? translate("counter.base", "BASE") : translate("counter.conversion", "CONVERSÃO"), element: m[4], coef: m[5]
+    });
+
+    m = text.match(/^(Base|Conversão)\s+([^ ]+)\s+explora WEAK\s*(.*)$/i);
+    if (m) return formatTranslation("counter.reason.exploitWeak", "{mode} {element} explora WEAK {effect}", {
+      mode: /^base$/i.test(m[1]) ? translate("counter.base", "BASE") : translate("counter.conversion", "CONVERSÃO"), element: m[2], effect: m[3]
+    }).trim();
+
+    m = text.match(/^(Base|Conversão)\s+([^ ]+)\s+encontra STRONG\s*(.*)$/i);
+    if (m) return formatTranslation("counter.reason.hitsStrong", "{mode} {element} encontra STRONG {effect}", {
+      mode: /^base$/i.test(m[1]) ? translate("counter.base", "BASE") : translate("counter.conversion", "CONVERSÃO"), element: m[2], effect: m[3]
+    }).trim();
+
+    if (/^Alvo:\s*/i.test(text)) return translate("counter.reason.targetPrefix", "Alvo:") + " " + translateCounterReason(text.replace(/^Alvo:\s*/i, ""));
+    if (/^Defesa favorável:\s*/i.test(text)) return translate("counter.reason.goodDefensePrefix", "Defesa favorável:") + " " + translateCounterReason(text.replace(/^Defesa favorável:\s*/i, ""));
+
+    m = text.match(/^SPD\s+(\d+)\s+vs\s+(\d+)\s+·\s+tende a agir antes\s+\(([^)]+)\)$/i);
+    if (m) return formatTranslation("counter.reason.spdBefore", "SPD {a} vs {b} · tende a agir antes ({diff})", { a: m[1], b: m[2], diff: m[3] });
+    m = text.match(/^SPD\s+(\d+)\s+vs\s+(\d+)\s+·\s+tende a agir depois\s+\(([^)]+)\)$/i);
+    if (m) return formatTranslation("counter.reason.spdAfter", "SPD {a} vs {b} · tende a agir depois ({diff})", { a: m[1], b: m[2], diff: m[3] });
+    m = text.match(/^SPD empatado em\s+(\d+)$/i);
+    if (m) return formatTranslation("counter.reason.spdTie", "SPD empatado em {spd}", { spd: m[1] });
+
+    m = text.match(/^Ameaça do alvo:\s*(.+)$/i);
+    if (m) return translate("counter.reason.targetThreat", "Ameaça do alvo:") + " " + m[1];
+    if (/^Alvo em BACK: o candidato depende de Skills Melee enquanto houver Front$/i.test(text)) return translate("counter.reason.backMelee", text);
+    if (/^Alvo em BACK: possui opção Ranged para alcançar a back line$/i.test(text)) return translate("counter.reason.backRanged", text);
+
+    return text;
+  }
+
+  function applyCounterDynamicTranslations() {
+    var root = document.getElementById("counterFinderPagina");
+    if (!root) return;
+    applyCounterStaticTranslations();
+
+    all(".counter-finder-suggestion-empty", root).forEach(function (el) {
+      var text = String(el.textContent || "");
+      if (/Carregando|Loading|불러/i.test(text)) setText(el, translate("counter.loadingDatabase", "Carregando DATABASE MASTER..."));
+      else setText(el, translate("counter.noDigimonFound", "Nenhum Digimon encontrado."));
+    });
+
+    var targetEmpty = one("#counterFinderTargetCard .counter-finder-target-empty", root);
+    if (targetEmpty) {
+      setText(one("strong", targetEmpty), translate("counter.selectEnemy", "SELECIONE O DIGIMON INIMIGO"));
+      setText(one("small", targetEmpty), translate("counter.analyzerText", "O analisador lê Skills, efeitos, Strong/Weak, stats e TYPE diretamente da DATABASE MASTER."));
+    }
+
+    var targetCopy = one("#counterFinderTargetCard .counter-finder-target-copy", root);
+    if (targetCopy) {
+      setText(one(":scope > small", targetCopy), translate("counter.targetAnalyzed", "ALVO ANALISADO //"));
+      var tags = all(".counter-finder-target-tags > span", targetCopy);
+      var effectsTag = tags.length ? tags[tags.length - 1] : null;
+      if (effectsTag) {
+        var match = String(effectsTag.textContent || "").match(/\d+/);
+        var amount = match ? Number(match[0]) : 0;
+        setText(effectsTag, formatTranslation(amount === 1 ? "counter.effectMappedOne" : "counter.effectMappedMany", amount === 1 ? "{count} EFEITO MAPEADO" : "{count} EFEITOS MAPEADOS", { count: amount }));
+      }
+    }
+    setText(one("#counterFinderTargetCard .counter-finder-target-elements > small", root), translate("counter.elementsAvailable", "ELEMENTOS DISPONÍVEIS"));
+
+    all(".counter-finder-type-duel > div > span", root).forEach(function (el) { setText(el, translate("counter.damage", "DANO")); });
+
+    all(".counter-finder-matchup-strip", root).forEach(function (strip) {
+      var labels = all("small", strip);
+      if (labels[0]) setText(labels[0], translate("counter.offensiveType", "OFENSIVA TYPE"));
+      if (labels[1]) setText(labels[1], translate("counter.typeReceived", "TYPE RECEBIDO"));
+      if (labels[2]) setText(labels[2], translate("counter.spdDelta", "SPD Δ"));
+      if (labels[3]) setText(labels[3], translate("counter.bestSkill", "MELHOR SKILL"));
+    });
+
+    all(".counter-finder-best-skill", root).forEach(function (box) {
+      if (box.classList.contains("empty")) {
+        setText(box, translate("counter.noOffensiveSkill", "SEM SKILL OFENSIVA MAPEADA"));
+        return;
+      }
+      setText(one(":scope > div > small", box), translate("counter.bestOffensive", "MELHOR OPÇÃO OFENSIVA"));
+      var detail = one(":scope > div > span", box);
+      if (detail) {
+        var raw = String(detail.textContent || "");
+        var m = raw.match(/^(BASE|CONVERSÃO|CONVERSION|기본|변환)\s+(.+)$/i);
+        if (m) {
+          var isBase = /^(BASE|기본)$/i.test(m[1]);
+          setText(detail, (isBase ? translate("counter.base", "BASE") : translate("counter.conversion", "CONVERSÃO")) + " " + m[2]);
+        }
+      }
+    });
+
+    all(".counter-finder-effects-empty", root).forEach(function (el) { setText(el, translate("counter.noEffects", "SEM CC / DOT / DEF BREAK MAPEADO")); });
+
+    var count = document.getElementById("counterFinderResultCount");
+    if (count) {
+      var countText = String(count.textContent || "").trim();
+      var n = countText.match(/^\s*(\d+)/);
+      if (n) setText(count, formatTranslation("counter.bestCandidates", "{count} MELHORES CANDIDATOS", { count: Number(n[1]) }));
+      else if (/AGUARDANDO ALVO|WAITING|대상/i.test(countText)) setText(count, translate("counter.waitingTarget", "AGUARDANDO ALVO"));
+      else if (/CARREGANDO MASTER|LOADING MASTER|MASTER 불러/i.test(countText)) setText(count, translate("counter.loadingMaster", "CARREGANDO MASTER"));
+      else if (/ERRO NA DATABASE|DATABASE ERROR|데이터베이스 오류/i.test(countText)) setText(count, translate("counter.databaseError", "ERRO NA DATABASE"));
+    }
+
+    all("#counterFinderResults .counter-finder-results-empty", root).forEach(function (box) {
+      var strong = one("strong", box);
+      var small = one("small", box);
+      var raw = String(strong && strong.textContent || "");
+      if (/PRONTA PARA CARREGAR|READY TO LOAD|로드 준비/i.test(raw)) {
+        setText(strong, translate("counter.databaseReady", "DATABASE MASTER PRONTA PARA CARREGAR"));
+        if (small) setText(small, translate("counter.databaseReadyHint", "Abra ou pesquise um Digimon para iniciar a análise."));
+      } else if (/NENHUM MATCHUP CALCULADO|NO MATCHUP|매치업.*없/i.test(raw)) {
+        setText(strong, translate("counter.noMatchup", "NENHUM MATCHUP CALCULADO"));
+        if (small) setText(small, translate("counter.chooseAbove", "Escolha um Digimon acima para iniciar a análise."));
+      } else if (/NENHUM CANDIDATO NESTE STAGE|NO CANDIDATE|후보.*없/i.test(raw)) {
+        setText(strong, translate("counter.noCandidateStage", "NENHUM CANDIDATO NESTE STAGE"));
+      } else if (/NÃO FOI POSSÍVEL CARREGAR|COULD NOT LOAD|불러오지 못/i.test(raw)) {
+        setText(strong, translate("counter.cannotLoadDb", "NÃO FOI POSSÍVEL CARREGAR A DATABASE MASTER"));
+      } else if (/CARREGANDO DATABASE MASTER|LOADING DATABASE MASTER|DATABASE MASTER.*불러/i.test(raw)) {
+        setText(strong, translate("counter.loadingDb", "CARREGANDO DATABASE MASTER"));
+        if (small) setText(small, translate("counter.dataSamePvp", "Os dados são os mesmos usados pelas ferramentas PvP da Holy Guardians."));
+      }
+    });
+
+    all("#counterFinderResults .counter-finder-result", root).forEach(function (card) {
+      var scoreLabel = one(".counter-finder-score span", card);
+      if (scoreLabel) setText(scoreLabel, counterMatchLabelForCard(card));
+      var open = one(".counter-finder-open", card);
+      if (open) replaceDirectText(open, /ABRIR NA DIGIDEX|OPEN IN DIGIDEX|디지덱스에서 보기/i, translate("counter.openDigidex", "ABRIR NA DIGIDEX"));
+      var profileButton = one(".counter-finder-result-icon", card);
+      if (profileButton) {
+        var nameEl = one(".counter-finder-result-ident h3", card);
+        var name = nameEl ? nameEl.textContent : "Digimon";
+        setAttr(profileButton, "aria-label", formatTranslation("counter.viewStats", "Ver status de {name}", { name: name }));
+      }
+      all(".counter-finder-reasons li", card).forEach(function (li) {
+        var textNode = Array.prototype.slice.call(li.childNodes || []).find(function (node) { return node.nodeType === 3 && String(node.nodeValue || "").trim(); });
+        if (!textNode) return;
+        var raw = String(textNode.nodeValue || "").trim();
+        var translated = translateCounterReason(raw);
+        var lead = (String(textNode.nodeValue || "").match(/^\s*/) || [""])[0];
+        if (textNode.nodeValue !== lead + translated) textNode.nodeValue = lead + translated;
+      });
+    });
+  }
+
+  function applyCounterTooltipTranslations() {
+    var tooltip = document.getElementById("counterFinderDigiTooltip");
+    if (!tooltip || tooltip.hidden) return;
+    /* FIELD / STRONG / WEAK and stat abbreviations are official game labels; keep them unchanged. */
+  }
+
+  function refreshCounterFinderUi() {
+    if (!document.getElementById("counterFinderPagina")) return;
+    try {
+      if (typeof window.counterFinderRenderizarTarget === "function") window.counterFinderRenderizarTarget();
+      if (typeof window.counterFinderRenderizarResultados === "function") window.counterFinderRenderizarResultados();
+    } catch (error) { /* isolated addon */ }
+    applyCounterDynamicTranslations();
+  }
+
   function applyDynamicTranslations() {
     applyHomeDynamicTranslations();
     applyHiddenDynamicTranslations();
+    applyDigidexDynamicTranslations();
+    applyCounterDynamicTranslations();
+    applyCounterTooltipTranslations();
   }
 
   function queueDynamicTranslations() {
@@ -462,7 +825,7 @@
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function () { queueDynamicTranslations(); });
       observer.observe(root, { childList: true, subtree: true, characterData: true });
@@ -524,6 +887,7 @@
     applyStaticTranslations();
     updateLanguageUi();
     refreshHiddenQuestUi();
+    refreshCounterFinderUi();
     queueDynamicTranslations();
     if (opts.updateUrl !== false) updateUrl(next);
     closeMenu();
@@ -549,12 +913,19 @@
       if (switcher && !switcher.contains(event.target)) closeMenu();
     });
     document.addEventListener("keydown", function (event) { if (event.key === "Escape") closeMenu(); });
+    document.addEventListener("mouseover", function (event) {
+      if (event.target && event.target.closest && event.target.closest(".counter-finder-profile-trigger")) window.setTimeout(applyCounterTooltipTranslations, 0);
+    }, true);
+    document.addEventListener("focusin", function (event) {
+      if (event.target && event.target.closest && event.target.closest(".counter-finder-profile-trigger")) window.setTimeout(applyCounterTooltipTranslations, 0);
+    });
 
     applyStaticTranslations();
     updateLanguageUi();
     installObservers();
     window.setTimeout(function () {
       refreshHiddenQuestUi();
+      refreshCounterFinderUi();
       applyDynamicTranslations();
     }, 0);
   }
@@ -566,6 +937,7 @@
     applyStaticTranslations();
     localizeHiddenQuestPackage();
     refreshHiddenQuestUi();
+    refreshCounterFinderUi();
     applyDynamicTranslations();
   };
 
