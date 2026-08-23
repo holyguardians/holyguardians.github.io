@@ -256,6 +256,20 @@ function coletarTextoStatusDigidex(digi) {
   adicionar(digi && digi.skill2, 0);
   adicionar(digi && digi.skill3, 0);
 
+  /* A SITE_EXPORT conserva os marcadores CC/DOT, mas os subtipos
+     (Freeze, Petrify etc.) vivem na metadata completa de PVP. */
+  const nome = String(digi && (digi.digimon || digi.name) || "");
+  const chave = normalizarChaveIconeDigimonCentral(nome);
+  const meta = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(item) {
+    return normalizarChaveIconeDigimonCentral(item && (item.name || item.digimon)) === chave;
+  });
+  (meta && Array.isArray(meta.skills) ? meta.skills : []).forEach(function(skill) {
+    adicionar(skill && skill.ccType, 0);
+    adicionar(skill && skill.effectName, 0);
+    adicionar(skill && skill.description, 0);
+    adicionar(skill && skill.effectRaw, 0);
+  });
+
   return normalizarTextoStatusDigidex(partes.join(" "));
 }
 
