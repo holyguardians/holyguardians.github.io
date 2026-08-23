@@ -423,6 +423,243 @@
     applyKoreanDigimonNames();
   }
 
+
+  function applyHeaderEventTranslations() {
+    var header = document.getElementById("siteTopbar");
+    if (!header) return;
+
+    setText(one(".hg-header-event-boss .hg-header-event-label", header), translate("header.nextBoss", "PRÓXIMO BOSS"));
+    setText(one(".hg-header-event-dekyu .hg-header-event-label", header), translate("header.dekyuTreasure", "DEKYU TREASURE"));
+
+    var bossName = one("#hgHeaderBossName", header);
+    if (bossName && /^(CARREGANDO\.\.\.|LOADING\.\.\.|불러오는 중\.\.\.)$/i.test(String(bossName.textContent || "").trim())) {
+      setText(bossName, translate("header.loading", "CARREGANDO..."));
+    }
+
+    var dekyuTime = one("#hgHeaderDekyuTime", header);
+    if (dekyuTime) {
+      var raw = String(dekyuTime.textContent || "").replace(/\s+/g, " ").trim();
+      var match = raw.match(/^(?:PRÓXIMO|PROXIMO|NEXT|다음)\s+(.+)$/i);
+      if (match) setText(dekyuTime, translate("header.next", "PRÓXIMO") + " " + match[1]);
+    }
+
+    var sound = one("#hgHeaderSoundToggle", header);
+    if (sound) {
+      var enabled = sound.getAttribute("aria-pressed") === "true" || sound.classList.contains("is-enabled");
+      setAttr(sound, "aria-label", translate(enabled ? "header.sound.disableAria" : "header.sound.enableAria", enabled ? "Desligar som de aviso de Boss e Dekyu" : "Ligar som de aviso de Boss e Dekyu"));
+      setAttr(sound, "title", translate(enabled ? "header.sound.enabledTitle" : "header.sound.disabledTitle", enabled ? "Som de eventos ligado · avisa 5 min antes" : "Som de eventos desligado · avisa 5 min antes"));
+    }
+  }
+
+  function applyRaidStaticTranslations() {
+    var root = document.getElementById("raidBossPagina");
+    if (!root) return;
+
+    setText(one(".raid-kicker", root), translate("raid.kicker", "KST RAID MONITOR // HOLY GUARDIANS"));
+    setText(one(".raid-header .page-title", root), translate("raid.title", "RAID BOSS"));
+    setText(one(".raid-header .page-subtitle", root), translate("raid.subtitle", "Próximos nascimentos sincronizados com o horário do servidor coreano."));
+    setAttr(one(".raid-how-to", root), "aria-label", translate("raid.howAria", "Como usar a agenda de raids"));
+    setText(one(".raid-how-to strong", root), translate("raid.howTitle", "COMO USAR"));
+    setText(one(".raid-how-to span", root), translate("raid.howText", "Passe o mouse sobre o ícone para saber os status e clique no nome do mapa para ver os possíveis spots de spawn dos bosses."));
+    setText(one(".raid-alarm-control span", root), translate("raid.notify", "AVISAR"));
+    setText(one(".raid-notice-control span", root), translate("raid.minutesBefore", "MINUTOS ANTES"));
+
+    var bot = one(".hg-discord-bot-link", root);
+    if (bot) {
+      setAttr(bot, "aria-label", translate("raid.addBotAria", "Adicionar Evil Guardians ao seu Discord"));
+      setAttr(bot, "title", translate("raid.addBotAria", "Adicionar Evil Guardians ao seu Discord"));
+      setHtml(one("span", bot), translate("raid.addBot", "ADICIONAR<br>BOT"));
+    }
+
+    setText(one(".raid-time-strip > span", root), translate("raid.serverTime", "HORÁRIO DO SERVIDOR (KST)"));
+    setText(one(".raid-time-strip > small", root), translate("raid.noticeOpen", "Os avisos funcionam enquanto esta página estiver aberta."));
+    setAttr(one("#raidMapClose", root), "aria-label", translate("raid.close", "Fechar"));
+    setAttr(one("#raidMapImage", root), "alt", translate("raid.mapImageAlt", "Mapa do raid"));
+  }
+
+  function applyRaidDynamicTranslations() {
+    var root = document.getElementById("raidBossPagina");
+    if (!root) return;
+    applyRaidStaticTranslations();
+
+    all("#raidList .raid-empty", root).forEach(function (el) {
+      var raw = String(el.textContent || "").trim();
+      if (/carregando agenda de raids|loading raid schedule|레이드 일정.*불러/i.test(raw)) setText(el, translate("raid.loading", "Carregando agenda de raids..."));
+    });
+
+    all("#raidList .raid-card", root).forEach(function (card) {
+      var icon = one(".raid-card-icon", card);
+      var img = one(".raid-card-icon img", card);
+      var name = img ? String(img.getAttribute("alt") || "").trim() : "";
+      if (icon && name) setAttr(icon, "aria-label", formatTranslation("raid.infoAria", "Informações de {name}", { name: name }));
+      all(".raid-rotation-tag", card).forEach(function (el) { setText(el, translate("raid.rotation", "ROTAÇÃO")); });
+
+      var mapButton = one(".raid-map-link", card);
+      if (mapButton) {
+        var nodes = Array.prototype.slice.call(mapButton.childNodes || []);
+        var textNode = nodes.find(function (node) { return node.nodeType === 3 && String(node.nodeValue || "").trim(); });
+        if (textNode && /^(Mapa indisponível|Map unavailable|맵 정보 없음)$/i.test(String(textNode.nodeValue || "").trim())) {
+          textNode.nodeValue = translate("raid.mapUnavailable", "Mapa indisponível") + " ";
+        }
+      }
+
+      var tooltip = one(".raid-boss-tooltip", card);
+      if (tooltip) {
+        var rows = all(":scope > div", tooltip);
+        var keys = ["raid.tip.level", "raid.tip.name", "raid.tip.attribute", "raid.tip.hp", "raid.tip.location"];
+        var fallbacks = ["Level:", "Name:", "Attribute:", "HP:", "Implementation Location:"];
+        rows.forEach(function (row, index) {
+          var label = one(":scope > span", row);
+          if (label && keys[index]) setText(label, translate(keys[index], fallbacks[index]));
+        });
+      }
+    });
+
+    all("#raidMapSpots .raid-map-spot", root).forEach(function (spot) {
+      setAttr(spot, "title", translate("raid.possibleSpawn", "Possível ponto de nascimento"));
+    });
+
+    var modalTitle = one("#raidMapTitle", root);
+    if (modalTitle) {
+      var modalRaw = String(modalTitle.textContent || "").trim();
+      if (/^(MAPA DO RAID|RAID MAP|레이드 맵)$/i.test(modalRaw)) setText(modalTitle, translate("raid.mapTitle", "MAPA DO RAID"));
+    }
+
+    var alertTitle = one("#raidAlertTitle", document);
+    if (alertTitle) {
+      var titleRaw = String(alertTitle.textContent || "").trim();
+      if (/^(RAID PRÓXIMA|RAID INCOMING|레이드 임박)$/i.test(titleRaw)) setText(alertTitle, translate("raid.alertSoon", "RAID PRÓXIMA"));
+    }
+    var alertText = one("#raidAlertText", document);
+    if (alertText) {
+      var textRaw = String(alertText.textContent || "").trim();
+      var born = textRaw.match(/^(?:Nasce em|Spawns in|등장까지)\s+(.+?)\s+[—-]\s+(.+)$/i);
+      if (born) setText(alertText, formatTranslation("raid.bornIn", "Nasce em {time} — {map}", { time: born[1], map: born[2] }));
+    }
+  }
+
+  function applyDekyuStaticTranslations() {
+    var root = document.getElementById("dekyuTreasurePagina");
+    if (!root) return;
+
+    setText(one(".dekyu-kicker", root), translate("dekyu.kicker", "TREASURE COORDINATES // HOLY GUARDIANS"));
+    setText(one(".dekyu-header .page-title", root), translate("dekyu.title", "DEKYU TREASURE"));
+    setText(one(".dekyu-header .page-subtitle", root), translate("dekyu.subtitle", "Selecione uma área e um mapa para localizar todos os Dekyu Treasures disponíveis."));
+    setHtml(one(".dekyu-alert p", root), translate("dekyu.alert", "<strong>ATENÇÃO:</strong> O Dekyu Treasure pode surgir de forma aleatória em qualquer um dos spots mostrados nos mapas abaixo, de 6 em 6 horas, a partir do momento em que surgiu pela última vez."));
+
+    var bot = one(".dekyu-discord-bot-link", root);
+    if (bot) {
+      setAttr(bot, "aria-label", translate("dekyu.addBotAria", "Adicionar Evil Guardians ao seu Discord"));
+      setAttr(bot, "title", translate("dekyu.addBotAria", "Adicionar Evil Guardians ao seu Discord"));
+      setHtml(one("span", bot), translate("dekyu.addBot", "ADICIONAR<br>BOT"));
+    }
+
+    setText(one(".dekyu-panel-kicker", root), translate("dekyu.panelKicker", "MAP NAVIGATION // HG"));
+    setText(one(".dekyu-side-panel > h3", root), translate("dekyu.locate", "LOCALIZAR TESOUROS"));
+    setAttr(one(".dekyu-side-panel", root), "aria-label", translate("dekyu.controlsAria", "Controles do mapa"));
+
+    var fields = all(".dekyu-select-field > span", root);
+    if (fields[0]) setText(fields[0], translate("dekyu.area", "ÁREA"));
+    if (fields[1]) setText(fields[1], translate("dekyu.map", "MAPA"));
+    setText(one(".dekyu-summary > span", root), translate("dekyu.locations", "LOCALIZAÇÕES"));
+    setText(one(".dekyu-summary > small", root), translate("dekyu.mappedSpots", "SPOTS MAPEADOS"));
+    setText(one(".dekyu-respawn > span", root), translate("dekyu.nextSpawn", "PRÓXIMO SURGIMENTO"));
+    setAttr(one(".dekyu-schedule", root), "aria-label", translate("dekyu.scheduleAria", "Horários de surgimento"));
+    setAttr(one("#dekyuMapImage", root), "alt", translate("dekyu.mapImageAlt", "Mapa com localizações de Dekyu Treasure"));
+  }
+
+  function applyDekyuDynamicTranslations() {
+    var root = document.getElementById("dekyuTreasurePagina");
+    if (!root) return;
+    applyDekyuStaticTranslations();
+
+    var zoneLabel = one("#dekyuZoneLabel", root);
+    if (zoneLabel) {
+      var zoneRaw = String(zoneLabel.textContent || "").trim();
+      if (/^(ÁREA|AREA|지역)$/i.test(zoneRaw)) setText(zoneLabel, translate("dekyu.area", "ÁREA"));
+    }
+
+    var mapTitle = one("#dekyuMapTitle", root);
+    if (mapTitle) {
+      var titleRaw = String(mapTitle.textContent || "").trim();
+      if (/^(Selecione um mapa|Select a map|맵을 선택하세요)$/i.test(titleRaw)) setText(mapTitle, translate("dekyu.selectMap", "Selecione um mapa"));
+    }
+
+    var status = one("#dekyuMapStatus", root);
+    if (status) {
+      var statusRaw = String(status.textContent || "").replace(/\s+/g, " ").trim();
+      var count = statusRaw.match(/^(\d+)\s+(?:PONTO(?:S)? MAPEADO(?:S)?|MAPPED POINTS?|개 지점 매핑됨)$/i);
+      if (count) {
+        var amount = Number(count[1]);
+        setText(status, formatTranslation(amount === 1 ? "dekyu.mappedPointOne" : "dekyu.mappedPointMany", amount === 1 ? "{count} PONTO MAPEADO" : "{count} PONTOS MAPEADOS", { count: amount }));
+      } else if (/^(SEM DADOS|NO DATA|데이터 없음)$/i.test(statusRaw)) setText(status, translate("dekyu.noData", "SEM DADOS"));
+      else if (/carregando coordenadas|loading coordinates|좌표.*불러/i.test(statusRaw)) setText(status, translate("dekyu.loadingCoordinates", "Carregando coordenadas..."));
+    }
+
+    var empty = one("#dekyuEmpty", root);
+    if (empty) {
+      var emptyRaw = String(empty.textContent || "").trim();
+      if (/^(Nenhum mapa disponível\.|No map available\.|사용 가능한 맵이 없습니다\.)$/i.test(emptyRaw)) setText(empty, translate("dekyu.noMap", "Nenhum mapa disponível."));
+      else if (/^O mapa ainda não foi encontrado na pasta DSR MAPS\.|not yet.*DSR MAPS|DSR MAPS.*찾지 못/i.test(emptyRaw)) setText(empty, translate("dekyu.mapMissing", "O mapa ainda não foi encontrado na pasta DSR MAPS."));
+      else if (/^(Carregando mapa\.\.\.|Loading map\.\.\.|맵 불러오는 중\.\.\.)$/i.test(emptyRaw)) setText(empty, translate("dekyu.loadingMap", "Carregando mapa..."));
+      else if (/^(Não foi possível carregar este mapa\.|Could not load this map\.|이 맵을 불러올 수 없습니다\.)$/i.test(emptyRaw)) setText(empty, translate("dekyu.mapLoadError", "Não foi possível carregar este mapa."));
+      else {
+        var err = emptyRaw.match(/^(?:Erro ao carregar Dekyu Treasure\.|Could not load Dekyu Treasure\.|Dekyu Treasure를 불러오지 못했습니다\.)\s*(.*)$/i);
+        if (err) setText(empty, translate("dekyu.treasureLoadError", "Erro ao carregar Dekyu Treasure.") + (err[1] ? " " + err[1] : ""));
+      }
+    }
+
+    all("#dekyuZone option", root).forEach(function (option) {
+      var raw = String(option.textContent || "").trim();
+      if (/^(Carregando áreas\.\.\.|Loading areas\.\.\.|지역 불러오는 중\.\.\.)$/i.test(raw)) setText(option, translate("dekyu.loadingAreas", "Carregando áreas..."));
+      else if (/^(Erro ao carregar áreas|Error loading areas|지역을 불러오지 못했습니다)$/i.test(raw)) setText(option, translate("dekyu.areasLoadError", "Erro ao carregar áreas"));
+    });
+    all("#dekyuMap option", root).forEach(function (option) {
+      var raw = String(option.textContent || "").trim();
+      if (/^(Carregando mapas\.\.\.|Loading maps\.\.\.|맵 불러오는 중\.\.\.)$/i.test(raw)) setText(option, translate("dekyu.loadingMaps", "Carregando mapas..."));
+      else if (/^(Erro ao carregar mapas|Error loading maps|맵을 불러오지 못했습니다)$/i.test(raw)) setText(option, translate("dekyu.mapsLoadError", "Erro ao carregar mapas"));
+    });
+
+    var respawnSmall = one(".dekyu-respawn > small", root);
+    if (respawnSmall) {
+      var timeEl = one("#dekyuNextTime", respawnSmall);
+      var time = timeEl ? String(timeEl.textContent || "--:--").trim() : "--:--";
+      setHtml(respawnSmall, formatTranslation("dekyu.atBrasilia", "ÀS <b>{time}</b> • HORÁRIO DE BRASÍLIA", { time: escapeHtml(time) }));
+      var newTime = one("#dekyuNextTime", respawnSmall);
+      if (newTime) newTime.id = "dekyuNextTime";
+    }
+  }
+
+  function applyImpmonLiveTranslations() {
+    var root = document.getElementById("hgImpmonLive");
+    if (!root) return;
+
+    var toggle = one("#hgImpmonLiveToggle", root);
+    if (toggle) {
+      var minimized = root.classList.contains("hg-impmon-minimized");
+      setAttr(toggle, "aria-label", translate(minimized ? "live.showAria" : "live.minimizeAria", minimized ? "Mostrar aviso de lives" : "Minimizar aviso de lives"));
+      setAttr(toggle, "title", translate(minimized ? "live.showTitle" : "live.minimizeTitle", minimized ? "Mostrar Impmon" : "Minimizar"));
+    }
+
+    var names = one("#hgImpmonLiveNames", root);
+    var single = names ? one(".hg-impmon-single-name", names) : null;
+    var links = names ? all(".hg-impmon-live-name", names) : [];
+    if (names && !single && !links.length) {
+      var placeholder = String(names.textContent || "").trim();
+      if (/^(STREAMERS HG|HG STREAMERS|HG 스트리머)$/i.test(placeholder)) setText(names, translate("live.streamers", "STREAMERS HG"));
+    }
+
+    var status = one("#hgImpmonLiveStatus", root);
+    var hint = one("#hgImpmonLiveHint", root);
+    if (single) {
+      setText(status, translate("live.singleStatus", "🔴 AO VIVO AGORA"));
+      setText(hint, translate("live.singleHint", "CLIQUE NO IMPMON PARA ASSISTIR"));
+    } else if (links.length) {
+      setText(status, formatTranslation("live.multiStatus", "🔴 {count} AO VIVO AGORA", { count: links.length }));
+      setText(hint, translate("live.multiHint", "CLIQUE NO NOME PARA ASSISTIR"));
+    }
+  }
+
   function applyStaticTranslations() {
     all("[data-i18n]").forEach(function (element) {
       var key = element.getAttribute("data-i18n");
@@ -443,6 +680,10 @@
     applyHiddenStaticTranslations();
     applyDigidexStaticTranslations();
     applyCounterStaticTranslations();
+    applyHeaderEventTranslations();
+    applyRaidStaticTranslations();
+    applyDekyuStaticTranslations();
+    applyImpmonLiveTranslations();
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
@@ -1134,6 +1375,10 @@
     applyHiddenDynamicTranslations();
     applyDigidexDynamicTranslations();
     applyCounterDynamicTranslations();
+    applyHeaderEventTranslations();
+    applyRaidDynamicTranslations();
+    applyDekyuDynamicTranslations();
+    applyImpmonLiveTranslations();
     applyKoreanReferenceTranslations();
     applyCounterTooltipTranslations();
   }
@@ -1150,7 +1395,7 @@
   function installObservers() {
     if (observerInstalled || typeof MutationObserver === "undefined") return;
     observerInstalled = true;
-    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina")].forEach(function (root) {
+    [document.getElementById("homePagina"), document.getElementById("hiddenQuestsPagina"), document.getElementById("databasePagina"), document.getElementById("counterFinderPagina"), document.getElementById("raidBossPagina"), document.getElementById("dekyuTreasurePagina"), document.getElementById("hgImpmonLive"), document.getElementById("siteTopbar")].forEach(function (root) {
       if (!root) return;
       var observer = new MutationObserver(function () { queueDynamicTranslations(); });
       observer.observe(root, { childList: true, subtree: true, characterData: true });
