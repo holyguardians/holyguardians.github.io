@@ -2745,6 +2745,21 @@
     applySorteioStaticTranslations();
     applyPvpStaticTranslations();
     applyMobilePageTitleTranslation();
+    /* A header principal é estática, mas não usa data-i18n porque os ícones
+       são inseridos pelo script do site. Traduzimos seus rótulos diretamente
+       toda vez que o idioma muda. */
+    var navLabels = [
+      ["#btnHome > span", "nav.home", "Home"],
+      ["#btnDatabase > span", "nav.digidex", "DIGIDEX"],
+      ["#btnBuilder > span", "nav.teamBuilder", "Team Builder"],
+      ["#btnElementos > span", "nav.elements", "Elementos"],
+      ["#btnCalculadora > span", "nav.calculator", "Calculadora"],
+      ["#btnPvp > span", "nav.pvp", "PvP"],
+      ["#btnFeatures > span", "nav.content", "Conteúdos"],
+      ["#btnSocial > span", "nav.community", "Comunidade"],
+      ["#btnMore > span", "nav.more", "Mais"]
+    ];
+    navLabels.forEach(function (entry) { setText(one(entry[0]), translate(entry[1], entry[2])); });
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
   }
