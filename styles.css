@@ -525,6 +525,29 @@ body {
 
 }
 
+.hero-official-notice {
+  display: block;
+  max-width: 590px;
+  margin-top: 13px;
+  color: #9fc4df;
+  font-size: 10px;
+  line-height: 1.48;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+}
+
+.hero-official-notice a {
+  color: #66dcff;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(102,220,255,.46);
+}
+
+.hero-official-notice a:hover,
+.hero-official-notice a:focus-visible {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
 
 /* =====================================================
    BOTÕES HERO
