@@ -160,6 +160,28 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
 }
 @media (max-width:800px){.digi-device{background-image:none!important}}
 
+/* Pulso vivo sobre os LEDs desenhados na moldura PNG. */
+@media (min-width:801px){
+  .digi-device-menu .digi-device-streamer-button:before,.digi-device-free-orb:before{content:"";position:absolute;inset:10%;display:block;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,79,61,.62) 0,rgba(244,0,16,.24) 38%,rgba(255,0,0,0) 72%);mix-blend-mode:screen;animation:digiFrameLedPulse 1.3s ease-in-out infinite}
+  .digi-device-menu .digi-device-streamer-button.active:before,.digi-device-free-orb.active:before{animation-duration:.72s}
+}
+@keyframes digiFrameLedPulse{50%{opacity:.22;transform:scale(.72)}0%,100%{opacity:.92;transform:scale(1.08)}}
+
+/* Polimento dos encaixes da moldura. */
+@media (min-width:801px){
+  .digi-device-plaque{left:36.35%!important;width:27.5%!important;display:flex!important;align-items:center!important;justify-content:center!important}
+  .digi-device-plaque strong{width:100%!important;text-align:center!important;letter-spacing:.1em!important;text-shadow:0 0 4px #c6ff21,0 0 11px rgba(163,255,34,.98),0 0 24px rgba(118,255,23,.65)!important}
+  .digi-device-history{top:30.1%!important;height:31.8%!important}
+  .digi-device-history>span{display:none!important}
+  .digi-device-history>div{height:100%!important;display:grid!important;grid-template-rows:repeat(3,1fr)!important;gap:5.2%!important}
+  .digi-device-history div span,.digi-device-history div em{height:auto!important;min-height:0!important}
+  .digi-device-search{z-index:1000!important}
+  .digi-device .digi-device-input{z-index:1001!important}
+  .digi-device .digi-suggestions{z-index:1002!important}
+  .digi-device-menu .digi-device-streamer-button:hover:after{left:50%!important;bottom:calc(100% + 10px)!important;top:auto!important;z-index:1100!important;white-space:nowrap!important}
+  .digi-device-free-orb:hover:after{z-index:1100!important;white-space:nowrap!important}
+}
+
 /* Carcaça externa: a silhueta não recorta nem desloca o conteúdo interno. */
 @media (min-width:801px){
   .digi-device{isolation:isolate;clip-path:none;filter:none;border:0;border-radius:0;background:transparent;box-shadow:none}
