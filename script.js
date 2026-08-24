@@ -2314,6 +2314,8 @@ function mostrarPagina(
   atualizarUrl = true
 ) {
 
+  if (id !== "digiGuessPagina" && id !== "digiZoomPagina") document.body.classList.remove("hg-digi-streamer-active");
+
   /* Se o usuário sair pela URL/voltar do navegador, não deixa o header
      preso como oculto por um modo stream de outra ferramenta. */
   if (id !== "sorteioPagina" && document.body.classList.contains("hg-sorteio-stream-body") && typeof sorteioAlternarModoStream === "function") {

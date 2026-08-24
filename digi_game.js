@@ -178,7 +178,7 @@
 
   function zoomBoard(state) {
     var wrong = state.attempts.filter(function (item) { return item.id !== state.target.id; }).length;
-    var scale = Math.max(1, 9 - wrong * .72);
+    var scale = Math.max(1, 16 - wrong * 1.2);
     return '<div class="digi-zoom-board"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div><div class="digi-zoom-info"><small>' + escapeHtml(t("digi.zoomLevel", "NÍVEL DE ZOOM")) + "</small><strong>" + Math.round(scale * 100) + '%</strong><p>' + escapeHtml(t("digi.zoomHint", "Cada erro revela mais da imagem.")) + "</p></div></div>";
   }
 
@@ -186,6 +186,7 @@
     var state = games[mode];
     var root = document.querySelector('[data-digi-game="' + mode + '"]');
     if (!state || !root) return;
+    document.body.classList.toggle("hg-digi-streamer-active", !!state.streamer);
     var limit = state.free ? "∞" : "8";
     root.innerHTML = '<div class="digi-game-wrap">' + modeHeader(state) +
       '<div class="digi-game-status"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + state.attempts.length + '/' + limit + "</strong></div>" +
@@ -223,7 +224,7 @@
     var other = root.querySelector("[data-digi-other]");
     if (other) other.addEventListener("click", function () { other.getAttribute("data-digi-other") === "guess" ? window.abrirDigiGuess() : window.abrirDigiZoom(); });
     var streamer = root.querySelector("[data-digi-streamer]");
-    if (streamer) streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); });
+    if (streamer) streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); window.scrollTo({ top: 0, behavior: "smooth" }); });
     var reveal = root.querySelector("[data-digi-reveal]");
     if (reveal) reveal.addEventListener("click", function () { state.revealed = true; render(mode); });
     var credit = root.querySelector("[data-digi-credit]");
