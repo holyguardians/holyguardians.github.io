@@ -10963,6 +10963,27 @@ function raidHomeEventoChave(raid) {
   return String(raid.name || "") + "|" + (raid.nextTime instanceof Date ? raid.nextTime.getTime() : "");
 }
 
+function renderizarMiniMapaRaidHome(raid, indice) {
+  if (!raid || !raid.mapPath) return "";
+
+  const marcadores = (Array.isArray(raid.spots) ? raid.spots : []).map(function(spot) {
+    const x = Number(spot && spot.x);
+    const y = Number(spot && spot.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return "";
+    return `<span class="raid-home-map-marker" style="left:${Math.max(0, Math.min(100, x))}%;top:${Math.max(0, Math.min(100, y))}%"><img src="raid_marker.png" alt="" aria-hidden="true"></span>`;
+  }).join("");
+
+  return `
+    <button class="raid-home-map-preview" type="button" onclick="abrirMapaRaid(${indice})" aria-label="Abrir mapa de ${escaparHtml(raid.map || "Raid Boss")}">
+      <span class="raid-home-map-preview-head"><small class="raid-home-map-preview-kicker">MAPA DE SPAWN</small><strong class="raid-home-preview-name">${escaparHtml(raid.map || "Mapa indisponível")}</strong></span>
+      <span class="raid-home-map-preview-stage">
+        <img src="${escaparHtml(raid.mapPath)}" alt="${escaparHtml(raid.map || "Mapa do raid")}">
+        <span class="raid-home-map-markers">${marcadores}</span>
+      </span>
+    </button>
+  `;
+}
+
 function formatarRaidBrt(data) {
   if (!(data instanceof Date) || Number.isNaN(data.getTime())) return "HORÁRIO INDISPONÍVEL";
   try {
@@ -11024,21 +11045,19 @@ function renderizarRaidHomeCarousel() {
           ${raid.rotation ? '<span class="raid-home-rotation">↻ ROTAÇÃO</span>' : ""}
         </div>
 
-        <div class="raid-home-body">
+        <div class="raid-home-body ${raid.mapPath ? "has-map" : ""}">
           <button class="raid-home-icon" type="button" onclick="abrirRaidHomeNaPagina(${indice})" aria-label="Abrir ${escaparHtml(raid.name || "Raid Boss")}">
             <img src="${escaparHtml(raid.iconPath || "icon_raid.png")}" alt="${escaparHtml(raid.name || "Raid Boss")}">
           </button>
           <div class="raid-home-info">
             <div class="raid-home-type">${renderizarTypeIcon(atributo, true)}</div>
             <h3>${escaparHtml(raid.name || "Raid Boss")}</h3>
-            <button class="raid-home-map" type="button" onclick="abrirMapaRaid(${indice})">
-              ${escaparHtml(raid.map || "Mapa indisponível")} <span>⌖</span>
-            </button>
             <div class="raid-home-meta">
               <span>LV. ${escaparHtml(raid.level || "-")}</span>
               <span>HP ${formatarRaidHp(raid.hp)}</span>
             </div>
           </div>
+          ${renderizarMiniMapaRaidHome(raid, indice)}
         </div>
 
         <div class="raid-home-time">

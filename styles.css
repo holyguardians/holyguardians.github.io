@@ -24780,6 +24780,11 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   gap: 15px;
 }
 
+.raid-home-body.has-map {
+  grid-template-columns: 86px minmax(0, .76fr) minmax(220px, 1.05fr);
+  gap: 16px;
+}
+
 .raid-home-icon {
   width: 82px;
   height: 82px;
@@ -24821,24 +24826,37 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   text-shadow: 0 0 10px rgba(75, 195, 255, .12);
 }
 
-.raid-home-map {
-  max-width: 100%;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0;
+.raid-home-map-preview {
+  position: relative;
+  display: block;
+  min-width: 0;
+  align-self: stretch;
+  padding: 6px;
   overflow: hidden;
-  border: 0;
-  color: #6acfff;
-  background: transparent;
+  border: 1px solid rgba(68, 201, 255, .35);
+  border-radius: 8px;
+  color: inherit;
+  background: linear-gradient(135deg, rgba(5, 33, 64, .88), rgba(3, 17, 39, .92));
+  box-shadow: inset 0 0 18px rgba(46, 181, 249, .055);
   font-family: inherit;
-  font-size: 8px;
-  font-weight: 800;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  text-align: left;
   cursor: pointer;
 }
-.raid-home-map:hover { color: #b8efff; }
+.raid-home-map-preview::before,
+.raid-home-map-preview::after { content: ""; position: absolute; z-index: 3; width: 12px; height: 12px; pointer-events: none; }
+.raid-home-map-preview::before { left: 3px; top: 3px; border-left: 1px solid #65e8ff; border-top: 1px solid #65e8ff; }
+.raid-home-map-preview::after { right: 3px; bottom: 3px; border-right: 1px solid #65e8ff; border-bottom: 1px solid #65e8ff; }
+.raid-home-map-preview:hover,
+.raid-home-map-preview:focus-visible { outline: 0; border-color: rgba(105, 230, 255, .9); box-shadow: inset 0 0 20px rgba(42, 195, 255, .11), 0 0 14px rgba(50, 200, 255, .12); }
+.raid-home-map-preview-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; margin-bottom: 5px; }
+.raid-home-map-preview-kicker { flex: 0 0 auto; color: #5edfff; font-size: 5.5px; font-weight: 1000; letter-spacing: .11em; }
+.raid-home-preview-name { overflow: hidden; color: #b9eaff; font-size: 7px; font-weight: 900; white-space: nowrap; text-overflow: ellipsis; }
+.raid-home-map-preview-stage { position: relative; display: block; height: 104px; overflow: hidden; border: 1px solid rgba(98, 202, 245, .2); border-radius: 5px; background: #020b18; line-height: 0; }
+.raid-home-map-preview-stage > img { width: 100%; height: 100%; display: block; object-fit: cover; opacity: .92; transition: transform .2s ease, opacity .2s ease; }
+.raid-home-map-preview:hover .raid-home-map-preview-stage > img { transform: scale(1.035); opacity: 1; }
+.raid-home-map-markers { position: absolute; inset: 0; pointer-events: none; }
+.raid-home-map-marker { position: absolute; z-index: 2; width: 24px; height: 29px; transform: translate(-50%, -100%); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .85)); }
+.raid-home-map-marker img { width: 100%; height: 100%; object-fit: contain; }
 
 .raid-home-meta {
   display: flex;
@@ -25011,6 +25029,17 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 
 @media (max-width: 1280px) {
   .raid-home-info h3 { font-size: 15px; }
+  .raid-home-body.has-map { grid-template-columns: 76px minmax(0, .72fr) minmax(190px, 1fr); gap: 11px; }
+  .raid-home-map-preview-stage { height: 94px; }
+}
+
+@media (max-width: 920px) {
+  .raid-home-track { height: 410px; }
+  .raid-home-carousel { min-height: 438px; }
+  .raid-home-card { min-height: 390px; }
+  .raid-home-body.has-map { grid-template-columns: 70px minmax(0, 1fr); align-items: center; }
+  .raid-home-body.has-map .raid-home-map-preview { grid-column: 1 / -1; min-height: 105px; }
+  .raid-home-map-preview-stage { height: 92px; }
 }
 
 @media (max-width: 760px) {
@@ -25025,6 +25054,10 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   .raid-home-time strong { order: -1; font-size: 15px; }
   .raid-home-arrow { width: 29px; height: 50px; }
   .raid-home-heading-status { display: none; }
+  .raid-home-track { height: 420px; }
+  .raid-home-carousel { min-height: 448px; }
+  .raid-home-card { min-height: 400px; }
+  .raid-home-map-preview-stage { height: 88px; }
 }
 
 /* ---------- COUNTER FINDER ---------- */

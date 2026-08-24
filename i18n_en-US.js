@@ -32,6 +32,7 @@ window.HG_I18N["en-US"] = {
   "home.welcome": "WELCOME TO",
   "home.motto": "STRENGTH • UNITY • EVOLUTION",
   "home.heroLead": "<strong>More than a guild, a family.</strong><br>Since 2012, building our story in the Digimon world and standing out across different generations and servers.<span class=\"hero-official-notice\"><a href=\"https://www.digimonsuperrumble.com\" target=\"_blank\" rel=\"noopener noreferrer\">Digimon Super Rumble</a> and <a href=\"https://ptladmo.gameking.com/Main/Main.aspx\" target=\"_blank\" rel=\"noopener noreferrer\">Digimon Masters Online</a> are official GameKing games. Holy Guardians is an independent community and is not officially affiliated with GameKing.</span>",
+  "home.spawnMap": "SPAWN MAP",
   "home.openDigidex": "OPEN DIGIDEX",
   "home.buildTeam": "BUILD TEAM",
   "home.raidBosses": "Raid Bosses",

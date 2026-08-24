@@ -32,6 +32,7 @@ window.HG_I18N["ko-KR"] = {
   "home.welcome": "환영합니다",
   "home.motto": "힘 • 단결 • 진화",
   "home.heroLead": "<strong>길드 그 이상, 하나의 가족.</strong><br>2012년부터 디지몬 세계에서 역사를 만들어 오며 여러 세대와 서버에서 함께 성장해 왔습니다.<span class=\"hero-official-notice\"><a href=\"https://www.digimonsuperrumble.com\" target=\"_blank\" rel=\"noopener noreferrer\">Digimon Super Rumble</a>과 <a href=\"https://ptladmo.gameking.com/Main/Main.aspx\" target=\"_blank\" rel=\"noopener noreferrer\">Digimon Masters Online</a>은 GameKing의 공식 게임입니다. Holy Guardians는 GameKing과 공식 제휴 관계가 없는 독립 커뮤니티입니다.</span>",
+  "home.spawnMap": "스폰 맵",
   "home.openDigidex": "디지덱스 열기",
   "home.buildTeam": "팀 구성",
   "home.raidBosses": "레이드 보스",

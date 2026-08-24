@@ -823,7 +823,7 @@
 
     all("#raidHomeTrack .raid-home-card", home).forEach(function (card) {
       phase6ApplyReferenceText(one(".raid-home-info h3", card), koRaidBossName, "data-hg-home-boss-original");
-      phase6ApplyReferenceDirectText(one(".raid-home-map", card), koMapName, "data-hg-home-raid-map-original");
+      phase6ApplyReferenceDirectText(one(".raid-home-preview-name", card), koMapName, "data-hg-home-raid-map-original");
     });
 
     all("#ofdHomeList .ofd-home-card, #ofdWeekList .ofd-week-card", home).forEach(function (card) {
@@ -2995,10 +2995,7 @@
       }
       var rotation = one(".raid-home-rotation", card);
       if (rotation) setText(rotation, "↻ " + translate("home.rotation", "ROTAÇÃO"));
-      var mapButton = one(".raid-home-map", card);
-      if (mapButton && /Mapa indisponível|Map unavailable|지도 없음/i.test(mapButton.textContent || "")) {
-        setHtml(mapButton, escapeHtml(translate("home.mapUnavailable", "Mapa indisponível")) + " <span>⌖</span>");
-      }
+      all(".raid-home-map-preview-kicker", card).forEach(function (el) { setText(el, translate("home.spawnMap", "MAPA DE SPAWN")); });
       var openButton = one(".raid-home-open", card);
       if (openButton) replaceDirectText(openButton, /VER AGENDA DE RAID|VIEW RAID SCHEDULE|레이드 일정 보기/i, translate("home.viewRaidSchedule", "VER AGENDA DE RAID"));
       var brt = one(".raid-home-time small", card);
