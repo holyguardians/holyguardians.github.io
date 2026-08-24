@@ -110,7 +110,7 @@
         byId: byId,
         target: free ? list[Math.floor(Math.random() * list.length)] : dailyTarget(list, mode),
         attempts: [],
-        finished: false,
+        finished: false, streamer: false, revealed: false,
         query: ""
       };
       restoreGame(state);
@@ -140,6 +140,7 @@
         resultCell(t("digi.type", "TYPE"), displayList(guess.type), comparison(guess, answer, "type")) +
         resultCell(t("digi.field", "FIELD"), displayList(guess.field), comparison(guess, answer, "field")) +
         resultCell(t("digi.year", "YEAR"), guess.year || "—", comparison(guess, answer, "year")) +
+        resultCell("X-ANTIBODY", "—", { tone: "wrong", marker: "×" }) +
       "</article>";
     }).join("");
   }
@@ -157,6 +158,7 @@
 
   function resultBanner(state) {
     if (!state.finished) return "";
+    if (state.streamer && !state.revealed) return '<div class="digi-result-banner streamer"><div><small>RESPOSTA PROTEGIDA PARA A LIVE</small><button type="button" data-digi-reveal>REVELAR RESPOSTA</button></div></div>';
     var won = state.attempts.some(function (item) { return item.id === state.target.id; });
     return '<div class="digi-result-banner ' + (won ? "won" : "lost") + '"><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(state.target.name) + "</strong></div></div>";
   }
@@ -166,7 +168,7 @@
     var otherLabel = state.mode === "guess" ? "DIGI ZOOM" : "DIGI GUESS";
     var title = state.mode === "guess" ? "DIGI GUESS" : "DIGI ZOOM";
     var description = state.mode === "guess" ? t("digi.guessDescription", "Descubra o Digimon pelas pistas. Você tem 8 tentativas no desafio diário.") : t("digi.zoomDescription", "Identifique o Digimon escondido. A imagem revela mais a cada erro.");
-    return '<header class="digi-game-header tech-corners"><div><small>HOLY GUARDIANS // DIGIMON ARCHIVE</small><h1>' + title + '</h1><p>' + escapeHtml(description) + '</p></div><div class="digi-game-header-actions"><button type="button" data-digi-other="' + other + '">' + otherLabel + ' <span>→</span></button><button type="button" class="' + (state.free ? "active" : "") + '" data-digi-free>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + "</button></div></header>";
+    return '<header class="digi-game-header tech-corners"><div><small>HOLY GUARDIANS // DIGIMON ARCHIVE</small><h1>' + title + '</h1><p>' + escapeHtml(description) + '</p></div><div class="digi-game-header-actions"><button type="button" data-digi-credit>CRÉDITOS DA API</button><button type="button" data-digi-other="' + other + '">' + otherLabel + ' <span>→</span></button><button type="button" class="' + (state.free ? "active" : "") + '" data-digi-free>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</button><button type="button" class="' + (state.streamer ? "active" : "") + '" data-digi-streamer>MODO STREAMER</button></div></header>';
   }
 
   function inputPanel(state) {
@@ -176,7 +178,7 @@
 
   function zoomBoard(state) {
     var wrong = state.attempts.filter(function (item) { return item.id !== state.target.id; }).length;
-    var scale = Math.max(1, 4.8 - wrong * .42);
+    var scale = Math.max(1, 9 - wrong * .72);
     return '<div class="digi-zoom-board"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div><div class="digi-zoom-info"><small>' + escapeHtml(t("digi.zoomLevel", "NÍVEL DE ZOOM")) + "</small><strong>" + Math.round(scale * 100) + '%</strong><p>' + escapeHtml(t("digi.zoomHint", "Cada erro revela mais da imagem.")) + "</p></div></div>";
   }
 
@@ -220,6 +222,12 @@
     if (fresh && state.free) fresh.addEventListener("click", function () { newGame(mode, true); });
     var other = root.querySelector("[data-digi-other]");
     if (other) other.addEventListener("click", function () { other.getAttribute("data-digi-other") === "guess" ? window.abrirDigiGuess() : window.abrirDigiZoom(); });
+    var streamer = root.querySelector("[data-digi-streamer]");
+    if (streamer) streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); });
+    var reveal = root.querySelector("[data-digi-reveal]");
+    if (reveal) reveal.addEventListener("click", function () { state.revealed = true; render(mode); });
+    var credit = root.querySelector("[data-digi-credit]");
+    if (credit) credit.addEventListener("click", function () { window.open("https://digi-api.com/about", "_blank", "noopener"); });
   }
 
   function bindSuggestions(mode, root) {
