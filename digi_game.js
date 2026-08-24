@@ -209,9 +209,10 @@
     var other = "guess";
     var latest = state.attempts.slice(-3).reverse();
     var attempts = String(state.attempts.length);
-    var history = latest.length ? latest.map(function (item, index) {
-      return '<span class="' + (item.id === state.target.id ? "correct" : "") + '"><b>0' + (index + 1) + '</b>' + escapeHtml(displayName(item)) + '</span>';
-    }).join("") : '<em>' + escapeHtml(t("digi.empty", "Sua primeira tentativa aparecerá aqui.")) + "</em>";
+    var history = [0, 1, 2].map(function (index) {
+      var item = latest[index];
+      return item ? '<span class="' + (item.id === state.target.id ? "correct" : "") + '"><b>0' + (index + 1) + '</b>' + escapeHtml(displayName(item)) + '</span>' : '<span class="digi-history-empty" aria-hidden="true"></span>';
+    }).join("");
     var panel = state.finished
       ? '<button type="button" class="digi-device-new" data-digi-new>' + escapeHtml(state.free ? t("digi.newFree", "NOVO DIGIMON") : t("digi.playTomorrow", "VOLTE AMANHÃ")) + "</button>"
       : '<div class="digi-device-input"><input id="digiGameInput" autocomplete="off" placeholder="' + escapeHtml(t("digi.placeholder", "Digite o nome de um Digimon...")) + '" value="' + escapeHtml(state.query) + '"><button type="button" data-digi-submit>' + escapeHtml(t("digi.guess", "TENTAR")) + '</button><div id="digiSuggestions" class="digi-suggestions"></div></div>';
