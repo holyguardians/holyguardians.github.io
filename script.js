@@ -4,7 +4,7 @@
 ===================================================== */
 
 const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.workers.dev";
-const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v1_";
+const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v2_";
 
 function tempoCacheApiNavegador(api) {
   const minutos = {
@@ -13,8 +13,8 @@ function tempoCacheApiNavegador(api) {
     "evolution-master": 60,
     images: 360,
     staff: 30,
-    "raid-config": 5,
-    "raid-bosses": 5,
+    "raid-config": 1,
+    "raid-bosses": 1,
     "dekyu-treasures": 30,
     social: 5,
     ofds: 5
