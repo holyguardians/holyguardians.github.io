@@ -79,8 +79,9 @@
     return { tone: "wrong", marker: "×" };
   }
 
+  function safeTargetPool(list) { return list.filter(function (item) { var levels = item.level || []; return levels.length === 1 || levels.indexOf("Armor") !== -1 || levels.indexOf("Hybrid") !== -1 || item.name === "Angewomon"; }); }
   function dailyTarget(list, mode, offsetDays) {
-    return list[hash(dateKey(offsetDays) + "::" + mode) % list.length];
+    var pool = safeTargetPool(list); return pool[hash(dateKey(offsetDays) + "::" + mode) % pool.length];
   }
 
   function gameStorageKey(mode, free) {
@@ -115,7 +116,7 @@
         free: !!free,
         list: list,
         byId: byId,
-        target: free ? list[Math.floor(Math.random() * list.length)] : dailyTarget(list, mode, 0),
+        target: free ? safeTargetPool(list)[Math.floor(Math.random() * safeTargetPool(list).length)] : dailyTarget(list, mode, 0),
         previous: free ? null : dailyTarget(list, mode, -1),
         attempts: [],
         finished: false, streamer: false, revealed: false,
@@ -149,7 +150,7 @@
   }
 
   function hasXAntibody(item) {
-    return /x[- ]?antibody/i.test(String(item && item.name || ""));
+    return !!(item && item.xAntibody);
   }
 
   function guessRows(state) {
