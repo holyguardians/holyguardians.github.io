@@ -26400,7 +26400,7 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
    visual do boss dentro do card do carrossel.
 ===================================================== */
 @media (min-width: 761px) {
-  #homePagina .raid-home-body {
+  #homePagina .raid-home-body:not(.has-map) {
     width: min(100%, 390px);
     margin-inline: auto;
     grid-template-columns: 86px minmax(0, 1fr);
@@ -26409,6 +26409,15 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 
   #homePagina .raid-home-info {
     min-width: 0;
+  }
+}
+
+@media (min-width: 921px) {
+  #homePagina .raid-home-body.has-map {
+    width: min(100%, 920px);
+    margin-inline: auto;
+    grid-template-columns: 86px minmax(0, .72fr) minmax(250px, 1.08fr);
+    justify-content: stretch;
   }
 }
 
