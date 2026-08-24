@@ -17,7 +17,7 @@
   var VALUE_TRANSLATIONS = {"pt-BR":{"Baby I":"Baby I","Baby II":"Baby II","Child":"Rookie","Adult":"Champion","Perfect":"Ultimate","Ultimate":"Mega","Armor":"Armor","Hybrid":"Hybrid","Vaccine":"Vacina","Virus":"Vírus","Data":"Dados","Free":"Livre","Unknown":"Desconhecido","Reptile":"Réptil","Dinosaur":"Dinossauro","Demon Lord":"Lorde Demônio","Deep Savers":"Salvadores Profundos","Dragon's Roar":"Rugido do Dragão","Metal Empire":"Império do Metal","Nature Spirits":"Espíritos da Natureza","Nightmare Soldiers":"Soldados do Pesadelo","Virus Busters":"Caçadores de Vírus"},"ko-KR":{"Baby I":"유년기 I","Baby II":"유년기 II","Child":"성장기","Adult":"성숙기","Perfect":"완전체","Ultimate":"궁극체","Armor":"아머체","Hybrid":"하이브리드체","Vaccine":"백신","Virus":"바이러스","Data":"데이터","Free":"프리","Unknown":"언노운","Reptile":"파충류","Dinosaur":"공룡형","Demon Lord":"마왕형","Deep Savers":"딥 세이버즈","Dragon's Roar":"드래곤즈 로어","Metal Empire":"메탈 엠파이어","Nature Spirits":"네이처 스피릿츠","Nightmare Soldiers":"나이트메어 솔저스","Virus Busters":"바이러스 버스터즈"}};
   function displayValue(value) { return (VALUE_TRANSLATIONS[language()] || {})[value] || value; }
   function displayName(item) { var name = String(item && item.name || ""); var names = language() === "ko-KR" && window.HG_I18N && window.HG_I18N["ko-KR"] && window.HG_I18N["ko-KR"].__digimonNames; return names && names[name] ? names[name] : name; }
-  function stageValues(item) { var levels = Array.isArray(item && item.level) ? item.level : []; if (levels.indexOf("Armor") !== -1) return ["Armor"]; if (levels.indexOf("Hybrid") !== -1) return ["Hybrid"]; return levels; }
+  function stageValues(item) { var levels = Array.isArray(item && item.level) ? item.level : []; if (levels.indexOf("Armor") !== -1) return ["Armor"]; if (levels.indexOf("Hybrid") !== -1) return ["Hybrid"]; var order=["Ultimate","Perfect","Adult","Child","Baby II","Baby I","Unknown"]; for(var i=0;i<order.length;i++) if(levels.indexOf(order[i])!==-1) return [order[i]]; return levels; }
 
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -137,10 +137,10 @@
     return '<div class="digi-guess-cell ' + state.tone + '"><strong>' + value + '</strong><b>' + state.marker + "</b></div>";
   }
 
-  function valueList(values, answerValues) {
+  function valueList(values, answerValues, highlightMatchesOnly) {
     var list = Array.isArray(values) ? values : [];
     return '<span class="digi-value-list">' + (list.length ? list.map(function (value) {
-      return '<i class="' + ((answerValues || []).indexOf(value) !== -1 ? 'match' : '') + '">' + escapeHtml(displayValue(value)) + '</i>';
+      return '<i class="' + (!highlightMatchesOnly || (answerValues || []).indexOf(value) !== -1 ? 'match' : '') + '">' + escapeHtml(displayValue(value)) + '</i>';
     }).join('') : '<i>—</i>') + '</span>';
   }
 
@@ -158,10 +158,10 @@
     return state.attempts.slice().reverse().map(function (guess) {
       return '<article class="digi-guess-row">' +
         '<div class="digi-guess-name"><img src="' + escapeHtml(guess.image) + '" alt=""><strong>' + escapeHtml(displayName(guess)) + "</strong></div>" +
-        resultCell('', valueList(stageValues(guess), stageValues(answer)), (function(){ var g={level:stageValues(guess)},a={level:stageValues(answer)}; return comparison(g,a,"level"); }())) +
-        resultCell('', valueList(guess.attribute, answer.attribute), comparison(guess, answer, "attribute")) +
-        resultCell('', valueList(guess.type, answer.type), comparison(guess, answer, "type")) +
-        resultCell('', valueList(guess.field, answer.field), comparison(guess, answer, "field")) +
+        resultCell('', valueList(stageValues(guess), stageValues(answer), false), (function(){ var g={level:stageValues(guess)},a={level:stageValues(answer)}; return comparison(g,a,"level"); }())) +
+        resultCell('', valueList(guess.attribute, answer.attribute, false), comparison(guess, answer, "attribute")) +
+        resultCell('', valueList(guess.type, answer.type, false), comparison(guess, answer, "type")) +
+        resultCell('', valueList(guess.field, answer.field, true), comparison(guess, answer, "field")) +
         resultCell('', escapeHtml(guess.year || "—"), comparison(guess, answer, "year")) +
         resultCell('', hasXAntibody(guess) ? '<span class="digi-x-answer">SIM</span>' : '<span class="digi-x-answer">NÃO</span>', { tone: hasXAntibody(guess) === hasXAntibody(answer) ? "correct" : "wrong", marker: hasXAntibody(guess) === hasXAntibody(answer) ? "✓" : "×" }) +
       "</article>";
