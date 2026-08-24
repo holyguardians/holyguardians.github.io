@@ -96,6 +96,14 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
   .digi-device-free-orb{right:51px;bottom:47px;width:98px;height:98px;border-width:5px;box-shadow:inset 0 0 0 5px rgba(57,0,0,.65),0 0 0 4px #5a0008,0 0 16px rgba(255,36,42,.7)}
 }
 
+/* Microajustes do painel: tooltip do LED esquerdo e respiração suave do título. */
+@media (min-width:801px){
+  .digi-device-plaque{left:37.9%!important}
+  .digi-device-plaque strong{animation:digiZoomLedBreathe 4.8s ease-in-out infinite}
+  .digi-device-menu .digi-device-streamer-button:hover:after{content:attr(aria-label)!important;position:absolute!important;left:50%!important;top:calc(100% + 11px)!important;bottom:auto!important;z-index:999999!important;min-width:max-content!important;padding:6px 8px!important;border:1px solid #ffdb50!important;border-radius:5px!important;color:#fff7c9!important;background:#400008!important;font:1000 7px "Oxanium",sans-serif!important;letter-spacing:.07em!important;transform:translateX(-50%)!important;white-space:nowrap!important}
+}
+@keyframes digiZoomLedBreathe{0%,100%{opacity:.88;text-shadow:0 0 3px #c6ff21,0 0 8px rgba(163,255,34,.65),0 0 18px rgba(118,255,23,.35)}50%{opacity:1;text-shadow:0 0 5px #d8ff5c,0 0 14px rgba(176,255,54,.93),0 0 28px rgba(118,255,23,.58)}}
+
 /* Lista de pesquisa portada para fora da caixa: não pode ficar atrás do visor. */
 @media (min-width:801px){
   .digi-device-plaque{left:37.15%!important;top:7.5%!important}
@@ -104,6 +112,34 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
   .digi-device>.digi-device-suggestions:empty{display:none!important}
   .digi-device>.digi-device-suggestions button{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:auto!important;min-height:38px!important;padding:5px 10px!important;border:1px solid rgba(89,255,145,.22)!important;border-radius:0!important;background:#071e11!important;color:#c5eaff!important;font:800 10px "Oxanium",sans-serif!important;text-align:left!important;transform:none!important}
   .digi-device>.digi-device-suggestions button img{width:28px!important;height:28px!important;object-fit:contain!important}
+}
+
+/* Ajustes finais visíveis: LED do título e dica do botão esquerdo. */
+@media (min-width:801px){
+  .digi-device-plaque{left:37.9%!important;top:7.55%!important}
+  .digi-device-plaque strong{animation:digiZoomLedBreathe 4.8s ease-in-out infinite!important}
+  .digi-device-menu .digi-device-streamer-button:hover:after{
+    content:attr(aria-label)!important;
+    position:absolute!important;
+    left:50%!important;
+    top:calc(100% + 11px)!important;
+    bottom:auto!important;
+    z-index:999999!important;
+    min-width:max-content!important;
+    padding:6px 8px!important;
+    border:1px solid #ffdb50!important;
+    border-radius:5px!important;
+    color:#fff7c9!important;
+    background:#400008!important;
+    font:1000 7px "Oxanium",sans-serif!important;
+    letter-spacing:.07em!important;
+    transform:translateX(-50%)!important;
+    white-space:nowrap!important;
+  }
+}
+@keyframes digiZoomLedBreathe{
+  0%,100%{opacity:.88;text-shadow:0 0 3px #c6ff21,0 0 8px rgba(163,255,34,.65),0 0 18px rgba(118,255,23,.35)}
+  50%{opacity:1;text-shadow:0 0 5px #d8ff5c,0 0 14px rgba(176,255,54,.93),0 0 28px rgba(118,255,23,.58)}
 }
 
 /* Reconstrução do terminal: a carcaça é uma camada atrás do jogo, nunca um recorte sobre ele. */
@@ -230,10 +266,16 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
 
 /* Última camada — portal de sugestões e microalinhamentos. */
 @media (min-width:801px){
-  .digi-device-plaque{left:37.15%!important;top:7.5%!important}
+  .digi-device-plaque{left:37.9%!important;top:7.55%!important}
+  .digi-device-plaque strong{animation:digiZoomLedBreathe 4.8s ease-in-out infinite!important}
   .digi-device-menu>span{left:-2%!important}
+  .digi-device-menu .digi-device-streamer-button:hover:after{content:attr(aria-label)!important;position:absolute!important;left:50%!important;top:calc(100% + 11px)!important;bottom:auto!important;z-index:999999!important;min-width:max-content!important;padding:6px 8px!important;border:1px solid #ffdb50!important;border-radius:5px!important;color:#fff7c9!important;background:#400008!important;font:1000 7px "Oxanium",sans-serif!important;letter-spacing:.07em!important;transform:translateX(-50%)!important;white-space:nowrap!important}
   .digi-device>.digi-device-suggestions{position:absolute!important;z-index:99999!important;left:38.3%!important;top:78.8%!important;width:29.5%!important;max-height:260px!important;overflow:auto!important;border:2px solid #55e88d!important;border-radius:6px!important;background:#031308!important;box-shadow:0 18px 30px rgba(0,0,0,.86)!important}
   .digi-device>.digi-device-suggestions:empty{display:none!important}
   .digi-device>.digi-device-suggestions button{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:auto!important;min-height:38px!important;padding:5px 10px!important;border:1px solid rgba(89,255,145,.22)!important;border-radius:0!important;background:#071e11!important;color:#c5eaff!important;font:800 10px "Oxanium",sans-serif!important;text-align:left!important;transform:none!important}
   .digi-device>.digi-device-suggestions button img{width:28px!important;height:28px!important;object-fit:contain!important}
+}
+@keyframes digiZoomLedBreathe{
+  0%,100%{opacity:.88;text-shadow:0 0 3px #c6ff21,0 0 8px rgba(163,255,34,.65),0 0 18px rgba(118,255,23,.35)}
+  50%{opacity:1;text-shadow:0 0 5px #d8ff5c,0 0 14px rgba(176,255,54,.93),0 0 28px rgba(118,255,23,.58)}
 }
