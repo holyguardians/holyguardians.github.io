@@ -189,6 +189,8 @@
   }
 
   function modeHeader(state) {
+    /* O Digi Zoom tem a própria interface-terminal; o título e os comandos vivem nela. */
+    if (state.mode === "zoom") return "";
     var other = state.mode === "guess" ? "zoom" : "guess";
     var otherLabel = state.mode === "guess" ? "DIGI ZOOM" : "DIGI GUESS";
     var title = state.mode === "guess" ? "DIGI GUESS" : "DIGI ZOOM";
@@ -204,7 +206,23 @@
   function zoomBoard(state) {
     var wrong = state.attempts.filter(function (item) { return item.id !== state.target.id; }).length;
     var scale = Math.max(1, 22 - wrong * 1.55);
-    return '<div class="digi-zoom-board"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div><div class="digi-zoom-info"><p>' + escapeHtml(t("digi.zoomHint", "Cada erro revela mais da imagem.")) + "</p></div></div>";
+    var other = "guess";
+    var latest = state.attempts.slice(-3).reverse();
+    var attempts = String(state.attempts.length);
+    var history = latest.length ? latest.map(function (item, index) {
+      return '<span class="' + (item.id === state.target.id ? "correct" : "") + '"><b>0' + (index + 1) + '</b>' + escapeHtml(displayName(item)) + '</span>';
+    }).join("") : '<em>' + escapeHtml(t("digi.empty", "Sua primeira tentativa aparecerá aqui.")) + "</em>";
+    var panel = state.finished
+      ? '<button type="button" class="digi-device-new" data-digi-new>' + escapeHtml(state.free ? t("digi.newFree", "NOVO DIGIMON") : t("digi.playTomorrow", "VOLTE AMANHÃ")) + "</button>"
+      : '<div class="digi-device-input"><input id="digiGameInput" autocomplete="off" placeholder="' + escapeHtml(t("digi.placeholder", "Digite o nome de um Digimon...")) + '" value="' + escapeHtml(state.query) + '"><button type="button" data-digi-submit>' + escapeHtml(t("digi.guess", "TENTAR")) + '</button><div id="digiSuggestions" class="digi-suggestions"></div></div>';
+    return '<section class="digi-device" aria-label="Digi Zoom terminal">' +
+      '<div class="digi-device-plaque"><small>HOLY GUARDIANS ARCHIVE</small><strong>DIGI ZOOM</strong></div>' +
+      '<aside class="digi-device-menu"><span>ARCHIVE MENU</span><button type="button" data-digi-other="' + other + '">DIGI GUESS</button><button type="button" class="' + (state.free ? "active" : "") + '" data-digi-free>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</button><button type="button" class="' + (state.streamer ? "active" : "") + '" data-digi-streamer>' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '</button><button type="button" data-digi-credit>' + escapeHtml(t("digi.apiCredits", "CRÉDITOS DA API")) + '</button></aside>' +
+      '<div class="digi-device-meta"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + attempts + '</strong></div>' +
+      '<div class="digi-device-screen"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div></div>' +
+      '<div class="digi-device-history"><span>' + escapeHtml(t("digi.latestGuesses", "ÚLTIMOS CHUTES")) + '</span><div>' + history + '</div></div>' +
+      '<div class="digi-device-search"><span>' + escapeHtml(t("digi.search", "QUAL É O DIGIMON?")) + '</span>' + panel + '</div><i class="digi-device-orb" aria-hidden="true"></i>' +
+      '</section>';
   }
 
   function render(mode) {
@@ -213,10 +231,11 @@
     if (!state || !root) return;
     document.body.classList.toggle("hg-digi-streamer-active", !!state.streamer);
     var limit = state.free || mode === "zoom" ? "∞" : "15";
-    root.innerHTML = '<div class="digi-game-wrap">' + modeHeader(state) +
-      '<div class="digi-game-status"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + state.attempts.length + '/' + limit + "</strong></div>" +
-      (mode === "zoom" ? zoomBoard(state) : "") + resultBanner(state) + inputPanel(state) +
-      '<section class="digi-game-results">' + (mode === "guess" ? guessTableHeader() + guessRows(state) : '<div class="digi-zoom-guesses">' + state.attempts.map(function (item) { return '<span class="' + (item.id === state.target.id ? "correct" : "") + '">' + escapeHtml(item.name) + "</span>"; }).join("") + "</div>") + '</section><p class="digi-game-credit">' + escapeHtml(t("digi.dataSource", "Dados dos Digimon por")) + ' <a href="https://digi-api.com" target="_blank" rel="noopener noreferrer">Digi-API</a></p></div>';
+    var regularStatus = '<div class="digi-game-status"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + state.attempts.length + '/' + limit + "</strong></div>";
+    root.innerHTML = '<div class="digi-game-wrap ' + (mode === "zoom" ? "digi-zoom-wrap" : "") + '">' + modeHeader(state) +
+      (mode === "zoom" ? zoomBoard(state) : regularStatus + resultBanner(state) + inputPanel(state)) +
+      (mode === "zoom" ? resultBanner(state) : '') +
+      '<section class="digi-game-results">' + (mode === "guess" ? guessTableHeader() + guessRows(state) : '') + '</section><p class="digi-game-credit">' + escapeHtml(t("digi.dataSource", "Dados dos Digimon por")) + ' <a href="https://digi-api.com" target="_blank" rel="noopener noreferrer">Digi-API</a></p></div>';
     bind(mode, root);
   }
 

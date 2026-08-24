@@ -62,6 +62,7 @@ window.HG_I18N["pt-BR"] = {
   "digi.dataSource": "Dados dos Digimon por",
   "digi.apiCredits": "CRÉDITOS DA API", "digi.streamer": "MODO STREAMER", "digi.reveal": "REVELAR RESPOSTA", "digi.streamerProtected": "RESPOSTA PROTEGIDA PARA A LIVE", "digi.previous": "DESAFIO ANTERIOR",
   "digi.xAntibody": "X-ANTIBODY", "digi.yes": "SIM", "digi.no": "NÃO", "digi.revealing": "REVELANDO DIGIMON...",
+  "digi.latestGuesses": "ÚLTIMOS CHUTES",
   "home.openDigidex": "ACESSAR DIGIDEX",
   "home.buildTeam": "MONTAR TIME",
   "home.raidBosses": "Raid Bosses",

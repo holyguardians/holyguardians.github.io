@@ -62,6 +62,7 @@ window.HG_I18N["en-US"] = {
   "digi.dataSource": "Digimon data by",
   "digi.apiCredits": "API CREDITS", "digi.streamer": "STREAMER MODE", "digi.reveal": "REVEAL ANSWER", "digi.streamerProtected": "ANSWER PROTECTED FOR STREAM", "digi.previous": "PREVIOUS CHALLENGE",
   "digi.xAntibody": "X-ANTIBODY", "digi.yes": "YES", "digi.no": "NO", "digi.revealing": "REVEALING DIGIMON...",
+  "digi.latestGuesses": "LATEST GUESSES",
   "home.openDigidex": "OPEN DIGIDEX",
   "home.buildTeam": "BUILD TEAM",
   "home.raidBosses": "Raid Bosses",
