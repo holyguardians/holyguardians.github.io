@@ -2396,6 +2396,8 @@ function mostrarPagina(
   if (id === "hiddenQuestsPagina" && typeof hiddenQuestAtivar === "function") {
     setTimeout(hiddenQuestAtivar, 0);
   }
+  if (id === "digiGuessPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("guess"); }, 0);
+  if (id === "digiZoomPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("zoom"); }, 0);
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -2423,6 +2425,8 @@ function mostrarPagina(
       tierListPagina: "tier-list-dsr",
       tierListDmoPagina: "tier-list-dmo",
       sorteioPagina: "sorteio",
+      digiGuessPagina: "digi-guess",
+      digiZoomPagina: "digi-zoom",
       socialPagina: "comunidade"
     };
 
@@ -2473,6 +2477,8 @@ function abrirPaginaPelaUrl() {
     "tier-list-dsr": { pagina: "tierListPagina", botao: "btnFeatures" },
     "tier-list-dmo": { pagina: "tierListDmoPagina", botao: "btnFeatures" },
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
+    "digi-guess": { pagina: "digiGuessPagina", botao: "btnFeatures" },
+    "digi-zoom": { pagina: "digiZoomPagina", botao: "btnFeatures" },
     social: { pagina: "socialPagina", botao: "btnSocial" },
     comunidade: { pagina: "socialPagina", botao: "btnSocial" }
   };
@@ -12226,6 +12232,16 @@ function abrirSorteio(){
   fecharFeaturesNavMenu();
   mostrarPagina("sorteioPagina",document.getElementById("btnFeatures"));
   inicializarSorteio();
+}
+function abrirDigiGuess(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("digiGuessPagina",document.getElementById("btnFeatures"));
+  if(typeof window.inicializarDigiGame==="function")window.inicializarDigiGame("guess");
+}
+function abrirDigiZoom(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("digiZoomPagina",document.getElementById("btnFeatures"));
+  if(typeof window.inicializarDigiGame==="function")window.inicializarDigiGame("zoom");
 }
 function abrirTierListDsr(){
   fecharFeaturesNavMenu();

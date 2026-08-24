@@ -27,6 +27,7 @@
 
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=20260824-raid-home-map-v2">
+  <link rel="stylesheet" href="digi_game.css?v=20260824-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
 <style id="hgImpmonMultiLiveStyles">
   #hgImpmonLive .hg-impmon-live-card.hg-impmon-single { cursor: pointer; }
@@ -208,6 +209,8 @@
 
         <div class="nav-dropdown-menu features-nav-menu" id="featuresNavMenu" role="menu">
           <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
+          <button id="btnDigiGuessContent" type="button" role="menuitem" onclick="abrirDigiGuess()">DIGI GUESS</button>
+          <button id="btnDigiZoomContent" type="button" role="menuitem" onclick="abrirDigiZoom()">DIGI ZOOM</button>
           <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
           <button type="button" role="menuitem" onclick="abrirTierListDmo()">TIER LIST DMO</button>
         </div>
@@ -2484,6 +2487,17 @@
 </section>
 
 <!-- =====================================================
+     CONTEÚDOS — DIGI GUESS / DIGI ZOOM
+===================================================== -->
+<section id="digiGuessPagina" class="pagina">
+  <div id="digiGuessRoot" class="digi-game-root" data-digi-game="guess"></div>
+</section>
+
+<section id="digiZoomPagina" class="pagina">
+  <div id="digiZoomRoot" class="digi-game-root" data-digi-game="zoom"></div>
+</section>
+
+<!-- =====================================================
      FERRAMENTAS HG — SORTEIO
 ===================================================== -->
 
@@ -3241,10 +3255,11 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
-<script src="i18n_pt-BR.js?v=20260824-raid-home-map-v1"></script>
-<script src="i18n_en-US.js?v=20260824-raid-home-map-v1"></script>
-<script src="i18n_ko-KR.js?v=20260824-raid-home-map-v1"></script>
-<script src="i18n.js?v=20260824-raid-home-map-v1"></script>
-<script src="script.js?v=20260824-rotation-icon-pvp-assets-v1"></script>
+<script src="i18n_pt-BR.js?v=20260824-digi-game-v1"></script>
+<script src="i18n_en-US.js?v=20260824-digi-game-v1"></script>
+<script src="i18n_ko-KR.js?v=20260824-digi-game-v1"></script>
+<script src="i18n.js?v=20260824-digi-game-v1"></script>
+<script src="script.js?v=20260824-digi-game-v1"></script>
+<script src="digi_game.js?v=20260824-v1"></script>
 </body>
 </html>

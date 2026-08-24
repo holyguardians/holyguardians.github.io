@@ -2760,6 +2760,8 @@
       ["#btnMore > span:not(.hg-more-dots):not(.nav-dropdown-chevron)", "nav.more", "Mais"]
     ];
     navLabels.forEach(function (entry) { setText(one(entry[0]), translate(entry[1], entry[2])); });
+    setText(one("#btnDigiGuessContent"), translate("digi.menuGuess", "DIGI GUESS"));
+    setText(one("#btnDigiZoomContent"), translate("digi.menuZoom", "DIGI ZOOM"));
     setText(one(".hg-nav-more-heading small"), translate("more.tools", "MAIS FERRAMENTAS //"));
     setText(one(".hg-nav-more-heading strong"), translate("more.shortcuts", "ATALHOS HG"));
     setText(one("#btnComparacao > span"), translate("more.comparison", "COMPARAÇÃO"));
