@@ -4,8 +4,64 @@
 ===================================================== */
 
 const HG_API_URL = "https://script.google.com/macros/s/AKfycbxMJE0SjJhdHSupnoinJ6GlCxIOHwLl96uqjPDBGaAnGJHLrvZoWWz2-kPCvCQR0coe/exec";
+const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v1_";
+
+function tempoCacheApiNavegador(api) {
+  const minutos = {
+    database: 15,
+    digivolutions: 15,
+    "evolution-master": 60,
+    images: 360,
+    staff: 30,
+    "raid-config": 5,
+    "raid-bosses": 5,
+    "dekyu-treasures": 30,
+    social: 5,
+    ofds: 5
+  };
+
+  return (Number(minutos[String(api || "").toLowerCase()]) || 0) * 60000;
+}
+
+function lerCacheApiNavegador(api, parametrosExtras) {
+  if (parametrosExtras && Object.keys(parametrosExtras).length) return null;
+
+  const duracao = tempoCacheApiNavegador(api);
+  if (!duracao) return null;
+
+  try {
+    const chave = HG_API_BROWSER_CACHE_PREFIX + String(api).toLowerCase();
+    const salvo = JSON.parse(localStorage.getItem(chave) || "null");
+    if (!salvo || !salvo.resposta || salvo.expiraEm <= Date.now()) {
+      if (salvo) localStorage.removeItem(chave);
+      return null;
+    }
+    return salvo.resposta.ok === true ? salvo.resposta : null;
+  } catch (erro) {
+    return null;
+  }
+}
+
+function salvarCacheApiNavegador(api, parametrosExtras, resposta) {
+  if (parametrosExtras && Object.keys(parametrosExtras).length) return;
+
+  const duracao = tempoCacheApiNavegador(api);
+  if (!duracao || !resposta || resposta.ok !== true) return;
+
+  try {
+    localStorage.setItem(
+      HG_API_BROWSER_CACHE_PREFIX + String(api).toLowerCase(),
+      JSON.stringify({ expiraEm: Date.now() + duracao, resposta: resposta })
+    );
+  } catch (erro) {
+    // Alguns navegadores limitam o espaço local. Sem cache, a API segue normal.
+  }
+}
 
 function chamarApiJsonp(api, parametrosExtras) {
+  const respostaEmCache = lerCacheApiNavegador(api, parametrosExtras);
+  if (respostaEmCache) return Promise.resolve(respostaEmCache);
+
   return new Promise(function(resolve, reject) {
     const callback =
       "__hgCallback_" +
@@ -60,6 +116,7 @@ function chamarApiJsonp(api, parametrosExtras) {
           return;
         }
 
+        salvarCacheApiNavegador(api, parametrosExtras, resposta);
         resolve(resposta);
       };
 
