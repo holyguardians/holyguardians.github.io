@@ -172,7 +172,7 @@
     var query = String(state.query || "").trim().toLowerCase();
     if (query.length < 2 || state.finished) return "";
     var selected = state.attempts.map(function (item) { return item.id; });
-    var matches = state.list.filter(function (item) { return selected.indexOf(item.id) === -1 && (item.name.toLowerCase().indexOf(query) !== -1 || displayName(item).toLowerCase().indexOf(query) !== -1); }).slice(0, 7);
+    var matches = state.list.filter(function (item) { return selected.indexOf(item.id) === -1 && (item.name.toLowerCase().indexOf(query) !== -1 || displayName(item).toLowerCase().indexOf(query) !== -1); }).sort(function (a, b) { var aStart = a.name.toLowerCase().indexOf(query) === 0 ? 0 : 1; var bStart = b.name.toLowerCase().indexOf(query) === 0 ? 0 : 1; return aStart - bStart || a.name.localeCompare(b.name); }).slice(0, 30);
     if (!matches.length) return '<div class="digi-suggestions-empty">' + escapeHtml(t("digi.noResults", "Nenhum Digimon encontrado.")) + "</div>";
     return matches.map(function (item) {
       return '<button type="button" data-digi-pick="' + item.id + '"><img src="' + escapeHtml(item.image) + '" alt=""><span>' + escapeHtml(displayName(item)) + "</span></button>";
