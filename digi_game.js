@@ -215,7 +215,7 @@
     }).join("");
     var panel = state.finished
       ? '<button type="button" class="digi-device-new" data-digi-new>' + escapeHtml(state.free ? t("digi.newFree", "NOVO DIGIMON") : t("digi.playTomorrow", "VOLTE AMANHÃ")) + "</button>"
-      : '<div class="digi-device-input"><input id="digiGameInput" autocomplete="off" placeholder="' + escapeHtml(t("digi.placeholder", "Digite o nome de um Digimon...")) + '" value="' + escapeHtml(state.query) + '"><button type="button" data-digi-submit>' + escapeHtml(t("digi.guess", "TENTAR")) + '</button><div id="digiSuggestions" class="digi-suggestions"></div></div>';
+      : '<div class="digi-device-input"><input id="digiGameInput" autocomplete="off" placeholder="' + escapeHtml(t("digi.placeholder", "Digite o nome de um Digimon...")) + '" value="' + escapeHtml(state.query) + '"><button type="button" data-digi-submit>' + escapeHtml(t("digi.guess", "TENTAR")) + '</button></div>';
     var won = state.attempts.some(function (item) { return item.id === state.target.id; });
     var screen = state.revealing
       ? '<div class="digi-device-egg"><div class="digi-egg-aura"></div><img src="features_assets/sorteio/digitama/digitama_0' + state.revealFrame + '.png" alt=""><small>' + escapeHtml(t("digi.revealing", "REVELANDO DIGIMON...")) + '</small></div>'
@@ -228,7 +228,7 @@
       '<div class="digi-device-meta"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + attempts + '</strong></div>' +
       '<div class="digi-device-screen"><div class="digi-zoom-screen ' + (state.revealing ? "is-revealing" : state.finished ? "is-revealed" : "") + '" style="--digi-from-scale:' + scale.toFixed(2) + '">' + screen + '</div></div>' +
       '<div class="digi-device-history"><span>' + escapeHtml(t("digi.latestGuesses", "ÚLTIMOS CHUTES")) + '</span><div>' + history + '</div></div>' +
-      '<div class="digi-device-search"><span>' + escapeHtml(t("digi.search", "QUAL É O DIGIMON?")) + '</span>' + panel + '</div><button type="button" title="' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '" aria-label="' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '" class="digi-device-free-orb ' + (state.free ? "active" : "") + '" data-digi-free><span>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</span></button>' +
+      '<div class="digi-device-search"><span>' + escapeHtml(t("digi.search", "QUAL É O DIGIMON?")) + '</span>' + panel + '</div>' + (state.finished ? '' : '<div id="digiSuggestions" class="digi-suggestions digi-device-suggestions"></div>') + '<button type="button" title="' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '" aria-label="' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '" class="digi-device-free-orb ' + (state.free ? "active" : "") + '" data-digi-free><span>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</span></button>' +
       '</section>';
   }
 
