@@ -95,3 +95,24 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
   .digi-device-menu .digi-device-streamer-button{min-height:62px;border-radius:0;clip-path:polygon(7% 0,93% 0,100% 16%,100% 84%,93% 100%,7% 100%,0 84%,0 16%)}
   .digi-device-free-orb{right:51px;bottom:47px;width:98px;height:98px;border-width:5px;box-shadow:inset 0 0 0 5px rgba(57,0,0,.65),0 0 0 4px #5a0008,0 0 16px rgba(255,36,42,.7)}
 }
+
+/* Carcaça externa: a silhueta não recorta nem desloca o conteúdo interno. */
+@media (min-width:801px){
+  .digi-device{isolation:isolate;clip-path:none;filter:none;border:0;border-radius:0;background:transparent;box-shadow:none}
+  .digi-device:before,.digi-device:after{content:"";position:absolute;display:block;pointer-events:none;border:0;border-radius:0;clip-path:polygon(5% 18%,19% 18%,19% 12%,29% 12%,29% 7%,42% 7%,42% 2%,55% 2%,55% 11%,61% 11%,61% 0,67% 0,67% 17%,84% 17%,84% 10%,90% 10%,90% 25%,96% 25%,96% 88%,86% 88%,86% 95%,62% 95%,62% 100%,39% 100%,39% 94%,25% 94%,25% 100%,13% 100%,13% 88%,5% 88%,5% 77%,0 77%,0 31%,5% 31%)}
+  .digi-device:before{z-index:-2;inset:-10px -32px -12px;background:linear-gradient(145deg,#7ec28b 0%,#164c2d 7%,#0a2719 31%,#315e36 71%,#79c782 100%);filter:drop-shadow(0 17px 23px rgba(0,0,0,.62)) drop-shadow(0 0 13px rgba(92,255,131,.36))}
+  .digi-device:after{z-index:-1;inset:-3px -25px -5px;background:linear-gradient(145deg,#08100a 0%,#010403 43%,#020806 78%,#0d2416 100%);box-shadow:inset 0 0 0 3px rgba(177,255,185,.33),inset 0 0 0 8px #071008,inset 0 0 25px rgba(64,255,117,.13)}
+  .digi-device-plaque{top:-6px;min-width:244px;z-index:3}
+  .digi-device-plaque:after{top:-55px;right:-68px;width:66px;height:126px}
+  .digi-device-menu{margin:12px 0 10px;padding:18px 15px 23px;background:linear-gradient(180deg,#060706 0 8%,#3a1640 9%,#c773d3 14%,#bd6bcc 72%,#42174a 78%,#050806 80%);box-shadow:inset 0 0 0 3px #949c95,inset 0 0 0 7px #171a17,inset 0 0 0 11px rgba(255,196,255,.54),0 0 0 4px #090b09}
+  .digi-device-menu:before{top:109px;bottom:92px;left:21px;right:21px;border-color:#edb9ef;background:linear-gradient(180deg,rgba(215,111,226,.28),rgba(40,7,47,.14))}
+  .digi-device-menu>span{margin:0 0 9px;background:#5a5759}
+  .digi-device-menu button:first-of-type{background:linear-gradient(180deg,#d579df,#ac56c1);border-color:#f2b9ff;color:#fff}
+  .digi-device-menu button:nth-of-type(2){background:linear-gradient(180deg,#70a4ef,#4a7fd3);border-color:#b2d8ff;color:#fff}
+  .digi-device-menu .digi-device-streamer-button{margin-top:auto}
+  .digi-device-meta{margin:4px 0 0;padding:10px 14px;border-bottom:2px solid rgba(115,255,147,.29)}
+  .digi-device-screen{margin:0 3px;padding:20px;background:#060706}
+  .digi-device-history{padding-top:24px}
+  .digi-device-search{margin:0 4px 9px}
+  .digi-device-free-orb{right:30px;bottom:38px}
+}
