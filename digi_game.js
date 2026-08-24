@@ -143,6 +143,10 @@
     return '<div class="digi-guess-head"><span>DIGIMON</span><span>' + escapeHtml(t("digi.level", "LEVEL")) + '</span><span>' + escapeHtml(t("digi.attribute", "ATTRIBUTE")) + '</span><span>' + escapeHtml(t("digi.type", "TYPE")) + '</span><span>' + escapeHtml(t("digi.field", "FIELD")) + '</span><span>' + escapeHtml(t("digi.year", "YEAR")) + '</span><span>X-ANTIBODY</span></div>';
   }
 
+  function hasXAntibody(item) {
+    return /x[- ]?antibody/i.test(String(item && item.name || ""));
+  }
+
   function guessRows(state) {
     if (!state.attempts.length) return '<div class="digi-game-empty">' + escapeHtml(t("digi.empty", "Sua primeira tentativa aparecerá aqui.")) + "</div>";
     var answer = state.target;
@@ -154,7 +158,7 @@
         resultCell('', valueList(guess.type, answer.type), comparison(guess, answer, "type")) +
         resultCell('', valueList(guess.field, answer.field), comparison(guess, answer, "field")) +
         resultCell('', escapeHtml(guess.year || "—"), comparison(guess, answer, "year")) +
-        resultCell('', '—', { tone: "wrong", marker: "×" }) +
+        resultCell('', hasXAntibody(guess) ? '<span class="digi-x-answer">SIM</span>' : '<span class="digi-x-answer">NÃO</span>', { tone: hasXAntibody(guess) === hasXAntibody(answer) ? "correct" : "wrong", marker: hasXAntibody(guess) === hasXAntibody(answer) ? "✓" : "×" }) +
       "</article>";
     }).join("");
   }
@@ -192,8 +196,8 @@
 
   function zoomBoard(state) {
     var wrong = state.attempts.filter(function (item) { return item.id !== state.target.id; }).length;
-    var scale = Math.max(1, 16 - wrong * 1.2);
-    return '<div class="digi-zoom-board"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div><div class="digi-zoom-info"><small>' + escapeHtml(t("digi.zoomLevel", "NÍVEL DE ZOOM")) + "</small><strong>" + Math.round(scale * 100) + '%</strong><p>' + escapeHtml(t("digi.zoomHint", "Cada erro revela mais da imagem.")) + "</p></div></div>";
+    var scale = Math.max(1, 22 - wrong * 1.55);
+    return '<div class="digi-zoom-board"><div class="digi-zoom-screen"><img src="' + escapeHtml(state.target.image) + '" alt="' + escapeHtml(t("digi.hidden", "Digimon escondido")) + '" style="transform:scale(' + scale.toFixed(2) + ')"><span class="digi-zoom-scan"></span></div><div class="digi-zoom-info"><p>' + escapeHtml(t("digi.zoomHint", "Cada erro revela mais da imagem.")) + "</p></div></div>";
   }
 
   function render(mode) {
