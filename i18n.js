@@ -2757,11 +2757,18 @@
       ["#btnPvp > span", "nav.pvp", "PvP"],
       ["#btnFeatures > span", "nav.content", "Conteúdos"],
       ["#btnSocial > span", "nav.community", "Comunidade"],
-      ["#btnMore > span", "nav.more", "Mais"]
+      ["#btnMore > span:not(.hg-more-dots):not(.nav-dropdown-chevron)", "nav.more", "Mais"]
     ];
     navLabels.forEach(function (entry) { setText(one(entry[0]), translate(entry[1], entry[2])); });
+    setText(one(".hg-nav-more-heading small"), translate("more.tools", "MAIS FERRAMENTAS //"));
+    setText(one(".hg-nav-more-heading strong"), translate("more.shortcuts", "ATALHOS HG"));
+    setText(one("#btnComparacao > span"), translate("more.comparison", "COMPARAÇÃO"));
     setText(one("#btnCounterFinder > span"), translate("more.counterFinder", "COUNTER FINDER"));
     setText(one("#btnHiddenQuests > span"), translate("more.hiddenQuests", "HIDDEN QUESTS"));
+    setText(one("#btnStatusSimulator > span"), translate("more.statusSimulator", "Status Simulator"));
+    setText(one("#btnRaidBoss > span"), translate("more.raidBoss", "Raid Boss"));
+    setText(one("#btnDekyuTreasure > span"), translate("more.dekyuTreasure", "Dekyu Treasure"));
+    setText(one("#btnDisplaySettings > span:last-child"), translate("more.displaySettings", "Ajuste de Tela"));
   }
 
   function replaceButtonTextNode(button, key, fallback) {
