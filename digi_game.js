@@ -119,7 +119,7 @@
         target: free ? safeTargetPool(list)[Math.floor(Math.random() * safeTargetPool(list).length)] : dailyTarget(list, mode, 0),
         previous: free ? null : dailyTarget(list, mode, -1),
         attempts: [],
-        finished: false, streamer: false, revealed: false,
+        finished: false, streamer: false, revealed: false, revealing: false, revealFrame: 0,
         query: ""
       };
       restoreGame(state);
@@ -146,7 +146,7 @@
   }
 
   function guessTableHeader() {
-    return '<div class="digi-guess-head"><span>DIGIMON</span><span>' + escapeHtml(t("digi.level", "LEVEL")) + '</span><span>' + escapeHtml(t("digi.attribute", "ATTRIBUTE")) + '</span><span>' + escapeHtml(t("digi.type", "TYPE")) + '</span><span>' + escapeHtml(t("digi.field", "FIELD")) + '</span><span>' + escapeHtml(t("digi.year", "YEAR")) + '</span><span>X-ANTIBODY</span></div>';
+    return '<div class="digi-guess-head"><span>DIGIMON</span><span>' + escapeHtml(t("digi.level", "LEVEL")) + '</span><span>' + escapeHtml(t("digi.attribute", "ATTRIBUTE")) + '</span><span>' + escapeHtml(t("digi.type", "TYPE")) + '</span><span>' + escapeHtml(t("digi.field", "FIELD")) + '</span><span>' + escapeHtml(t("digi.year", "YEAR")) + '</span><span>' + escapeHtml(t("digi.xAntibody", "X-ANTIBODY")) + '</span></div>';
   }
 
   function hasXAntibody(item) {
@@ -164,7 +164,7 @@
         resultCell('', valueList(guess.type, answer.type, false), comparison(guess, answer, "type")) +
         resultCell('', valueList(guess.field, answer.field, true), comparison(guess, answer, "field")) +
         resultCell('', escapeHtml(guess.year || "—"), comparison(guess, answer, "year")) +
-        resultCell('', hasXAntibody(guess) ? '<span class="digi-x-answer">SIM</span>' : '<span class="digi-x-answer">NÃO</span>', { tone: hasXAntibody(guess) === hasXAntibody(answer) ? "correct" : "wrong", marker: hasXAntibody(guess) === hasXAntibody(answer) ? "✓" : "×" }) +
+        resultCell('', hasXAntibody(guess) ? '<span class="digi-x-answer">' + escapeHtml(t("digi.yes", "YES")) + '</span>' : '<span class="digi-x-answer">' + escapeHtml(t("digi.no", "NO")) + '</span>', { tone: hasXAntibody(guess) === hasXAntibody(answer) ? "correct" : "wrong", marker: hasXAntibody(guess) === hasXAntibody(answer) ? "✓" : "×" }) +
       "</article>";
     }).join("");
   }
@@ -182,6 +182,7 @@
 
   function resultBanner(state) {
     if (!state.finished) return "";
+    if (state.revealing) return '<div class="digi-egg-reveal"><div class="digi-egg-aura"></div><img src="features_assets/sorteio/digitama/digitama_0' + state.revealFrame + '.png" alt=""><small>' + escapeHtml(t("digi.revealing", "REVELANDO DIGIMON...")) + '</small></div>';
     if (state.streamer && !state.revealed) return '<div class="digi-result-banner streamer"><div><small>' + escapeHtml(t("digi.streamerProtected", "RESPOSTA PROTEGIDA PARA A LIVE")) + '</small><button type="button" data-digi-reveal>' + escapeHtml(t("digi.reveal", "REVELAR RESPOSTA")) + '</button></div></div>';
     var won = state.attempts.some(function (item) { return item.id === state.target.id; });
     return '<div class="digi-result-banner digi-reveal-card ' + (won ? "won" : "lost") + '"><span class="digi-reveal-sparks">✦ ✧ ✦</span><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(displayName(state.target)) + '</strong></div></div>' + (!state.free && state.previous ? '<div class="digi-previous"><img src="' + escapeHtml(state.previous.image) + '" alt=""><span>' + escapeHtml(t("digi.previous", "DESAFIO ANTERIOR")) + '</span><strong>' + escapeHtml(displayName(state.previous)) + '</strong></div>' : '');
@@ -227,7 +228,14 @@
     state.query = "";
     if (item.id === state.target.id || (!state.free && state.mode === "guess" && state.attempts.length >= 15)) state.finished = true;
     saveGame(state);
-    render(mode);
+    if (state.finished) startReveal(mode); else render(mode);
+  }
+
+  function startReveal(mode) {
+    var state = games[mode]; if (!state) return;
+    state.revealing = true; state.revealFrame = 0; render(mode);
+    function advance() { state.revealFrame += 1; if (state.revealFrame > 4) { state.revealing = false; render(mode); return; } render(mode); window.setTimeout(advance, 260); }
+    window.setTimeout(advance, 340);
   }
 
   function bind(mode, root) {
@@ -250,7 +258,7 @@
     var streamer = root.querySelector("[data-digi-streamer]");
     if (streamer) streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); window.scrollTo({ top: 0, behavior: "smooth" }); });
     var reveal = root.querySelector("[data-digi-reveal]");
-    if (reveal) reveal.addEventListener("click", function () { state.revealed = true; render(mode); });
+    if (reveal) reveal.addEventListener("click", function () { state.revealed = true; startReveal(mode); });
     var credit = root.querySelector("[data-digi-credit]");
     if (credit) credit.addEventListener("click", function () { window.open("https://digi-api.com/about", "_blank", "noopener"); });
   }

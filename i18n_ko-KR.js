@@ -61,6 +61,7 @@ window.HG_I18N["ko-KR"] = {
   "digi.error": "지금은 디지몬 목록을 불러올 수 없습니다.",
   "digi.dataSource": "디지몬 데이터 제공",
   "digi.apiCredits": "API 크레딧", "digi.streamer": "스트리머 모드", "digi.reveal": "정답 공개", "digi.streamerProtected": "방송용 정답 보호", "digi.previous": "이전 도전",
+  "digi.xAntibody": "X-항체", "digi.yes": "예", "digi.no": "아니오", "digi.revealing": "디지몬 공개 중...",
   "home.openDigidex": "디지덱스 열기",
   "home.buildTeam": "팀 구성",
   "home.raidBosses": "레이드 보스",

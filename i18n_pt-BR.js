@@ -61,6 +61,7 @@ window.HG_I18N["pt-BR"] = {
   "digi.error": "Não foi possível carregar a lista de Digimon agora.",
   "digi.dataSource": "Dados dos Digimon por",
   "digi.apiCredits": "CRÉDITOS DA API", "digi.streamer": "MODO STREAMER", "digi.reveal": "REVELAR RESPOSTA", "digi.streamerProtected": "RESPOSTA PROTEGIDA PARA A LIVE", "digi.previous": "DESAFIO ANTERIOR",
+  "digi.xAntibody": "X-ANTIBODY", "digi.yes": "SIM", "digi.no": "NÃO", "digi.revealing": "REVELANDO DIGIMON...",
   "home.openDigidex": "ACESSAR DIGIDEX",
   "home.buildTeam": "MONTAR TIME",
   "home.raidBosses": "Raid Bosses",
