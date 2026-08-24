@@ -4413,6 +4413,40 @@ function converterEvolutionParaPotential(row) {
   };
 }
 
+function potentialLanguage() {
+  return typeof window.hgGetLanguage === "function" ? window.hgGetLanguage() : "pt-BR";
+}
+
+function potentialText(key, values) {
+  const language = potentialLanguage();
+  const copy = {
+    "pt-BR": { plan:"PLANO DE POTENCIAL", previous:"DIGIMON ANTERIOR", level:"NÍVEL", eachCube:"CADA CUBO", baby:"BABY CORRECTION", potential:"POTENCIAL", cubes:"CUBOS", spaces:"ESPAÇOS LIVRES", unavailable:"Percentuais ainda não validados.", available:"DE BABY CORRECTION DISPONÍVEL", overflow:"O valor total para evolução excede 64% no Tetris. Ajuste a Baby Correction do Digimon ou utilize cubos de 5% para atingir os requisitos." },
+    "en-US": { plan:"POTENTIAL PLAN", previous:"PREVIOUS DIGIMON", level:"LEVEL", eachCube:"EACH CUBE", baby:"BABY CORRECTION", potential:"POTENTIAL", cubes:"CUBES", spaces:"FREE SPACES", unavailable:"Percentages have not been validated yet.", available:"BABY CORRECTION AVAILABLE", overflow:"The total evolution value exceeds 64% in Tetris. Adjust this Digimon's Baby Correction or use 5% cubes to meet the requirements." },
+    "ko-KR": { plan:"잠재력 계획", previous:"이전 디지몬", level:"레벨", eachCube:"큐브당", baby:"베이비 보정", potential:"잠재력", cubes:"큐브", spaces:"개의 빈 공간", unavailable:"아직 검증된 백분율이 없습니다.", available:"베이비 보정 사용 가능", overflow:"진화에 필요한 총 수치가 테트리스 64%를 초과합니다. 해당 디지몬의 베이비 보정을 조정하거나 5% 큐브를 사용하세요." }
+  };
+  let text = (copy[language] || copy["pt-BR"])[key] || key;
+  Object.keys(values || {}).forEach(function(name) { text = text.replaceAll("{" + name + "}", String(values[name])); });
+  return text;
+}
+
+function potentialStatLabel(stat) {
+  const labels = {
+    "pt-BR": { HP:"HP", SP:"SP", STR:"FORÇA", INT:"INTELIGÊNCIA", DEF:"DEFESA", RES:"RESISTÊNCIA", SPD:"VELOCIDADE" },
+    "en-US": { HP:"HP", SP:"SP", STR:"STRENGTH", INT:"INTELLIGENCE", DEF:"DEFENSE", RES:"RESISTANCE", SPD:"SPEED" },
+    "ko-KR": { HP:"체력", SP:"SP", STR:"힘", INT:"지능", DEF:"방어력", RES:"저항력", SPD:"속도" }
+  };
+  return ((labels[potentialLanguage()] || labels["pt-BR"])[stat] || stat);
+}
+
+function atualizarTituloPotentialModal() {
+  if (!digivolutionAtual) return;
+  const titulo = document.getElementById("potentialTitle");
+  const subtitulo = document.getElementById("potentialSubtitle");
+  const levelTxt = digivolutionAtual.requirements.level != null ? digivolutionAtual.requirements.level : "-";
+  if (titulo) titulo.textContent = `${potentialText("plan")} — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
+  if (subtitulo) subtitulo.textContent = `${digivolutionAtual.requirementOwner || potentialText("previous")} // ${potentialText("level")} ${levelTxt} // ${potentialText("eachCube")}: ${digivolutionAtual.cubePercent || 4}%`;
+}
+
 function abrirPotentialModalEvolution(id) {
   if (!evolutionMaster || !Array.isArray(evolutionMaster.evolutions)) return;
   const row = evolutionMaster.evolutions.find(function(item) {
@@ -4429,13 +4463,9 @@ function abrirPotentialModalEvolution(id) {
   const campos = document.getElementById("babyCorrectionFields");
   if (!modal) return;
 
-  if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
-  if (subtitulo) {
-    const levelTxt = digivolutionAtual.requirements.level != null ? digivolutionAtual.requirements.level : "-";
-    subtitulo.textContent = `${digivolutionAtual.requirementOwner || "DIGIMON ANTERIOR"} // LEVEL ${levelTxt} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
-  }
+  atualizarTituloPotentialModal();
   if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
-    return `<label><span>${stat}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="Aumentar ${stat}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="Diminuir ${stat}">▼</button></span></span><small>%</small></label>`;
+    return `<label><span>${potentialStatLabel(stat)}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="${potentialStatLabel(stat)}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="${potentialStatLabel(stat)}">▼</button></span></span><small>%</small></label>`;
   }).join("");
 
   modal.classList.add("ativo");
@@ -8980,10 +9010,9 @@ function abrirPotentialModal(id) {
   const titulo = document.getElementById("potentialTitle");
   const subtitulo = document.getElementById("potentialSubtitle");
   const campos = document.getElementById("babyCorrectionFields");
-  if (titulo) titulo.textContent = `PLANO DE POTENCIAL — ${digivolutionAtual.displayName || digivolutionAtual.to}`;
-  if (subtitulo) subtitulo.textContent = `${digivolutionAtual.requirementOwner || "DIGIMON ANTERIOR"} // LEVEL ${digivolutionAtual.requirements.level || "-"} // CADA CUBO: ${digivolutionAtual.cubePercent || 4}%`;
+  atualizarTituloPotentialModal();
   if (campos) campos.innerHTML = POTENTIAL_STATS.map(function(stat) {
-    return `<label><span>${stat}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="Aumentar ${stat}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="Diminuir ${stat}">▼</button></span></span><small>%</small></label>`;
+    return `<label><span>${potentialStatLabel(stat)}</span><span class="baby-stepper"><input id="baby-${stat}" type="number" min="0" max="14" step="1" value="0" inputmode="numeric" oninput="alterarBabyCorrection('${stat}', this)"><span class="baby-stepper-buttons"><button type="button" onclick="ajustarBabyCorrection('${stat}', 1)" aria-label="${potentialStatLabel(stat)}">▲</button><button type="button" onclick="ajustarBabyCorrection('${stat}', -1)" aria-label="${potentialStatLabel(stat)}">▼</button></span></span><small>%</small></label>`;
   }).join("");
 
   modal.classList.add("ativo");
@@ -9024,6 +9053,7 @@ function ajustarBabyCorrection(stat, delta) {
 
 function atualizarPotentialPlanner() {
   if (!digivolutionAtual) return;
+  atualizarTituloPotentialModal();
   const stats = digivolutionAtual.requirements.stats || {};
   const cubo = Number(digivolutionAtual.cubePercent) || 4;
   const totalBaby = POTENTIAL_STATS.reduce(function(total, stat) { return total + (Number(babyCorrections[stat]) || 0); }, 0);
@@ -9032,7 +9062,7 @@ function atualizarPotentialPlanner() {
   const message = document.getElementById("babyCorrectionMessage");
   if (totalEl) totalEl.textContent = `${totalBaby.toFixed(1).replace(".0", "")}% / 28%`;
   if (track) track.style.width = `${Math.min(100, totalBaby / 28 * 100)}%`;
-  if (message) message.textContent = `${Math.max(0, 28 - totalBaby).toFixed(1).replace(".0", "")}% DE BABY CORRECTION DISPONÍVEL`;
+  if (message) message.textContent = `${Math.max(0, 28 - totalBaby).toFixed(1).replace(".0", "")}% ${potentialText("available")}`;
 
   const requisitos = [];
   const blocos = [];
@@ -9044,7 +9074,7 @@ function atualizarPotentialPlanner() {
     const restante = Math.max(0, necessario - baby);
     const quantidade = Math.ceil(restante / cubo - 1e-9);
     const potencial = restante;
-    requisitos.push(`<div><span><b>${stat}</b><small>${info.value || "-"} (+${necessario}%)</small></span><strong>${baby}% BABY + ${potencial}% POTENTIAL</strong></div>`);
+    requisitos.push(`<div><span><b>${potentialStatLabel(stat)}</b><small>${info.value || "-"} (+${necessario}%)</small></span><strong>${baby}% ${potentialText("baby")} + ${potencial}% ${potentialText("potential")}</strong></div>`);
     for (let i = 0; i < quantidade; i += 1) {
       const valorDoCubo = Math.min(cubo, restante - (i * cubo));
       blocos.push({ stat: stat, valor: Number(valorDoCubo.toFixed(10)) });
@@ -9062,24 +9092,40 @@ function atualizarPotentialPlanner() {
   const board = document.getElementById("potentialBoard");
   const cubeTotal = document.getElementById("potentialCubeTotal");
   const result = document.getElementById("potentialResult");
-  if (reqEl) reqEl.innerHTML = requisitos.join("") || `<div class="potential-unavailable">Percentuais ainda não validados.</div>`;
+  if (reqEl) reqEl.innerHTML = requisitos.join("") || `<div class="potential-unavailable">${potentialText("unavailable")}</div>`;
   if (board) board.innerHTML = blocosVisiveis.map(function(bloco) {
-    return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${bloco.stat}</strong><span>${bloco.valor}%</span></div>`;
+    return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${potentialStatLabel(bloco.stat)}</strong><span>${bloco.valor}%</span></div>`;
   }).join("") + Array.from({ length: espacosVazios }, function() {
     return `<div class="potential-cube potential-cube-empty" aria-hidden="true"></div>`;
   }).join("");
   if (board) board.style.setProperty("--tetris-rows", "4");
   if (cubeTotal) cubeTotal.textContent = excedeuTetris
-    ? `${LIMITE_TETRIS_CUBOS} / ${blocos.length} CUBOS`
-    : `${blocos.length} / ${LIMITE_TETRIS_CUBOS} CUBOS`;
+    ? `${LIMITE_TETRIS_CUBOS} / ${blocos.length} ${potentialText("cubes")}`
+    : `${blocos.length} / ${LIMITE_TETRIS_CUBOS} ${potentialText("cubes")}`;
   if (result) {
     result.textContent = excedeuTetris
-      ? "O valor total para evolução excede 64% em tetris, deverá fazer alterações na Baby correction do respectivo digimon ou utilizar cubos de 5% para atingir tais requisitos."
-      : `${LIMITE_TETRIS_CUBOS - blocos.length} DE ${LIMITE_TETRIS_CUBOS} ESPAÇOS LIVRES.`;
+      ? potentialText("overflow")
+      : `${LIMITE_TETRIS_CUBOS - blocos.length} / ${LIMITE_TETRIS_CUBOS} ${potentialText("spaces")}.`;
     result.classList.toggle("potential-result-alert", excedeuTetris);
   }
   if (board) board.classList.toggle("potential-overflow", excedeuTetris);
 }
+
+/* O modal é criado dinamicamente; ao trocar idioma enquanto ele está aberto,
+   atualizamos os textos sem reiniciar os valores de Baby Correction. */
+document.addEventListener("hg:languagechange", function() {
+  const modal = document.getElementById("potentialModal");
+  if (!modal || !modal.classList.contains("ativo") || !digivolutionAtual) return;
+  const campos = document.getElementById("babyCorrectionFields");
+  if (campos) {
+    campos.querySelectorAll("label").forEach(function(label, index) {
+      const stat = POTENTIAL_STATS[index];
+      const name = label.querySelector(":scope > span:first-child");
+      if (name && stat) name.textContent = potentialStatLabel(stat);
+    });
+  }
+  atualizarPotentialPlanner();
+});
 
 
 /* =====================================================
