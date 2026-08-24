@@ -13,6 +13,11 @@
   function t(key, fallback) {
     return typeof window.hgT === "function" ? window.hgT(key, fallback) : fallback;
   }
+  function language() { return typeof window.hgGetLanguage === "function" ? window.hgGetLanguage() : "pt-BR"; }
+  var VALUE_TRANSLATIONS = {"pt-BR":{"Baby I":"Baby I","Baby II":"Baby II","Child":"Rookie","Adult":"Champion","Perfect":"Ultimate","Ultimate":"Mega","Armor":"Armor","Hybrid":"Hybrid","Vaccine":"Vacina","Virus":"Vírus","Data":"Dados","Free":"Livre","Unknown":"Desconhecido","Reptile":"Réptil","Dinosaur":"Dinossauro","Demon Lord":"Lorde Demônio","Deep Savers":"Salvadores Profundos","Dragon's Roar":"Rugido do Dragão","Metal Empire":"Império do Metal","Nature Spirits":"Espíritos da Natureza","Nightmare Soldiers":"Soldados do Pesadelo","Virus Busters":"Caçadores de Vírus"},"ko-KR":{"Baby I":"유년기 I","Baby II":"유년기 II","Child":"성장기","Adult":"성숙기","Perfect":"완전체","Ultimate":"궁극체","Armor":"아머체","Hybrid":"하이브리드체","Vaccine":"백신","Virus":"바이러스","Data":"데이터","Free":"프리","Unknown":"언노운","Reptile":"파충류","Dinosaur":"공룡형","Demon Lord":"마왕형","Deep Savers":"딥 세이버즈","Dragon's Roar":"드래곤즈 로어","Metal Empire":"메탈 엠파이어","Nature Spirits":"네이처 스피릿츠","Nightmare Soldiers":"나이트메어 솔저스","Virus Busters":"바이러스 버스터즈"}};
+  function displayValue(value) { return (VALUE_TRANSLATIONS[language()] || {})[value] || value; }
+  function displayName(item) { var name = String(item && item.name || ""); var names = language() === "ko-KR" && window.HG_I18N && window.HG_I18N["ko-KR"] && window.HG_I18N["ko-KR"].__digimonNames; return names && names[name] ? names[name] : name; }
+  function stageValues(item) { var levels = Array.isArray(item && item.level) ? item.level : []; if (levels.indexOf("Armor") !== -1) return ["Armor"]; if (levels.indexOf("Hybrid") !== -1) return ["Hybrid"]; return levels; }
 
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -135,7 +140,7 @@
   function valueList(values, answerValues) {
     var list = Array.isArray(values) ? values : [];
     return '<span class="digi-value-list">' + (list.length ? list.map(function (value) {
-      return '<i class="' + ((answerValues || []).indexOf(value) !== -1 ? 'match' : '') + '">' + escapeHtml(value) + '</i>';
+      return '<i class="' + ((answerValues || []).indexOf(value) !== -1 ? 'match' : '') + '">' + escapeHtml(displayValue(value)) + '</i>';
     }).join('') : '<i>—</i>') + '</span>';
   }
 
@@ -152,8 +157,8 @@
     var answer = state.target;
     return state.attempts.slice().reverse().map(function (guess) {
       return '<article class="digi-guess-row">' +
-        '<div class="digi-guess-name"><img src="' + escapeHtml(guess.image) + '" alt=""><strong>' + escapeHtml(guess.name) + "</strong></div>" +
-        resultCell('', valueList(guess.level, answer.level), comparison(guess, answer, "level")) +
+        '<div class="digi-guess-name"><img src="' + escapeHtml(guess.image) + '" alt=""><strong>' + escapeHtml(displayName(guess)) + "</strong></div>" +
+        resultCell('', valueList(stageValues(guess), stageValues(answer)), (function(){ var g={level:stageValues(guess)},a={level:stageValues(answer)}; return comparison(g,a,"level"); }())) +
         resultCell('', valueList(guess.attribute, answer.attribute), comparison(guess, answer, "attribute")) +
         resultCell('', valueList(guess.type, answer.type), comparison(guess, answer, "type")) +
         resultCell('', valueList(guess.field, answer.field), comparison(guess, answer, "field")) +
@@ -167,10 +172,10 @@
     var query = String(state.query || "").trim().toLowerCase();
     if (query.length < 2 || state.finished) return "";
     var selected = state.attempts.map(function (item) { return item.id; });
-    var matches = state.list.filter(function (item) { return selected.indexOf(item.id) === -1 && item.name.toLowerCase().indexOf(query) !== -1; }).slice(0, 7);
+    var matches = state.list.filter(function (item) { return selected.indexOf(item.id) === -1 && (item.name.toLowerCase().indexOf(query) !== -1 || displayName(item).toLowerCase().indexOf(query) !== -1); }).slice(0, 7);
     if (!matches.length) return '<div class="digi-suggestions-empty">' + escapeHtml(t("digi.noResults", "Nenhum Digimon encontrado.")) + "</div>";
     return matches.map(function (item) {
-      return '<button type="button" data-digi-pick="' + item.id + '"><img src="' + escapeHtml(item.image) + '" alt=""><span>' + escapeHtml(item.name) + "</span></button>";
+      return '<button type="button" data-digi-pick="' + item.id + '"><img src="' + escapeHtml(item.image) + '" alt=""><span>' + escapeHtml(displayName(item)) + "</span></button>";
     }).join("");
   }
 
@@ -178,7 +183,7 @@
     if (!state.finished) return "";
     if (state.streamer && !state.revealed) return '<div class="digi-result-banner streamer"><div><small>' + escapeHtml(t("digi.streamerProtected", "RESPOSTA PROTEGIDA PARA A LIVE")) + '</small><button type="button" data-digi-reveal>' + escapeHtml(t("digi.reveal", "REVELAR RESPOSTA")) + '</button></div></div>';
     var won = state.attempts.some(function (item) { return item.id === state.target.id; });
-    return '<div class="digi-result-banner ' + (won ? "won" : "lost") + '"><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(state.target.name) + '</strong></div></div>' + (!state.free && state.previous ? '<div class="digi-previous"><img src="' + escapeHtml(state.previous.image) + '" alt=""><span>' + escapeHtml(t("digi.previous", "DESAFIO ANTERIOR")) + '</span><strong>' + escapeHtml(state.previous.name) + '</strong></div>' : '');
+    return '<div class="digi-result-banner digi-reveal-card ' + (won ? "won" : "lost") + '"><span class="digi-reveal-sparks">✦ ✧ ✦</span><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(displayName(state.target)) + '</strong></div></div>' + (!state.free && state.previous ? '<div class="digi-previous"><img src="' + escapeHtml(state.previous.image) + '" alt=""><span>' + escapeHtml(t("digi.previous", "DESAFIO ANTERIOR")) + '</span><strong>' + escapeHtml(displayName(state.previous)) + '</strong></div>' : '');
   }
 
   function modeHeader(state) {
