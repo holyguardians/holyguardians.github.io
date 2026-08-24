@@ -3,7 +3,7 @@
    GITHUB PAGES → HOLY GUARDIANS API
 ===================================================== */
 
-const HG_API_URL = "https://script.google.com/macros/s/AKfycbxMJE0SjJhdHSupnoinJ6GlCxIOHwLl96uqjPDBGaAnGJHLrvZoWWz2-kPCvCQR0coe/exec";
+const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.workers.dev";
 const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v1_";
 
 function tempoCacheApiNavegador(api) {
@@ -82,7 +82,7 @@ function chamarApiJsonp(api, parametrosExtras) {
             "Tempo esgotado ao consultar a Holy Guardians API."
           )
         );
-      }, 30000);
+      }, 45000);
 
     function limpar() {
       clearTimeout(timer);
