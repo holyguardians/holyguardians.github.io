@@ -96,6 +96,37 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
   .digi-device-free-orb{right:51px;bottom:47px;width:98px;height:98px;border-width:5px;box-shadow:inset 0 0 0 5px rgba(57,0,0,.65),0 0 0 4px #5a0008,0 0 16px rgba(255,36,42,.7)}
 }
 
+/* Reconstrução do terminal: a carcaça é uma camada atrás do jogo, nunca um recorte sobre ele. */
+@media (min-width:801px){
+  .digi-device{isolation:isolate;display:grid;grid-template-columns:190px minmax(390px,1fr) 165px;grid-template-rows:62px minmax(430px,1fr) 100px;gap:14px;max-width:920px;min-height:640px;margin:14px auto 0;padding:50px 38px 34px;background:transparent!important;clip-path:none!important;filter:none!important;box-shadow:none!important;overflow:visible}
+  .digi-device>*{position:relative;z-index:2}
+  .digi-device:before,.digi-device:after{content:"";position:absolute;display:block;pointer-events:none;border:0;border-radius:0;clip-path:polygon(4% 15%,18% 15%,18% 9%,29% 9%,29% 4%,43% 4%,43% 0,57% 0,57% 10%,63% 10%,63% 0,69% 0,69% 17%,84% 17%,84% 8%,90% 8%,90% 24%,96% 24%,96% 86%,85% 86%,85% 94%,61% 94%,61% 100%,39% 100%,39% 94%,24% 94%,24% 100%,13% 100%,13% 87%,5% 87%,5% 75%,0 75%,0 29%,4% 29%)}
+  .digi-device:before{z-index:0;inset:0 -24px -2px;background:linear-gradient(145deg,#83c98b,#1c6037 7%,#0b331f 20%,#1e5832 77%,#83c98b);filter:drop-shadow(0 17px 23px rgba(0,0,0,.56)) drop-shadow(0 0 14px rgba(76,255,125,.32))}
+  .digi-device:after{z-index:1;inset:7px -17px 5px;background:linear-gradient(145deg,#0a0f0b 0%,#010302 47%,#030a05 75%,#102818);box-shadow:inset 0 0 0 3px rgba(195,255,198,.33),inset 0 0 0 8px #061009,inset 0 0 26px rgba(74,255,122,.13)}
+  .digi-device-plaque{top:0;z-index:5;min-width:222px;padding:9px 18px 8px;border:3px solid #bcc7bb;border-radius:11px;background:linear-gradient(180deg,#2a4629,#0b150b 72%);box-shadow:0 0 0 5px #090b09,0 0 18px rgba(93,255,129,.37);clip-path:none}
+  .digi-device-plaque:after{content:"";position:absolute;z-index:-1;top:-43px;right:-63px;width:62px;height:118px;border:3px solid #b9c3b8;border-radius:11px 11px 0 0;background:linear-gradient(180deg,#070907,#141c13);box-shadow:0 0 0 4px #0a0c0a,0 0 13px rgba(90,255,126,.22)}
+  .digi-device-menu{grid-column:1;grid-row:1 / span 3;z-index:3;align-self:stretch;margin:0;padding:18px 14px 18px;border:3px solid #a7ada7;border-radius:15px 15px 0 0;background:linear-gradient(180deg,#070807 0 10%,#c976d4 11%,#c976d4 72%,#4a174e 82%,#090c09 83%);box-shadow:inset 0 0 0 4px #171a17,inset 0 0 0 8px rgba(255,199,255,.58),0 0 0 4px #090b09}
+  .digi-device-menu:before{top:112px;bottom:102px;left:21px;right:21px;border:3px solid #f0b9f2;border-radius:6px;background:linear-gradient(180deg,rgba(235,143,240,.26),rgba(49,5,52,.1));box-shadow:inset 0 0 12px rgba(255,228,255,.3)}
+  .digi-device-menu>span{margin:0 0 10px;padding:8px 5px;border-radius:9px;color:#d9ff5b;background:#5d5a5d}
+  .digi-device-menu button{min-height:59px;border-radius:11px;transition:filter .2s ease,transform .2s ease}
+  .digi-device-menu button:first-of-type{background:linear-gradient(180deg,#db87e6,#ae55c4);border-color:#f4c0ff;color:#fff}
+  .digi-device-menu button:nth-of-type(2){background:linear-gradient(180deg,#79aaf0,#4c80d4);border-color:#b6dcff;color:#fff}
+  .digi-device-menu .digi-device-streamer-button{align-self:center;width:76px;min-width:76px;height:76px;min-height:76px;margin-top:auto;padding:0;border:8px solid #c3c7c2;border-radius:50%;color:transparent!important;background:radial-gradient(circle at 50% 42%,#ff3c37 0,#e30011 18%,#710008 46%,#050000 72%);box-shadow:inset 0 0 0 4px #1b1b1b,0 0 0 3px #555,0 0 15px rgba(255,23,22,.78);animation:digiLampPulse 1.2s ease-in-out infinite}
+  .digi-device-menu .digi-device-streamer-button:hover,.digi-device-menu .digi-device-streamer-button.active{transform:scale(1.08);filter:brightness(1.14)}
+  .digi-device-menu .digi-device-streamer-button:hover:after{content:attr(aria-label);position:absolute;left:50%;bottom:-34px;z-index:20;min-width:max-content;padding:6px 8px;border:1px solid #ffdb50;border-radius:5px;color:#fff7c9;background:#400008;font:1000 7px "Oxanium",sans-serif;letter-spacing:.07em;transform:translateX(-50%)}
+  .digi-device-meta{grid-column:2;grid-row:1;align-self:center;margin:0;padding:9px 10px;border-bottom:2px solid rgba(106,255,143,.29)}
+  .digi-device-screen{grid-column:2;grid-row:2;z-index:3;margin:0;padding:18px;border:5px solid #b7bdb7;border-radius:20px;background:#060706;box-shadow:inset 0 0 0 4px #202421,inset 0 0 0 9px #080a08,0 0 0 4px #151815,0 0 15px rgba(76,255,125,.2)}
+  .digi-device .digi-zoom-screen{max-width:100%;border-radius:7px}
+  .digi-device-history{grid-column:3;grid-row:2;z-index:3;align-self:center;padding-top:0}
+  .digi-device-history div span,.digi-device-history div em{min-height:70px;border-radius:10px}
+  .digi-device-search{grid-column:2;grid-row:3;z-index:50!important;margin:0;padding:12px 14px;border:3px solid #78947b;border-radius:13px;background:linear-gradient(180deg,#173b24,#071008);box-shadow:inset 0 0 0 3px #0a120b,inset 0 0 14px rgba(78,255,128,.18);overflow:visible}
+  .digi-device .digi-suggestions{z-index:999!important;left:0;right:0;top:calc(100% + 3px);max-height:300px;overflow:auto;border:2px solid #68e995;border-radius:8px;box-shadow:0 18px 30px rgba(0,0,0,.7)}
+  .digi-device-free-orb{z-index:6;right:23px;bottom:25px;width:108px;height:108px;padding:0;border:10px solid #c3c7c2;border-radius:50%;color:transparent!important;background:radial-gradient(circle at 50% 42%,#ff443d 0,#e50010 18%,#760008 46%,#050000 72%);box-shadow:inset 0 0 0 5px #1b1b1b,0 0 0 3px #555,0 0 17px rgba(255,23,22,.82);animation:digiLampPulse 1.2s ease-in-out infinite}
+  .digi-device-free-orb span{display:none}.digi-device-free-orb:hover,.digi-device-free-orb.active{transform:scale(1.08);filter:brightness(1.14)}
+  .digi-device-free-orb:hover:after{content:attr(aria-label);position:absolute;left:50%;top:calc(100% + 12px);z-index:20;min-width:max-content;padding:6px 8px;border:1px solid #ffdb50;border-radius:5px;color:#fff7c9;background:#400008;font:1000 7px "Oxanium",sans-serif;letter-spacing:.07em;transform:translateX(-50%)}
+}
+@keyframes digiLampPulse{50%{box-shadow:inset 0 0 0 5px #1b1b1b,0 0 0 3px #747474,0 0 11px 5px rgba(255,24,22,.72),0 0 32px rgba(255,56,35,.48);filter:brightness(1.18)}}
+
 /* Carcaça externa: a silhueta não recorta nem desloca o conteúdo interno. */
 @media (min-width:801px){
   .digi-device{isolation:isolate;clip-path:none;filter:none;border:0;border-radius:0;background:transparent;box-shadow:none}
