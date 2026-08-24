@@ -10381,12 +10381,11 @@ function montarEventosRaid() {
     });
   });
 
-  eventos.push({
+  const bossRotacao = {
     name: raidConfigAtual.name || "Boss de Rotação",
     map: raidConfigAtual.map || "-",
-    nextTime: proximoBossRotativo(agora),
-    iconPath: raidConfigAtual.iconUrl || ("raid_assets/icons/" + (raidConfigAtual.iconFile || "rotation_boss.webp")),
-    mapPath: raidConfigAtual.mapUrl || ("raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png")),
+    iconUrl: raidConfigAtual.iconUrl || "",
+    icon: raidConfigAtual.iconFile || "",
     spots: raidConfigAtual.spots || [],
     gameName: String(raidConfigAtual.name || "Boss de Rotação").toUpperCase(),
     level: raidConfigAtual.level,
@@ -10394,7 +10393,15 @@ function montarEventosRaid() {
     hp: raidConfigAtual.hp,
     gameLocation: raidConfigAtual.map || "-",
     rotation: true
-  });
+  };
+
+  eventos.push(Object.assign(bossRotacao, {
+    nextTime: proximoBossRotativo(agora),
+    /* Prioriza o ícone oficial encontrado pela NAME na PVP_ASSETS/database.
+       ICON FILE permanece apenas como fallback para um Digimon ainda não cadastrado. */
+    iconPath: resolverIconeRaid(bossRotacao),
+    mapPath: raidConfigAtual.mapUrl || ("raid_assets/maps/" + (raidConfigAtual.mapFile || "rotation_boss_map.png"))
+  }));
 
   eventos.sort(function(a, b) { return a.nextTime - b.nextTime; });
   raidEventosAtuais = eventos;
