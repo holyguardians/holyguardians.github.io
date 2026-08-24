@@ -18,10 +18,12 @@
     return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  function dateKey() {
-    try {
-      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()).replace(/\//g, "-");
-    } catch (error) { return new Date().toISOString().slice(0, 10); }
+  function dateKey(offsetDays) {
+    /* Desafio diário troca às 21:00 no horário de Brasília. */
+    var brt = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    if (brt.getUTCHours() < 21) brt.setUTCDate(brt.getUTCDate() - 1);
+    brt.setUTCDate(brt.getUTCDate() + (Number(offsetDays) || 0));
+    return brt.toISOString().slice(0, 10);
   }
 
   function hash(text) {
@@ -72,8 +74,8 @@
     return { tone: "wrong", marker: "×" };
   }
 
-  function dailyTarget(list, mode) {
-    return list[hash(dateKey() + "::" + mode) % list.length];
+  function dailyTarget(list, mode, offsetDays) {
+    return list[hash(dateKey(offsetDays) + "::" + mode) % list.length];
   }
 
   function gameStorageKey(mode, free) {
@@ -108,7 +110,8 @@
         free: !!free,
         list: list,
         byId: byId,
-        target: free ? list[Math.floor(Math.random() * list.length)] : dailyTarget(list, mode),
+        target: free ? list[Math.floor(Math.random() * list.length)] : dailyTarget(list, mode, 0),
+        previous: free ? null : dailyTarget(list, mode, -1),
         attempts: [],
         finished: false, streamer: false, revealed: false,
         query: ""
@@ -126,7 +129,18 @@
   }
 
   function resultCell(label, value, state) {
-    return '<div class="digi-guess-cell ' + state.tone + '"><small>' + escapeHtml(label) + '</small><strong>' + escapeHtml(value) + '</strong><b>' + state.marker + "</b></div>";
+    return '<div class="digi-guess-cell ' + state.tone + '"><strong>' + value + '</strong><b>' + state.marker + "</b></div>";
+  }
+
+  function valueList(values, answerValues) {
+    var list = Array.isArray(values) ? values : [];
+    return '<span class="digi-value-list">' + (list.length ? list.map(function (value) {
+      return '<i class="' + ((answerValues || []).indexOf(value) !== -1 ? 'match' : '') + '">' + escapeHtml(value) + '</i>';
+    }).join('') : '<i>—</i>') + '</span>';
+  }
+
+  function guessTableHeader() {
+    return '<div class="digi-guess-head"><span>DIGIMON</span><span>' + escapeHtml(t("digi.level", "LEVEL")) + '</span><span>' + escapeHtml(t("digi.attribute", "ATTRIBUTE")) + '</span><span>' + escapeHtml(t("digi.type", "TYPE")) + '</span><span>' + escapeHtml(t("digi.field", "FIELD")) + '</span><span>' + escapeHtml(t("digi.year", "YEAR")) + '</span><span>X-ANTIBODY</span></div>';
   }
 
   function guessRows(state) {
@@ -135,12 +149,12 @@
     return state.attempts.slice().reverse().map(function (guess) {
       return '<article class="digi-guess-row">' +
         '<div class="digi-guess-name"><img src="' + escapeHtml(guess.image) + '" alt=""><strong>' + escapeHtml(guess.name) + "</strong></div>" +
-        resultCell(t("digi.level", "LEVEL"), displayList(guess.level), comparison(guess, answer, "level")) +
-        resultCell(t("digi.attribute", "ATTRIBUTE"), displayList(guess.attribute), comparison(guess, answer, "attribute")) +
-        resultCell(t("digi.type", "TYPE"), displayList(guess.type), comparison(guess, answer, "type")) +
-        resultCell(t("digi.field", "FIELD"), displayList(guess.field), comparison(guess, answer, "field")) +
-        resultCell(t("digi.year", "YEAR"), guess.year || "—", comparison(guess, answer, "year")) +
-        resultCell("X-ANTIBODY", "—", { tone: "wrong", marker: "×" }) +
+        resultCell('', valueList(guess.level, answer.level), comparison(guess, answer, "level")) +
+        resultCell('', valueList(guess.attribute, answer.attribute), comparison(guess, answer, "attribute")) +
+        resultCell('', valueList(guess.type, answer.type), comparison(guess, answer, "type")) +
+        resultCell('', valueList(guess.field, answer.field), comparison(guess, answer, "field")) +
+        resultCell('', escapeHtml(guess.year || "—"), comparison(guess, answer, "year")) +
+        resultCell('', '—', { tone: "wrong", marker: "×" }) +
       "</article>";
     }).join("");
   }
@@ -158,9 +172,9 @@
 
   function resultBanner(state) {
     if (!state.finished) return "";
-    if (state.streamer && !state.revealed) return '<div class="digi-result-banner streamer"><div><small>RESPOSTA PROTEGIDA PARA A LIVE</small><button type="button" data-digi-reveal>REVELAR RESPOSTA</button></div></div>';
+    if (state.streamer && !state.revealed) return '<div class="digi-result-banner streamer"><div><small>' + escapeHtml(t("digi.streamerProtected", "RESPOSTA PROTEGIDA PARA A LIVE")) + '</small><button type="button" data-digi-reveal>' + escapeHtml(t("digi.reveal", "REVELAR RESPOSTA")) + '</button></div></div>';
     var won = state.attempts.some(function (item) { return item.id === state.target.id; });
-    return '<div class="digi-result-banner ' + (won ? "won" : "lost") + '"><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(state.target.name) + "</strong></div></div>";
+    return '<div class="digi-result-banner ' + (won ? "won" : "lost") + '"><img src="' + escapeHtml(state.target.image) + '" alt=""><div><small>' + escapeHtml(won ? t("digi.won", "VOCÊ ACERTOU!") : t("digi.answer", "A RESPOSTA ERA")) + "</small><strong>" + escapeHtml(state.target.name) + '</strong></div></div>' + (!state.free && state.previous ? '<div class="digi-previous"><img src="' + escapeHtml(state.previous.image) + '" alt=""><span>' + escapeHtml(t("digi.previous", "DESAFIO ANTERIOR")) + '</span><strong>' + escapeHtml(state.previous.name) + '</strong></div>' : '');
   }
 
   function modeHeader(state) {
@@ -168,7 +182,7 @@
     var otherLabel = state.mode === "guess" ? "DIGI ZOOM" : "DIGI GUESS";
     var title = state.mode === "guess" ? "DIGI GUESS" : "DIGI ZOOM";
     var description = state.mode === "guess" ? t("digi.guessDescription", "Descubra o Digimon pelas pistas. Você tem 8 tentativas no desafio diário.") : t("digi.zoomDescription", "Identifique o Digimon escondido. A imagem revela mais a cada erro.");
-    return '<header class="digi-game-header tech-corners"><div><small>HOLY GUARDIANS // DIGIMON ARCHIVE</small><h1>' + title + '</h1><p>' + escapeHtml(description) + '</p></div><div class="digi-game-header-actions"><button type="button" data-digi-credit>CRÉDITOS DA API</button><button type="button" data-digi-other="' + other + '">' + otherLabel + ' <span>→</span></button><button type="button" class="' + (state.free ? "active" : "") + '" data-digi-free>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</button><button type="button" class="' + (state.streamer ? "active" : "") + '" data-digi-streamer>MODO STREAMER</button></div></header>';
+    return '<header class="digi-game-header tech-corners"><div><small>HOLY GUARDIANS // DIGIMON ARCHIVE</small><h1>' + title + '</h1><p>' + escapeHtml(description) + '</p></div><div class="digi-game-header-actions"><button type="button" data-digi-credit>' + escapeHtml(t("digi.apiCredits", "CRÉDITOS DA API")) + '</button><button type="button" data-digi-other="' + other + '">' + otherLabel + ' <span>→</span></button><button type="button" class="' + (state.free ? "active" : "") + '" data-digi-free>' + escapeHtml(t("digi.freeMode", "MODO LIVRE")) + '</button><button type="button" class="' + (state.streamer ? "active" : "") + '" data-digi-streamer>' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '</button></div></header>';
   }
 
   function inputPanel(state) {
@@ -187,11 +201,11 @@
     var root = document.querySelector('[data-digi-game="' + mode + '"]');
     if (!state || !root) return;
     document.body.classList.toggle("hg-digi-streamer-active", !!state.streamer);
-    var limit = state.free ? "∞" : "8";
+    var limit = state.free || mode === "zoom" ? "∞" : "15";
     root.innerHTML = '<div class="digi-game-wrap">' + modeHeader(state) +
       '<div class="digi-game-status"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + state.attempts.length + '/' + limit + "</strong></div>" +
       (mode === "zoom" ? zoomBoard(state) : "") + resultBanner(state) + inputPanel(state) +
-      '<section class="digi-game-results">' + (mode === "guess" ? guessRows(state) : '<div class="digi-zoom-guesses">' + state.attempts.map(function (item) { return '<span class="' + (item.id === state.target.id ? "correct" : "") + '">' + escapeHtml(item.name) + "</span>"; }).join("") + "</div>") + '</section><p class="digi-game-credit">' + escapeHtml(t("digi.dataSource", "Dados dos Digimon por")) + ' <a href="https://digi-api.com" target="_blank" rel="noopener noreferrer">Digi-API</a></p></div>';
+      '<section class="digi-game-results">' + (mode === "guess" ? guessTableHeader() + guessRows(state) : '<div class="digi-zoom-guesses">' + state.attempts.map(function (item) { return '<span class="' + (item.id === state.target.id ? "correct" : "") + '">' + escapeHtml(item.name) + "</span>"; }).join("") + "</div>") + '</section><p class="digi-game-credit">' + escapeHtml(t("digi.dataSource", "Dados dos Digimon por")) + ' <a href="https://digi-api.com" target="_blank" rel="noopener noreferrer">Digi-API</a></p></div>';
     bind(mode, root);
   }
 
@@ -201,7 +215,7 @@
     if (!state || !item || state.finished || state.attempts.some(function (entry) { return entry.id === item.id; })) return;
     state.attempts.push(item);
     state.query = "";
-    if (item.id === state.target.id || (!state.free && state.mode === "guess" && state.attempts.length >= 8)) state.finished = true;
+    if (item.id === state.target.id || (!state.free && state.mode === "guess" && state.attempts.length >= 15)) state.finished = true;
     saveGame(state);
     render(mode);
   }

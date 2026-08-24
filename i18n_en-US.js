@@ -60,6 +60,7 @@ window.HG_I18N["en-US"] = {
   "digi.zoomHint": "Each wrong guess reveals more of the image.",
   "digi.error": "Could not load the Digimon list right now.",
   "digi.dataSource": "Digimon data by",
+  "digi.apiCredits": "API CREDITS", "digi.streamer": "STREAMER MODE", "digi.reveal": "REVEAL ANSWER", "digi.streamerProtected": "ANSWER PROTECTED FOR STREAM", "digi.previous": "PREVIOUS CHALLENGE",
   "home.openDigidex": "OPEN DIGIDEX",
   "home.buildTeam": "BUILD TEAM",
   "home.raidBosses": "Raid Bosses",
