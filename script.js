@@ -19225,9 +19225,32 @@ if (document.readyState === "loading") {
    Feed servido pelo Worker, com a chave do YouTube protegida nele.
 ===================================================== */
 const DIGI_CREATORS_API_URL = "https://evil-guardians-digi-creators.hiltongiuseppechiarelo.workers.dev/feed";
-const digiCreatorsState = { iniciado: false, carregado: false, carregando: false, filtro: "todos", busca: "" };
+const digiCreatorsState = { iniciado: false, carregado: false, carregando: false, filtro: "todos", busca: "", livesRecolhidas: false };
 window.DIGI_CREATORS_VIDEOS = window.DIGI_CREATORS_VIDEOS || [];
 window.DIGI_CREATORS_LIVES = window.DIGI_CREATORS_LIVES || [];
+
+function digiCreatorsTexto(chave) {
+  return typeof window.hgT === "function" ? window.hgT("digiCreators." + chave, chave) : chave;
+}
+
+function digiCreatorsAplicarIdioma() {
+  document.querySelectorAll("[data-digi-i18n]").forEach(function(elemento) {
+    elemento.textContent = typeof window.hgT === "function" ? window.hgT(elemento.dataset.digiI18n, elemento.textContent) : elemento.textContent;
+  });
+  document.querySelectorAll("[data-digi-i18n-placeholder]").forEach(function(elemento) {
+    elemento.placeholder = digiCreatorsTexto(elemento.dataset.digiI18nPlaceholder);
+  });
+  digiCreatorsAtualizarBotaoLives();
+}
+
+function digiCreatorsAtualizarBotaoLives() {
+  const botao = document.getElementById("digiCreatorsLiveToggle");
+  if (!botao) return;
+  const recolhido = !!digiCreatorsState.livesRecolhidas;
+  botao.setAttribute("aria-expanded", String(!recolhido));
+  botao.classList.toggle("recolhido", recolhido);
+  botao.querySelector("b").textContent = digiCreatorsTexto(recolhido ? "expandLives" : "collapseLives");
+}
 
 function digiCreatorsVazio(titulo, texto, tipo) {
   return `<div class="digi-creators-empty ${tipo || ""}">
@@ -19252,10 +19275,10 @@ function renderDigiCreators() {
         const url = escaparHtml(String(live.url || "#"));
         return `<a class="digi-creators-live-card" href="${url}" target="_blank" rel="noopener noreferrer">
           <img src="${escaparHtml(String(live.thumbnail || "digicreators.png"))}" alt="" loading="lazy">
-          <span class="digi-creators-live-info"><b>AO VIVO</b><strong>${escaparHtml(String(live.title || "Live Digimon"))}</strong><small>${escaparHtml(String(live.creator || "Criador parceiro"))}</small></span>
+          <span class="digi-creators-live-info"><b>${digiCreatorsTexto("live")}</b><strong>${escaparHtml(String(live.title || digiCreatorsTexto("liveFallback")))}</strong><small>${escaparHtml(String(live.creator || digiCreatorsTexto("creatorFallback")))}</small></span>
         </a>`;
       }).join("")
-    : digiCreatorsVazio("Nenhum criador está ao vivo agora", "Quando uma live parceira começar, ela aparecerá aqui automaticamente.", "live");
+    : digiCreatorsVazio(digiCreatorsTexto("noLive"), digiCreatorsTexto("noLiveText"), "live");
 
   const filtrados = videos.filter(function(video) {
     const tags = Array.isArray(video.tags) ? video.tags.map(String) : [];
@@ -19269,12 +19292,12 @@ function renderDigiCreators() {
         const tags = Array.isArray(video.tags) ? video.tags : [];
         return `<a class="digi-creators-video-card" href="${escaparHtml(String(video.url || "#"))}" target="_blank" rel="noopener noreferrer">
           <span class="digi-creators-thumb"><img src="${escaparHtml(String(video.thumbnail || ""))}" alt="" loading="lazy"><i>▶</i></span>
-          <span class="digi-creators-video-copy"><strong>${escaparHtml(String(video.title || "Vídeo Digimon"))}</strong><small>${escaparHtml(String(video.creator || "Criador parceiro"))}</small><em>${tags.map(function(tag) { return "#" + escaparHtml(String(tag)); }).join(" ")}</em></span>
+          <span class="digi-creators-video-copy"><strong>${escaparHtml(String(video.title || digiCreatorsTexto("videoFallback")))}</strong><small>${escaparHtml(String(video.creator || digiCreatorsTexto("creatorFallback")))}</small><em>${tags.map(function(tag) { return "#" + escaparHtml(String(tag)); }).join(" ")}</em></span>
         </a>`;
       }).join("")
     : digiCreatorsVazio(
-        videos.length ? "Nenhum vídeo encontrado" : "Os criadores chegam na próxima etapa",
-        videos.length ? "Tente outra busca ou filtro." : "Vamos conectar os canais parceiros da planilha para preencher esta grade.",
+        videos.length ? digiCreatorsTexto("noVideo") : digiCreatorsTexto("noFeed"),
+        videos.length ? digiCreatorsTexto("noVideoText") : digiCreatorsTexto("noFeedText"),
         "videos"
       );
 }
@@ -19310,7 +19333,7 @@ function carregarDigiCreators() {
     })
     .catch(function() {
       const videoGrid = document.getElementById("digiCreatorsVideoGrid");
-      if (videoGrid) videoGrid.innerHTML = digiCreatorsVazio("Não foi possível carregar os vídeos agora", "Tente novamente em alguns instantes.", "videos");
+      if (videoGrid) videoGrid.innerHTML = digiCreatorsVazio(digiCreatorsTexto("unavailable"), digiCreatorsTexto("unavailableText"), "videos");
     })
     .finally(function() { digiCreatorsState.carregando = false; });
 }
@@ -19349,7 +19372,7 @@ function digiCreatorsSincronizarLives(lives) {
 }
 
 function inicializarDigiCreators() {
-  if (digiCreatorsState.iniciado) { renderDigiCreators(); carregarDigiCreators(); return; }
+  if (digiCreatorsState.iniciado) { digiCreatorsAplicarIdioma(); renderDigiCreators(); carregarDigiCreators(); return; }
   digiCreatorsState.iniciado = true;
 
   const busca = document.getElementById("digiCreatorsSearch");
@@ -19365,10 +19388,22 @@ function inicializarDigiCreators() {
     filtros.querySelectorAll("button").forEach(function(item) { item.classList.toggle("ativo", item === botao); });
     renderDigiCreators();
   });
+  const botaoLives = document.getElementById("digiCreatorsLiveToggle");
+  if (botaoLives) botaoLives.addEventListener("click", function() {
+    digiCreatorsState.livesRecolhidas = !digiCreatorsState.livesRecolhidas;
+    const painel = document.querySelector(".digi-creators-live-panel");
+    if (painel) painel.classList.toggle("digi-creators-lives-recolhidas", digiCreatorsState.livesRecolhidas);
+    digiCreatorsAtualizarBotaoLives();
+  });
   document.addEventListener("hg-live-monitor-updated", function(event) {
     digiCreatorsSincronizarLives(event.detail?.lives || []);
     if (digiCreatorsState.carregado) renderDigiCreators();
   });
+  document.addEventListener("hg:languagechange", function() {
+    digiCreatorsAplicarIdioma();
+    if (digiCreatorsState.carregado) renderDigiCreators();
+  });
+  digiCreatorsAplicarIdioma();
   renderDigiCreators();
   carregarDigiCreators();
 }

@@ -26568,3 +26568,29 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 .digi-creators-videos-head { margin-bottom:17px; }
 @media(max-width:980px){.digi-creators-command{grid-template-columns:1fr;gap:15px}.digi-creators-command .digi-creators-logo{width:min(430px,100%)}.digi-creators-command-brand{text-align:center}.digi-creators-command-brand p{margin-left:0}.digi-creators-command .digi-creators-filters{justify-content:center}.digi-creators-live-grid{max-width:none}.digi-creators-live-card,.digi-creators-live-card img{min-height:210px;height:210px}}
 @media(max-width:620px){.digi-creators-command{min-height:0;padding:18px 14px 20px;gap:14px}.digi-creators-command:after{display:none}.digi-creators-command .digi-creators-logo{max-height:75px}.digi-creators-command-brand p{font-size:8px}.digi-creators-command .digi-creators-filters{justify-content:flex-start;overflow-x:auto;padding:1px 0 3px}.digi-creators-live-panel{padding:15px}.digi-creators-live-grid{grid-template-columns:1fr;gap:13px}.digi-creators-live-card,.digi-creators-live-card img{min-height:190px;height:190px}.digi-creators-live-info{padding:65px 14px 13px}.digi-creators-live-info strong{font-size:12px}.digi-creators-live-solo .digi-creators-live-card{aspect-ratio:16/9}.digi-creators-live-solo .digi-creators-live-info{padding:70px 15px 15px}}
+
+/* Ajuste compacto da barra e da live em destaque */
+.digi-creators-command { grid-template-columns:minmax(360px,.95fr) minmax(500px,1.05fr); min-height:128px; gap:25px; padding:15px 28px 18px; }
+.digi-creators-command .digi-creators-logo { width:min(500px,100%); max-height:104px; }
+.digi-creators-command-brand { display:grid; justify-items:center; text-align:center; }
+.digi-creators-command-brand p { margin:1px 0 0; text-align:center; }
+.digi-creators-command-controls { gap:8px; }
+.digi-creators-command .digi-creators-search { height:39px; }
+.digi-creators-live-panel { padding:17px 24px 20px; }
+.digi-creators-live-grid { max-width:1020px; }
+.digi-creators-live-card { min-height:210px; }
+.digi-creators-live-card img { height:210px; }
+.digi-creators-live-solo { max-width:900px; }
+.digi-creators-live-solo .digi-creators-live-card { max-height:330px; aspect-ratio:16/6.3; }
+.digi-creators-live-solo .digi-creators-live-info { padding:92px 25px 20px; }
+.digi-creators-live-panel:after { bottom:9px; }
+.digi-creators-live-toggle { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:31px; padding:0 10px; border:1px solid rgba(75,207,255,.32); border-radius:7px; background:rgba(3,19,43,.78); color:#7ce3fb; font:900 8px "Oxanium",Arial,sans-serif; letter-spacing:.08em; cursor:pointer; transition:.2s ease; }
+.digi-creators-live-toggle span { font-size:15px; line-height:1; transition:transform .2s ease; }
+.digi-creators-live-toggle:hover { border-color:#62e4ff; background:rgba(7,54,95,.86); box-shadow:0 0 13px rgba(45,203,255,.14); color:#f1fcff; }
+.digi-creators-live-toggle.recolhido span { transform:rotate(180deg); }
+.digi-creators-live-panel.digi-creators-lives-recolhidas { padding-bottom:16px; }
+.digi-creators-live-panel.digi-creators-lives-recolhidas:after { display:none; }
+.digi-creators-live-panel.digi-creators-lives-recolhidas .digi-creators-section-head { margin-bottom:0; }
+.digi-creators-live-panel.digi-creators-lives-recolhidas .digi-creators-live-grid { display:none; }
+@media(max-width:980px){.digi-creators-command{grid-template-columns:1fr;min-height:0;gap:11px;padding:16px 22px 18px}.digi-creators-command .digi-creators-logo{width:min(480px,100%);max-height:94px}.digi-creators-live-card,.digi-creators-live-card img{min-height:190px;height:190px}}
+@media(max-width:620px){.digi-creators-command{padding:15px 14px 17px}.digi-creators-command .digi-creators-logo{max-height:82px}.digi-creators-live-panel{padding:14px}.digi-creators-live-toggle{min-height:29px;padding:0 8px;font-size:7px}.digi-creators-live-card,.digi-creators-live-card img{min-height:175px;height:175px}.digi-creators-live-solo .digi-creators-live-card{max-height:none;aspect-ratio:16/8.3}.digi-creators-live-solo .digi-creators-live-info{padding:72px 15px 14px}}

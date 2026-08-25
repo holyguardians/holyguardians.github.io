@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260824-raid-home-map-v2">
+  <link rel="stylesheet" href="styles.css?v=20260825-digi-creators-layout-v2">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
 <style id="hgImpmonMultiLiveStyles">
@@ -3134,20 +3134,20 @@
     <header class="digi-creators-command tech-corners">
       <div class="digi-creators-command-brand">
         <img class="digi-creators-logo" src="digicreators.png" alt="Digi-Creators">
-        <p>Vídeos, lives e criadores da comunidade Digimon.</p>
+        <p data-digi-i18n="digiCreators.tagline">Vídeos, lives e criadores da comunidade Digimon.</p>
       </div>
 
       <div class="digi-creators-command-controls">
         <label class="digi-creators-search" for="digiCreatorsSearch">
           <span aria-hidden="true">⌕</span>
-          <input id="digiCreatorsSearch" type="search" placeholder="Pesquisar nos canais parceiros..." autocomplete="off">
+          <input id="digiCreatorsSearch" type="search" placeholder="Pesquisar nos canais parceiros..." data-digi-i18n-placeholder="search" autocomplete="off">
         </label>
 
         <div class="digi-creators-filters" id="digiCreatorsFilters" aria-label="Filtrar vídeos">
-          <button type="button" class="ativo" data-digi-filter="todos">TODOS</button>
+          <button type="button" class="ativo" data-digi-filter="todos" data-digi-i18n="digiCreators.filterAll">TODOS</button>
           <button type="button" data-digi-filter="dsr">DSR</button>
           <button type="button" data-digi-filter="dmo">DMO</button>
-          <button type="button" data-digi-filter="guia">GUIAS</button>
+          <button type="button" data-digi-filter="guia" data-digi-i18n="digiCreators.filterGuides">GUIAS</button>
           <button type="button" data-digi-filter="pvp">PVP</button>
           <button type="button" data-digi-filter="vod">VODS</button>
         </div>
@@ -3157,9 +3157,12 @@
     <section class="digi-creators-live-panel tech-corners" aria-labelledby="digiCreatorsLiveTitle">
       <div class="digi-creators-section-head">
         <div>
-          <small><span class="digi-live-dot"></span> AO VIVO AGORA</small>
-          <h2 id="digiCreatorsLiveTitle">CRIADORES EM LIVE</h2>
+          <small><span class="digi-live-dot"></span> <span data-digi-i18n="digiCreators.liveNow">AO VIVO AGORA</span></small>
+          <h2 id="digiCreatorsLiveTitle" data-digi-i18n="digiCreators.liveCreators">CRIADORES EM LIVE</h2>
         </div>
+        <button type="button" id="digiCreatorsLiveToggle" class="digi-creators-live-toggle" aria-expanded="true">
+          <span aria-hidden="true">⌃</span><b data-digi-i18n="digiCreators.collapseLives">RECOLHER</b>
+        </button>
       </div>
       <div id="digiCreatorsLiveGrid" class="digi-creators-live-grid" aria-live="polite"></div>
     </section>
@@ -3167,8 +3170,8 @@
     <section class="digi-creators-videos-panel" aria-labelledby="digiCreatorsVideosTitle">
       <div class="digi-creators-section-head digi-creators-videos-head">
         <div>
-          <small>CONTEÚDO DA COMUNIDADE</small>
-          <h2 id="digiCreatorsVideosTitle">VÍDEOS MAIS NOVOS</h2>
+          <small data-digi-i18n="digiCreators.communityContent">CONTEÚDO DA COMUNIDADE</small>
+          <h2 id="digiCreatorsVideosTitle" data-digi-i18n="digiCreators.latestVideos">VÍDEOS MAIS NOVOS</h2>
         </div>
       </div>
 
@@ -3308,11 +3311,11 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
-<script src="i18n_pt-BR.js?v=20260824-digi-game-v1"></script>
-<script src="i18n_en-US.js?v=20260824-digi-game-v1"></script>
-<script src="i18n_ko-KR.js?v=20260824-digi-game-v1"></script>
+<script src="i18n_pt-BR.js?v=20260825-digi-creators-v1"></script>
+<script src="i18n_en-US.js?v=20260825-digi-creators-v1"></script>
+<script src="i18n_ko-KR.js?v=20260825-digi-creators-v1"></script>
 <script src="i18n.js?v=20260824-digi-game-v1"></script>
-<script src="script.js?v=20260824-digi-game-v1"></script>
+<script src="script.js?v=20260825-digi-creators-layout-v2"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 </body>
 </html>

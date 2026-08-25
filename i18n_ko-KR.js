@@ -2101,3 +2101,29 @@ window.HG_I18N["ko-KR"].__pvpDialogs = {
   "Limpar Baby Correction, Skills e Tetris deste Digimon? O Buff Deck global dos 8 será mantido.": "이 디지몬의 Baby Correction, Skills, Tetris를 초기화하시겠습니까? 팀 공통 Buff Deck은 유지됩니다.",
   "Limpar todo o time PvP? Isso remove os 8 Digimons, todos os builds e o Buff Deck global.": "PvP 팀 전체를 초기화하시겠습니까? 디지몬 8마리, 모든 빌드, 팀 공통 Buff Deck이 삭제됩니다."
 };
+
+/* DIGI-CREATORS */
+Object.assign(window.HG_I18N["ko-KR"], {
+  "digiCreators.tagline": "디지몬 커뮤니티의 영상, 라이브 및 크리에이터.",
+  "digiCreators.search": "파트너 채널 검색...",
+  "digiCreators.filterAll": "전체",
+  "digiCreators.filterGuides": "가이드",
+  "digiCreators.liveNow": "현재 라이브",
+  "digiCreators.liveCreators": "라이브 크리에이터",
+  "digiCreators.collapseLives": "접기",
+  "digiCreators.expandLives": "펼치기",
+  "digiCreators.communityContent": "커뮤니티 콘텐츠",
+  "digiCreators.latestVideos": "최신 영상",
+  "digiCreators.live": "라이브",
+  "digiCreators.liveFallback": "디지몬 라이브",
+  "digiCreators.creatorFallback": "파트너 크리에이터",
+  "digiCreators.noLive": "현재 라이브 중인 크리에이터가 없습니다",
+  "digiCreators.noLiveText": "파트너 라이브가 시작되면 여기에 자동으로 표시됩니다.",
+  "digiCreators.noVideo": "검색된 영상이 없습니다",
+  "digiCreators.noVideoText": "다른 검색어나 필터를 사용해 보세요.",
+  "digiCreators.noFeed": "다음 단계에서 크리에이터를 만나볼 수 있습니다",
+  "digiCreators.noFeedText": "스프레드시트의 파트너 채널을 연결하여 이 목록을 채웁니다.",
+  "digiCreators.unavailable": "지금은 영상을 불러올 수 없습니다",
+  "digiCreators.unavailableText": "잠시 후 다시 시도해 주세요.",
+  "digiCreators.videoFallback": "디지몬 영상"
+});

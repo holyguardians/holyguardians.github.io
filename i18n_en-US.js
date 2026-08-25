@@ -1395,3 +1395,29 @@ window.HG_I18N["en-US"].__pvpDialogs = {
   "Limpar Baby Correction, Skills e Tetris deste Digimon? O Buff Deck global dos 8 será mantido.": "Clear Baby Correction, Skills and Tetris for this Digimon? The team-wide Buff Deck will be kept.",
   "Limpar todo o time PvP? Isso remove os 8 Digimons, todos os builds e o Buff Deck global.": "Clear the entire PvP team? This removes all 8 Digimon, every build and the team-wide Buff Deck."
 };
+
+/* DIGI-CREATORS */
+Object.assign(window.HG_I18N["en-US"], {
+  "digiCreators.tagline": "Videos, live streams and creators from the Digimon community.",
+  "digiCreators.search": "Search partner channels...",
+  "digiCreators.filterAll": "ALL",
+  "digiCreators.filterGuides": "GUIDES",
+  "digiCreators.liveNow": "LIVE NOW",
+  "digiCreators.liveCreators": "CREATORS LIVE",
+  "digiCreators.collapseLives": "COLLAPSE",
+  "digiCreators.expandLives": "EXPAND",
+  "digiCreators.communityContent": "COMMUNITY CONTENT",
+  "digiCreators.latestVideos": "LATEST VIDEOS",
+  "digiCreators.live": "LIVE",
+  "digiCreators.liveFallback": "Digimon live stream",
+  "digiCreators.creatorFallback": "Partner creator",
+  "digiCreators.noLive": "No creator is live right now",
+  "digiCreators.noLiveText": "When a partner live stream starts, it will automatically appear here.",
+  "digiCreators.noVideo": "No videos found",
+  "digiCreators.noVideoText": "Try another search or filter.",
+  "digiCreators.noFeed": "Creators arrive in the next phase",
+  "digiCreators.noFeedText": "We will connect the partner channels from the spreadsheet to fill this grid.",
+  "digiCreators.unavailable": "We couldn't load the videos right now",
+  "digiCreators.unavailableText": "Please try again in a few moments.",
+  "digiCreators.videoFallback": "Digimon video"
+});

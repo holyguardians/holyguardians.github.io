@@ -830,3 +830,29 @@ window.HG_I18N["pt-BR"].__pvpExact = {
   "Clique para escolher um Digimon": "Clique para escolher um Digimon"
 };
 window.HG_I18N["pt-BR"].__pvpDialogs = {};
+
+/* DIGI-CREATORS */
+Object.assign(window.HG_I18N["pt-BR"], {
+  "digiCreators.tagline": "Vídeos, lives e criadores da comunidade Digimon.",
+  "digiCreators.search": "Pesquisar nos canais parceiros...",
+  "digiCreators.filterAll": "TODOS",
+  "digiCreators.filterGuides": "GUIAS",
+  "digiCreators.liveNow": "AO VIVO AGORA",
+  "digiCreators.liveCreators": "CRIADORES EM LIVE",
+  "digiCreators.collapseLives": "RECOLHER",
+  "digiCreators.expandLives": "EXPANDIR",
+  "digiCreators.communityContent": "CONTEÚDO DA COMUNIDADE",
+  "digiCreators.latestVideos": "VÍDEOS MAIS NOVOS",
+  "digiCreators.live": "AO VIVO",
+  "digiCreators.liveFallback": "Live Digimon",
+  "digiCreators.creatorFallback": "Criador parceiro",
+  "digiCreators.noLive": "Nenhum criador está ao vivo agora",
+  "digiCreators.noLiveText": "Quando uma live parceira começar, ela aparecerá aqui automaticamente.",
+  "digiCreators.noVideo": "Nenhum vídeo encontrado",
+  "digiCreators.noVideoText": "Tente outra busca ou filtro.",
+  "digiCreators.noFeed": "Os criadores chegam na próxima etapa",
+  "digiCreators.noFeedText": "Vamos conectar os canais parceiros da planilha para preencher esta grade.",
+  "digiCreators.unavailable": "Não foi possível carregar os vídeos agora",
+  "digiCreators.unavailableText": "Tente novamente em alguns instantes.",
+  "digiCreators.videoFallback": "Vídeo Digimon"
+});
