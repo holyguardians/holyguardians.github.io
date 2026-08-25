@@ -19245,6 +19245,7 @@ function renderDigiCreators() {
   const lives = Array.isArray(window.DIGI_CREATORS_LIVES) ? window.DIGI_CREATORS_LIVES : [];
   const videos = Array.isArray(window.DIGI_CREATORS_VIDEOS) ? window.DIGI_CREATORS_VIDEOS : [];
   const busca = digiCreatorsState.busca.trim().toLocaleLowerCase("pt-BR");
+  liveGrid.classList.toggle("digi-creators-live-solo", lives.length === 1);
 
   liveGrid.innerHTML = lives.length
     ? lives.map(function(live) {
@@ -19323,8 +19324,9 @@ function digiCreatorsNormalizarNome(value) {
 }
 
 function digiCreatorsSincronizarLives(lives) {
+  const videos = Array.isArray(window.DIGI_CREATORS_VIDEOS) ? window.DIGI_CREATORS_VIDEOS : [];
   const criadoresDoFeed = new Set(
-    (Array.isArray(window.DIGI_CREATORS_VIDEOS) ? window.DIGI_CREATORS_VIDEOS : [])
+    videos
       .map(function(video) { return digiCreatorsNormalizarNome(video.creator); })
       .filter(Boolean)
   );
@@ -19332,10 +19334,14 @@ function digiCreatorsSincronizarLives(lives) {
   window.DIGI_CREATORS_LIVES = lista
     .map(function(live) {
       const creator = live.nome || live.creator || live.name || live.username || live.channelName || "";
+      const creatorKey = digiCreatorsNormalizarNome(creator);
+      const videoRecente = videos.find(function(video) {
+        return digiCreatorsNormalizarNome(video.creator) === creatorKey;
+      });
       return {
-        title: live.title || live.streamTitle || `${creator || "Criador parceiro"} está ao vivo`,
+        title: live.title || live.streamTitle || videoRecente?.title || `${creator || "Criador parceiro"} está ao vivo`,
         creator: creator || "Criador parceiro",
-        thumbnail: live.thumbnail || live.thumbnailUrl || "digicreators.png",
+        thumbnail: live.thumbnail || live.thumbnailUrl || videoRecente?.thumbnail || "digicreators.png",
         url: live.url || live.link || live.channelUrl || "#"
       };
     })
