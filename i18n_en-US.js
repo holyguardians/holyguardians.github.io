@@ -1398,6 +1398,16 @@ window.HG_I18N["en-US"].__pvpDialogs = {
 
 /* DIGI-CREATORS */
 Object.assign(window.HG_I18N["en-US"], {
+  "home.creatorsFeatured": "FEATURED CREATORS",
+  "home.creatorsSignal": "COMMUNITY SIGNAL",
+  "home.creatorsOpen": "OPEN",
+  "home.creatorsAll": "VIEW ALL CREATORS →",
+  "home.creatorsLatest": "CREATOR'S LATEST VIDEO",
+  "home.creatorsEmpty": "No videos are available right now.",
+  "home.creatorsLoading": "LOADING CREATORS...",
+  "home.creatorsPrev": "Previous creator",
+  "home.creatorsNext": "Next creator",
+  "home.creatorsSelect": "Show {name}'s video",
   "digiCreators.tagline": "Videos, live streams and creators from the Digimon community.",
   "digiCreators.search": "Search partner channels...",
   "digiCreators.filterAll": "ALL",

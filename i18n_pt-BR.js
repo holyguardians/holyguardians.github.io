@@ -833,6 +833,16 @@ window.HG_I18N["pt-BR"].__pvpDialogs = {};
 
 /* DIGI-CREATORS */
 Object.assign(window.HG_I18N["pt-BR"], {
+  "home.creatorsFeatured": "CRIADORES EM DESTAQUE",
+  "home.creatorsSignal": "SINAL DA COMUNIDADE",
+  "home.creatorsOpen": "ABRIR",
+  "home.creatorsAll": "VER TODOS OS CRIADORES →",
+  "home.creatorsLatest": "ÚLTIMO VÍDEO DO CRIADOR",
+  "home.creatorsEmpty": "Nenhum vídeo disponível agora.",
+  "home.creatorsLoading": "CARREGANDO CRIADORES...",
+  "home.creatorsPrev": "Criador anterior",
+  "home.creatorsNext": "Próximo criador",
+  "home.creatorsSelect": "Mostrar vídeo de {name}",
   "digiCreators.tagline": "Vídeos, lives e criadores da comunidade Digimon.",
   "digiCreators.search": "Pesquisar nos canais parceiros...",
   "digiCreators.filterAll": "TODOS",

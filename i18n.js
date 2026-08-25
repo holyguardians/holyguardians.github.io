@@ -2829,8 +2829,10 @@
 
     setText(one(".servers-panel .panel-heading h2", home), translate("home.activeServers", "Servers Ativos"));
     all(".server-status", home).forEach(function (element) { setText(element, translate("home.active", "ATIVA •")); });
-    setText(one(".staff-panel .panel-heading h2", home), translate("home.staff", "Staff DSR"));
-    setText(one(".staff-subs-title", home), translate("home.subs", "SUBS"));
+    setText(one(".home-creators-panel .panel-heading h2", home), translate("home.creatorsFeatured", "CRIADORES EM DESTAQUE"));
+    setText(one("#homeCreatorsBrand small", home), translate("home.creatorsSignal", "COMMUNITY SIGNAL"));
+    setText(one("#homeCreatorsOpen", home), translate("home.creatorsOpen", "ABRIR"));
+    setText(one(".home-creators-all", home), translate("home.creatorsAll", "VER TODOS OS CRIADORES →"));
     setText(one(".home-social-panel .panel-heading h2", home), translate("home.socials", "Nossas Redes"));
 
     all(".home-social-card.youtube .home-social-action, .home-social-card.twitch .home-social-action", home)

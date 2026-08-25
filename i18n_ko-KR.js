@@ -2104,6 +2104,16 @@ window.HG_I18N["ko-KR"].__pvpDialogs = {
 
 /* DIGI-CREATORS */
 Object.assign(window.HG_I18N["ko-KR"], {
+  "home.creatorsFeatured": "추천 크리에이터",
+  "home.creatorsSignal": "커뮤니티 시그널",
+  "home.creatorsOpen": "열기",
+  "home.creatorsAll": "모든 크리에이터 보기 →",
+  "home.creatorsLatest": "크리에이터 최신 영상",
+  "home.creatorsEmpty": "현재 이용 가능한 영상이 없습니다.",
+  "home.creatorsLoading": "크리에이터 불러오는 중...",
+  "home.creatorsPrev": "이전 크리에이터",
+  "home.creatorsNext": "다음 크리에이터",
+  "home.creatorsSelect": "{name}의 영상 보기",
   "digiCreators.tagline": "디지몬 커뮤니티의 영상, 라이브 및 크리에이터.",
   "digiCreators.search": "파트너 채널 검색...",
   "digiCreators.filterAll": "전체",

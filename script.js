@@ -2402,6 +2402,7 @@ function mostrarPagina(
   if (id === "digiGuessPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("guess"); }, 0);
   if (id === "digiZoomPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("zoom"); }, 0);
   if (id === "digiCreatorsPagina") setTimeout(inicializarDigiCreators, 0);
+  if (id === "homePagina") setTimeout(inicializarHomeCreators, 0);
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -19422,4 +19423,145 @@ function inicializarDigiCreators() {
   digiCreatorsAplicarIdioma();
   renderDigiCreators();
   carregarDigiCreators();
+}
+
+/* =====================================================
+   HOME — VITRINE DIGI-CREATORS
+   Um vídeo mais recente por criador, com rotação leve.
+===================================================== */
+const homeCreatorsState = { iniciado: false, carregando: false, videos: [], indice: 0, timer: null };
+
+function homeCreatorsTexto(chave, fallback) {
+  return typeof window.hgT === "function" ? window.hgT("home." + chave, fallback) : fallback;
+}
+
+function homeCreatorsEscapar(valor) {
+  return typeof escaparHtml === "function" ? escaparHtml(String(valor || "")) : String(valor || "");
+}
+
+function homeCreatorsSelecionarUmPorCriador(videos) {
+  const vistos = new Set();
+  return (Array.isArray(videos) ? videos : []).filter(function(video) {
+    const chave = digiCreatorsNormalizarNome(video && video.creator);
+    if (!chave || vistos.has(chave)) return false;
+    vistos.add(chave);
+    return true;
+  });
+}
+
+function homeCreatorsRenderizar() {
+  const card = document.getElementById("homeCreatorsCard");
+  const dots = document.getElementById("homeCreatorsDots");
+  const anterior = document.getElementById("homeCreatorsPrev");
+  const proximo = document.getElementById("homeCreatorsNext");
+  if (!card || !dots) return;
+
+  const videos = homeCreatorsState.videos;
+  const disponiveis = videos.length > 0;
+  if (homeCreatorsState.indice >= videos.length) homeCreatorsState.indice = 0;
+  const video = videos[homeCreatorsState.indice];
+  if (anterior) anterior.disabled = !disponiveis || videos.length < 2;
+  if (proximo) proximo.disabled = !disponiveis || videos.length < 2;
+
+  if (!video) {
+    card.removeAttribute("target");
+    card.removeAttribute("rel");
+    card.href = "#digi-creators";
+    card.innerHTML = `<span class="home-creators-card-empty">${homeCreatorsEscapar(homeCreatorsState.carregando ? homeCreatorsTexto("creatorsLoading", "CARREGANDO CRIADORES...") : homeCreatorsTexto("creatorsEmpty", "Nenhum vídeo disponível agora."))}</span>`;
+    dots.innerHTML = "";
+    return;
+  }
+
+  card.href = String(video.url || "#");
+  card.target = "_blank";
+  card.rel = "noopener noreferrer";
+  card.innerHTML = `<span class="home-creators-thumb"><img src="${homeCreatorsEscapar(video.thumbnail)}" alt="" loading="lazy"><i>▶</i></span>
+    <span class="home-creators-copy"><small>${homeCreatorsEscapar(homeCreatorsTexto("creatorsLatest", "ÚLTIMO VÍDEO DO CRIADOR"))}</small><strong>${homeCreatorsEscapar(video.title || "Digi-Creators")}</strong><em>${homeCreatorsEscapar(video.creator || "Holy Guardians")}</em></span>
+    <span class="home-creators-platform"><img src="youtube.png" alt="YouTube"></span>`;
+
+  dots.innerHTML = videos.map(function(item, indice) {
+    const ativo = indice === homeCreatorsState.indice;
+    const rotulo = homeCreatorsTexto("creatorsSelect", "Mostrar vídeo de {name}").replace("{name}", String(item.creator || "Digi-Creators"));
+    return `<button type="button" class="${ativo ? "ativo" : ""}" data-home-creator-index="${indice}" aria-label="${homeCreatorsEscapar(rotulo)}" aria-current="${ativo ? "true" : "false"}"></button>`;
+  }).join("");
+}
+
+function homeCreatorsMostrar(passo) {
+  const total = homeCreatorsState.videos.length;
+  if (total < 2) return;
+  homeCreatorsState.indice = (homeCreatorsState.indice + passo + total) % total;
+  homeCreatorsRenderizar();
+  homeCreatorsAgendar();
+}
+
+function homeCreatorsAgendar() {
+  clearTimeout(homeCreatorsState.timer);
+  if (homeCreatorsState.videos.length < 2) return;
+  homeCreatorsState.timer = setTimeout(function() {
+    homeCreatorsMostrar(1);
+  }, 8500);
+}
+
+function homeCreatorsCarregar() {
+  if (homeCreatorsState.carregando) return;
+  homeCreatorsState.carregando = true;
+  homeCreatorsRenderizar();
+  const callback = "__hgHomeCreators_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  const script = document.createElement("script");
+  const timer = setTimeout(function() { limpar(); finalizar([]); }, 15000);
+  let finalizado = false;
+  function limpar() {
+    clearTimeout(timer);
+    script.remove();
+    try { delete window[callback]; } catch (_) { window[callback] = undefined; }
+  }
+  function finalizar(videos) {
+    if (finalizado) return;
+    finalizado = true;
+    homeCreatorsState.carregando = false;
+    homeCreatorsState.videos = homeCreatorsSelecionarUmPorCriador(videos);
+    homeCreatorsState.indice = 0;
+    homeCreatorsRenderizar();
+    homeCreatorsAgendar();
+  }
+  window[callback] = function(payload) {
+    limpar();
+    const videos = payload && payload.ok === true && Array.isArray(payload.videos) ? payload.videos : [];
+    if (videos.length) window.DIGI_CREATORS_VIDEOS = videos;
+    finalizar(videos);
+  };
+  script.onerror = function() { limpar(); finalizar([]); };
+  script.src = DIGI_CREATORS_API_URL + "?callback=" + encodeURIComponent(callback) + "&_=" + Date.now();
+  document.head.appendChild(script);
+}
+
+function inicializarHomeCreators() {
+  const painel = document.getElementById("homeCreatorsPanel");
+  if (!painel) return;
+  if (homeCreatorsState.iniciado) { homeCreatorsRenderizar(); return; }
+  homeCreatorsState.iniciado = true;
+  const anterior = document.getElementById("homeCreatorsPrev");
+  const proximo = document.getElementById("homeCreatorsNext");
+  const dots = document.getElementById("homeCreatorsDots");
+  if (anterior) anterior.addEventListener("click", function() { homeCreatorsMostrar(-1); });
+  if (proximo) proximo.addEventListener("click", function() { homeCreatorsMostrar(1); });
+  if (dots) dots.addEventListener("click", function(event) {
+    const alvo = event.target.closest("button[data-home-creator-index]");
+    if (!alvo) return;
+    homeCreatorsState.indice = Number(alvo.dataset.homeCreatorIndex) || 0;
+    homeCreatorsRenderizar();
+    homeCreatorsAgendar();
+  });
+  painel.addEventListener("mouseenter", function() { clearTimeout(homeCreatorsState.timer); });
+  painel.addEventListener("mouseleave", homeCreatorsAgendar);
+  painel.addEventListener("focusin", function() { clearTimeout(homeCreatorsState.timer); });
+  painel.addEventListener("focusout", function() { setTimeout(homeCreatorsAgendar, 0); });
+  document.addEventListener("hg:languagechange", homeCreatorsRenderizar);
+  homeCreatorsCarregar();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarHomeCreators);
+} else {
+  inicializarHomeCreators();
 }
