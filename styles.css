@@ -26594,3 +26594,13 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
 .digi-creators-live-panel.digi-creators-lives-recolhidas .digi-creators-live-grid { display:none; }
 @media(max-width:980px){.digi-creators-command{grid-template-columns:1fr;min-height:0;gap:11px;padding:16px 22px 18px}.digi-creators-command .digi-creators-logo{width:min(480px,100%);max-height:94px}.digi-creators-live-card,.digi-creators-live-card img{min-height:190px;height:190px}}
 @media(max-width:620px){.digi-creators-command{padding:15px 14px 17px}.digi-creators-command .digi-creators-logo{max-height:82px}.digi-creators-live-panel{padding:14px}.digi-creators-live-toggle{min-height:29px;padding:0 8px;font-size:7px}.digi-creators-live-card,.digi-creators-live-card img{min-height:175px;height:175px}.digi-creators-live-solo .digi-creators-live-card{max-height:none;aspect-ratio:16/8.3}.digi-creators-live-solo .digi-creators-live-info{padding:72px 15px 14px}}
+
+/* Moldura tecnológica exclusiva da barra Digi-Creators */
+.digi-creators-command-corner { position:absolute; z-index:3; display:block; width:54px; height:42px; pointer-events:none; filter:drop-shadow(0 0 6px rgba(70,224,255,.78)); }
+.digi-creators-command-corner-tl { top:10px; left:11px; border-top:2px solid #55e5ff; border-left:2px solid #55e5ff; }
+.digi-creators-command-corner-br { right:11px; bottom:10px; border-right:2px solid #168eff; border-bottom:2px solid #168eff; }
+.digi-creators-command:hover .digi-creators-command-corner-tl { animation:digiCreatorsCornerPulse 1.8s ease-in-out infinite; }
+.digi-creators-command:hover .digi-creators-command-corner-br { animation:digiCreatorsCornerPulse 1.8s ease-in-out .2s infinite reverse; }
+@keyframes digiCreatorsCornerPulse { 50% { opacity:.48; transform:scale(.88); } }
+@media(max-width:980px){.digi-creators-command-corner{width:43px;height:34px}.digi-creators-command-corner-tl{top:8px;left:9px}.digi-creators-command-corner-br{right:9px;bottom:8px}}
+@media(max-width:620px){.digi-creators-command-corner{width:31px;height:25px;border-width:1px}.digi-creators-command-corner-tl{top:7px;left:7px}.digi-creators-command-corner-br{right:7px;bottom:7px}}
