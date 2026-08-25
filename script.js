@@ -19248,7 +19248,7 @@ function renderDigiCreators() {
     ? lives.map(function(live) {
         const url = escaparHtml(String(live.url || "#"));
         return `<a class="digi-creators-live-card" href="${url}" target="_blank" rel="noopener noreferrer">
-          <img src="${escaparHtml(String(live.thumbnail || ""))}" alt="" loading="lazy">
+          <img src="${escaparHtml(String(live.thumbnail || "digicreators.png"))}" alt="" loading="lazy">
           <span class="digi-creators-live-info"><b>AO VIVO</b><strong>${escaparHtml(String(live.title || "Live Digimon"))}</strong><small>${escaparHtml(String(live.creator || "Criador parceiro"))}</small></span>
         </a>`;
       }).join("")
@@ -19280,18 +19280,31 @@ function carregarDigiCreators() {
   if (digiCreatorsState.carregado || digiCreatorsState.carregando) return;
   digiCreatorsState.carregando = true;
 
-  fetch(DIGI_CREATORS_API_URL)
-    .then(function(response) {
-      if (!response.ok) throw new Error("Não foi possível carregar o feed.");
-      return response.json();
-    })
+  const consultarPorJsonp = function() {
+    return new Promise(function(resolve, reject) {
+      const callback = "__hgDigiCreators_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      const timer = setTimeout(function() { limpar(); reject(new Error("Feed indisponível")); }, 15000);
+      function limpar() {
+        clearTimeout(timer);
+        script.remove();
+        try { delete window[callback]; } catch (_) { window[callback] = undefined; }
+      }
+      window[callback] = function(payload) { limpar(); resolve(payload); };
+      script.onerror = function() { limpar(); reject(new Error("Feed indisponível")); };
+      script.src = DIGI_CREATORS_API_URL + "?callback=" + encodeURIComponent(callback) + "&_=" + Date.now();
+      document.head.appendChild(script);
+    });
+  };
+
+  consultarPorJsonp()
     .then(function(payload) {
       if (!payload || payload.ok !== true) throw new Error(payload?.error || "Feed indisponível.");
       window.DIGI_CREATORS_VIDEOS = Array.isArray(payload.videos) ? payload.videos : [];
       window.DIGI_CREATORS_LIVES = Array.isArray(payload.lives) ? payload.lives.map(function(live) {
         return {
-          title: live.title || live.streamTitle || "Live Digimon",
-          creator: live.creator || live.name || live.username || live.channelName || "Criador parceiro",
+          title: live.title || live.streamTitle || `${live.nome || live.creator || live.name || "Criador parceiro"} está ao vivo`,
+          creator: live.nome || live.creator || live.name || live.username || live.channelName || "Criador parceiro",
           thumbnail: live.thumbnail || live.thumbnailUrl || "",
           url: live.url || live.link || live.channelUrl || "#"
         };
