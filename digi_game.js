@@ -19,6 +19,16 @@
   function displayName(item) { var name = String(item && item.name || ""); var names = language() === "ko-KR" && window.HG_I18N && window.HG_I18N["ko-KR"] && window.HG_I18N["ko-KR"].__digimonNames; return names && names[name] ? names[name] : name; }
   function stageValues(item) { var name=String(item && item.name || ""); var overrides={"Angewomon":"Perfect"}; if(overrides[name]) return [overrides[name]]; var levels = Array.isArray(item && item.level) ? item.level : []; if (levels.indexOf("Armor") !== -1) return ["Armor"]; if (levels.indexOf("Hybrid") !== -1) return ["Hybrid"]; var order=["Ultimate","Perfect","Adult","Child","Baby II","Baby I","Unknown"]; for(var i=0;i<order.length;i++) if(levels.indexOf(order[i])!==-1) return [order[i]]; return levels; }
 
+  /* Não usamos registros incompletos: sem estes dados o desafio deixa de ser justo. */
+  function isPlayableDigimon(item) {
+    return !!(item && item.id && item.name && item.image &&
+      stageValues(item).length &&
+      Array.isArray(item.attribute) && item.attribute.length &&
+      Array.isArray(item.type) && item.type.length &&
+      Array.isArray(item.field) && item.field.length &&
+      Number(item.year));
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
@@ -43,7 +53,7 @@
         .then(function (response) { if (!response.ok) throw new Error("HTTP " + response.status); return response.json(); })
         .then(function (payload) {
           var list = Array.isArray(payload && payload.digimons) ? payload.digimons : [];
-          return list.filter(function (item) { return item && item.id && item.name && item.image; });
+          return list.filter(isPlayableDigimon);
         });
     }
     return dataPromise;
