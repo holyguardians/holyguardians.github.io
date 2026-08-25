@@ -19451,6 +19451,7 @@ function homeCreatorsSelecionarUmPorCriador(videos) {
 
 function homeCreatorsRenderizar() {
   const card = document.getElementById("homeCreatorsCard");
+  const canal = document.getElementById("homeCreatorsChannel");
   const dots = document.getElementById("homeCreatorsDots");
   const anterior = document.getElementById("homeCreatorsPrev");
   const proximo = document.getElementById("homeCreatorsNext");
@@ -19468,6 +19469,7 @@ function homeCreatorsRenderizar() {
     card.removeAttribute("rel");
     card.href = "#digi-creators";
     card.innerHTML = `<span class="home-creators-card-empty">${homeCreatorsEscapar(homeCreatorsState.carregando ? homeCreatorsTexto("creatorsLoading", "CARREGANDO CRIADORES...") : homeCreatorsTexto("creatorsEmpty", "Nenhum vídeo disponível agora."))}</span>`;
+    if (canal) canal.textContent = "";
     dots.innerHTML = "";
     return;
   }
@@ -19476,8 +19478,8 @@ function homeCreatorsRenderizar() {
   card.target = "_blank";
   card.rel = "noopener noreferrer";
   card.innerHTML = `<span class="home-creators-thumb"><img src="${homeCreatorsEscapar(video.thumbnail)}" alt="" loading="lazy"><i>▶</i><span class="home-creators-copy"><small>${homeCreatorsEscapar(homeCreatorsTexto("creatorsLatest", "ÚLTIMO VÍDEO DO CRIADOR"))}</small><strong>${homeCreatorsEscapar(video.title || "Digi-Creators")}</strong></span></span>
-    <span class="home-creators-channel"><span>CANAL</span><strong>${homeCreatorsEscapar(video.creator || "Holy Guardians")}</strong></span>
     <span class="home-creators-platform"><img src="youtube.png" alt="YouTube"></span>`;
+  if (canal) canal.textContent = String(video.creator || "Holy Guardians");
 
   dots.innerHTML = videos.map(function(item, indice) {
     const ativo = indice === homeCreatorsState.indice;
