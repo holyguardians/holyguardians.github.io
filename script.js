@@ -19073,6 +19073,8 @@ function hgResetImpmonLiveMinimizado() {
 
 function hgMostrarImpmonLive(lives, manterVisivel) {
   const lista = Array.isArray(lives) ? lives.filter(Boolean).map(hgNormalizarLiveImpmon) : [];
+  window.HG_LIVE_MONITOR_LIVES = lista;
+  document.dispatchEvent(new CustomEvent("hg-live-monitor-updated", { detail: { lives: lista } }));
   if (!lista.length) return hgOcultarImpmonLive();
 
   const caixa = document.getElementById("hgImpmonLive");
@@ -19301,14 +19303,7 @@ function carregarDigiCreators() {
     .then(function(payload) {
       if (!payload || payload.ok !== true) throw new Error(payload?.error || "Feed indisponível.");
       window.DIGI_CREATORS_VIDEOS = Array.isArray(payload.videos) ? payload.videos : [];
-      window.DIGI_CREATORS_LIVES = Array.isArray(payload.lives) ? payload.lives.map(function(live) {
-        return {
-          title: live.title || live.streamTitle || `${live.nome || live.creator || live.name || "Criador parceiro"} está ao vivo`,
-          creator: live.nome || live.creator || live.name || live.username || live.channelName || "Criador parceiro",
-          thumbnail: live.thumbnail || live.thumbnailUrl || "",
-          url: live.url || live.link || live.channelUrl || "#"
-        };
-      }) : [];
+      digiCreatorsSincronizarLives(window.HG_LIVE_MONITOR_LIVES || payload.lives || []);
       digiCreatorsState.carregado = true;
       renderDigiCreators();
     })
@@ -19317,6 +19312,34 @@ function carregarDigiCreators() {
       if (videoGrid) videoGrid.innerHTML = digiCreatorsVazio("Não foi possível carregar os vídeos agora", "Tente novamente em alguns instantes.", "videos");
     })
     .finally(function() { digiCreatorsState.carregando = false; });
+}
+
+function digiCreatorsNormalizarNome(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
+function digiCreatorsSincronizarLives(lives) {
+  const criadoresDoFeed = new Set(
+    (Array.isArray(window.DIGI_CREATORS_VIDEOS) ? window.DIGI_CREATORS_VIDEOS : [])
+      .map(function(video) { return digiCreatorsNormalizarNome(video.creator); })
+      .filter(Boolean)
+  );
+  const lista = Array.isArray(lives) ? lives : [];
+  window.DIGI_CREATORS_LIVES = lista
+    .map(function(live) {
+      const creator = live.nome || live.creator || live.name || live.username || live.channelName || "";
+      return {
+        title: live.title || live.streamTitle || `${creator || "Criador parceiro"} está ao vivo`,
+        creator: creator || "Criador parceiro",
+        thumbnail: live.thumbnail || live.thumbnailUrl || "digicreators.png",
+        url: live.url || live.link || live.channelUrl || "#"
+      };
+    })
+    .filter(function(live) { return criadoresDoFeed.has(digiCreatorsNormalizarNome(live.creator)); });
 }
 
 function inicializarDigiCreators() {
@@ -19335,6 +19358,10 @@ function inicializarDigiCreators() {
     digiCreatorsState.filtro = botao.dataset.digiFilter || "todos";
     filtros.querySelectorAll("button").forEach(function(item) { item.classList.toggle("ativo", item === botao); });
     renderDigiCreators();
+  });
+  document.addEventListener("hg-live-monitor-updated", function(event) {
+    digiCreatorsSincronizarLives(event.detail?.lives || []);
+    if (digiCreatorsState.carregado) renderDigiCreators();
   });
   renderDigiCreators();
   carregarDigiCreators();
