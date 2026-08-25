@@ -211,6 +211,7 @@
           <button type="button" role="menuitem" onclick="abrirSorteio()">SORTEIO</button>
           <button id="btnDigiGuessContent" type="button" role="menuitem" onclick="abrirDigiGuess()">DIGI GUESS</button>
           <button id="btnDigiZoomContent" type="button" role="menuitem" onclick="abrirDigiZoom()">DIGI ZOOM</button>
+          <button id="btnDigiCreatorsContent" type="button" role="menuitem" onclick="abrirDigiCreators()">DIGI-CREATORS</button>
           <button type="button" role="menuitem" onclick="abrirTierListDsr()">TIER LIST DSR</button>
           <button type="button" role="menuitem" onclick="abrirTierListDmo()">TIER LIST DMO</button>
         </div>
@@ -3121,6 +3122,57 @@
       </aside>
     </div>
     <button id="sorteioStreamExit" type="button" class="sorteio-stream-exit" onclick="sorteioAlternarModoStream(false)" hidden>SAIR DO MODO STREAM</button>
+  </div>
+</section>
+
+<!-- =====================================================
+     DIGI-CREATORS
+===================================================== -->
+
+<section id="digiCreatorsPagina" class="pagina">
+  <div class="digi-creators-shell">
+    <header class="digi-creators-hero tech-corners">
+      <img class="digi-creators-logo" src="digicreators.png" alt="Digi-Creators">
+      <p>Vídeos, lives e criadores da comunidade Digimon.</p>
+    </header>
+
+    <section class="digi-creators-live-panel tech-corners" aria-labelledby="digiCreatorsLiveTitle">
+      <div class="digi-creators-section-head">
+        <div>
+          <small><span class="digi-live-dot"></span> AO VIVO AGORA</small>
+          <h2 id="digiCreatorsLiveTitle">CRIADORES EM LIVE</h2>
+        </div>
+        <div class="digi-creators-carousel-actions" aria-label="Navegação de lives">
+          <button type="button" id="digiCreatorsLivePrev" aria-label="Live anterior" disabled>‹</button>
+          <button type="button" id="digiCreatorsLiveNext" aria-label="Próxima live" disabled>›</button>
+        </div>
+      </div>
+      <div id="digiCreatorsLiveGrid" class="digi-creators-live-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="digi-creators-videos-panel" aria-labelledby="digiCreatorsVideosTitle">
+      <div class="digi-creators-section-head digi-creators-videos-head">
+        <div>
+          <small>CONTEÚDO DA COMUNIDADE</small>
+          <h2 id="digiCreatorsVideosTitle">VÍDEOS MAIS NOVOS</h2>
+        </div>
+        <label class="digi-creators-search" for="digiCreatorsSearch">
+          <span aria-hidden="true">⌕</span>
+          <input id="digiCreatorsSearch" type="search" placeholder="Pesquisar nos canais parceiros..." autocomplete="off">
+        </label>
+      </div>
+
+      <div class="digi-creators-filters" id="digiCreatorsFilters" aria-label="Filtrar vídeos">
+        <button type="button" class="ativo" data-digi-filter="todos">TODOS</button>
+        <button type="button" data-digi-filter="dsr">DSR</button>
+        <button type="button" data-digi-filter="dmo">DMO</button>
+        <button type="button" data-digi-filter="guia">GUIAS</button>
+        <button type="button" data-digi-filter="pvp">PVP</button>
+        <button type="button" data-digi-filter="vod">VODS</button>
+      </div>
+
+      <div id="digiCreatorsVideoGrid" class="digi-creators-video-grid" aria-live="polite"></div>
+    </section>
   </div>
 </section>
 

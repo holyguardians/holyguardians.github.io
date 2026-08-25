@@ -2201,6 +2201,7 @@ function hgTituloPaginaHeader(id) {
     tierListPagina: "TIER LIST DSR",
     tierListDmoPagina: "TIER LIST DMO",
     sorteioPagina: "SORTEIO",
+    digiCreatorsPagina: "DIGI-CREATORS",
     socialPagina: "COMUNIDADE"
   };
   return titulos[id] || "HOLY GUARDIANS";
@@ -2400,6 +2401,7 @@ function mostrarPagina(
   }
   if (id === "digiGuessPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("guess"); }, 0);
   if (id === "digiZoomPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("zoom"); }, 0);
+  if (id === "digiCreatorsPagina") setTimeout(inicializarDigiCreators, 0);
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -2429,6 +2431,7 @@ function mostrarPagina(
       sorteioPagina: "sorteio",
       digiGuessPagina: "digi-guess",
       digiZoomPagina: "digi-zoom",
+      digiCreatorsPagina: "digi-creators",
       socialPagina: "comunidade"
     };
 
@@ -2481,6 +2484,7 @@ function abrirPaginaPelaUrl() {
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
     "digi-guess": { pagina: "digiGuessPagina", botao: "btnFeatures" },
     "digi-zoom": { pagina: "digiZoomPagina", botao: "btnFeatures" },
+    "digi-creators": { pagina: "digiCreatorsPagina", botao: "btnFeatures" },
     social: { pagina: "socialPagina", botao: "btnSocial" },
     comunidade: { pagina: "socialPagina", botao: "btnSocial" }
   };
@@ -12245,6 +12249,11 @@ function abrirDigiZoom(){
   mostrarPagina("digiZoomPagina",document.getElementById("btnFeatures"));
   if(typeof window.inicializarDigiGame==="function")window.inicializarDigiGame("zoom");
 }
+function abrirDigiCreators(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("digiCreatorsPagina",document.getElementById("btnFeatures"));
+  inicializarDigiCreators();
+}
 function abrirTierListDsr(){
   fecharFeaturesNavMenu();
   mostrarPagina("tierListPagina",document.getElementById("btnFeatures"));
@@ -19207,4 +19216,81 @@ if (document.readyState === "loading") {
 } else {
   hgResetImpmonLiveMinimizado();
   hgIniciarImpmonLiveRunner();
+}
+
+/* =====================================================
+   DIGI-CREATORS — ESTRUTURA LOCAL
+   A próxima etapa alimenta estes arrays pela planilha/Worker.
+===================================================== */
+const digiCreatorsState = { iniciado: false, filtro: "todos", busca: "" };
+window.DIGI_CREATORS_VIDEOS = window.DIGI_CREATORS_VIDEOS || [];
+window.DIGI_CREATORS_LIVES = window.DIGI_CREATORS_LIVES || [];
+
+function digiCreatorsVazio(titulo, texto, tipo) {
+  return `<div class="digi-creators-empty ${tipo || ""}">
+    <span aria-hidden="true">${tipo === "live" ? "◉" : "▶"}</span>
+    <strong>${titulo}</strong>
+    <small>${texto}</small>
+  </div>`;
+}
+
+function renderDigiCreators() {
+  const liveGrid = document.getElementById("digiCreatorsLiveGrid");
+  const videoGrid = document.getElementById("digiCreatorsVideoGrid");
+  if (!liveGrid || !videoGrid) return;
+
+  const lives = Array.isArray(window.DIGI_CREATORS_LIVES) ? window.DIGI_CREATORS_LIVES : [];
+  const videos = Array.isArray(window.DIGI_CREATORS_VIDEOS) ? window.DIGI_CREATORS_VIDEOS : [];
+  const busca = digiCreatorsState.busca.trim().toLocaleLowerCase("pt-BR");
+
+  liveGrid.innerHTML = lives.length
+    ? lives.map(function(live) {
+        const url = String(live.url || "#");
+        return `<a class="digi-creators-live-card" href="${url}" target="_blank" rel="noopener noreferrer">
+          <img src="${String(live.thumbnail || "")}" alt="" loading="lazy">
+          <span class="digi-creators-live-info"><b>AO VIVO</b><strong>${String(live.title || "Live Digimon")}</strong><small>${String(live.creator || "Criador parceiro")}</small></span>
+        </a>`;
+      }).join("")
+    : digiCreatorsVazio("Nenhum criador está ao vivo agora", "Quando uma live parceira começar, ela aparecerá aqui automaticamente.", "live");
+
+  const filtrados = videos.filter(function(video) {
+    const tags = Array.isArray(video.tags) ? video.tags.map(String) : [];
+    const texto = [video.title, video.creator, tags.join(" ")].join(" ").toLocaleLowerCase("pt-BR");
+    const passaFiltro = digiCreatorsState.filtro === "todos" || tags.includes(digiCreatorsState.filtro);
+    return passaFiltro && (!busca || texto.includes(busca));
+  });
+
+  videoGrid.innerHTML = filtrados.length
+    ? filtrados.map(function(video) {
+        const tags = Array.isArray(video.tags) ? video.tags : [];
+        return `<a class="digi-creators-video-card" href="${String(video.url || "#")}" target="_blank" rel="noopener noreferrer">
+          <span class="digi-creators-thumb"><img src="${String(video.thumbnail || "")}" alt="" loading="lazy"><i>▶</i></span>
+          <span class="digi-creators-video-copy"><strong>${String(video.title || "Vídeo Digimon")}</strong><small>${String(video.creator || "Criador parceiro")}</small><em>${tags.map(function(tag) { return "#" + tag; }).join(" ")}</em></span>
+        </a>`;
+      }).join("")
+    : digiCreatorsVazio(
+        videos.length ? "Nenhum vídeo encontrado" : "Os criadores chegam na próxima etapa",
+        videos.length ? "Tente outra busca ou filtro." : "Vamos conectar os canais parceiros da planilha para preencher esta grade.",
+        "videos"
+      );
+}
+
+function inicializarDigiCreators() {
+  if (digiCreatorsState.iniciado) { renderDigiCreators(); return; }
+  digiCreatorsState.iniciado = true;
+
+  const busca = document.getElementById("digiCreatorsSearch");
+  const filtros = document.getElementById("digiCreatorsFilters");
+  if (busca) busca.addEventListener("input", function() {
+    digiCreatorsState.busca = busca.value || "";
+    renderDigiCreators();
+  });
+  if (filtros) filtros.addEventListener("click", function(event) {
+    const botao = event.target.closest("button[data-digi-filter]");
+    if (!botao) return;
+    digiCreatorsState.filtro = botao.dataset.digiFilter || "todos";
+    filtros.querySelectorAll("button").forEach(function(item) { item.classList.toggle("ativo", item === botao); });
+    renderDigiCreators();
+  });
+  renderDigiCreators();
 }
