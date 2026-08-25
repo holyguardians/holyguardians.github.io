@@ -160,7 +160,8 @@
   }
 
   function hasXAntibody(item) {
-    return !!(item && item.xAntibody);
+    /* A API marca a maioria no campo booleano; o nome é uma salvaguarda para variantes. */
+    return !!(item && (item.xAntibody === true || item.xAntibody === "true" || /\(X-Antibody\)|\bX-Antibody\b|\(X\)$/i.test(String(item.name || ""))));
   }
 
   function guessRows(state) {
