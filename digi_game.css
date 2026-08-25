@@ -142,6 +142,12 @@ body.hg-digi-streamer-active #siteTopbar,body.hg-digi-streamer-active #hgImpmonL
   50%{opacity:1;text-shadow:0 0 5px #d8ff5c,0 0 14px rgba(176,255,54,.93),0 0 28px rgba(118,255,23,.58)}
 }
 
+/* Tooltip fora da moldura do LED: não é cortado pelo botão transparente. */
+@media (min-width:801px){
+  .digi-device>.digi-device-streamer-tooltip{position:absolute!important;z-index:999999!important;left:15.9%!important;top:84.9%!important;display:block!important;min-width:max-content!important;padding:6px 8px!important;border:1px solid #ffdb50!important;border-radius:5px!important;color:#fff7c9!important;background:#400008!important;font:1000 7px "Oxanium",sans-serif!important;letter-spacing:.07em!important;line-height:1!important;opacity:0!important;pointer-events:none!important;transform:translate(-50%,-3px)!important;transition:opacity .16s ease,transform .16s ease!important}
+  .digi-device>.digi-device-streamer-tooltip.visible{opacity:1!important;transform:translate(-50%,0)!important}
+}
+
 /* Reconstrução do terminal: a carcaça é uma camada atrás do jogo, nunca um recorte sobre ele. */
 @media (min-width:801px){
   .digi-device{isolation:isolate;display:grid;grid-template-columns:190px minmax(390px,1fr) 165px;grid-template-rows:62px minmax(430px,1fr) 100px;gap:14px;max-width:920px;min-height:640px;margin:14px auto 0;padding:50px 38px 34px;background:transparent!important;clip-path:none!important;filter:none!important;box-shadow:none!important;overflow:visible}

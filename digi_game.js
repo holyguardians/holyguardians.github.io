@@ -225,6 +225,7 @@
     return '<section class="digi-device" aria-label="Digi Zoom terminal">' +
       '<div class="digi-device-plaque"><small>HOLY GUARDIANS ARCHIVE</small><strong>DIGI ZOOM</strong></div>' +
       '<aside class="digi-device-menu"><span>TERMINAL HG</span><button type="button" data-digi-other="' + other + '">DIGI GUESS</button><button type="button" data-digi-credit>' + escapeHtml(t("digi.apiCredits", "CRÉDITOS DA API")) + '</button><button type="button" title="' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '" aria-label="' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '" class="digi-device-streamer-button ' + (state.streamer ? "active" : "") + '" data-digi-streamer>' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '</button></aside>' +
+      '<span class="digi-device-streamer-tooltip" aria-hidden="true">' + escapeHtml(t("digi.streamer", "MODO STREAMER")) + '</span>' +
       '<div class="digi-device-meta"><span>' + escapeHtml(state.free ? t("digi.freeActive", "MODO LIVRE ATIVO") : t("digi.daily", "DESAFIO DIÁRIO")) + '</span><strong>' + escapeHtml(t("digi.attempts", "TENTATIVAS")) + ' ' + attempts + '</strong></div>' +
       '<div class="digi-device-screen"><div class="digi-zoom-screen ' + (state.revealing ? "is-revealing" : state.finished ? "is-revealed" : "") + '" style="--digi-from-scale:' + scale.toFixed(2) + '">' + screen + '</div></div>' +
       '<div class="digi-device-history"><span>' + escapeHtml(t("digi.latestGuesses", "ÚLTIMOS CHUTES")) + '</span><div>' + history + '</div></div>' +
@@ -281,7 +282,14 @@
     var other = root.querySelector("[data-digi-other]");
     if (other) other.addEventListener("click", function () { other.getAttribute("data-digi-other") === "guess" ? window.abrirDigiGuess() : window.abrirDigiZoom(); });
     var streamer = root.querySelector("[data-digi-streamer]");
-    if (streamer) streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    var streamerTip = root.querySelector(".digi-device-streamer-tooltip");
+    if (streamer) {
+      streamer.addEventListener("mouseenter", function () { if (streamerTip) streamerTip.classList.add("visible"); });
+      streamer.addEventListener("mouseleave", function () { if (streamerTip) streamerTip.classList.remove("visible"); });
+      streamer.addEventListener("focus", function () { if (streamerTip) streamerTip.classList.add("visible"); });
+      streamer.addEventListener("blur", function () { if (streamerTip) streamerTip.classList.remove("visible"); });
+      streamer.addEventListener("click", function () { state.streamer = !state.streamer; state.revealed = false; render(mode); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    }
     var reveal = root.querySelector("[data-digi-reveal]");
     if (reveal) reveal.addEventListener("click", function () { state.revealed = true; startReveal(mode); });
     var credit = root.querySelector("[data-digi-credit]");
