@@ -19475,8 +19475,8 @@ function homeCreatorsRenderizar() {
   card.href = String(video.url || "#");
   card.target = "_blank";
   card.rel = "noopener noreferrer";
-  card.innerHTML = `<span class="home-creators-thumb"><img src="${homeCreatorsEscapar(video.thumbnail)}" alt="" loading="lazy"><i>▶</i></span>
-    <span class="home-creators-copy"><small>${homeCreatorsEscapar(homeCreatorsTexto("creatorsLatest", "ÚLTIMO VÍDEO DO CRIADOR"))}</small><strong>${homeCreatorsEscapar(video.title || "Digi-Creators")}</strong><em>${homeCreatorsEscapar(video.creator || "Holy Guardians")}</em></span>
+  card.innerHTML = `<span class="home-creators-thumb"><img src="${homeCreatorsEscapar(video.thumbnail)}" alt="" loading="lazy"><i>▶</i><span class="home-creators-copy"><small>${homeCreatorsEscapar(homeCreatorsTexto("creatorsLatest", "ÚLTIMO VÍDEO DO CRIADOR"))}</small><strong>${homeCreatorsEscapar(video.title || "Digi-Creators")}</strong></span></span>
+    <span class="home-creators-channel"><span>CANAL</span><strong>${homeCreatorsEscapar(video.creator || "Holy Guardians")}</strong></span>
     <span class="home-creators-platform"><img src="youtube.png" alt="YouTube"></span>`;
 
   dots.innerHTML = videos.map(function(item, indice) {
