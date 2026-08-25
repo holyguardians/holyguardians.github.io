@@ -19220,9 +19220,10 @@ if (document.readyState === "loading") {
 
 /* =====================================================
    DIGI-CREATORS — ESTRUTURA LOCAL
-   A próxima etapa alimenta estes arrays pela planilha/Worker.
+   Feed servido pelo Worker, com a chave do YouTube protegida nele.
 ===================================================== */
-const digiCreatorsState = { iniciado: false, filtro: "todos", busca: "" };
+const DIGI_CREATORS_API_URL = "https://evil-guardians-digi-creators.hiltongiuseppechiarelo.workers.dev/feed";
+const digiCreatorsState = { iniciado: false, carregado: false, carregando: false, filtro: "todos", busca: "" };
 window.DIGI_CREATORS_VIDEOS = window.DIGI_CREATORS_VIDEOS || [];
 window.DIGI_CREATORS_LIVES = window.DIGI_CREATORS_LIVES || [];
 
@@ -19245,10 +19246,10 @@ function renderDigiCreators() {
 
   liveGrid.innerHTML = lives.length
     ? lives.map(function(live) {
-        const url = String(live.url || "#");
+        const url = escaparHtml(String(live.url || "#"));
         return `<a class="digi-creators-live-card" href="${url}" target="_blank" rel="noopener noreferrer">
-          <img src="${String(live.thumbnail || "")}" alt="" loading="lazy">
-          <span class="digi-creators-live-info"><b>AO VIVO</b><strong>${String(live.title || "Live Digimon")}</strong><small>${String(live.creator || "Criador parceiro")}</small></span>
+          <img src="${escaparHtml(String(live.thumbnail || ""))}" alt="" loading="lazy">
+          <span class="digi-creators-live-info"><b>AO VIVO</b><strong>${escaparHtml(String(live.title || "Live Digimon"))}</strong><small>${escaparHtml(String(live.creator || "Criador parceiro"))}</small></span>
         </a>`;
       }).join("")
     : digiCreatorsVazio("Nenhum criador está ao vivo agora", "Quando uma live parceira começar, ela aparecerá aqui automaticamente.", "live");
@@ -19263,9 +19264,9 @@ function renderDigiCreators() {
   videoGrid.innerHTML = filtrados.length
     ? filtrados.map(function(video) {
         const tags = Array.isArray(video.tags) ? video.tags : [];
-        return `<a class="digi-creators-video-card" href="${String(video.url || "#")}" target="_blank" rel="noopener noreferrer">
-          <span class="digi-creators-thumb"><img src="${String(video.thumbnail || "")}" alt="" loading="lazy"><i>▶</i></span>
-          <span class="digi-creators-video-copy"><strong>${String(video.title || "Vídeo Digimon")}</strong><small>${String(video.creator || "Criador parceiro")}</small><em>${tags.map(function(tag) { return "#" + tag; }).join(" ")}</em></span>
+        return `<a class="digi-creators-video-card" href="${escaparHtml(String(video.url || "#"))}" target="_blank" rel="noopener noreferrer">
+          <span class="digi-creators-thumb"><img src="${escaparHtml(String(video.thumbnail || ""))}" alt="" loading="lazy"><i>▶</i></span>
+          <span class="digi-creators-video-copy"><strong>${escaparHtml(String(video.title || "Vídeo Digimon"))}</strong><small>${escaparHtml(String(video.creator || "Criador parceiro"))}</small><em>${tags.map(function(tag) { return "#" + escaparHtml(String(tag)); }).join(" ")}</em></span>
         </a>`;
       }).join("")
     : digiCreatorsVazio(
@@ -19275,8 +19276,38 @@ function renderDigiCreators() {
       );
 }
 
+function carregarDigiCreators() {
+  if (digiCreatorsState.carregado || digiCreatorsState.carregando) return;
+  digiCreatorsState.carregando = true;
+
+  fetch(DIGI_CREATORS_API_URL)
+    .then(function(response) {
+      if (!response.ok) throw new Error("Não foi possível carregar o feed.");
+      return response.json();
+    })
+    .then(function(payload) {
+      if (!payload || payload.ok !== true) throw new Error(payload?.error || "Feed indisponível.");
+      window.DIGI_CREATORS_VIDEOS = Array.isArray(payload.videos) ? payload.videos : [];
+      window.DIGI_CREATORS_LIVES = Array.isArray(payload.lives) ? payload.lives.map(function(live) {
+        return {
+          title: live.title || live.streamTitle || "Live Digimon",
+          creator: live.creator || live.name || live.username || live.channelName || "Criador parceiro",
+          thumbnail: live.thumbnail || live.thumbnailUrl || "",
+          url: live.url || live.link || live.channelUrl || "#"
+        };
+      }) : [];
+      digiCreatorsState.carregado = true;
+      renderDigiCreators();
+    })
+    .catch(function() {
+      const videoGrid = document.getElementById("digiCreatorsVideoGrid");
+      if (videoGrid) videoGrid.innerHTML = digiCreatorsVazio("Não foi possível carregar os vídeos agora", "Tente novamente em alguns instantes.", "videos");
+    })
+    .finally(function() { digiCreatorsState.carregando = false; });
+}
+
 function inicializarDigiCreators() {
-  if (digiCreatorsState.iniciado) { renderDigiCreators(); return; }
+  if (digiCreatorsState.iniciado) { renderDigiCreators(); carregarDigiCreators(); return; }
   digiCreatorsState.iniciado = true;
 
   const busca = document.getElementById("digiCreatorsSearch");
@@ -19293,4 +19324,5 @@ function inicializarDigiCreators() {
     renderDigiCreators();
   });
   renderDigiCreators();
+  carregarDigiCreators();
 }
