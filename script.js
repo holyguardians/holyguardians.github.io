@@ -19260,6 +19260,18 @@ function digiCreatorsVazio(titulo, texto, tipo) {
   </div>`;
 }
 
+function digiCreatorsProvider(live) {
+  const provider = String(live?.provider || live?.platform || live?.source || "").trim().toLowerCase();
+  if (provider.includes("youtube")) return "youtube";
+  if (provider.includes("twitch")) return "twitch";
+  if (provider.includes("kick")) return "kick";
+  return "live";
+}
+
+function digiCreatorsProviderIcon(provider) {
+  return provider === "youtube" ? "youtube.png" : provider === "twitch" ? "twitch.png" : provider === "kick" ? "kick_icon.png" : "";
+}
+
 function renderDigiCreators() {
   const liveGrid = document.getElementById("digiCreatorsLiveGrid");
   const videoGrid = document.getElementById("digiCreatorsVideoGrid");
@@ -19273,8 +19285,11 @@ function renderDigiCreators() {
   liveGrid.innerHTML = lives.length
     ? lives.map(function(live) {
         const url = escaparHtml(String(live.url || "#"));
-        return `<a class="digi-creators-live-card" href="${url}" target="_blank" rel="noopener noreferrer">
+        const provider = digiCreatorsProvider(live);
+        const providerIcon = digiCreatorsProviderIcon(provider);
+        return `<a class="digi-creators-live-card digi-creators-live-${provider}" href="${url}" target="_blank" rel="noopener noreferrer">
           <img src="${escaparHtml(String(live.thumbnail || "digicreators.png"))}" alt="" loading="lazy">
+          ${providerIcon ? `<span class="digi-creators-live-platform" title="${escaparHtml(provider.toUpperCase())}"><img src="${providerIcon}" alt="${escaparHtml(provider.toUpperCase())}"></span>` : ""}
           <span class="digi-creators-live-info"><b>${digiCreatorsTexto("live")}</b><strong>${escaparHtml(String(live.title || digiCreatorsTexto("liveFallback")))}</strong><small>${escaparHtml(String(live.creator || digiCreatorsTexto("creatorFallback")))}</small></span>
         </a>`;
       }).join("")
@@ -19365,7 +19380,8 @@ function digiCreatorsSincronizarLives(lives) {
         title: live.title || live.streamTitle || videoRecente?.title || `${creator || "Criador parceiro"} está ao vivo`,
         creator: creator || "Criador parceiro",
         thumbnail: live.thumbnail || live.thumbnailUrl || videoRecente?.thumbnail || "digicreators.png",
-        url: live.url || live.link || live.channelUrl || "#"
+        url: live.url || live.link || live.channelUrl || "#",
+        provider: digiCreatorsProvider(live)
       };
     })
     .filter(function(live) { return criadoresDoFeed.has(digiCreatorsNormalizarNome(live.creator)); });
