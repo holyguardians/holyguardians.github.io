@@ -7511,25 +7511,19 @@ function calcBurstRateUpPercent(skill) {
 }
 
 function calcBurstDisponivel(skill) {
-  if (!skill) return false;
-
-  if (calcBurstEhEfeito(skill)) {
-    return Boolean(skill.hasEffect);
-  }
-
-  if (calcBurstEhDano(skill)) {
-    const burst = calcBurstMeta(skill);
-    const perHit = Number(burst && burst.perHit);
-    const total = Number(burst && burst.total);
-
-    return Boolean(
-      skill.available &&
-      Number.isFinite(perHit) && perHit > 0 &&
-      Number.isFinite(total) && total > 0
-    );
-  }
-
-  return false;
+  /*
+   * REGRA DA CALCULADORA:
+   * Burst não vem de uma tabela separada. A pessoa escolhe uma Skill
+   * ofensiva Lv.10 e a Burst usa essa base ×3 (inclusive seu bônus
+   * elemental). Skills sem coeficiente de dano continuam indisponíveis.
+   */
+  return Boolean(
+    skill &&
+    skill.available &&
+    Number.isFinite(Number(skill.hits)) && Number(skill.hits) > 0 &&
+    Number.isFinite(Number(skill.perHit)) && Number(skill.perHit) > 0 &&
+    Number.isFinite(Number(skill.baseTotal)) && Number(skill.baseTotal) > 0
+  );
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
@@ -7553,41 +7547,16 @@ function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
   let tooltipDescricao = descricao;
 
   if (burst) {
-    const nomeBurst = String(burstMeta && burstMeta.name || "").trim();
-    tooltipTitulo = (nomeBurst || nome) + " • BURST";
+    tooltipTitulo = nome + " • BURST";
     tooltipLinhas.push("BURST SKILL • BASE: SKILL " + numero + " • LEVEL 10");
 
-    if (calcBurstEhEfeito(skill)) {
-      tooltipLinhas.push("Tipo: EFFECT RATE UP");
-      if (effectName) tooltipLinhas.push("Efeito: " + effectName);
-      else if (efeitos.length) tooltipLinhas.push("Efeito: " + efeitos.join(" + "));
-      if (Number.isFinite(effectChance)) tooltipLinhas.push("Chance base: " + calcFormatar(effectChance) + "%");
-
-      const rateUp = calcBurstRateUpPercent(skill);
-      if (Number.isFinite(rateUp)) tooltipLinhas.push("Bônus Burst na taxa do efeito: +" + calcFormatar(rateUp) + "%");
-
-      if (hits && perHit && baseTotal) {
-        tooltipLinhas.push("Dano permanece igual: " + hits + " hits × " + calcFormatar(perHit) + "% = " + calcFormatar(baseTotal) + "%");
-      } else {
-        tooltipLinhas.push("Sem coeficiente percentual de dano na base");
-      }
-
-      tooltipDescricao = descricao || "A Burst aumenta a taxa do efeito; não multiplica o dano normal desta Skill.";
-    } else if (calcBurstEhDano(skill)) {
-      tooltipLinhas.push("Tipo: DAMAGE VALUE UP");
+    if (calcBurstDisponivel(skill)) {
+      tooltipLinhas.push("Regra: Skill Lv.10 ×3");
       if (elementoBase) tooltipLinhas.push("Elemento base: " + elementoBase);
-
-      const burstPerHit = Number(burstMeta && burstMeta.perHit);
-      const burstTotal = Number(burstMeta && burstMeta.total);
-      if (hits && Number.isFinite(burstPerHit) && Number.isFinite(burstTotal)) {
-        tooltipLinhas.push(
-          hits + " hits × " + calcFormatar(burstPerHit) + "% = " + calcFormatar(burstTotal) + "%"
-        );
-      }
-
-      tooltipDescricao = "Valores de Burst lidos diretamente da DATABASE MASTER FINAL.";
+      tooltipLinhas.push(hits + " hits × " + calcFormatar(perHit * 3) + "% = " + calcFormatar(baseTotal * 3) + "%");
+      tooltipDescricao = "A Burst usa o dano base da Skill Lv.10 multiplicado por 3. O bônus elemental desta mesma Skill também é multiplicado por 3.";
     } else {
-      tooltipLinhas.push("Dados de Burst indisponíveis para esta Skill");
+      tooltipLinhas.push("Skill sem coeficiente percentual de dano utilizável");
     }
   } else {
     tooltipLinhas.push("SKILL " + numero + " • LEVEL 10");
@@ -8407,13 +8376,9 @@ function atualizarCalculadora() {
       .map(function(skill, index) {
         const disponivel = calcBurstDisponivel(skill);
         const nome = calcNomeSkill(skill, index);
-        let motivo = "Dados de Burst indisponíveis";
-
-        if (disponivel && calcBurstEhEfeito(skill)) {
-          motivo = "Burst aumenta a taxa do efeito; dano normal não é multiplicado";
-        } else if (disponivel && calcBurstEhDano(skill)) {
-          motivo = "Burst de dano com valores exatos da MASTER";
-        }
+        const motivo = disponivel
+          ? "Burst = dano da Skill Lv.10 ×3; bônus elemental ×3"
+          : "Esta Skill não possui coeficiente de dano utilizável";
 
         return `
           <button
@@ -8444,7 +8409,7 @@ function atualizarCalculadora() {
             BURST SKILL
           </div>
           <div class="calc-skill-lv">
-            DADOS DA DATABASE MASTER FINAL
+            BASE: SKILL LV.10 ×3
           </div>
         </div>
       </div>
@@ -8487,7 +8452,7 @@ function atualizarCalculadora() {
         })
         .join("");
 
-    if (calcBurstEhEfeito(skillBurst)) {
+    if (calcBurstEhEfeito(skillBurst) && !skillBurst.available) {
       const effectName = String(skillBurst.effectName || (skillBurst.effects || []).join(" + ") || "Efeito").trim();
       const effectChance = calcNumeroMetaOpcional(skillBurst.effectChance);
       const rateUp = calcBurstRateUpPercent(skillBurst);
@@ -8608,13 +8573,14 @@ function atualizarCalculadora() {
 
         </article>
       `;
-    } else if (calcBurstEhDano(skillBurst)) {
-      const burstPerHit = Number(burstMeta.perHit);
-      const burstBaseTotal = Number(burstMeta.total);
+    } else if (skillBurst.available) {
+      /* Burst = Skill Lv.10 selecionada ×3, sem depender de API/tabela. */
+      const burstPerHit = Number(skillBurst.perHit) * 3;
+      const burstBaseTotal = Number(skillBurst.baseTotal) * 3;
 
       const bonusBurstPorHit =
         aplicaBurst
-          ? burstPerHit * fatorElemento
+          ? (skillBurst.perHit * fatorElemento) * 3
           : 0;
 
       const bonusBurstTotal =
@@ -8634,7 +8600,7 @@ function atualizarCalculadora() {
                 BURST SKILL
               </div>
               <div class="calc-skill-lv">
-                ${escaparHtml(nomeBurst)} • LEVEL 10 • DAMAGE VALUE UP
+                ${escaparHtml(nomeBurst)} • LEVEL 10 • SKILL ×3
               </div>
             </div>
 
