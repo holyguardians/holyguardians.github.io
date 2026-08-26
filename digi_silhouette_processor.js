@@ -67,6 +67,17 @@ function ensureOpenCv() {
   return cvReadyPromise;
 }
 
+// Preload OpenCV as soon as the worker is created. This one-time warm-up is
+// intentionally separate from the per-mask timeout in the main thread.
+ensureOpenCv().then(function () {
+  self.postMessage({ type: "ready" });
+}).catch(function (error) {
+  self.postMessage({
+    type: "init-error",
+    message: error && error.message ? error.message : String(error || "Falha ao iniciar OpenCV.")
+  });
+});
+
 function forEachNeighbor(index, width, height, callback) {
   const x = index % width;
   const y = (index / width) | 0;

@@ -12,8 +12,9 @@
   const CATALOG_CACHE_MS = 12 * 60 * 60 * 1000;
   const NETWORK_TIMEOUT_MS = 12000;
   const MAX_CANDIDATE_ATTEMPTS = 2;
-  const SEGMENT_TIMEOUT_MS = 10000;
-  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v3";
+  const PROCESSOR_INIT_TIMEOUT_MS = 45000;
+  const SEGMENT_TIMEOUT_MS = 12000;
+  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v4";
 
   const SEGMENT = Object.freeze({
     BG_BRIGHT_MIN: 238,
@@ -41,6 +42,11 @@
     usedNames: new Set(),
     abortController: null,
     processorWorker: null,
+    processorReady: false,
+    processorReadyPromise: null,
+    processorReadyResolve: null,
+    processorReadyReject: null,
+    processorInitTimer: null,
     processorPending: new Map(),
     processorJobSeq: 0,
     roundSeq: 0
@@ -424,6 +430,20 @@
     state.processorPending.clear();
   }
 
+  function resetProcessorReadyState(error) {
+    if (state.processorInitTimer) {
+      clearTimeout(state.processorInitTimer);
+      state.processorInitTimer = null;
+    }
+    if (error && state.processorReadyReject) {
+      try { state.processorReadyReject(error); } catch (ignore) {}
+    }
+    state.processorReady = false;
+    state.processorReadyPromise = null;
+    state.processorReadyResolve = null;
+    state.processorReadyReject = null;
+  }
+
   function terminateProcessorWorker(error) {
     if (state.processorWorker) {
       try { state.processorWorker.terminate(); } catch (ignore) {}
@@ -432,14 +452,51 @@
     if (state.processorPending.size) {
       rejectProcessorPending(error || new Error("Processamento cancelado."));
     }
+    resetProcessorReadyState(error);
   }
 
   function ensureProcessorWorker() {
     if (state.processorWorker) return state.processorWorker;
 
+    state.processorReady = false;
+    state.processorReadyPromise = new Promise(function(resolve, reject) {
+      state.processorReadyResolve = resolve;
+      state.processorReadyReject = reject;
+    });
+    // Pre-warm may finish before a round starts; prevent a rejected warm-up
+    // from becoming an unhandled promise while keeping the original promise reusable.
+    state.processorReadyPromise.catch(function () {});
+
     const worker = new Worker(PROCESSOR_URL);
+    state.processorWorker = worker;
+
+    state.processorInitTimer = setTimeout(function () {
+      if (state.processorReady) return;
+      const error = new Error("O núcleo de segmentação não iniciou em até 45 segundos.");
+      terminateProcessorWorker(error);
+    }, PROCESSOR_INIT_TIMEOUT_MS);
+
     worker.onmessage = function (event) {
       const data = event && event.data || {};
+
+      if (data.type === "ready") {
+        state.processorReady = true;
+        if (state.processorInitTimer) {
+          clearTimeout(state.processorInitTimer);
+          state.processorInitTimer = null;
+        }
+        if (state.processorReadyResolve) state.processorReadyResolve(worker);
+        state.processorReadyResolve = null;
+        state.processorReadyReject = null;
+        return;
+      }
+
+      if (data.type === "init-error") {
+        const error = new Error(data.message || "Não foi possível iniciar o OpenCV local.");
+        terminateProcessorWorker(error);
+        return;
+      }
+
       const job = state.processorPending.get(data.id);
       if (!job) return;
 
@@ -454,13 +511,47 @@
       }
     };
 
-    worker.onerror = function () {
-      const error = new Error("O processador local de máscara falhou.");
+    worker.onerror = function (event) {
+      const detail = event && event.message ? ": " + event.message : "";
+      const error = new Error("O processador local de máscara falhou" + detail);
       terminateProcessorWorker(error);
     };
 
-    state.processorWorker = worker;
     return worker;
+  }
+
+  function waitForProcessorReady(signal) {
+    ensureProcessorWorker();
+    if (state.processorReady) return Promise.resolve(state.processorWorker);
+
+    return new Promise(function(resolve, reject) {
+      let settled = false;
+
+      function done(fn, value) {
+        if (settled) return;
+        settled = true;
+        if (signal) signal.removeEventListener("abort", onAbort);
+        fn(value);
+      }
+
+      function onAbort() {
+        done(reject, new DOMException("Aborted", "AbortError"));
+      }
+
+      if (signal) {
+        if (signal.aborted) {
+          reject(new DOMException("Aborted", "AbortError"));
+          return;
+        }
+        signal.addEventListener("abort", onAbort, { once: true });
+      }
+
+      state.processorReadyPromise.then(function(worker) {
+        done(resolve, worker);
+      }).catch(function(error) {
+        done(reject, error);
+      });
+    });
   }
 
   function sourceCanvasForImage(image) {
@@ -575,12 +666,17 @@
     return mask;
   }
 
-  function segmentObject(canvas, signal) {
+  async function segmentObject(canvas, signal) {
     const width = canvas.width;
     const height = canvas.height;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const imageData = ctx.getImageData(0, 0, width, height);
-    const worker = ensureProcessorWorker();
+
+    setStatus("INICIALIZANDO NÚCLEO DE SEGMENTAÇÃO...", "loading");
+    const worker = await waitForProcessorReady(signal);
+    if (signal && signal.aborted) throw new DOMException("Aborted", "AbortError");
+    setStatus("NÚCLEO PRONTO // GERANDO MÁSCARA...", "loading");
+
     const id = ++state.processorJobSeq;
 
     return new Promise(function (resolve, reject) {
@@ -809,8 +905,9 @@
     } catch (error) {
       if (error && error.name === "AbortError") return;
       console.error("[Digi Silhouette]", error);
-      setLoading(true, "NÃO FOI POSSÍVEL GERAR A SILHUETA", "Clique em PRÓXIMO para tentar novamente");
-      setStatus(error && error.message ? error.message.toUpperCase() : "ERRO AO PREPARAR O JOGO.", "error");
+      const motivo = error && error.message ? error.message : "Erro ao preparar o jogo.";
+      setLoading(true, "NÃO FOI POSSÍVEL GERAR A SILHUETA", "Motivo: " + motivo);
+      setStatus(motivo.toUpperCase(), "error");
     } finally {
       if (roundId === state.roundSeq) state.loadingRound = false;
     }
@@ -878,6 +975,7 @@
     if (!state.mounted) {
       renderBase(root);
       state.mounted = true;
+      try { ensureProcessorWorker(); } catch (error) { console.warn("[Digi Silhouette] pré-aquecimento falhou:", error); }
       newRound();
       return;
     }
