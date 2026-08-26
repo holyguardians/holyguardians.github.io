@@ -254,9 +254,11 @@
     if (zoomDevice) zoomDevice.addEventListener("click", openDigiZoom);
 
     root.querySelectorAll(".digi-silhouette-device-btn[data-tip]").forEach(function (button) {
-      const show = function () { showDeviceTooltip(button.dataset.tip || button.getAttribute("aria-label") || ""); };
+      const show = function (event) { showDeviceTooltip(button.dataset.tip || button.getAttribute("aria-label") || "", event, button); };
+      const move = function (event) { positionDeviceTooltip(event, button); };
       const hide = function () { hideDeviceTooltip(); };
       button.addEventListener("mouseenter", show);
+      button.addEventListener("mousemove", move);
       button.addEventListener("mouseleave", hide);
       button.addEventListener("focus", show);
       button.addEventListener("blur", hide);
@@ -317,11 +319,40 @@
     }
   }
 
-  function showDeviceTooltip(text) {
+  function positionDeviceTooltip(event, button) {
+    const tooltip = $("#digiSilhouetteDeviceTooltip");
+    const stage = $("#digiSilhouetteDeviceStage");
+    if (!tooltip || !stage || tooltip.hidden) return;
+
+    const stageRect = stage.getBoundingClientRect();
+    let x = stageRect.width * 0.5;
+    let y = 18;
+
+    if (event && typeof event.clientX === "number" && typeof event.clientY === "number") {
+      x = event.clientX - stageRect.left;
+      y = event.clientY - stageRect.top - 18;
+    } else if (button && button.getBoundingClientRect) {
+      const btnRect = button.getBoundingClientRect();
+      x = (btnRect.left + btnRect.right) * 0.5 - stageRect.left;
+      y = btnRect.top - stageRect.top - 12;
+    }
+
+    const pad = 12;
+    const maxX = Math.max(pad, stageRect.width - pad);
+    x = Math.max(pad, Math.min(maxX, x));
+    y = Math.max(8, y);
+
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+    tooltip.style.transform = "translate(-50%, -100%)";
+  }
+
+  function showDeviceTooltip(text, event, button) {
     const tooltip = $("#digiSilhouetteDeviceTooltip");
     if (!tooltip) return;
     tooltip.textContent = String(text || "");
     syncHidden(tooltip, false);
+    positionDeviceTooltip(event, button);
   }
 
   function hideDeviceTooltip() {

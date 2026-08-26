@@ -1689,3 +1689,145 @@ body.hg-digi-silhouette-stream-body .hg-impmon-live {
     grid-column: 1;
   }
 }
+
+
+/* =====================================================
+   DIGI SILHOUETTE V14 — CALIBRAGEM FINAL
+   1) Search module visually docked beside upper screen
+   2) Reveal badge centered under the art
+   3) Tooltip follows cursor / hovered control
+===================================================== */
+
+/* Workspace becomes relative so the guess module can dock without leaving a ghost copy below. */
+.digi-silhouette-terminal-workspace {
+  position: relative !important;
+  display: block !important;
+  width: min(100%, 1240px) !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+
+.digi-silhouette-device-stage {
+  width: min(100%, 920px) !important;
+  margin: 4px auto 10px !important;
+}
+
+/* Only one search box, attached to the right of the upper display area. */
+.digi-silhouette-sidecar {
+  position: absolute !important;
+  z-index: 45 !important;
+  top: 132px !important;
+  left: calc(50% + 225px) !important;
+  width: 330px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  align-self: start !important;
+}
+
+.digi-silhouette-side-guess {
+  width: 100% !important;
+}
+
+/* Keep helper/note hidden in the compact sidecar. */
+.digi-silhouette-sidecar .digi-silhouette-control-help,
+.digi-silhouette-sidecar .digi-silhouette-note {
+  display: none !important;
+}
+
+/* Center the reveal result card below the revealed Digimon. */
+.digi-silhouette-terminal-top .digi-silhouette-result {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 8% !important;
+  width: auto !important;
+  min-width: 240px;
+  max-width: min(74%, 360px);
+  transform: translateX(-50%) !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  justify-items: center;
+  text-align: center !important;
+  gap: 3px !important;
+  padding: 7px 14px !important;
+}
+
+.digi-silhouette-terminal-top .digi-silhouette-result small,
+.digi-silhouette-terminal-top .digi-silhouette-result strong {
+  width: 100%;
+  text-align: center !important;
+}
+
+/* Tooltip now appears under the cursor / hovered button instead of fixed on top. */
+.digi-silhouette-device-tooltip {
+  min-width: 132px !important;
+  max-width: 220px !important;
+  padding: 7px 10px !important;
+}
+
+.digi-silhouette-device-tooltip::after {
+  left: 50% !important;
+  top: 100% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* Streamer keeps the sidecar visible and also hides the site's global chrome. */
+body.hg-digi-silhouette-stream-body .topbar,
+body.hg-digi-silhouette-stream-body .top-bar,
+body.hg-digi-silhouette-stream-body .site-header,
+body.hg-digi-silhouette-stream-body .main-header,
+body.hg-digi-silhouette-stream-body .header-shell,
+body.hg-digi-silhouette-stream-body .hg-header,
+body.hg-digi-silhouette-stream-body .global-header,
+body.hg-digi-silhouette-stream-body .app-header,
+body.hg-digi-silhouette-stream-body .hg-impmon-live,
+body.hg-digi-silhouette-stream-body .impmon-live,
+body.hg-digi-silhouette-stream-body .impmon-widget,
+body.hg-digi-silhouette-stream-body .live-monitor-shell {
+  display: none !important;
+}
+
+.digi-silhouette-shell.is-streamer .digi-silhouette-terminal-workspace {
+  width: min(100%, 1240px) !important;
+}
+
+.digi-silhouette-shell.is-streamer .digi-silhouette-sidecar {
+  display: block !important;
+  top: 132px !important;
+  left: calc(50% + 225px) !important;
+}
+
+@media (max-width: 1180px) {
+  .digi-silhouette-terminal-workspace,
+  .digi-silhouette-shell.is-streamer .digi-silhouette-terminal-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 820px) !important;
+    width: 100% !important;
+  }
+
+  .digi-silhouette-device-stage {
+    width: 100% !important;
+    margin: 4px 0 10px !important;
+  }
+
+  .digi-silhouette-sidecar,
+  .digi-silhouette-shell.is-streamer .digi-silhouette-sidecar {
+    position: static !important;
+    width: min(100%, 560px) !important;
+    padding-top: 0 !important;
+    margin: 0 auto !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .digi-silhouette-sidecar,
+  .digi-silhouette-shell.is-streamer .digi-silhouette-sidecar {
+    width: 100% !important;
+  }
+
+  .digi-silhouette-terminal-top .digi-silhouette-result {
+    min-width: 0;
+    max-width: 84%;
+  }
+}
