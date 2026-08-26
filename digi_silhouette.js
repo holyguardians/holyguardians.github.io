@@ -54,7 +54,10 @@
     suggestionItems: [],
     suggestionIndex: -1,
     suggestionThumbs: Object.create(null),
-    suggestionThumbPending: new Set()
+    suggestionThumbPending: new Set(),
+    revealTimer: null,
+    revealToken: 0,
+    eggVisualResolved: false
   };
 
   const $ = function (selector, root) {
@@ -167,6 +170,16 @@
                   <canvas id="digiSilhouetteCanvas" class="digi-silhouette-canvas" hidden></canvas>
                   <img id="digiSilhouetteOriginal" class="digi-silhouette-original" alt="" crossorigin="anonymous" hidden>
 
+                  <div id="digiSilhouetteEggReveal" class="digi-silhouette-egg-reveal" hidden aria-hidden="true">
+                    <div class="digi-silhouette-egg-aura" aria-hidden="true"></div>
+                    <div id="digiSilhouetteEggHost" class="digi-silhouette-egg-host">
+                      <div class="digi-silhouette-egg-fallback" aria-hidden="true">
+                        <i></i><i></i><i></i>
+                      </div>
+                    </div>
+                    <div class="digi-silhouette-egg-flash" aria-hidden="true"></div>
+                  </div>
+
                   <div class="digi-silhouette-result" id="digiSilhouetteResult" hidden>
                     <small>IDENTIFICAÇÃO CONFIRMADA</small>
                     <strong id="digiSilhouetteName"></strong>
@@ -185,6 +198,10 @@
               </section>
 
               <img class="digi-silhouette-terminal-frame" src="digi_silhouette_terminal.png" alt="" aria-hidden="true">
+
+              <span class="digi-silhouette-device-led digi-silhouette-device-led-top" aria-hidden="true"></span>
+              <span class="digi-silhouette-device-led digi-silhouette-device-led-mid" aria-hidden="true"></span>
+              <span class="digi-silhouette-device-led digi-silhouette-device-led-bottom" aria-hidden="true"></span>
 
               <button id="digiSilhouetteStreamerDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-streamer" type="button" aria-label="Alternar modo streamer" aria-pressed="false" data-tip="MODO STREAMER"></button>
               <button id="digiSilhouetteZoomDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-zoom" type="button" aria-label="Abrir Digi Zoom" data-tip="ABRIR DIGI ZOOM"></button>
@@ -382,6 +399,152 @@
     const tooltip = $("#digiSilhouetteDeviceTooltip");
     if (!tooltip) return;
     syncHidden(tooltip, true);
+  }
+
+
+  function stripCloneIds(node) {
+    if (!node || node.nodeType !== 1) return;
+    node.removeAttribute("id");
+    node.removeAttribute("hidden");
+    node.style.removeProperty("display");
+    node.querySelectorAll("[id]").forEach(function (child) {
+      child.removeAttribute("id");
+    });
+    node.querySelectorAll("[hidden]").forEach(function (child) {
+      child.removeAttribute("hidden");
+      child.style.removeProperty("display");
+    });
+  }
+
+  function findExistingEggNode() {
+    const roots = [
+      document.getElementById("digiGuessRoot"),
+      document.getElementById("digiZoomRoot")
+    ].filter(Boolean);
+
+    const selector = [
+      'img[src*="egg" i]',
+      'img[src*="digitama" i]',
+      'img[alt*="egg" i]',
+      'img[alt*="ovo" i]',
+      '[class*="egg" i]',
+      '[class*="digitama" i]',
+      '[class*="hatch" i]'
+    ].join(",");
+
+    for (const root of roots) {
+      const node = root.querySelector(selector);
+      if (node && node !== root) return node;
+    }
+    return null;
+  }
+
+  function findExistingEggAssetFromCss() {
+    const keyword = /(egg|digitama|hatch|eclos)/i;
+
+    function inspectRules(rules) {
+      if (!rules) return "";
+      for (const rule of Array.from(rules)) {
+        if (rule.cssRules) {
+          const nested = inspectRules(rule.cssRules);
+          if (nested) return nested;
+        }
+
+        const selector = rule.selectorText || "";
+        const cssText = rule.cssText || "";
+        if (!keyword.test(selector) && !keyword.test(cssText)) continue;
+
+        const text = (rule.style && (
+          rule.style.backgroundImage ||
+          rule.style.background ||
+          rule.style.content
+        )) || cssText;
+
+        const match = String(text).match(/url\((['"]?)(.*?)\1\)/i);
+        if (match && match[2] && !/^data:/i.test(match[2])) {
+          try {
+            return new URL(match[2], document.baseURI).href;
+          } catch (ignore) {
+            return match[2];
+          }
+        }
+      }
+      return "";
+    }
+
+    for (const sheet of Array.from(document.styleSheets || [])) {
+      try {
+        const href = String(sheet.href || "");
+        if (href && !/digi[_-]?game|digi/i.test(href)) continue;
+        const found = inspectRules(sheet.cssRules);
+        if (found) return found;
+      } catch (ignore) {
+        /* Cross-origin stylesheet: skip. */
+      }
+    }
+    return "";
+  }
+
+  function resolveRevealEggVisual() {
+    if (state.eggVisualResolved) return;
+    state.eggVisualResolved = true;
+
+    const host = $("#digiSilhouetteEggHost");
+    if (!host) return;
+
+    const fallback = $(".digi-silhouette-egg-fallback", host);
+    const existing = findExistingEggNode();
+
+    if (existing) {
+      const clone = existing.cloneNode(true);
+      stripCloneIds(clone);
+      clone.classList.add("digi-silhouette-reused-egg");
+      if (fallback) fallback.hidden = true;
+      host.appendChild(clone);
+      return;
+    }
+
+    const asset = findExistingEggAssetFromCss();
+    if (asset) {
+      const image = new Image();
+      image.className = "digi-silhouette-reused-egg digi-silhouette-reused-egg-image";
+      image.alt = "";
+      image.draggable = false;
+      image.onload = function () {
+        if (fallback) fallback.hidden = true;
+      };
+      image.onerror = function () {
+        image.remove();
+        if (fallback) fallback.hidden = false;
+      };
+      image.src = asset;
+      host.appendChild(image);
+    }
+  }
+
+  function stopRevealAnimation() {
+    state.revealToken += 1;
+    if (state.revealTimer) {
+      clearTimeout(state.revealTimer);
+      state.revealTimer = null;
+    }
+
+    const egg = $("#digiSilhouetteEggReveal");
+    if (egg) {
+      egg.classList.remove("is-active");
+      syncHidden(egg, true);
+    }
+  }
+
+  function startRevealAnimation() {
+    resolveRevealEggVisual();
+    const egg = $("#digiSilhouetteEggReveal");
+    if (!egg) return;
+
+    syncHidden(egg, false);
+    egg.classList.remove("is-active");
+    void egg.offsetWidth;
+    egg.classList.add("is-active");
   }
 
   function setControls(enabled) {
@@ -1228,6 +1391,7 @@
   async function newRound(force) {
     if (state.loadingRound && !force) return;
 
+    stopRevealAnimation();
     if (state.abortController) state.abortController.abort();
 
     const roundId = ++state.roundSeq;
@@ -1339,27 +1503,52 @@
     if (!state.current || state.revealed) return;
     state.revealed = true;
     setControls(false);
+    hideSuggestions();
 
     const canvas = $("#digiSilhouetteCanvas");
     const original = $("#digiSilhouetteOriginal");
     const result = $("#digiSilhouetteResult");
     const name = $("#digiSilhouetteName");
     const roundLabel = $("#digiSilhouetteRoundLabel");
+    const token = ++state.revealToken;
+    const revealedName = state.current.name;
 
+    if (result) syncHidden(result, true);
+    if (original) syncHidden(original, true);
     if (canvas) canvas.classList.add("is-revealing");
 
+    if (roundLabel) roundLabel.textContent = "DIGITAMA EM ECLUSÃO...";
+    setStatus("DIGITAMA EM ECLUSÃO // IDENTIFICAÇÃO EM 3 SEGUNDOS...", "loading");
+    startRevealAnimation();
+
     window.setTimeout(function () {
+      if (token !== state.revealToken) return;
       if (canvas) {
         syncHidden(canvas, true);
         canvas.classList.remove("is-revealing");
       }
+    }, 240);
+
+    state.revealTimer = window.setTimeout(function () {
+      state.revealTimer = null;
+      if (token !== state.revealToken || !state.current) return;
+
+      const egg = $("#digiSilhouetteEggReveal");
+      if (egg) {
+        egg.classList.remove("is-active");
+        syncHidden(egg, true);
+      }
+
       if (original) syncHidden(original, false);
-      if (name) name.textContent = state.current.name;
+      if (name) name.textContent = revealedName;
       if (result) syncHidden(result, false);
       if (roundLabel) roundLabel.textContent = correct ? "IDENTIFICAÇÃO CONFIRMADA" : "SINAL REVELADO";
-    }, 220);
 
-    setStatus(correct ? "ACERTO CONFIRMADO. ALVO REVELADO." : "RESPOSTA REVELADA.", correct ? "success" : "normal");
+      setStatus(
+        correct ? "ACERTO CONFIRMADO. ALVO REVELADO." : "RESPOSTA REVELADA.",
+        correct ? "success" : "normal"
+      );
+    }, 3000);
   }
 
   function initialize() {
@@ -1371,6 +1560,7 @@
     if (!state.mounted) {
       renderBase(root);
       state.mounted = true;
+      resolveRevealEggVisual();
       toggleStreamerMode(false);
       try { ensureProcessorWorker(); } catch (error) { console.warn("[Digi Silhouette] pré-aquecimento falhou:", error); }
       newRound();

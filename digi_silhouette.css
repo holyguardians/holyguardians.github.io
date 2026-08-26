@@ -1862,3 +1862,248 @@ body > #digiSilhouetteDeviceTooltip[data-side="below"]::after {
   border-top-color: transparent !important;
   border-bottom-color: rgba(78, 222, 255, .55) !important;
 }
+
+
+/* =====================================================
+   DIGI SILHOUETTE V17 — REVEAL / LIVE TERMINAL AESTHETICS
+   3-second Digitama reveal + subtle breathing LEDs.
+===================================================== */
+
+/* ---------- 3 SECOND DIGITAMA REVEAL ---------- */
+.digi-silhouette-egg-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.digi-silhouette-egg-reveal[hidden] {
+  display: none !important;
+}
+
+.digi-silhouette-egg-host {
+  position: relative;
+  z-index: 2;
+  width: 34%;
+  height: 64%;
+  display: grid;
+  place-items: center;
+  transform-origin: 50% 78%;
+}
+
+.digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-host {
+  animation: digiSilhouetteEggReveal 3s cubic-bezier(.22,.7,.25,1) both;
+}
+
+.digi-silhouette-reused-egg,
+.digi-silhouette-reused-egg-image {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 0 7px rgba(100, 231, 255, .42))
+    drop-shadow(0 0 18px rgba(50, 168, 255, .24)) !important;
+}
+
+/* Visual fallback only if the existing Digi Guess egg asset/component
+   isn't discoverable from the already-loaded page styles/DOM. */
+.digi-silhouette-egg-fallback {
+  position: relative;
+  width: min(86px, 72%);
+  aspect-ratio: .76;
+  border-radius: 50% 50% 47% 47% / 57% 57% 43% 43%;
+  background:
+    radial-gradient(circle at 35% 24%, rgba(255,255,255,.98) 0 7%, transparent 8%),
+    linear-gradient(155deg, #eefcff 0%, #9deeff 24%, #49aee9 53%, #135ca8 82%, #073469 100%);
+  border: 2px solid rgba(167, 241, 255, .92);
+  box-shadow:
+    inset -10px -14px 18px rgba(0, 38, 87, .30),
+    inset 8px 9px 14px rgba(255,255,255,.22),
+    0 0 11px rgba(89, 225, 255, .55),
+    0 0 28px rgba(39, 153, 255, .28);
+}
+
+.digi-silhouette-egg-fallback i {
+  position: absolute;
+  display: block;
+  height: 9%;
+  border-radius: 999px;
+  background: #062d66;
+  box-shadow: 0 0 3px rgba(0, 28, 68, .55);
+  transform: rotate(-18deg);
+}
+
+.digi-silhouette-egg-fallback i:nth-child(1) {
+  width: 52%;
+  left: 5%;
+  top: 28%;
+}
+.digi-silhouette-egg-fallback i:nth-child(2) {
+  width: 62%;
+  right: 2%;
+  top: 49%;
+  transform: rotate(15deg);
+}
+.digi-silhouette-egg-fallback i:nth-child(3) {
+  width: 48%;
+  left: 11%;
+  top: 68%;
+  transform: rotate(-13deg);
+}
+
+.digi-silhouette-egg-aura {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: 47%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(.35);
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle,
+    rgba(205, 250, 255, .32) 0%,
+    rgba(75, 216, 255, .18) 34%,
+    rgba(30, 124, 255, .06) 60%,
+    transparent 72%);
+}
+
+.digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-aura {
+  animation: digiSilhouetteEggAura 3s ease-out both;
+}
+
+.digi-silhouette-egg-flash {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255,255,255,.95) 0%,
+      rgba(150,241,255,.72) 13%,
+      rgba(58,192,255,.22) 32%,
+      transparent 57%);
+  mix-blend-mode: screen;
+}
+
+.digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-flash {
+  animation: digiSilhouetteEggFlash 3s ease-out both;
+}
+
+@keyframes digiSilhouetteEggReveal {
+  0%   { opacity: 0; transform: translateY(7%) scale(.62) rotate(0deg); filter: brightness(.78); }
+  8%   { opacity: 1; transform: translateY(0) scale(.88) rotate(0deg); filter: brightness(1); }
+  20%  { transform: scale(.98) rotate(0deg); }
+  31%  { transform: scale(1.01) rotate(-2.4deg); }
+  38%  { transform: scale(1.01) rotate(2.6deg); }
+  45%  { transform: scale(1.02) rotate(-3.4deg); }
+  52%  { transform: scale(1.02) rotate(3.1deg); }
+  59%  { transform: scale(1.035) rotate(-2.1deg); }
+  66%  { transform: scale(1.04) rotate(1.8deg); }
+  73%  { transform: scale(1.055) rotate(-1deg); }
+  81%  { transform: scale(1.08) rotate(.6deg); filter: brightness(1.08); }
+  88%  { opacity: 1; transform: scale(1.11) rotate(0deg); filter: brightness(1.35); }
+  94%  { opacity: .92; transform: scale(1.16); filter: brightness(1.75); }
+  100% { opacity: 0; transform: scale(1.30); filter: brightness(2.15); }
+}
+
+@keyframes digiSilhouetteEggAura {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.28); }
+  14%  { opacity: .55; }
+  64%  { opacity: .34; transform: translate(-50%, -50%) scale(.86); }
+  86%  { opacity: .75; transform: translate(-50%, -50%) scale(1.10); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); }
+}
+
+@keyframes digiSilhouetteEggFlash {
+  0%, 78% { opacity: 0; }
+  86% { opacity: .16; }
+  91% { opacity: .48; }
+  96% { opacity: .88; }
+  100% { opacity: 0; }
+}
+
+/* ---------- SOFT BREATHING BLUE LEDS ---------- */
+.digi-silhouette-device-led {
+  position: absolute;
+  z-index: 23;
+  pointer-events: none;
+  opacity: .16;
+  background: rgba(99, 235, 255, .78);
+  filter: blur(.4px);
+  box-shadow:
+    0 0 5px rgba(85, 230, 255, .42),
+    0 0 11px rgba(29, 146, 255, .34),
+    0 0 21px rgba(14, 99, 255, .16);
+  animation: digiSilhouetteLedBreathe 3.8s ease-in-out infinite;
+}
+
+/* Upper circular LED */
+.digi-silhouette-device-led-top {
+  left: 49.45%;
+  top: 10.15%;
+  width: 3.15%;
+  height: 4.20%;
+  border-radius: 50%;
+  animation-delay: 0s;
+}
+
+/* Upper blue strip of lower display */
+.digi-silhouette-device-led-mid {
+  left: 45.75%;
+  top: 38.15%;
+  width: 11.70%;
+  height: 1.55%;
+  border-radius: 999px;
+  animation-delay: -.85s;
+}
+
+/* Lower blue strip of lower display */
+.digi-silhouette-device-led-bottom {
+  left: 47.15%;
+  top: 84.55%;
+  width: 9.00%;
+  height: 1.50%;
+  border-radius: 999px;
+  animation-delay: -1.70s;
+}
+
+@keyframes digiSilhouetteLedBreathe {
+  0%, 100% {
+    opacity: .10;
+    transform: scale(.96);
+    filter: blur(.45px) brightness(.92);
+  }
+  50% {
+    opacity: .38;
+    transform: scale(1.035);
+    filter: blur(.25px) brightness(1.15);
+  }
+}
+
+/* Keep the reveal centered on the transparent upper screen at all sizes. */
+@media (max-width: 620px) {
+  .digi-silhouette-egg-host {
+    width: 38%;
+    height: 66%;
+  }
+}
+
+/* Accessibility: no forced movement for users who request reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .digi-silhouette-device-led,
+  .digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-host,
+  .digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-aura,
+  .digi-silhouette-egg-reveal.is-active .digi-silhouette-egg-flash {
+    animation: none !important;
+  }
+
+  .digi-silhouette-device-led {
+    opacity: .22;
+  }
+}
