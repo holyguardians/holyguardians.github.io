@@ -105,6 +105,8 @@ window.HG_I18N["en-US"] = {
   "home.socials": "Our Socials",
   "home.openChannel": "OPEN CHANNEL →",
   "home.openServer": "OPEN SERVER →",
+  "home.legalTitle": "NOTICE — INDEPENDENT COMMUNITY PROJECT",
+  "home.legalCopy": "Holy Guardians is an independent, free, non-profit community project created by players to support the community. It has no affiliation with, sponsorship from, or official approval by GameKing, Bandai, Toei Animation, or other rights holders related to Digimon. All trademarks, characters, and images belong to their respective owners. If any rights holder requests a correction or removal of content, please contact us. This website is free, contains no advertisements, and does not sell products or services.",
   "home.footer": "Since 2012 <span class=\"footer-heart\">♥</span> Made for the HG family",
   "hidden.subtitle": "Translated guide with routes, objectives, rewards, images and videos from the original DSR post.",
   "hidden.source": "ORIGINAL SOURCE",

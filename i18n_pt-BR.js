@@ -105,6 +105,8 @@ window.HG_I18N["pt-BR"] = {
   "home.socials": "Nossas Redes",
   "home.openChannel": "ACESSAR CANAL →",
   "home.openServer": "ACESSAR SERVIDOR →",
+  "home.legalTitle": "ATENÇÃO — PROJETO COMUNITÁRIO INDEPENDENTE",
+  "home.legalCopy": "Holy Guardians é um projeto comunitário independente, gratuito e sem fins lucrativos, criado por jogadores para auxiliar a comunidade. Não possui vínculo, patrocínio ou aprovação oficial da GameKing, Bandai, Toei Animation ou de outros detentores dos direitos relacionados a Digimon. Todas as marcas, personagens e imagens pertencem aos seus respectivos proprietários. Caso algum detentor de direitos solicite correção ou remoção de conteúdo, entre em contato conosco. Este site é gratuito, não possui anúncios e não comercializa produtos ou serviços.",
   "home.footer": "Desde 2012 <span class=\"footer-heart\">♥</span> Feito para a família HG",
   "hidden.subtitle": "Guia traduzido com rotas, objetivos, recompensas, imagens e vídeos do post original do DSR.",
   "hidden.source": "FONTE ORIGINAL",

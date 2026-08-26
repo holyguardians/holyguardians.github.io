@@ -105,6 +105,8 @@ window.HG_I18N["ko-KR"] = {
   "home.socials": "공식 채널",
   "home.openChannel": "채널 열기 →",
   "home.openServer": "서버 열기 →",
+  "home.legalTitle": "안내 — 독립 커뮤니티 프로젝트",
+  "home.legalCopy": "Holy Guardians는 커뮤니티를 돕기 위해 플레이어들이 만든 독립적이고 무료이며 비영리적인 커뮤니티 프로젝트입니다. GameKing, Bandai, Toei Animation 또는 Digimon 관련 기타 권리 보유자와 제휴, 후원 또는 공식 승인을 받은 바 없습니다. 모든 상표, 캐릭터 및 이미지는 각 권리자에게 귀속됩니다. 권리 보유자가 콘텐츠의 수정 또는 삭제를 요청할 경우 문의해 주세요. 본 사이트는 무료이며 광고를 게재하거나 상품 또는 서비스를 판매하지 않습니다.",
   "home.footer": "2012년부터 <span class=\"footer-heart\">♥</span> HG 가족을 위해",
   "hidden.subtitle": "DSR 원본 게시글의 동선, 목표, 보상, 이미지와 영상을 정리한 번역 가이드입니다.",
   "hidden.source": "원본 출처",
