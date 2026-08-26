@@ -39,6 +39,7 @@
     hintsShown: 0,
     attempts: 0,
     revealed: false,
+    streamerMode: false,
     usedNames: new Set(),
     abortController: null,
     processorWorker: null,
@@ -120,7 +121,7 @@
 
   function renderBase(root) {
     root.innerHTML = `
-      <div class="digi-silhouette-shell">
+      <div class="digi-silhouette-shell" id="digiSilhouetteShell">
         <header class="digi-silhouette-hero tech-corners">
           <div class="digi-silhouette-kicker">HOLY GUARDIANS // DIGITAL IDENTIFICATION</div>
           <div class="digi-silhouette-hero-grid">
@@ -136,8 +137,8 @@
           </div>
         </header>
 
-        <main class="digi-silhouette-grid">
-          <section class="digi-silhouette-viewer tech-corners">
+        <main class="digi-silhouette-grid digi-silhouette-terminal-layout">
+          <section class="digi-silhouette-viewer digi-silhouette-terminal-viewer tech-corners">
             <div class="digi-silhouette-viewer-head">
               <div>
                 <small>WHO'S THAT DIGIMON?</small>
@@ -146,29 +147,56 @@
               <span id="digiSilhouetteAttemptBadge">0 TENTATIVAS</span>
             </div>
 
-            <div class="digi-silhouette-screen" id="digiSilhouetteScreen">
-              <div class="digi-silhouette-scanlines" aria-hidden="true"></div>
-              <div class="digi-silhouette-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="digi-silhouette-device-stage" id="digiSilhouetteDeviceStage">
+              <div class="digi-silhouette-terminal-top">
+                <div class="digi-silhouette-screen" id="digiSilhouetteScreen">
+                  <div class="digi-silhouette-scanlines" aria-hidden="true"></div>
 
-              <div class="digi-silhouette-loading" id="digiSilhouetteLoading" aria-live="polite">
-                <span class="digi-silhouette-spinner" aria-hidden="true"></span>
-                <strong>LOCALIZANDO DIGIMON...</strong>
-                <small>Preparando máscara no navegador</small>
+                  <div class="digi-silhouette-loading" id="digiSilhouetteLoading" aria-live="polite">
+                    <span class="digi-silhouette-spinner" aria-hidden="true"></span>
+                    <strong>LOCALIZANDO DIGIMON...</strong>
+                    <small>Preparando máscara no navegador</small>
+                  </div>
+
+                  <canvas id="digiSilhouetteCanvas" class="digi-silhouette-canvas" hidden></canvas>
+                  <img id="digiSilhouetteOriginal" class="digi-silhouette-original" alt="" crossorigin="anonymous" hidden>
+
+                  <div class="digi-silhouette-result" id="digiSilhouetteResult" hidden>
+                    <small>IDENTIFICAÇÃO CONFIRMADA</small>
+                    <strong id="digiSilhouetteName"></strong>
+                  </div>
+                </div>
               </div>
 
-              <canvas id="digiSilhouetteCanvas" class="digi-silhouette-canvas" hidden></canvas>
-              <img id="digiSilhouetteOriginal" class="digi-silhouette-original" alt="" crossorigin="anonymous" hidden>
+              <section class="digi-silhouette-terminal-bottom" aria-labelledby="digiSilhouetteHintsTitle">
+                <div class="digi-silhouette-hints-head digi-silhouette-terminal-hints-head">
+                  <small>DATA FRAGMENTS</small>
+                  <strong id="digiSilhouetteHintsTitle">DICAS</strong>
+                </div>
+                <div id="digiSilhouetteHintsList" class="digi-silhouette-hints-list digi-silhouette-terminal-hints-list">
+                  <div class="digi-silhouette-hint-empty">Nenhuma dica liberada.</div>
+                </div>
+              </section>
 
-              <div class="digi-silhouette-result" id="digiSilhouetteResult" hidden>
-                <small>IDENTIFICAÇÃO CONFIRMADA</small>
-                <strong id="digiSilhouetteName"></strong>
-              </div>
+              <img class="digi-silhouette-terminal-frame" src="digi_silhouette_terminal.png" alt="" aria-hidden="true">
+
+              <button id="digiSilhouetteStreamerDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-streamer" type="button" aria-label="Alternar modo streamer" aria-pressed="false" title="Modo Streamer"></button>
+              <button id="digiSilhouetteHintDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-hint" type="button" aria-label="Liberar dica" title="Dica" disabled></button>
+              <button id="digiSilhouetteRevealDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-reveal" type="button" aria-label="Revelar Digimon" title="Revelar" disabled></button>
+              <button id="digiSilhouetteNextDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-next" type="button" aria-label="Próximo Digimon" title="Próximo"></button>
+            </div>
+
+            <div class="digi-silhouette-device-map" aria-label="Mapa temporário dos controles">
+              <span><b>◉</b> STREAMER</span>
+              <span><b>▲</b> DICA</span>
+              <span><b>▼</b> REVELAR</span>
+              <span><b>●</b> PRÓXIMO</span>
             </div>
 
             <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
           </section>
 
-          <aside class="digi-silhouette-control tech-corners">
+          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
             <div class="digi-silhouette-control-head">
               <small>IDENTIFICATION INPUT</small>
               <strong>QUAL É O DIGIMON?</strong>
@@ -184,21 +212,10 @@
 
             <datalist id="digiSilhouetteSuggestions"></datalist>
 
-            <div class="digi-silhouette-actions">
-              <button id="digiSilhouetteHintBtn" type="button" disabled>DICA</button>
-              <button id="digiSilhouetteRevealBtn" type="button" disabled>REVELAR</button>
-              <button id="digiSilhouetteNextBtn" type="button">PRÓXIMO</button>
+            <div class="digi-silhouette-control-help">
+              <small>CONTROLES DO TERMINAL</small>
+              <p>Use os botões físicos à esquerda do aparelho para Dica, Revelar, Próximo e Modo Streamer.</p>
             </div>
-
-            <section class="digi-silhouette-hints" aria-labelledby="digiSilhouetteHintsTitle">
-              <div class="digi-silhouette-hints-head">
-                <small>DATA FRAGMENTS</small>
-                <strong id="digiSilhouetteHintsTitle">DICAS</strong>
-              </div>
-              <div id="digiSilhouetteHintsList" class="digi-silhouette-hints-list">
-                <div class="digi-silhouette-hint-empty">Nenhuma dica liberada.</div>
-              </div>
-            </section>
 
             <div class="digi-silhouette-note">
               <span>PROCESSAMENTO LOCAL</span>
@@ -209,10 +226,20 @@
       </div>
     `;
 
-    $("#digiSilhouetteForm", root).addEventListener("submit", onGuess);
-    $("#digiSilhouetteHintBtn", root).addEventListener("click", showHint);
-    $("#digiSilhouetteRevealBtn", root).addEventListener("click", function () { reveal(false); });
-    $("#digiSilhouetteNextBtn", root).addEventListener("click", function () { newRound(true); });
+    const form = $("#digiSilhouetteForm", root);
+    if (form) form.addEventListener("submit", onGuess);
+
+    const hintDevice = $("#digiSilhouetteHintDeviceBtn", root);
+    if (hintDevice) hintDevice.addEventListener("click", showHint);
+
+    const revealDevice = $("#digiSilhouetteRevealDeviceBtn", root);
+    if (revealDevice) revealDevice.addEventListener("click", function () { reveal(false); });
+
+    const nextDevice = $("#digiSilhouetteNextDeviceBtn", root);
+    if (nextDevice) nextDevice.addEventListener("click", function () { newRound(true); });
+
+    const streamerDevice = $("#digiSilhouetteStreamerDeviceBtn", root);
+    if (streamerDevice) streamerDevice.addEventListener("click", function () { toggleStreamerMode(); });
 
     const guessInput = $("#digiSilhouetteGuess", root);
     if (guessInput) {
@@ -252,11 +279,32 @@
   }
 
   function setControls(enabled) {
-    const ids = ["digiSilhouetteGuess", "digiSilhouetteGuessBtn", "digiSilhouetteHintBtn", "digiSilhouetteRevealBtn"];
+    const ids = [
+      "digiSilhouetteGuess",
+      "digiSilhouetteGuessBtn",
+      "digiSilhouetteHintDeviceBtn",
+      "digiSilhouetteRevealDeviceBtn"
+    ];
     ids.forEach(function (name) {
       const el = document.getElementById(name);
       if (el) el.disabled = !enabled;
     });
+  }
+
+  function toggleStreamerMode(force) {
+    const next = typeof force === "boolean" ? force : !state.streamerMode;
+    state.streamerMode = next;
+
+    const shell = $("#digiSilhouetteShell");
+    if (shell) shell.classList.toggle("is-streamer", next);
+
+    const button = $("#digiSilhouetteStreamerDeviceBtn");
+    if (button) {
+      button.setAttribute("aria-pressed", next ? "true" : "false");
+      button.title = next ? "Sair do Modo Streamer" : "Modo Streamer";
+    }
+
+    setStatus(next ? "MODO STREAMER ATIVADO." : "MODO STREAMER DESATIVADO.", next ? "success" : "normal");
   }
 
   function updateAttemptBadge() {
@@ -332,7 +380,7 @@
     }).join("");
 
     if (state.hintsShown >= hints.length) {
-      const btn = $("#digiSilhouetteHintBtn");
+      const btn = $("#digiSilhouetteHintDeviceBtn");
       if (btn) btn.disabled = true;
     }
   }
@@ -1099,6 +1147,7 @@
     if (!state.mounted) {
       renderBase(root);
       state.mounted = true;
+      toggleStreamerMode(false);
       try { ensureProcessorWorker(); } catch (error) { console.warn("[Digi Silhouette] pré-aquecimento falhou:", error); }
       newRound();
       return;
