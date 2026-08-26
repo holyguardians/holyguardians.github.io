@@ -1831,3 +1831,15 @@ body.hg-digi-silhouette-stream-body .live-monitor-shell {
     max-width: 84%;
   }
 }
+
+
+/* =====================================================
+   DIGI SILHOUETTE V15 — TOOLTIP CURSOR FIX
+   Tooltip follows the real viewport cursor position.
+===================================================== */
+.digi-silhouette-device-tooltip {
+  position: fixed !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -100%);
+}

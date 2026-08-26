@@ -321,25 +321,22 @@
 
   function positionDeviceTooltip(event, button) {
     const tooltip = $("#digiSilhouetteDeviceTooltip");
-    const stage = $("#digiSilhouetteDeviceStage");
-    if (!tooltip || !stage || tooltip.hidden) return;
+    if (!tooltip || tooltip.hidden) return;
 
-    const stageRect = stage.getBoundingClientRect();
-    let x = stageRect.width * 0.5;
-    let y = 18;
+    let x = window.innerWidth * 0.5;
+    let y = 24;
 
     if (event && typeof event.clientX === "number" && typeof event.clientY === "number") {
-      x = event.clientX - stageRect.left;
-      y = event.clientY - stageRect.top - 18;
+      x = event.clientX;
+      y = event.clientY - 16;
     } else if (button && button.getBoundingClientRect) {
       const btnRect = button.getBoundingClientRect();
-      x = (btnRect.left + btnRect.right) * 0.5 - stageRect.left;
-      y = btnRect.top - stageRect.top - 12;
+      x = btnRect.left + btnRect.width * 0.5;
+      y = btnRect.top - 12;
     }
 
     const pad = 12;
-    const maxX = Math.max(pad, stageRect.width - pad);
-    x = Math.max(pad, Math.min(maxX, x));
+    x = Math.max(pad, Math.min(window.innerWidth - pad, x));
     y = Math.max(8, y);
 
     tooltip.style.left = x + "px";
