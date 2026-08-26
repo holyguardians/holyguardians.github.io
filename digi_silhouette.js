@@ -197,7 +197,11 @@
               <span><b>●</b> PRÓXIMO</span>
             </div>
 
-            <form id="digiSilhouetteForm" class="digi-silhouette-guess-dock tech-corners" autocomplete="off">
+            <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
+          </section>
+
+          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
+            <form id="digiSilhouetteForm" class="digi-silhouette-side-guess" autocomplete="off">
               <div class="digi-silhouette-guess-dock-head">
                 <small>IDENTIFICATION INPUT</small>
                 <strong>QUAL É O DIGIMON?</strong>
@@ -212,10 +216,6 @@
               </div>
             </form>
 
-            <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
-          </section>
-
-          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
             <div class="digi-silhouette-control-help">
               <small>CONTROLES DO TERMINAL</small>
               <p>Use os botões físicos à esquerda do aparelho para Dica, Revelar, Próximo e Modo Streamer.</p>

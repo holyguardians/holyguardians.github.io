@@ -1034,3 +1034,233 @@
     padding: 2px;
   }
 }
+
+
+/* =====================================================
+   DIGI SILHOUETTE V11 — SIDE INPUT + PHYSICAL BUTTON FIX
+   Functional pass: input beside upper screen, CSS overlays only
+   enhance the PNG controls instead of covering them.
+===================================================== */
+
+/* Bring the guess field back beside the upper terminal display. */
+.digi-silhouette-terminal-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  gap: 14px;
+  align-items: start;
+}
+
+.digi-silhouette-identification-panel {
+  align-self: start;
+  padding: 18px;
+}
+
+.digi-silhouette-side-guess {
+  position: relative;
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 1px solid rgba(70, 203, 255, .24);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(5, 29, 61, .94), rgba(2, 15, 36, .97));
+  box-shadow:
+    inset 0 0 24px rgba(39, 155, 255, .05),
+    0 8px 24px rgba(0, 0, 0, .18);
+}
+
+.digi-silhouette-side-guess label {
+  display: block;
+  margin: 0 0 6px;
+  color: #789bb5;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.digi-silhouette-side-guess .digi-silhouette-input-wrap {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.digi-silhouette-side-guess .digi-silhouette-input-wrap input {
+  width: 100%;
+}
+
+.digi-silhouette-control-help {
+  margin-top: 0;
+}
+
+/* The temporary legend is no longer needed once the controls line up. */
+.digi-silhouette-device-map {
+  display: none !important;
+}
+
+/* --- Physical controls ---
+   PNG remains visible. These are only interactive glass/highlight layers.
+*/
+.digi-silhouette-device-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  overflow: visible;
+}
+
+/* Remove the oversized V10 painted fills. */
+.digi-silhouette-device-streamer,
+.digi-silhouette-device-hint,
+.digi-silhouette-device-reveal,
+.digi-silhouette-device-next {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Generic hover outline stays subtle. */
+.digi-silhouette-device-btn::after {
+  inset: 5%;
+  opacity: 0;
+  border-width: 1px;
+  pointer-events: none;
+}
+
+/* Silver selector / streamer:
+   don't paint over the beautiful PNG disc. Only add a soft inner status ring.
+*/
+.digi-silhouette-device-streamer::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .22;
+  border: 2px solid rgba(107, 229, 255, .46);
+  box-shadow:
+    inset 0 0 12px rgba(86, 220, 255, .10),
+    0 0 8px rgba(72, 211, 255, .10);
+  transition: opacity .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.digi-silhouette-device-streamer:hover::before,
+.digi-silhouette-device-streamer:focus-visible::before {
+  opacity: .68;
+  border-color: rgba(105, 235, 255, .90);
+  box-shadow:
+    inset 0 0 14px rgba(83, 225, 255, .20),
+    0 0 12px rgba(72, 211, 255, .32);
+}
+
+.digi-silhouette-device-streamer[aria-pressed="true"]::before {
+  opacity: .92;
+  border-color: rgba(75, 255, 170, .95);
+  box-shadow:
+    inset 0 0 14px rgba(56, 255, 163, .22),
+    0 0 14px rgba(43, 238, 151, .42);
+}
+
+/* Red physical buttons:
+   fill ONLY the inner cavity, leaving the red rim from the PNG visible.
+*/
+.digi-silhouette-device-hint::before,
+.digi-silhouette-device-reveal::before {
+  content: "";
+  position: absolute;
+  left: 16%;
+  top: 16%;
+  width: 68%;
+  height: 68%;
+  pointer-events: none;
+  clip-path: polygon(16% 7%, 91% 50%, 16% 93%);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 120, 120, .78) 0%,
+      rgba(231, 51, 51, .86) 48%,
+      rgba(148, 15, 15, .90) 100%);
+  box-shadow:
+    inset 0 1px 3px rgba(255,255,255,.34),
+    inset 0 -4px 6px rgba(70,0,0,.26);
+  opacity: .82;
+  transition: opacity .14s ease, filter .14s ease;
+}
+
+.digi-silhouette-device-hint:hover::before,
+.digi-silhouette-device-reveal:hover::before,
+.digi-silhouette-device-hint:focus-visible::before,
+.digi-silhouette-device-reveal:focus-visible::before {
+  opacity: 1;
+  filter: brightness(1.12);
+}
+
+.digi-silhouette-device-hint:disabled::before,
+.digi-silhouette-device-reveal:disabled::before {
+  opacity: .34;
+  filter: saturate(.55);
+}
+
+/* Lower physical triangle is already rotated by the hitbox, so its
+   inner fill rotates together with it. */
+.digi-silhouette-device-next::before {
+  content: "";
+  position: absolute;
+  inset: 17%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 36% 30%,
+      rgba(255, 143, 143, .90),
+      rgba(227, 48, 48, .93) 48%,
+      rgba(139, 12, 12, .96) 100%);
+  box-shadow:
+    inset 0 1px 3px rgba(255,255,255,.38),
+    inset 0 -3px 5px rgba(70,0,0,.28);
+  opacity: .84;
+  transition: opacity .14s ease, filter .14s ease;
+}
+
+.digi-silhouette-device-next:hover::before,
+.digi-silhouette-device-next:focus-visible::before {
+  opacity: 1;
+  filter: brightness(1.12);
+}
+
+/* Make the reveal badge a clean bottom strip, never crooked over the art. */
+.digi-silhouette-terminal-top .digi-silhouette-result {
+  z-index: 12;
+  left: 7%;
+  right: 7%;
+  bottom: 5%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border: 1px solid rgba(80, 220, 255, .20);
+  border-radius: 6px;
+  background: rgba(2, 16, 35, .92);
+  box-shadow: 0 5px 12px rgba(0,0,0,.28);
+}
+
+.digi-silhouette-terminal-top .digi-silhouette-result small,
+.digi-silhouette-terminal-top .digi-silhouette-result strong {
+  margin: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.digi-silhouette-terminal-top .digi-silhouette-result small {
+  color: #63e6ff;
+}
+
+/* Custom suggestion list stays compact and only appears after typing. */
+.digi-silhouette-side-guess .digi-silhouette-suggestions {
+  max-height: 300px;
+}
+
+@media (max-width: 1120px) {
+  .digi-silhouette-terminal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .digi-silhouette-identification-panel {
+    width: min(100%, 720px);
+    margin: 0 auto;
+  }
+}
