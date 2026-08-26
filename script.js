@@ -10595,7 +10595,22 @@ function parseRaidSpots(valor) {
 }
 
 function aplicarRaidConfigBruto(bruto) {
-  if (Array.isArray(bruto)) bruto = bruto[0];
+  if (Array.isArray(bruto)) {
+    const configuracoes = bruto.filter(function(item) {
+      return item && typeof item === "object";
+    });
+    const hojeKst = raidDateString(new Date());
+    const inicioDoCiclo = function(item) {
+      return String(item.cycleStart || item["CYCLE START"] || item.cycle_start || "").trim();
+    };
+    const elegiveis = configuracoes
+      .filter(function(item) { return inicioDoCiclo(item) && inicioDoCiclo(item) <= hojeKst; })
+      .sort(function(a, b) { return inicioDoCiclo(a).localeCompare(inicioDoCiclo(b)); });
+
+    /* A aba RAID_CONFIG mantém o histórico das rotações. Seleciona a mais
+       recente já iniciada no horário KST, em vez de fixar sempre a linha 1. */
+    bruto = elegiveis[elegiveis.length - 1] || configuracoes[0];
+  }
   if (!bruto || typeof bruto !== "object") return false;
   function campo() {
     for (let i = 0; i < arguments.length; i++) if (bruto[arguments[i]] !== undefined && bruto[arguments[i]] !== "") return bruto[arguments[i]];
