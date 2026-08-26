@@ -79,6 +79,45 @@
       .replace(/>/g, "&gt;");
   }
 
+  function ensureLocalStylePatch() {
+    if (document.getElementById("hgDigiSilhouettePatchV7")) return;
+    const style = document.createElement("style");
+    style.id = "hgDigiSilhouettePatchV7";
+    style.textContent = `
+      .digi-silhouette-loading[hidden],
+      .digi-silhouette-canvas[hidden],
+      .digi-silhouette-original[hidden],
+      .digi-silhouette-result[hidden] { display:none !important; }
+
+      .digi-silhouette-screen {
+        background:
+          linear-gradient(rgba(68, 214, 255, .05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(68, 214, 255, .05) 1px, transparent 1px),
+          radial-gradient(circle at center, rgba(28, 109, 188, .34), rgba(3, 21, 49, .96) 60%, rgba(1, 7, 18, .99) 100%) !important;
+        box-shadow: inset 0 0 58px rgba(0, 0, 0, .35), inset 0 0 40px rgba(18, 150, 235, .12) !important;
+      }
+
+      .digi-silhouette-screen::before {
+        border-color: rgba(88, 214, 255, .13) !important;
+        box-shadow: 0 0 80px rgba(58, 188, 255, .08) !important;
+      }
+
+      .digi-silhouette-canvas {
+        filter:
+          drop-shadow(0 0 10px rgba(79, 219, 255, .20))
+          drop-shadow(0 0 22px rgba(45, 168, 255, .16))
+          drop-shadow(0 26px 18px rgba(0, 0, 0, .56)) !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function syncHidden(el, hidden) {
+    if (!el) return;
+    el.hidden = !!hidden;
+    el.style.display = hidden ? "none" : "";
+  }
+
   function renderBase(root) {
     root.innerHTML = `
       <div class="digi-silhouette-shell">
@@ -188,15 +227,15 @@
     const result = $("#digiSilhouetteResult");
     if (!loading) return;
 
-    loading.hidden = !active;
+    syncHidden(loading, !active);
     if (active) {
       const strong = $("strong", loading);
       const small = $("small", loading);
       if (strong && main) strong.textContent = main;
       if (small && sub) small.textContent = sub;
-      if (canvas) canvas.hidden = true;
-      if (original) original.hidden = true;
-      if (result) result.hidden = true;
+      syncHidden(canvas, true);
+      syncHidden(original, true);
+      syncHidden(result, true);
     }
   }
 
@@ -786,17 +825,60 @@
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     const image = ctx.createImageData(width, height);
+    const glow = new Uint8Array(mask.length);
+
+    function markGlow(x, y, alpha) {
+      if (x < 0 || y < 0 || x >= width || y >= height) return;
+      const index = y * width + x;
+      if (mask[index]) return;
+      if (alpha > glow[index]) glow[index] = alpha;
+    }
+
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const p = y * width + x;
+        if (!mask[p]) continue;
+
+        let edge = false;
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            if (!dx && !dy) continue;
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= width || ny >= height || !mask[ny * width + nx]) {
+              edge = true;
+            }
+          }
+        }
+
+        if (edge) {
+          for (let dy = -2; dy <= 2; dy += 1) {
+            for (let dx = -2; dx <= 2; dx += 1) {
+              const distance = Math.max(Math.abs(dx), Math.abs(dy));
+              if (distance === 0) continue;
+              markGlow(x + dx, y + dy, distance === 1 ? 150 : 68);
+            }
+          }
+        }
+      }
+    }
 
     for (let p = 0, i = 0; p < mask.length; p += 1, i += 4) {
-      if (!mask[p]) continue;
-      image.data[i] = 0;
-      image.data[i + 1] = 0;
-      image.data[i + 2] = 0;
-      image.data[i + 3] = 255;
+      if (mask[p]) {
+        image.data[i] = 3;
+        image.data[i + 1] = 6;
+        image.data[i + 2] = 10;
+        image.data[i + 3] = 255;
+      } else if (glow[p]) {
+        image.data[i] = 74;
+        image.data[i + 1] = 226;
+        image.data[i + 2] = 255;
+        image.data[i + 3] = glow[p];
+      }
     }
 
     ctx.putImageData(image, 0, 0);
-    canvas.hidden = false;
+    syncHidden(canvas, false);
   }
 
   async function prepareCandidate(name, signal) {
@@ -877,13 +959,13 @@
           if (original) {
             original.src = candidate.image.href;
             original.alt = candidate.name;
-            original.hidden = true;
+            syncHidden(original, true);
           }
 
           const loading = $("#digiSilhouetteLoading");
-          if (loading) loading.hidden = true;
+          if (loading) syncHidden(loading, true);
           const result = $("#digiSilhouetteResult");
-          if (result) result.hidden = true;
+          if (result) syncHidden(result, true);
           if (roundLabel) roundLabel.textContent = "SINAL BLOQUEADO // IDENTIFIQUE O ALVO";
 
           setControls(true);
@@ -956,12 +1038,12 @@
 
     window.setTimeout(function () {
       if (canvas) {
-        canvas.hidden = true;
+        syncHidden(canvas, true);
         canvas.classList.remove("is-revealing");
       }
-      if (original) original.hidden = false;
+      if (original) syncHidden(original, false);
       if (name) name.textContent = state.current.name;
-      if (result) result.hidden = false;
+      if (result) syncHidden(result, false);
       if (roundLabel) roundLabel.textContent = correct ? "IDENTIFICAÇÃO CONFIRMADA" : "SINAL REVELADO";
     }, 220);
 
@@ -971,6 +1053,8 @@
   function initialize() {
     const root = $("#digiSilhouetteRoot");
     if (!root) return;
+
+    ensureLocalStylePatch();
 
     if (!state.mounted) {
       renderBase(root);
