@@ -7448,10 +7448,20 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
 
     skill.effects = efeitos;
     skill.hasEffect = efeitos.length > 0 || (categoriaApi && categoriaApi !== "NONE");
+    /*
+     * A SITE_EXPORT alimenta a calculadora visual, mas os valores
+     * exatos de Burst ficam na DATABASE MASTER (pvp-data.json).
+     * Antes só líamos `apiSkill.burst`, fazendo toda Burst parecer
+     * indisponível quando a SITE_EXPORT não carregava esse objeto.
+     */
     skill.burst =
       apiSkill && apiSkill.burst && typeof apiSkill.burst === "object"
         ? apiSkill.burst
-        : null;
+        : (
+          meta && meta.burst && typeof meta.burst === "object"
+            ? meta.burst
+            : null
+        );
   });
 
   return skills;
