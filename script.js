@@ -4,8 +4,8 @@
 ===================================================== */
 
 const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.workers.dev";
-// Nova versão para não reutilizar o cache antigo que continha os IDs legados.
-const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v3_hgid_";
+// Contrato HGID: nunca reutiliza respostas antigas baseadas em identificadores legados.
+const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v4_hgid_";
 
 function tempoCacheApiNavegador(api) {
   const minutos = {
@@ -2564,15 +2564,25 @@ function normalizarChaveIconeDigimonCentral(valor) {
     .replace(/^(mutation|mutant)/, "");
 }
 
-function encontrarDigimonIconeCentral(nome, did) {
+function normalizarHgid(valor) {
+  const hgid = String(valor == null ? "" : valor).trim().toUpperCase();
+  return /^HG-\d{4,}$/.test(hgid) ? hgid : "";
+}
+
+function mesmoHgid(a, b) {
+  const esquerda = normalizarHgid(a);
+  return Boolean(esquerda && esquerda === normalizarHgid(b));
+}
+
+function encontrarDigimonIconeCentral(nome, hgid) {
   const lista = Array.isArray(database) ? database : [];
-  const id = Number(did || 0);
+  const id = normalizarHgid(hgid);
 
   if (id) {
-    const porDid = lista.find(function(item) {
-      return Number(item && item.did || 0) === id;
+    const porHgid = lista.find(function(item) {
+      return mesmoHgid(item && item.hgid, id);
     });
-    if (porDid) return porDid;
+    if (porHgid) return porHgid;
   }
 
   const chave = normalizarChaveIconeDigimonCentral(nome);
@@ -2585,8 +2595,8 @@ function encontrarDigimonIconeCentral(nome, did) {
   }) || null;
 }
 
-function resolverIconeDigimonCentral(nome, iconeExplicito, did) {
-  const central = encontrarDigimonIconeCentral(nome, did);
+function resolverIconeDigimonCentral(nome, iconeExplicito, hgid) {
+  const central = encontrarDigimonIconeCentral(nome, hgid);
 
   if (central && central.icon) {
     return String(central.icon).trim();
@@ -2607,7 +2617,7 @@ function sincronizarIconesPvpComDatabase() {
     const central = resolverIconeDigimonCentral(
       digi.name || digi.digimon,
       "",
-      digi.did
+      digi.hgid
     );
     if (central) digi.icon = central;
   });
@@ -3984,7 +3994,7 @@ function filtrar() {
    DIGIDEX — PERFIL + EVOLUTION TREE
 ===================================================== */
 
-const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260818_v5";
+const HG_EVOLUTION_CACHE_KEY = "hg_evolution_master_20260826_v6_hgid";
 let evolutionMaster = null;
 let evolutionMasterPromise = null;
 let digidexEvolutionTrail = [];
@@ -4027,7 +4037,7 @@ function atualizarUrlPerfilDigidex(current, substituir) {
   const hash = "#digidex/" + encodeURIComponent(slug);
   if (window.location.hash === hash) return;
   const metodo = substituir ? "replaceState" : "pushState";
-  history[metodo]({ pagina: "databasePagina", digimon: current.name, did: current.did }, "", hash);
+  history[metodo]({ pagina: "databasePagina", digimon: current.name, hgid: current.hgid }, "", hash);
 }
 
 
@@ -4082,50 +4092,56 @@ function evolutionCacheLer() {
 function prepararIndicesEvolution(dados) {
   if (!dados || dados.__indexed) return dados;
 
-  dados.byDid = {};
+  dados.byHgid = {};
   dados.byName = {};
   dados.bySlug = {};
-  dados.skillsByDid = {};
-  dados.incomingByDid = {};
-  dados.outgoingByDid = {};
+  dados.skillsByHgid = {};
+  dados.incomingByHgid = {};
+  dados.outgoingByHgid = {};
 
   (dados.digimons || []).forEach(function(d) {
-    if (d.did != null) dados.byDid[String(d.did)] = d;
+    const hgid = normalizarHgid(d.hgid);
+    if (hgid) {
+      d.hgid = hgid;
+      dados.byHgid[hgid] = d;
+    }
     dados.byName[normalizarNomeEvolution(d.name)] = d;
     const slug = criarSlugDigidexPerfil(d.name);
     if (!dados.bySlug[slug]) dados.bySlug[slug] = d;
   });
 
   (dados.skills || []).forEach(function(skill) {
-    const key = String(skill.did == null ? "" : skill.did);
-    if (!dados.skillsByDid[key]) dados.skillsByDid[key] = [];
-    dados.skillsByDid[key].push(skill);
+    const key = normalizarHgid(skill.hgid);
+    if (!key) return;
+    skill.hgid = key;
+    if (!dados.skillsByHgid[key]) dados.skillsByHgid[key] = [];
+    dados.skillsByHgid[key].push(skill);
   });
 
-  Object.keys(dados.skillsByDid).forEach(function(key) {
-    dados.skillsByDid[key].sort(function(a, b) {
+  Object.keys(dados.skillsByHgid).forEach(function(key) {
+    dados.skillsByHgid[key].sort(function(a, b) {
       return (Number(a.slot) || 0) - (Number(b.slot) || 0);
     });
   });
 
   (dados.evolutions || []).forEach(function(evo) {
-    const fromKey = String(evo.fromDid == null ? "" : evo.fromDid);
-    const partnerKey = String(evo.partnerDid == null ? "" : evo.partnerDid);
-    const toKey = String(evo.toDid == null ? "" : evo.toDid);
+    const fromKey = normalizarHgid(evo.fromHgid);
+    const partnerKey = normalizarHgid(evo.partnerHgid);
+    const toKey = normalizarHgid(evo.toHgid);
 
     if (fromKey) {
-      if (!dados.outgoingByDid[fromKey]) dados.outgoingByDid[fromKey] = [];
-      dados.outgoingByDid[fromKey].push(evo);
+      if (!dados.outgoingByHgid[fromKey]) dados.outgoingByHgid[fromKey] = [];
+      dados.outgoingByHgid[fromKey].push(evo);
     }
 
     if (partnerKey) {
-      if (!dados.outgoingByDid[partnerKey]) dados.outgoingByDid[partnerKey] = [];
-      dados.outgoingByDid[partnerKey].push(evo);
+      if (!dados.outgoingByHgid[partnerKey]) dados.outgoingByHgid[partnerKey] = [];
+      dados.outgoingByHgid[partnerKey].push(evo);
     }
 
     if (toKey) {
-      if (!dados.incomingByDid[toKey]) dados.incomingByDid[toKey] = [];
-      dados.incomingByDid[toKey].push(evo);
+      if (!dados.incomingByHgid[toKey]) dados.incomingByHgid[toKey] = [];
+      dados.incomingByHgid[toKey].push(evo);
     }
   });
 
@@ -4165,15 +4181,15 @@ function carregarEvolutionMaster() {
   return evolutionMasterPromise;
 }
 
-function encontrarDigimonEvolution(nomeOuDid) {
+function encontrarDigimonEvolution(nomeOuHgid) {
   if (!evolutionMaster) return null;
-  const chaveDid = String(nomeOuDid == null ? "" : nomeOuDid);
-  if (evolutionMaster.byDid && evolutionMaster.byDid[chaveDid]) {
-    return evolutionMaster.byDid[chaveDid];
+  const chaveHgid = normalizarHgid(nomeOuHgid);
+  if (chaveHgid && evolutionMaster.byHgid && evolutionMaster.byHgid[chaveHgid]) {
+    return evolutionMaster.byHgid[chaveHgid];
   }
-  const porNome = evolutionMaster.byName[normalizarNomeEvolution(nomeOuDid)];
+  const porNome = evolutionMaster.byName[normalizarNomeEvolution(nomeOuHgid)];
   if (porNome) return porNome;
-  const slug = criarSlugDigidexPerfil(nomeOuDid);
+  const slug = criarSlugDigidexPerfil(nomeOuHgid);
   return evolutionMaster.bySlug && evolutionMaster.bySlug[slug] || null;
 }
 
@@ -4196,7 +4212,7 @@ function fecharPerfilDigidex(semAtualizarUrl) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function abrirPerfilDigidex(nomeOuDid, navegando, semAtualizarUrl) {
+function abrirPerfilDigidex(nomeOuHgid, navegando, semAtualizarUrl) {
   const pagina = document.getElementById("databasePagina");
   const perfil = document.getElementById("digidexProfile");
   if (!pagina || !perfil) return;
@@ -4212,9 +4228,9 @@ function abrirPerfilDigidex(nomeOuDid, navegando, semAtualizarUrl) {
 
   carregarEvolutionMaster()
     .then(function() {
-      const current = encontrarDigimonEvolution(nomeOuDid);
+      const current = encontrarDigimonEvolution(nomeOuHgid);
       if (!current) {
-        throw new Error("Digimon não encontrado na DIGIVOLUTION MASTER: " + nomeOuDid);
+        throw new Error("Digimon não encontrado na DIGIVOLUTION MASTER: " + nomeOuHgid);
       }
 
       if (!navegando) {
@@ -4222,8 +4238,8 @@ function abrirPerfilDigidex(nomeOuDid, navegando, semAtualizarUrl) {
       }
 
       const last = digidexEvolutionTrail[digidexEvolutionTrail.length - 1];
-      if (!last || String(last.did) !== String(current.did)) {
-        digidexEvolutionTrail.push({ did: current.did, name: current.name });
+      if (!last || String(last.hgid) !== String(current.hgid)) {
+        digidexEvolutionTrail.push({ hgid: current.hgid, name: current.name });
       }
 
       if (!semAtualizarUrl) atualizarUrlPerfilDigidex(current, false);
@@ -4241,29 +4257,29 @@ function abrirPerfilDigidex(nomeOuDid, navegando, semAtualizarUrl) {
     });
 }
 
-function navegarEvolutionDid(did) {
-  abrirPerfilDigidex(String(did), true);
+function navegarEvolutionHgid(hgid) {
+  abrirPerfilDigidex(String(hgid), true);
 }
 
 function voltarTrilhaEvolution(indice) {
   if (indice < 0 || indice >= digidexEvolutionTrail.length) return;
   const item = digidexEvolutionTrail[indice];
   digidexEvolutionTrail = digidexEvolutionTrail.slice(0, indice);
-  abrirPerfilDigidex(String(item.did), true);
+  abrirPerfilDigidex(String(item.hgid), true);
 }
 
-function dedupeEvolutionRows(rows, currentDid) {
+function dedupeEvolutionRows(rows, currentHgid) {
   const mapa = {};
 
   (rows || []).forEach(function(row) {
-    const key = [row.toDid, row.category, row.subtype].join("|");
+    const key = [row.toHgid, row.category, row.subtype].join("|");
     const atual = mapa[key];
     if (!atual) {
       mapa[key] = row;
       return;
     }
 
-    const currentName = encontrarDigimonEvolution(currentDid);
+    const currentName = encontrarDigimonEvolution(currentHgid);
     const nomeAtual = currentName ? normalizarNomeEvolution(currentName.name) : "";
     const ownerNovo = normalizarNomeEvolution(row.requirementOwner);
     const ownerAtual = normalizarNomeEvolution(atual.requirementOwner);
@@ -4277,15 +4293,15 @@ function dedupeEvolutionRows(rows, currentDid) {
 }
 
 function incomingEvolutionSources(current) {
-  const rows = (evolutionMaster.incomingByDid[String(current.did)] || []);
+  const rows = (evolutionMaster.incomingByHgid[String(current.hgid)] || []);
   const mapa = {};
 
   rows.forEach(function(row) {
     [
-      { did: row.fromDid, name: row.from, stage: row.fromStage, icon: row.fromIcon },
-      row.partnerDid ? { did: row.partnerDid, name: row.partner, stage: row.partnerStage, icon: row.partnerIcon } : null
+      { hgid: row.fromHgid, name: row.from, stage: row.fromStage, icon: row.fromIcon },
+      row.partnerHgid ? { hgid: row.partnerHgid, name: row.partner, stage: row.partnerStage, icon: row.partnerIcon } : null
     ].filter(Boolean).forEach(function(source) {
-      const key = String(source.did || normalizarNomeEvolution(source.name));
+      const key = String(source.hgid || normalizarNomeEvolution(source.name));
       if (!mapa[key]) mapa[key] = source;
     });
   });
@@ -4295,8 +4311,8 @@ function incomingEvolutionSources(current) {
 
 function outgoingEvolutionRows(current) {
   return dedupeEvolutionRows(
-    evolutionMaster.outgoingByDid[String(current.did)] || [],
-    current.did
+    evolutionMaster.outgoingByHgid[String(current.hgid)] || [],
+    current.hgid
   ).sort(function(a, b) {
     const pa = numeroEvolution(a.probability);
     const pb = numeroEvolution(b.probability);
@@ -4608,7 +4624,7 @@ function fallbackDigimonEvolution(nome) {
   return pegarImagem(nome) || fallbackSourceDigimonEvolution(nome);
 }
 
-function isMutantEvolutionEntity(did, nome, categoria) {
+function isMutantEvolutionEntity(hgid, nome, categoria) {
   const category = String(categoria || "").trim().toUpperCase();
   if (category === "MUTANT" || category === "MUTATION") return true;
 
@@ -4616,9 +4632,9 @@ function isMutantEvolutionEntity(did, nome, categoria) {
   if (/^\[mutant\]/i.test(name)) return true;
 
   if (evolutionMaster) {
-    const byDid = evolutionMaster.byDid && evolutionMaster.byDid[String(did == null ? "" : did)];
+    const byHgid = evolutionMaster.byHgid && evolutionMaster.byHgid[String(hgid == null ? "" : hgid)];
     const byName = evolutionMaster.byName && evolutionMaster.byName[normalizarNomeEvolution(name)];
-    const digi = byDid || byName;
+    const digi = byHgid || byName;
     if (digi && digi.mutant) return true;
   }
 
@@ -4626,9 +4642,9 @@ function isMutantEvolutionEntity(did, nome, categoria) {
 }
 
 function renderEvolutionSourceCard(source) {
-  const mutant = isMutantEvolutionEntity(source.did, source.name, source.category);
+  const mutant = isMutantEvolutionEntity(source.hgid, source.name, source.category);
   return `
-    <button type="button" class="digidex-evo-node digidex-evo-node-from${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionDid('${escaparHtml(String(source.did))}')">
+    <button type="button" class="digidex-evo-node digidex-evo-node-from${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionHgid('${escaparHtml(String(source.hgid))}')">
       <span class="digidex-evo-node-image">
         ${renderImagemEvolution(source.icon, source.name, fallbackDigimonEvolution(source.name))}
       </span>
@@ -4641,10 +4657,10 @@ function renderEvolutionSourceCard(source) {
 }
 
 function renderEvolutionTargetCard(row) {
-  const mutant = isMutantEvolutionEntity(row.toDid, row.to, row.category);
+  const mutant = isMutantEvolutionEntity(row.toHgid, row.to, row.category);
   return `
     <article class="digidex-evo-target-card${mutant ? " is-mutant" : ""}">
-      <button type="button" class="digidex-evo-node digidex-evo-node-to${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionDid('${escaparHtml(String(row.toDid))}')">
+      <button type="button" class="digidex-evo-node digidex-evo-node-to${mutant ? " is-mutant" : ""}" onclick="navegarEvolutionHgid('${escaparHtml(String(row.toHgid))}')">
         <span class="digidex-evo-node-image">
           ${renderImagemEvolution(row.toIcon, row.to, fallbackDigimonEvolution(row.to))}
         </span>
@@ -4741,14 +4757,14 @@ function renderizarPerfilDigidexEvolution(current) {
   if (!perfil) return;
 
   const db = encontrarDatabaseEvolution(current.name);
-  const skills = (evolutionMaster.skillsByDid[String(current.did)] || []).slice(0, 3);
+  const skills = (evolutionMaster.skillsByHgid[String(current.hgid)] || []).slice(0, 3);
   const incoming = incomingEvolutionSources(current);
   const outgoing = outgoingEvolutionRows(current);
   const tipo = db ? normalizarType(db.type) : normalizarType(current.attribute);
   const fields = db ? db.field : current.fields;
   const strong = db ? db.strong : current.strong;
   const weak = db ? db.weak : current.weak;
-  const currentMutant = isMutantEvolutionEntity(current.did, current.name, current.category);
+  const currentMutant = isMutantEvolutionEntity(current.hgid, current.name, current.category);
   const relationData = {
     digimon: current.name,
     name: current.name,
@@ -9715,8 +9731,9 @@ function counterFinderPesquisarAlvo() {
 
   box.innerHTML = resultados.map(function(digi) {
     const nome = counterFinderNome(digi);
+    const hgid = normalizarHgid(digi.hgid);
     return `
-      <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvoPorId(${Number(digi.did) || 0})">
+      <button type="button" class="counter-finder-suggestion" onclick="counterFinderSelecionarAlvoPorHgid('${escaparHtml(hgid)}')">
         ${counterFinderImagemDigiHtml(digi, nome)}
         <span><b>${escaparHtml(nome)}</b><small>${escaparHtml(counterFinderStage(digi))} • ${escaparHtml(counterFinderType(digi))}</small></span>
       </button>
@@ -9736,12 +9753,12 @@ function counterFinderTeclaAlvo(evento) {
   }) || pvpDatabase.find(function(digi) {
     return counterFinderNome(digi).toLowerCase().includes(termo);
   });
-  if (candidato) counterFinderSelecionarAlvoPorId(candidato.did);
+  if (candidato) counterFinderSelecionarAlvoPorHgid(candidato.hgid);
 }
 
-function counterFinderSelecionarAlvoPorId(did) {
+function counterFinderSelecionarAlvoPorHgid(hgid) {
   counterFinderTarget = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(digi) {
-    return Number(digi.did) === Number(did);
+    return mesmoHgid(digi.hgid, hgid);
   }) || null;
 
   const input = document.getElementById("counterFinderTargetInput");
@@ -9761,7 +9778,7 @@ function counterFinderFallbackDigimon(digi) {
   return resolverIconeDigimonCentral(
     counterFinderNome(digi),
     digi.icon || "",
-    digi.did
+    digi.hgid
   );
 }
 
@@ -9891,9 +9908,9 @@ function counterFinderTooltipHtml(digi) {
     </div>`;
 }
 
-function counterFinderMostrarTooltip(trigger, did, fixar) {
+function counterFinderMostrarTooltip(trigger, hgid, fixar) {
   if (!trigger) return;
-  const digi = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(item){ return Number(item.did) === Number(did); });
+  const digi = (Array.isArray(pvpDatabase) ? pvpDatabase : []).find(function(item){ return mesmoHgid(item.hgid, hgid); });
   if (!digi) return;
   const tooltip = counterFinderTooltipEl();
   tooltip.innerHTML = counterFinderTooltipHtml(digi);
@@ -9901,7 +9918,7 @@ function counterFinderMostrarTooltip(trigger, did, fixar) {
   tooltip.classList.add("ativo");
   if (fixar) tooltip.dataset.pinned = "1";
   else if (tooltip.dataset.pinned !== "1") delete tooltip.dataset.pinned;
-  tooltip.dataset.did = String(did);
+  tooltip.dataset.hgid = String(hgid);
 
   requestAnimationFrame(function() {
     if (tooltip.hidden || !trigger.isConnected) return;
@@ -9926,16 +9943,16 @@ function counterFinderOcultarTooltip(forcar) {
   tooltip.classList.remove("ativo");
   tooltip.hidden = true;
   delete tooltip.dataset.pinned;
-  delete tooltip.dataset.did;
+  delete tooltip.dataset.hgid;
 }
 
-function counterFinderToggleTooltip(evento, trigger, did) {
+function counterFinderToggleTooltip(evento, trigger, hgid) {
   if (evento) { evento.preventDefault(); evento.stopPropagation(); }
   const tooltip = counterFinderTooltipEl();
-  const mesmo = !tooltip.hidden && tooltip.dataset.did === String(did) && tooltip.dataset.pinned === "1";
+  const mesmo = !tooltip.hidden && tooltip.dataset.hgid === String(hgid) && tooltip.dataset.pinned === "1";
   if (mesmo) { counterFinderOcultarTooltip(true); return; }
   tooltip.dataset.pinned = "1";
-  counterFinderMostrarTooltip(trigger, did, true);
+  counterFinderMostrarTooltip(trigger, hgid, true);
 }
 
 function counterFinderMatchupStripHtml(candidato, alvo, analise) {
@@ -10058,9 +10075,9 @@ function counterFinderRenderizarResultados() {
     return;
   }
 
-  const alvoDid = Number(counterFinderTarget.did);
+  const alvoHgid = normalizarHgid(counterFinderTarget.hgid);
   const resultados = counterFinderListaBase()
-    .filter(function(digi) { return Number(digi.did) !== alvoDid; })
+    .filter(function(digi) { return normalizarHgid(digi.hgid) !== alvoHgid; })
     .map(function(digi) { return { digi: digi, analise: counterFinderScore(digi, counterFinderTarget) }; })
     .sort(function(a, b) {
       if (b.analise.score !== a.analise.score) return b.analise.score - a.analise.score;
@@ -10079,6 +10096,7 @@ function counterFinderRenderizarResultados() {
     const d = item.digi;
     const a = item.analise;
     const nomeCodificado = encodeURIComponent(counterFinderNome(d));
+    const hgid = escaparHtml(normalizarHgid(d.hgid));
     const motivos = a.motivos.slice(0, 6).map(function(texto){ return `<li class="positivo"><span>✓</span>${escaparHtml(texto)}</li>`; }).join("");
     const riscos = a.riscos.slice(0, 5).map(function(texto){ return `<li class="negativo"><span>!</span>${escaparHtml(texto)}</li>`; }).join("");
     const neutros = a.neutros.slice(0, 2).map(function(texto){ return `<li class="neutro"><span>•</span>${escaparHtml(texto)}</li>`; }).join("");
@@ -10090,11 +10108,11 @@ function counterFinderRenderizarResultados() {
         <div class="counter-finder-result-head">
           <button class="counter-finder-result-icon counter-finder-profile-trigger" type="button"
             aria-label="Ver status de ${escaparHtml(counterFinderNome(d))}"
-            onmouseenter="counterFinderMostrarTooltip(this, ${Number(d.did) || 0}, false)"
+            onmouseenter="counterFinderMostrarTooltip(this, '${hgid}', false)"
             onmouseleave="counterFinderOcultarTooltip(false)"
-            onfocus="counterFinderMostrarTooltip(this, ${Number(d.did) || 0}, false)"
+            onfocus="counterFinderMostrarTooltip(this, '${hgid}', false)"
             onblur="counterFinderOcultarTooltip(false)"
-            onclick="counterFinderToggleTooltip(event, this, ${Number(d.did) || 0})">
+            onclick="counterFinderToggleTooltip(event, this, '${hgid}')">
             ${counterFinderImagemDigiHtml(d, counterFinderNome(d))}
           </button>
           <div class="counter-finder-result-ident">
@@ -10871,9 +10889,18 @@ function carregarDatabase() {
     .then(
       function(resposta) {
 
-        database =
-          resposta.database ||
-          [];
+        database = Array.isArray(resposta.database)
+          ? resposta.database
+          : [];
+
+        const hgidsDatabase = new Set();
+        database.forEach(function(digi) {
+          digi.hgid = normalizarHgid(digi && digi.hgid);
+          if (!digi.hgid || hgidsDatabase.has(digi.hgid)) {
+            throw new Error("HG_ID inválido ou duplicado na DATABASE: " + String(digi && (digi.digimon || digi.name) || "registro desconhecido"));
+          }
+          hgidsDatabase.add(digi.hgid);
+        });
 
         sincronizarIconesPvpComDatabase();
 
@@ -11844,8 +11871,9 @@ document.addEventListener(
    PVP — MENU / BUILD / IMPORT / EXPORT / MATCH V2
 ===================================================== */
 
-const PVP_STORAGE_KEY = "holy_guardians_pvp_team_v2";
-const PVP_DATA_URL = "pvp-data.json";
+const PVP_STORAGE_KEY = "holy_guardians_pvp_team_v3_hgid";
+const PVP_LEGACY_STORAGE_KEYS = ["holy_guardians_pvp_team_v2"];
+const PVP_DATA_URL = "pvp-data.json?v=20260826-hgid-v1";
 
 let pvpDatabase = [];
 let pvpStageAtual = "Mega";
@@ -12287,9 +12315,9 @@ function pvpSelecionarStage(stage,level){
   pvpFecharStageMenu();
 
   document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot){
-    const did=Number(slot.dataset.did||0);
-    if(!did)return;
-    const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+    const hgid=normalizarHgid(slot.dataset.hgid);
+    if(!hgid)return;
+    const digi=pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)});
     if(digi&&digi.stage!==stage)pvpLimparSlot(slot);
   });
   pvpSalvarEstadoLocal();
@@ -12314,7 +12342,18 @@ async function pvpCarregarDatabase(){
   if(pvpDadosCarregando)return pvpDadosCarregando;
   pvpDadosCarregando=fetch(PVP_DATA_URL,{cache:"no-store"})
     .then(function(resp){if(!resp.ok)throw new Error("HTTP "+resp.status);return resp.json()})
-    .then(function(data){pvpDatabase=Array.isArray(data)?data:[];sincronizarIconesPvpComDatabase();pvpAtualizarTodosSlots();return pvpDatabase})
+    .then(function(data){
+      pvpDatabase=Array.isArray(data)?data:[];
+      const vistos=new Set();
+      pvpDatabase.forEach(function(digi){
+        digi.hgid=normalizarHgid(digi&&digi.hgid);
+        if(!digi.hgid||vistos.has(digi.hgid))throw new Error("HG_ID inválido ou duplicado em pvp-data.json: "+(digi&&digi.name||"registro desconhecido"));
+        vistos.add(digi.hgid);
+      });
+      sincronizarIconesPvpComDatabase();pvpAtualizarTodosSlots();
+      if(document.querySelector("#pvpSlots .pvp-slot"))pvpSalvarEstadoLocal();
+      return pvpDatabase
+    })
     .catch(function(erro){console.error("[PvP] Falha ao carregar pvp-data.json",erro);alert("Não foi possível carregar a DATABASE PvP. Confirme que pvp-data.json está no GitHub ao lado do index.html.");return[]})
     .finally(function(){pvpDadosCarregando=null});
   return pvpDadosCarregando
@@ -12327,7 +12366,7 @@ function pvpCriarSlots(){
   for(let i=1;i<=8;i++){
     const slot=document.createElement("article");
     slot.className="pvp-slot tech-corners";
-    slot.dataset.slot=String(i);slot.dataset.did="";slot.dataset.digimon="";
+    slot.dataset.slot=String(i);slot.dataset.hgid="";slot.dataset.digimon="";
     slot.tabIndex=0;slot.setAttribute("role","button");slot.setAttribute("aria-label","Selecionar Digimon para o slot "+i);
     slot.onclick=function(event){if(event.target.closest(".pvp-slot-remove"))return;pvpAbrirPicker(i)};
     slot.onkeydown=function(event){if(event.key==="Enter"||event.key===" "){event.preventDefault();pvpAbrirPicker(i)}};
@@ -12348,14 +12387,21 @@ function pvpCriarSlots(){
 
 function pvpLimparSlot(slot){
   if(!slot)return;
-  slot.dataset.did="";slot.dataset.digimon="";slot._hgPvpBuild=null;
+  slot.dataset.hgid="";slot.dataset.digimon="";slot._hgPvpBuild=null;
   pvpAtualizarSlotVisual(slot,null);pvpSalvarEstadoLocal();pvpAtualizarBotaoEtapa2()
 }
 
 function pvpAtualizarTodosSlots(){
   document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot){
-    const did=Number(slot.dataset.did||0);
-    const digi=did?pvpDatabase.find(function(item){return Number(item.did)===did}):null;
+    let hgid=normalizarHgid(slot.dataset.hgid);
+    let digi=hgid?pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)}):null;
+    if(!digi&&slot.dataset.digimon){
+      const nome=normalizarChaveIconeDigimonCentral(slot.dataset.digimon);
+      digi=pvpDatabase.find(function(item){
+        return item.stage===pvpStageAtual&&normalizarChaveIconeDigimonCentral(item.name)===nome;
+      })||null;
+      if(digi){hgid=digi.hgid;slot.dataset.hgid=hgid}
+    }
     pvpAtualizarSlotVisual(slot,digi||null)
   })
 }
@@ -12377,7 +12423,7 @@ function pvpAtualizarSlotVisual(slot,digi){
     return
   }
 
-  slot.classList.add("preenchido");slot.dataset.did=String(digi.did);slot.dataset.digimon=digi.name;
+  slot.classList.add("preenchido");slot.dataset.hgid=normalizarHgid(digi.hgid);slot.dataset.digimon=digi.name;
   if(img){
     img.hidden=false;img.src=digi.icon;img.alt=digi.name;
     img.onerror=function(){this.hidden=true;if(plus){plus.hidden=false;plus.textContent="?"}}
@@ -12408,29 +12454,29 @@ function pvpRenderPicker(){
   const grid=document.getElementById("pvpPickerGrid"),input=document.getElementById("pvpPickerSearch"),count=document.getElementById("pvpPickerCount");
   if(!grid)return;
   const termo=(input?input.value:"").trim().toLowerCase();
-  const escolhidos=new Set(Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map(function(slot){return Number(slot.dataset.did||0)}).filter(Boolean));
+  const escolhidos=new Set(Array.from(document.querySelectorAll("#pvpSlots .pvp-slot")).map(function(slot){return normalizarHgid(slot.dataset.hgid)}).filter(Boolean));
   const lista=pvpDatabase.filter(function(digi){return digi.stage===pvpStageAtual&&(!termo||String(digi.name).toLowerCase().includes(termo))})
     .sort(function(a,b){return String(a.name).localeCompare(String(b.name),"en",{sensitivity:"base"})});
   if(count)count.textContent=lista.length+" DIGIMONS · "+pvpStageTexto(pvpStageAtual);
   grid.innerHTML="";
   lista.forEach(function(digi){
-    const btn=document.createElement("button"),repetido=escolhidos.has(Number(digi.did));
+    const btn=document.createElement("button"),repetido=escolhidos.has(normalizarHgid(digi.hgid));
     btn.type="button";btn.className="pvp-picker-card tech-corners"+(repetido?" ja-usado":"");btn.disabled=repetido;
     btn.innerHTML='<span class="pvp-picker-icon tech-icon-frame"><img src="'+digi.icon+'" alt="'+pvpEscapeHtml(digi.name)+'"></span>'+
       '<span class="pvp-picker-copy"><strong>'+pvpEscapeHtml(digi.name)+'</strong><small>'+digi.stage.toUpperCase()+' · LV. '+digi.level+'</small><span class="pvp-picker-mini-meta">'+pvpTypeIconHtml(digi.attribute)+(Array.isArray(digi.elements)?digi.elements.map(pvpElementIconHtml).join(""):"")+'</span></span>'+
       (repetido?'<em>IN TEAM</em>':'');
-    btn.onclick=function(){pvpEscolherDigimon(digi.did)};grid.appendChild(btn)
+    btn.onclick=function(){pvpEscolherDigimon(digi.hgid)};grid.appendChild(btn)
   });
   if(!lista.length)grid.innerHTML='<div class="pvp-picker-empty">Nenhum Digimon encontrado nessa Stage.</div>'
 }
 
 function pvpEscapeHtml(texto){return String(texto||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-function pvpEscolherDigimon(did){
-  const digi=pvpDatabase.find(function(item){return Number(item.did)===Number(did)});
+function pvpEscolherDigimon(hgid){
+  const digi=pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)});
   const slot=document.querySelector('#pvpSlots .pvp-slot[data-slot="'+pvpPickerSlot+'"]');
   if(!digi||!slot)return;
-  slot.dataset.did=String(digi.did);slot.dataset.digimon=digi.name;
+  slot.dataset.hgid=normalizarHgid(digi.hgid);slot.dataset.digimon=digi.name;
   pvpAtualizarSlotVisual(slot,digi);pvpSalvarEstadoLocal();pvpAtualizarBotaoEtapa2();pvpFecharPicker()
 }
 
@@ -12440,7 +12486,7 @@ function pvpLerEstado(){
     if(build)pvpAplicarDeckGlobalAoBuild(build);
     return{
       slot:index+1,
-      did:slot.dataset.did?Number(slot.dataset.did):null,
+      hgid:normalizarHgid(slot.dataset.hgid)||null,
       digimon:slot.dataset.digimon||null,
       build:build
     }
@@ -12488,7 +12534,7 @@ function pvpAplicarEstado(pacote){
   document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
     const salvo=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index]||null;
 
-    slot.dataset.did=salvo&&salvo.did?String(salvo.did):"";
+    slot.dataset.hgid=salvo?normalizarHgid(salvo.hgid):"";
     slot.dataset.digimon=salvo&&salvo.digimon?String(salvo.digimon):"";
 
     if(salvo&&salvo.build){
@@ -12507,7 +12553,10 @@ function pvpSalvarEstadoLocal(){try{localStorage.setItem(PVP_STORAGE_KEY,JSON.st
 
 function pvpRestaurarEstadoLocal(){
   try{
-    const salvo=localStorage.getItem(PVP_STORAGE_KEY);
+    let salvo=localStorage.getItem(PVP_STORAGE_KEY);
+    if(!salvo){
+      for(let i=0;i<PVP_LEGACY_STORAGE_KEYS.length&&!salvo;i++)salvo=localStorage.getItem(PVP_LEGACY_STORAGE_KEYS[i]);
+    }
 
     if(!salvo){
       pvpTeamDeck=pvpCriarTeamDeckPadrao();
@@ -12547,7 +12596,7 @@ function pvpRestaurarEstadoLocal(){
         const s=pacote.slots.find(function(item){return Number(item.slot)===index+1})||pacote.slots[index];
         if(!s)return;
 
-        slot.dataset.did=s.did?String(s.did):"";
+        slot.dataset.hgid=normalizarHgid(s.hgid);
         slot.dataset.digimon=s.digimon||"";
 
         if(s.build){
@@ -12577,8 +12626,8 @@ function pvpRenderTimeImportado(){
   grid.innerHTML="";
 
   slots.forEach(function(slot,index){
-    const did=Number(slot.dataset.did||0);
-    const digi=did?pvpDatabase.find(function(item){return Number(item.did)===did}):null;
+    const hgid=normalizarHgid(slot.dataset.hgid);
+    const digi=hgid?pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)}):null;
     const build=pvpGetSlotBuild(slot);
 
     const card=document.createElement("article");
@@ -12687,7 +12736,7 @@ let pvpBuildIndex = 0;
 
 function pvpSlotsPreenchidos(){
   return Array.from(document.querySelectorAll("#pvpSlots .pvp-slot"))
-    .filter(function(slot){return !!slot.dataset.did});
+    .filter(function(slot){return !!slot.dataset.hgid});
 }
 
 function pvpAtualizarBotaoEtapa2(){
@@ -12736,8 +12785,8 @@ function pvpRenderBuildTabs(){
   if(!wrap)return;
   wrap.innerHTML="";
   pvpBuildSlots().forEach(function(slot,index){
-    const did=Number(slot.dataset.did||0);
-    const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+    const hgid=normalizarHgid(slot.dataset.hgid);
+    const digi=pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)});
     const build=pvpGetSlotBuild(slot);
     const btn=document.createElement("button");
     btn.type="button";
@@ -12754,8 +12803,8 @@ function pvpRenderBuildTabs(){
 function pvpRenderBuildAtual(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
-  const did=Number(slot.dataset.did||0);
-  const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+  const hgid=normalizarHgid(slot.dataset.hgid);
+  const digi=pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)});
   const build=pvpGetSlotBuild(slot);
 
   const img=document.getElementById("pvpBuildCurrentImg");
@@ -13518,8 +13567,8 @@ function pvpAtualizarBuildCalculado(){
   const slot=pvpBuildAtualSlot();
   if(!slot)return;
   const build=pvpGetSlotBuild(slot);
-  const did=Number(slot.dataset.did||0);
-  const digi=pvpDatabase.find(function(item){return Number(item.did)===did});
+  const hgid=normalizarHgid(slot.dataset.hgid);
+  const digi=pvpDatabase.find(function(item){return mesmoHgid(item.hgid,hgid)});
 
   pvpAtualizarBabyTotal(build);
   pvpAtualizarResumosWizard(build);
@@ -13598,6 +13647,7 @@ function pvpLimparTimeCompleto(){
   });
 
   localStorage.removeItem(PVP_STORAGE_KEY);
+  PVP_LEGACY_STORAGE_KEYS.forEach(function(chave){localStorage.removeItem(chave)});
   pvpBuildIndex=0;
   pvpMostrarView("build");
   pvpAtualizarBotaoEtapa2()
@@ -13605,7 +13655,7 @@ function pvpLimparTimeCompleto(){
 
 function pvpTodosBuildsConcluidos(){
   const slots=pvpBuildSlots();
-  return slots.length===8&&slots.every(function(slot){return !!slot.dataset.did&&!!pvpGetSlotBuild(slot).complete})
+  return slots.length===8&&slots.every(function(slot){return !!slot.dataset.hgid&&!!pvpGetSlotBuild(slot).complete})
 }
 
 function pvpAtualizarFinalActions(){
@@ -13700,10 +13750,10 @@ function pvpMatchTeamAtual(){
 function pvpMatchTeamValido(team,stage){
   if(!team||team.format!=="holy-guardians-pvp-team"||!Array.isArray(team.slots))return false;
   if(team.stage!==stage)return false;
-  const valid=team.slots.filter(function(s){return s&&s.did&&s.build&&s.build.complete});
+  const valid=team.slots.filter(function(s){return s&&s.hgid&&s.build&&s.build.complete});
   if(valid.length!==8)return false;
   return valid.every(function(s){
-    const digi=pvpDatabase.find(function(d){return Number(d.did)===Number(s.did)});
+    const digi=pvpDatabase.find(function(d){return mesmoHgid(d.hgid,s.hgid)});
     return digi&&digi.stage===stage;
   });
 }
@@ -13714,7 +13764,7 @@ function pvpMatchAtualizarTeamCheck(){
   if(!box)return;
   const team=pvpMatchTeamAtual();
   const slots=team&&Array.isArray(team.slots)?team.slots:[];
-  const completos=slots.filter(function(s){return s&&s.did&&s.build&&s.build.complete}).length;
+  const completos=slots.filter(function(s){return s&&s.hgid&&s.build&&s.build.complete}).length;
   const stage=team&&team.stage?team.stage:pvpStageAtual;
   const roomStage=stageSelect&&stageSelect.value?stageSelect.value:stage;
   const stageOk=stage===roomStage;
@@ -13926,14 +13976,14 @@ function pvpMatchSairSala(silencioso){
 }
 
 function pvpMatchSlotsDoTeam(team){
-  return (team&&Array.isArray(team.slots)?team.slots:[]).filter(function(s){return s&&s.did&&s.build&&s.build.complete});
+  return (team&&Array.isArray(team.slots)?team.slots:[]).filter(function(s){return s&&s.hgid&&s.build&&s.build.complete});
 }
 
-function pvpMatchSlotByDid(team,did){return pvpMatchSlotsDoTeam(team).find(function(s){return Number(s.did)===Number(did)})||null}
-function pvpMatchDigi(did){return pvpDatabase.find(function(d){return Number(d.did)===Number(did)})||null}
+function pvpMatchSlotByHgid(team,hgid){return pvpMatchSlotsDoTeam(team).find(function(s){return mesmoHgid(s.hgid,hgid)})||null}
+function pvpMatchDigi(hgid){return pvpDatabase.find(function(d){return mesmoHgid(d.hgid,hgid)})||null}
 
 function pvpMatchFinalStats(slot){
-  const digi=slot?pvpMatchDigi(slot.did):null;
+  const digi=slot?pvpMatchDigi(slot.hgid):null;
   const build=slot&&slot.build?slot.build:null;
   if(!digi||!build)return null;
   const out={};
@@ -13951,7 +14001,7 @@ function pvpMatchFinalStats(slot){
 }
 
 function pvpMatchHoverCard(slot){
-  const digi=pvpMatchDigi(slot.did);const stats=pvpMatchFinalStats(slot);if(!digi||!stats)return "";
+  const digi=pvpMatchDigi(slot.hgid);const stats=pvpMatchFinalStats(slot);if(!digi||!stats)return "";
   const skills=(digi.skills||[]).slice(0,3).map(function(skill){
     const scope=String(skill.scope||"").toUpperCase();
     const tags=[];if(scope.includes("RANGED"))tags.push("RANGED");if(scope.includes("MELEE"))tags.push("MELEE");if(skill.cc==="YES")tags.push("CC");if(skill.dot==="YES")tags.push("DOT");if(skill.defBreak==="YES")tags.push("DEF BREAK");
@@ -13966,7 +14016,7 @@ function pvpMatchPickBoxes(role){
   const nextOpenIndex=picks.length;
   let html="";
   for(let i=0;i<4;i++){
-    const did=picks[i],d=pvpMatchDigi(did);
+    const hgid=picks[i],d=pvpMatchDigi(hgid);
     const activeSlot=!d&&role===current&&i===nextOpenIndex;
     html+='<div class="pvp-draft-pick '+(!d?'empty ':'')+(activeSlot?'active-pick-slot':'')+'">'+(d?'<img src="'+d.icon+'" alt=""><b>'+pvpEscapeHtml(d.name)+'</b>':'')+'</div>';
   }
@@ -13994,32 +14044,32 @@ function pvpMatchRenderDraft(){
 
   const ownRole=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;
   const own=state.players[ownRole];const grid=document.getElementById("pvpDraftRosterGrid");if(!own||!grid)return;
-  const ownPicks=new Set((draft.picks&&draft.picks[ownRole]||[]).map(Number));
+  const ownPicks=new Set((draft.picks&&draft.picks[ownRole]||[]).map(normalizarHgid).filter(Boolean));
   const canPick=pvpMatchLocalMode||current===ownRole;
   grid.innerHTML=pvpMatchSlotsDoTeam(own.team).map(function(slot){
-    const d=pvpMatchDigi(slot.did),used=ownPicks.has(Number(slot.did));
+    const d=pvpMatchDigi(slot.hgid),hgid=normalizarHgid(slot.hgid),used=ownPicks.has(hgid);
     if(!d)return "";
-    return '<button type="button" class="pvp-draft-digi" '+((!canPick||used)?'disabled':'')+' onclick="pvpMatchEscolherPick('+Number(slot.did)+')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · LV. '+d.level+'</small>'+pvpMatchHoverCard(slot)+'</button>';
+    return '<button type="button" class="pvp-draft-digi" '+((!canPick||used)?'disabled':'')+' onclick="pvpMatchEscolherPick(\''+hgid+'\')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · LV. '+d.level+'</small>'+pvpMatchHoverCard(slot)+'</button>';
   }).join("");
 }
 
-function pvpMatchEscolherPick(did){pvpMatchSend("pick",{did:Number(did)})}
+function pvpMatchEscolherPick(hgid){hgid=normalizarHgid(hgid);if(hgid)pvpMatchSend("pick",{hgid:hgid})}
 
 function pvpMatchRenderBan(){
   const state=pvpMatchRoomState;const ownRole=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;const opp=pvpMatchOpponentRole(ownRole);
   const myBan=state.bans&&state.bans[ownRole];const oppPicks=state.draft.picks[opp]||[];
   const grid=document.getElementById("pvpBanTargetGrid");
-  grid.innerHTML=oppPicks.map(function(did){const d=pvpMatchDigi(did);return d?'<button type="button" class="pvp-ban-card" '+(myBan?'disabled':'')+' onclick="pvpMatchBanir('+Number(did)+')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · '+pvpEscapeHtml(d.attribute)+'</small></button>':''}).join("");
+  grid.innerHTML=oppPicks.map(function(hgid){hgid=normalizarHgid(hgid);const d=pvpMatchDigi(hgid);return d?'<button type="button" class="pvp-ban-card" '+(myBan?'disabled':'')+' onclick="pvpMatchBanir(\''+hgid+'\')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · '+pvpEscapeHtml(d.attribute)+'</small></button>':''}).join("");
   const status=document.getElementById("pvpBanStatus");
   if(status)status.textContent=myBan?"Seu ban foi confirmado. Aguardando o adversário...":"Escolha 1 dos 4 picks do adversário.";
   if(pvpMatchLocalMode&&state.bans.host&&!state.bans.guest){pvpMatchLocalRole="guest";setTimeout(pvpMatchRenderBan,0)}
   else if(pvpMatchLocalMode&&state.bans.guest&&!state.bans.host){pvpMatchLocalRole="host";setTimeout(pvpMatchRenderBan,0)}
 }
-function pvpMatchBanir(did){pvpMatchSend("ban",{did:Number(did)})}
+function pvpMatchBanir(hgid){hgid=normalizarHgid(hgid);if(hgid)pvpMatchSend("ban",{hgid:hgid})}
 
 function pvpMatchSurvivors(role){
   const state=pvpMatchRoomState;const bannedByOpp=state.bans&&state.bans[pvpMatchOpponentRole(role)];
-  return (state.draft.picks[role]||[]).filter(function(did){return Number(did)!==Number(bannedByOpp)});
+  return (state.draft.picks[role]||[]).map(normalizarHgid).filter(function(hgid){return hgid&&!mesmoHgid(hgid,bannedByOpp)});
 }
 
 function pvpMatchRenderFormation(){
@@ -14029,16 +14079,16 @@ function pvpMatchRenderFormation(){
   const player=state.players[role];const survivors=pvpMatchSurvivors(role);
   if(!pvpMatchFormationDraft[role]){
     pvpMatchFormationDraft[role]={};
-    survivors.forEach(function(did,index){pvpMatchFormationDraft[role][did]=index<2?"F":"B"});
+    survivors.forEach(function(hgid,index){pvpMatchFormationDraft[role][hgid]=index<2?"F":"B"});
   }
   const grid=document.getElementById("pvpFormationGrid");
-  grid.innerHTML=survivors.map(function(did){const d=pvpMatchDigi(did),pos=pvpMatchFormationDraft[role][did]||"F";return '<article class="pvp-formation-card"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><div class="pvp-position-toggle"><button type="button" class="'+(pos==='F'?'ativo':'')+'" onclick="pvpMatchSetPosition('+did+',\'F\')">F · FRONT</button><button type="button" class="'+(pos==='B'?'ativo':'')+'" onclick="pvpMatchSetPosition('+did+',\'B\')">B · BACK</button></div></article>'}).join("");
+  grid.innerHTML=survivors.map(function(hgid){const d=pvpMatchDigi(hgid),pos=pvpMatchFormationDraft[role][hgid]||"F";return '<article class="pvp-formation-card"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><div class="pvp-position-toggle"><button type="button" class="'+(pos==='F'?'ativo':'')+'" onclick="pvpMatchSetPosition(\''+hgid+'\',\'F\')">F · FRONT</button><button type="button" class="'+(pos==='B'?'ativo':'')+'" onclick="pvpMatchSetPosition(\''+hgid+'\',\'B\')">B · BACK</button></div></article>'}).join("");
   const head=document.querySelector("#pvpMatchFormation .pvp-formation-head span");if(head)head.textContent=player.nick+": defina a posição dos 3 Digimons.";
   const btn=document.getElementById("pvpFormationConfirmBtn");if(btn)btn.disabled=!!(state.formations&&state.formations[role]);
 }
-function pvpMatchSetPosition(did,pos){
+function pvpMatchSetPosition(hgid,pos){
   const role=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;if(!pvpMatchFormationDraft[role])pvpMatchFormationDraft[role]={};
-  pvpMatchFormationDraft[role][Number(did)]=pos==="B"?"B":"F";pvpMatchRenderFormation();
+  hgid=normalizarHgid(hgid);if(!hgid)return;pvpMatchFormationDraft[role][hgid]=pos==="B"?"B":"F";pvpMatchRenderFormation();
 }
 function pvpMatchConfirmarFormacao(){
   const role=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;const map=pvpMatchFormationDraft[role]||{};
@@ -14070,14 +14120,14 @@ function pvpMatchLocalAction(type,payload){
     if(s.players.host.ready&&s.players.guest.ready){s.phase="draft";s.draft={picks:{host:[],guest:[]},blockIndex:0,blockRemaining:1};pvpMatchLocalRole="host"}
   }else if(type==="pick"&&s.phase==="draft"){
     const current=pvpMatchDraftCurrentRole();role=current;
-    const picks=s.draft.picks[role];const did=Number(payload.did);
-    if(!pvpMatchSlotByDid(s.players[role].team,did)||picks.includes(did))return;
-    picks.push(did);s.draft.blockRemaining--;
+    const picks=s.draft.picks[role];const hgid=normalizarHgid(payload.hgid);
+    if(!pvpMatchSlotByHgid(s.players[role].team,hgid)||picks.includes(hgid))return;
+    picks.push(hgid);s.draft.blockRemaining--;
     if(s.draft.blockRemaining<=0){s.draft.blockIndex++;const b=PVP_MATCH_DRAFT_BLOCKS[s.draft.blockIndex];if(b){s.draft.blockRemaining=b.count;pvpMatchLocalRole=b.role}else{s.phase="ban";pvpMatchLocalRole="host"}}
   }else if(type==="ban"&&s.phase==="ban"){
-    role=pvpMatchLocalRole;const opp=pvpMatchOpponentRole(role);const did=Number(payload.did);
-    if(!s.draft.picks[opp].includes(did)||s.bans[role])return;
-    s.bans[role]=did;
+    role=pvpMatchLocalRole;const opp=pvpMatchOpponentRole(role);const hgid=normalizarHgid(payload.hgid);
+    if(!s.draft.picks[opp].includes(hgid)||s.bans[role])return;
+    s.bans[role]=hgid;
     if(s.bans.host&&s.bans.guest){s.phase="formation";pvpMatchLocalRole="host";pvpMatchFormationDraft={}}
     else pvpMatchLocalRole=pvpMatchOpponentRole(role);
   }else if(type==="formation"&&s.phase==="formation"){
@@ -14095,9 +14145,9 @@ function pvpMatchLocalAction(type,payload){
 }
 
 function pvpBattleCreateUnit(role,slot,position,active){
-  const digi=pvpMatchDigi(slot.did),stats=pvpMatchFinalStats(slot),crit=pvpCalcularCriticosCalibrados(slot.build,digi)||{};
+  const digi=pvpMatchDigi(slot.hgid),stats=pvpMatchFinalStats(slot),crit=pvpCalcularCriticosCalibrados(slot.build,digi)||{};
   return {
-    id:role+":"+slot.did,role:role,did:Number(slot.did),name:digi.name,icon:digi.icon,
+    id:role+":"+normalizarHgid(slot.hgid),role:role,hgid:normalizarHgid(slot.hgid),name:digi.name,icon:digi.icon,
     position:position||"B",active:!!active,alive:true,controlIndex:null,
     hp:stats.HP,maxHp:stats.HP,sp:stats.SP,maxSp:stats.SP,stats:stats,burst:0,
     status:{cc:null,dot:null,defBreak:null},tempBuffs:{},crit:crit
@@ -14144,14 +14194,14 @@ function pvpBattleEnsureState(){
   if(!pvpMatchLocalMode&&pvpMatchRole!=="host")return;
   const battle={round:1,gauge:{host:1,guest:1},subs:{host:3,guest:3},units:{host:[],guest:[]},turnOrder:[],turnIndex:0,turnSerial:0,preparedTurnSerial:-1,pendingReplacement:null,log:[],winner:null};
   ["host","guest"].forEach(function(role){
-    const survivors=pvpMatchSurvivors(role),positions=room.formations[role]||{},survivorSet=new Set(survivors.map(Number));
+    const survivors=pvpMatchSurvivors(role),positions=room.formations[role]||{},survivorSet=new Set(survivors.map(normalizarHgid).filter(Boolean));
     pvpMatchSlotsDoTeam(room.players[role].team).forEach(function(slot){
-      const did=Number(slot.did),active=survivorSet.has(did),pos=active?(positions[did]||"B"):"B";
-      const banned=Number(room.bans[pvpMatchOpponentRole(role)])===did;
+      const hgid=normalizarHgid(slot.hgid),active=survivorSet.has(hgid),pos=active?(positions[hgid]||"B"):"B";
+      const banned=mesmoHgid(room.bans[pvpMatchOpponentRole(role)],hgid);
       if(!banned)battle.units[role].push(pvpBattleCreateUnit(role,slot,pos,active));
     });
-    survivors.forEach(function(did,index){
-      const u=battle.units[role].find(function(x){return Number(x.did)===Number(did)});
+    survivors.forEach(function(hgid,index){
+      const u=battle.units[role].find(function(x){return mesmoHgid(x.hgid,hgid)});
       if(u)u.controlIndex=index;
     });
   });
@@ -14199,7 +14249,7 @@ function pvpBattleActionHintText(){
   if(b.pendingReplacement){const p=pvpMatchPlayer(b.pendingReplacement.role);return "DEPLOY // "+(p?p.nick:"PLAYER")+" ESCOLHE QUEM ENTRA"}
   if(actor.role!==pvpBattleMyRole()){const p=pvpMatchPlayer(actor.role);return "AGUARDANDO // "+(p?p.nick:"OPONENTE")+" SELECIONAR O MOVIMENTO"}
   if(pvpBattlePendingAction){
-    const d=pvpMatchDigi(actor.did),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
+    const d=pvpMatchDigi(actor.hgid),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
     const nums=pvpBattleTargetCandidates(actor).map(function(t,i){return skill&&pvpBattleTargetValid(actor,t,skill)?String(i+1):""}).filter(Boolean);
     return nums.length?"SELECT TARGET // "+nums.join(" · "):"SEM ALVO VÁLIDO";
   }
@@ -14253,7 +14303,7 @@ function pvpBattleSelectTarget(id){
   const battle=pvpMatchRoomState&&pvpMatchRoomState.battle;if(!battle)return;
   const u=pvpBattleUnitById(battle,id),me=pvpBattleMyRole();if(!u||!u.alive||!u.active||u.role===me)return;
   if(pvpBattlePendingAction){
-    const actor=pvpBattleCurrentUnit(),d=actor&&pvpMatchDigi(actor.did),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
+    const actor=pvpBattleCurrentUnit(),d=actor&&pvpMatchDigi(actor.hgid),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
     if(actor&&skill&&pvpBattleTargetValid(actor,u,skill)){pvpBattleResolveSelectedAction(u.id);return}
   }
   pvpBattleSelectedTarget=id;pvpBattleRenderTarget();pvpBattleRenderFields();
@@ -14283,7 +14333,7 @@ function pvpBattleStatusesHtml(u){
 }
 function pvpBattleUnitStatusClasses(u){return pvpBattleStatusItems(u).map(function(st){return "has-"+pvpBattleStatusSlug(st.type)}).join(" ")}
 function pvpBattleUnitTooltip(u){
-  const d=pvpMatchDigi(u.did);if(!d)return "";
+  const d=pvpMatchDigi(u.hgid);if(!d)return "";
   const statuses=pvpBattleStatusItems(u).map(function(st){return '<span>'+pvpEscapeHtml(st.type)+' '+pvpBattleStatusTurns(st)+'</span>'}).join("")||'<span>SEM STATUS</span>';
   return '<div class="pvp-unit-tooltip"><div class="pvp-unit-tooltip-head"><img src="'+u.icon+'" alt=""><div><strong>'+pvpEscapeHtml(u.name)+'</strong><small>'+pvpEscapeHtml(String(d.attribute||"-").toUpperCase())+' · '+u.position+'</small></div></div><div class="pvp-unit-tooltip-meta"><span>STRONG <b>'+pvpEscapeHtml(String(d.strong||"-"))+'</b></span><span>WEAK <b>'+pvpEscapeHtml(String(d.weak||"-"))+'</b></span><span>HP <b>'+Math.round(u.hp).toLocaleString("pt-BR")+'</b></span><span>SP <b>'+Math.round(u.sp).toLocaleString("pt-BR")+'</b></span></div><div class="pvp-unit-tooltip-statuses">'+statuses+'</div></div>';
 }
@@ -14291,7 +14341,7 @@ function pvpBattleUnitHtml(u,current,targeted){
   const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100)),sp=Math.max(0,Math.min(100,u.sp/u.maxSp*100)),num=pvpBattleTargetNumberForUnit(u);
   let validTarget=false;
   if(num&&pvpBattlePendingAction){
-    const actor=pvpBattleCurrentUnit(),d=actor&&pvpMatchDigi(actor.did),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
+    const actor=pvpBattleCurrentUnit(),d=actor&&pvpMatchDigi(actor.hgid),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});
     validTarget=!!(actor&&skill&&pvpBattleTargetValid(actor,u,skill));
   }
   return '<div class="pvp-battle-unit '+(u.position==="F"?'front':'back')+' '+pvpBattleUnitStatusClasses(u)+(current?' current':'')+(targeted?' targeted':'')+'" onclick="pvpBattleSelectTarget(\''+u.id+'\')">'+
@@ -14312,7 +14362,7 @@ function pvpBattleRenderTarget(){
   if(!target||!target.active||!target.alive||target.role!==enemy)target=pvpBattleUnitsByControl(enemy)[0]||null;
   if(target)pvpBattleSelectedTarget=target.id;
   const box=document.getElementById("pvpBattleTarget");if(!box)return;if(!target){box.innerHTML="";return}
-  const pct=Math.max(0,target.hp/target.maxHp*100),d=pvpMatchDigi(target.did)||{};
+  const pct=Math.max(0,target.hp/target.maxHp*100),d=pvpMatchDigi(target.hgid)||{};
   box.innerHTML='<div class="pvp-target-top"><div class="pvp-target-copy"><div class="pvp-target-name-line">'+pvpTypeIconHtml(d.attribute||"UNKNOWN")+'<strong>'+pvpEscapeHtml(target.name)+'</strong></div><small>'+target.position+' · '+pvpEscapeHtml(pvpMatchRoomState.players[target.role].nick)+'</small></div></div>'+
     '<div class="pvp-target-meta pvp-target-meta-assets">'+pvpBattleElementBadge("STRONG",d.strong,d.strongEffect)+pvpBattleElementBadge("WEAK",d.weak,d.weakEffect)+'</div>'+
     '<div class="pvp-target-hpbar"><i style="width:'+pct+'%"></i></div><div class="pvp-target-hp-number">'+Math.max(0,Math.round(target.hp)).toLocaleString("pt-BR")+' / '+Math.round(target.maxHp).toLocaleString("pt-BR")+'</div><div class="pvp-target-debuffs">'+pvpBattleStatusesHtml(target)+'</div>';
@@ -14355,9 +14405,9 @@ function pvpBattleIntentForUnit(u,skills){
   }
   return intent;
 }
-function pvpBattleSelectSkill(did,slotNo,isBurst){
-  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit();if(!b||!actor||b.pendingReplacement||actor.role!==me||Number(actor.did)!==Number(did)||pvpBattleCcBlocksCommands(actor))return;
-  const d=pvpMatchDigi(actor.did),slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,actor.did),skill=(d.skills||[]).find(function(x){return Number(x.slot)===Number(slotNo)});if(!skill)return;
+function pvpBattleSelectSkill(hgid,slotNo,isBurst){
+  const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit();if(!b||!actor||b.pendingReplacement||actor.role!==me||!mesmoHgid(actor.hgid,hgid)||pvpBattleCcBlocksCommands(actor))return;
+  const d=pvpMatchDigi(actor.hgid),slot=pvpMatchSlotByHgid(pvpMatchRoomState.players[me].team,actor.hgid),skill=(d.skills||[]).find(function(x){return Number(x.slot)===Number(slotNo)});if(!skill)return;
   if(isBurst&&actor.burst<5)return;if(actor.sp<(Number(skill.costSp)||0))return;
   pvpBattlePendingAction={unitId:actor.id,slot:Number(slotNo),burst:!!isBurst};pvpBattleSelectedTarget=null;
   if(!pvpBattleSkillNeedsTarget(skill)){pvpBattleResolveSelectedAction(null);return}
@@ -14367,12 +14417,13 @@ function pvpBattleRenderSkills(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit(),box=document.getElementById("pvpBattleSkills");if(!box)return;
   const active=pvpBattleUnitsByControl(me);
   box.innerHTML=active.map(function(u,index){
-    const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,u.did),d=pvpMatchDigi(u.did),build=slot&&slot.build||{},keys=pvpBattleSkillKeys(Number.isFinite(Number(u.controlIndex))?Number(u.controlIndex):index),skills=(d.skills||[]).slice(0,3),burstSkill=skills.find(function(s){return Number(s.slot)===Number(build.burstSkill)})||skills[0];
+    const slot=pvpMatchSlotByHgid(pvpMatchRoomState.players[me].team,u.hgid),d=pvpMatchDigi(u.hgid),build=slot&&slot.build||{},keys=pvpBattleSkillKeys(Number.isFinite(Number(u.controlIndex))?Number(u.controlIndex):index),skills=(d.skills||[]).slice(0,3),burstSkill=skills.find(function(s){return Number(s.slot)===Number(build.burstSkill)})||skills[0];
     const isCurrent=!!actor&&actor.id===u.id&&actor.role===me&&!b.pendingReplacement,blocked=pvpBattleCcBlocksCommands(u),pending=pvpBattlePendingAction&&pvpBattlePendingAction.unitId===u.id?pvpBattlePendingAction:null;
+    const hgid=normalizarHgid(u.hgid);
     const buttons=skills.map(function(skill,i){const cost=Number(skill.costSp)||0,locked=!isCurrent||blocked||u.sp<cost,selected=!!pending&&!pending.burst&&Number(pending.slot)===Number(skill.slot);
-      return '<button type="button" class="pvp-hud-skill '+(selected?'selected ':'')+(locked?'locked':'')+'" '+(locked?'disabled':'')+' onclick="pvpBattleSelectSkill('+u.did+','+skill.slot+',false)"><img src="'+(skill.icon||'')+'" alt=""><span class="pvp-hud-skill-key">'+keys[i]+'</span>'+pvpBattleSkillTooltip(skill,slot,false)+'</button>'}).join("");
+      return '<button type="button" class="pvp-hud-skill '+(selected?'selected ':'')+(locked?'locked':'')+'" '+(locked?'disabled':'')+' onclick="pvpBattleSelectSkill(\''+hgid+'\','+skill.slot+',false)"><img src="'+(skill.icon||'')+'" alt=""><span class="pvp-hud-skill-key">'+keys[i]+'</span>'+pvpBattleSkillTooltip(skill,slot,false)+'</button>'}).join("");
     const burstCost=burstSkill?Number(burstSkill.costSp)||0:0,burstReady=u.burst>=5,burstLocked=!isCurrent||blocked||!burstReady||u.sp<burstCost,burstSelected=!!pending&&pending.burst&&Number(pending.slot)===Number(burstSkill&&burstSkill.slot);
-    const burst='<button type="button" class="pvp-hud-skill burst '+(burstReady?'ready ':'')+(burstSelected?'selected ':'')+(burstLocked?'locked':'')+'" '+(burstLocked?'disabled':'')+' onclick="pvpBattleSelectSkill('+u.did+','+(burstSkill?burstSkill.slot:1)+',true)">'+(burstSkill&&burstSkill.icon?'<img src="'+burstSkill.icon+'" alt="">':'')+'<span class="pvp-hud-skill-key">'+keys[3]+'</span><span class="pvp-burst-charge">'+(burstReady?'READY':u.burst+'/5')+'</span>'+(burstSkill?pvpBattleSkillTooltip(burstSkill,slot,true):'')+'</button>';
+    const burst='<button type="button" class="pvp-hud-skill burst '+(burstReady?'ready ':'')+(burstSelected?'selected ':'')+(burstLocked?'locked':'')+'" '+(burstLocked?'disabled':'')+' onclick="pvpBattleSelectSkill(\''+hgid+'\','+(burstSkill?burstSkill.slot:1)+',true)">'+(burstSkill&&burstSkill.icon?'<img src="'+burstSkill.icon+'" alt="">':'')+'<span class="pvp-hud-skill-key">'+keys[3]+'</span><span class="pvp-burst-charge">'+(burstReady?'READY':u.burst+'/5')+'</span>'+(burstSkill?pvpBattleSkillTooltip(burstSkill,slot,true):'')+'</button>';
     return '<article class="pvp-hud-digi '+(isCurrent?'current ':'')+(!isCurrent?'not-current ':'')+(blocked?'status-locked':'')+'"><div class="pvp-hud-digi-top"><img src="'+u.icon+'" alt=""><div><strong>'+pvpEscapeHtml(u.name)+'</strong><small>HP '+Math.max(0,Math.round(u.hp)).toLocaleString("pt-BR")+' · SP '+Math.max(0,Math.round(u.sp)).toLocaleString("pt-BR")+'</small></div><div class="pvp-hud-mini-status">'+pvpBattleStatusesHtml(u)+'</div></div><div class="pvp-hud-skill-row">'+buttons+burst+'</div></article>';
   }).join("");
 }
@@ -14463,7 +14514,7 @@ function pvpBattleComputeDamage(actor,target,slot,skill,isBurst){
   const rangeMin=Number(actor.crit.damageRangeMin||95),rangeMax=Number(actor.crit.damageRangeMax||105);damage*=pvpBattleRandom(rangeMin,rangeMax)/100;
   const critChance=Math.max(3,Math.min(70,Number(actor.crit.critRate||0)-Number(target.crit.critDown||0))),crit=Math.random()*100<critChance;
   if(crit)damage*=Math.max(1,Number(actor.crit.critDmg||175)/100);
-  const targetSlot=pvpMatchSlotByDid(pvpMatchRoomState.players[target.role].team,target.did),reduce=Number(targetSlot&&targetSlot.build&&targetSlot.build.attrReduce&&targetSlot.build.attrReduce[element]||0);damage*=Math.max(.15,1-reduce/100);
+  const targetSlot=pvpMatchSlotByHgid(pvpMatchRoomState.players[target.role].team,target.hgid),reduce=Number(targetSlot&&targetSlot.build&&targetSlot.build.attrReduce&&targetSlot.build.attrReduce[element]||0);damage*=Math.max(.15,1-reduce/100);
   let ratio=damage/target.maxHp;if(ratio>.45)ratio=.45+(ratio-.45)*.35;ratio=Math.min(.72,ratio);damage=Math.max(1,Math.round(target.maxHp*ratio));
   return {damage:damage,crit:crit,element:element};
 }
@@ -14497,12 +14548,12 @@ function pvpBattleAdvanceTurn(actor,chargeBurst){
   b.turnSerial=(Number(b.turnSerial)||0)+1;b.preparedTurnSerial=-1;pvpBattlePendingAction=null;pvpBattleSelectedTarget=null;
 }
 function pvpBattleAffordableSkills(actor){
-  const d=pvpMatchDigi(actor.did),slot=pvpMatchSlotByDid(pvpMatchRoomState.players[actor.role].team,actor.did),skills=(d&&d.skills||[]).slice(0,3);
+  const d=pvpMatchDigi(actor.hgid),slot=pvpMatchSlotByHgid(pvpMatchRoomState.players[actor.role].team,actor.hgid),skills=(d&&d.skills||[]).slice(0,3);
   return {slot:slot,skills:skills.filter(function(skill){return actor.sp>=(Number(skill.costSp)||0)&&Number.isFinite(Number(skill.baseTotal))})};
 }
 function pvpBattlePickChaosTarget(actor,skill,ally){const b=pvpMatchRoomState.battle,candidates=b.units[ally?actor.role:pvpMatchOpponentRole(actor.role)].filter(function(u){return pvpBattleTargetValidChaos(actor,u,skill,ally)});return candidates.length?candidates[Math.floor(Math.random()*candidates.length)]:null}
 function pvpBattleResolveSkill(actor,skill,isBurst,targetOverride){
-  const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[actor.role].team,actor.did);if(!slot||!skill)return false;
+  const slot=pvpMatchSlotByHgid(pvpMatchRoomState.players[actor.role].team,actor.hgid);if(!slot||!skill)return false;
   if(isBurst&&actor.burst<5)return false;const cost=Number(skill.costSp)||0;if(actor.sp<cost)return false;actor.sp=Math.max(0,actor.sp-cost);
   const self=String(skill.appliesTo||"").toLowerCase()==="self"||!Number.isFinite(Number(skill.baseTotal));
   if(self){pvpBattleApplySelfEffect(actor,skill);pvpBattleLog(actor.name+" uses ["+skill.name+"] on itself.")}
@@ -14532,7 +14583,7 @@ function pvpBattleAutoTick(){return}
 
 function pvpBattleResolveSelectedAction(targetId){
   const b=pvpMatchRoomState&&pvpMatchRoomState.battle,actor=pvpBattleCurrentUnit(),me=pvpBattleMyRole();if(!b||!actor||b.winner||b.pendingReplacement||actor.role!==me||!pvpBattlePendingAction||pvpBattlePendingAction.unitId!==actor.id)return;
-  const d=pvpMatchDigi(actor.did),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});if(!skill)return;
+  const d=pvpMatchDigi(actor.hgid),skill=d&&(d.skills||[]).find(function(s){return Number(s.slot)===Number(pvpBattlePendingAction.slot)});if(!skill)return;
   const target=targetId?pvpBattleUnitById(b,targetId):null;if(pvpBattleSkillNeedsTarget(skill)&&!pvpBattleTargetValid(actor,target,skill))return;
   if(!pvpBattleResolveSkill(actor,skill,!!pvpBattlePendingAction.burst,target))return;
   pvpBattleAdvanceTurn(actor,true);pvpBattleCheckWinner();pvpBattleCommit();
@@ -14599,9 +14650,9 @@ function pvpMatchKeyboard(event){
   const b=pvpMatchRoomState&&pvpMatchRoomState.battle,me=pvpBattleMyRole(),actor=pvpBattleCurrentUnit();if(!b||!actor||b.pendingReplacement)return;
   const key=String(event.key||"").toUpperCase();if(pvpBattlePendingAction&&["1","2","3"].includes(key)){event.preventDefault();pvpBattleSelectTargetNumber(Number(key));return}
   if(actor.role!==me)return;const index=Number.isFinite(Number(actor.controlIndex))?Number(actor.controlIndex):0,keys=pvpBattleSkillKeys(index),idx=keys.indexOf(key);if(idx<0)return;
-  event.preventDefault();const slot=pvpMatchSlotByDid(pvpMatchRoomState.players[me].team,actor.did),d=pvpMatchDigi(actor.did),skills=(d.skills||[]).slice(0,3);
-  if(idx<3&&skills[idx])pvpBattleSelectSkill(actor.did,skills[idx].slot,false);
-  if(idx===3){const burst=skills.find(function(x){return Number(x.slot)===Number(slot.build.burstSkill)})||skills[0];if(burst)pvpBattleSelectSkill(actor.did,burst.slot,true)}
+  event.preventDefault();const slot=pvpMatchSlotByHgid(pvpMatchRoomState.players[me].team,actor.hgid),d=pvpMatchDigi(actor.hgid),skills=(d.skills||[]).slice(0,3);
+  if(idx<3&&skills[idx])pvpBattleSelectSkill(actor.hgid,skills[idx].slot,false);
+  if(idx===3){const burst=skills.find(function(x){return Number(x.slot)===Number(slot.build.burstSkill)})||skills[0];if(burst)pvpBattleSelectSkill(actor.hgid,burst.slot,true)}
 }
 
 document.addEventListener("keydown",pvpMatchKeyboard);
@@ -14659,11 +14710,19 @@ function tierListNormalizarTexto(valor) {
 }
 
 function tierListKeyDigi(digi, indice) {
-  const did = digi && digi.did != null ? String(digi.did).trim() : "";
-  if (did) return "did:" + did;
+  const hgid = normalizarHgid(digi && digi.hgid);
+  if (hgid) return "hgid:" + hgid;
   const nome = tierListNormalizarTexto(digi && (digi.digimon || digi.name));
   const stage = normalizarStageDigidex(digi && digi.stage) || "stage";
   return "name:" + (nome || "digi-" + indice) + ":" + stage;
+}
+
+function tierListNormalizarChavePersistida(valor) {
+  const key = String(valor || "").trim();
+  if (/^hgid:HG-\d{4,}$/i.test(key)) return "hgid:" + normalizarHgid(key.slice(5));
+  const antiga = key.match(/^[a-z]{3}:(\d{1,6})$/i);
+  if (antiga) return "hgid:HG-" + antiga[1].padStart(4, "0");
+  return key;
 }
 
 function tierListLerCustom() {
@@ -14711,7 +14770,7 @@ function tierListLerEstado() {
       id: id,
       name: String(tier && tier.name || "TIER " + (indice + 1)).trim().slice(0, 36) || "TIER " + (indice + 1),
       color: tierListCorValida(tier && tier.color, HG_TIERLIST_COLORS[indice % HG_TIERLIST_COLORS.length]),
-      items: Array.isArray(tier && tier.items) ? tier.items.map(String) : []
+      items: Array.isArray(tier && tier.items) ? tier.items.map(tierListNormalizarChavePersistida) : []
     };
   });
 
@@ -14720,7 +14779,7 @@ function tierListLerEstado() {
     // O título é propositalmente temporário: ao recarregar a página volta para TIER LIST DSR.
     title: padrao.title,
     tiers: tiers,
-    pool: Array.isArray(salvo.pool) ? salvo.pool.map(String) : []
+    pool: Array.isArray(salvo.pool) ? salvo.pool.map(tierListNormalizarChavePersistida) : []
   };
 
   return tierListEstado;
