@@ -151,6 +151,7 @@
               <span id="digiSilhouetteAttemptBadge">0 TENTATIVAS</span>
             </div>
 
+            <div class="digi-silhouette-terminal-workspace">
             <div class="digi-silhouette-device-stage" id="digiSilhouetteDeviceStage">
               <div class="digi-silhouette-terminal-top">
                 <div class="digi-silhouette-screen" id="digiSilhouetteScreen">
@@ -185,47 +186,43 @@
               <img class="digi-silhouette-terminal-frame" src="digi_silhouette_terminal.png" alt="" aria-hidden="true">
 
               <button id="digiSilhouetteStreamerDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-streamer" type="button" aria-label="Alternar modo streamer" aria-pressed="false" title="Modo Streamer"></button>
+              <button id="digiSilhouetteZoomDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-zoom" type="button" aria-label="Abrir Digi Zoom" title="Digi Zoom"></button>
               <button id="digiSilhouetteHintDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-hint" type="button" aria-label="Liberar dica" title="Dica" disabled></button>
               <button id="digiSilhouetteRevealDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-reveal" type="button" aria-label="Revelar Digimon" title="Revelar" disabled></button>
               <button id="digiSilhouetteNextDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-next" type="button" aria-label="Próximo Digimon" title="Próximo"></button>
             </div>
+                  <aside class="digi-silhouette-control digi-silhouette-identification-panel digi-silhouette-sidecar tech-corners">
+                <form id="digiSilhouetteForm" class="digi-silhouette-side-guess" autocomplete="off">
+                  <div class="digi-silhouette-guess-dock-head">
+                    <small>IDENTIFICATION INPUT</small>
+                    <strong>QUAL É O DIGIMON?</strong>
+                  </div>
+                  <label for="digiSilhouetteGuess">SEU CHUTE</label>
+                  <div class="digi-silhouette-input-wrap digi-silhouette-dock-input-wrap">
+                    <div class="digi-silhouette-input-stack">
+                      <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" autocomplete="off" disabled>
+                      <div id="digiSilhouetteSuggestions" class="digi-silhouette-suggestions" hidden></div>
+                    </div>
+                    <button id="digiSilhouetteGuessBtn" type="submit" disabled>CHUTAR</button>
+                  </div>
+                </form>
 
-            <div class="digi-silhouette-device-map" aria-label="Mapa temporário dos controles">
-              <span><b>◉</b> STREAMER</span>
-              <span><b>▲</b> DICA</span>
-              <span><b>▼</b> REVELAR</span>
-              <span><b>●</b> PRÓXIMO</span>
+                <div class="digi-silhouette-control-help">
+                  <small>CONTROLES DO TERMINAL</small>
+                  <p>Use os controles físicos do aparelho para Modo Streamer, Digi Zoom, Dica, Revelar e Próximo.</p>
+                </div>
+
+                <div class="digi-silhouette-note">
+                  <span>PROCESSAMENTO LOCAL</span>
+                  <p>O recorte da silhueta acontece no dispositivo do jogador. A Holy Guardians API não é consultada por este minigame.</p>
+                </div>
+              </aside>
             </div>
 
             <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
           </section>
 
-          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
-            <form id="digiSilhouetteForm" class="digi-silhouette-side-guess" autocomplete="off">
-              <div class="digi-silhouette-guess-dock-head">
-                <small>IDENTIFICATION INPUT</small>
-                <strong>QUAL É O DIGIMON?</strong>
-              </div>
-              <label for="digiSilhouetteGuess">SEU CHUTE</label>
-              <div class="digi-silhouette-input-wrap digi-silhouette-dock-input-wrap">
-                <div class="digi-silhouette-input-stack">
-                  <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" autocomplete="off" disabled>
-                  <div id="digiSilhouetteSuggestions" class="digi-silhouette-suggestions" hidden></div>
-                </div>
-                <button id="digiSilhouetteGuessBtn" type="submit" disabled>CHUTAR</button>
-              </div>
-            </form>
 
-            <div class="digi-silhouette-control-help">
-              <small>CONTROLES DO TERMINAL</small>
-              <p>Use os botões físicos à esquerda do aparelho para Dica, Revelar, Próximo e Modo Streamer.</p>
-            </div>
-
-            <div class="digi-silhouette-note">
-              <span>PROCESSAMENTO LOCAL</span>
-              <p>O recorte da silhueta acontece no dispositivo do jogador. A Holy Guardians API não é consultada por este minigame.</p>
-            </div>
-          </aside>
         </main>
       </div>
     `;
@@ -244,6 +241,9 @@
 
     const streamerDevice = $("#digiSilhouetteStreamerDeviceBtn", root);
     if (streamerDevice) streamerDevice.addEventListener("click", function () { toggleStreamerMode(); });
+
+    const zoomDevice = $("#digiSilhouetteZoomDeviceBtn", root);
+    if (zoomDevice) zoomDevice.addEventListener("click", openDigiZoom);
 
     const guessInput = $("#digiSilhouetteGuess", root);
     if (guessInput) {
@@ -312,6 +312,17 @@
       if (el) el.disabled = !enabled;
     });
     if (!enabled) hideSuggestions();
+  }
+
+  function openDigiZoom() {
+    if (state.streamerMode) toggleStreamerMode(false);
+
+    if (typeof window.abrirDigiZoom === "function") {
+      window.abrirDigiZoom();
+      return;
+    }
+
+    window.location.hash = "digi-zoom";
   }
 
   function toggleStreamerMode(force) {
