@@ -2202,6 +2202,7 @@ function hgTituloPaginaHeader(id) {
     tierListPagina: "TIER LIST DSR",
     tierListDmoPagina: "TIER LIST DMO",
     sorteioPagina: "SORTEIO",
+    digiSilhouettePagina: "DIGI SILHOUETTE",
     digiCreatorsPagina: "DIGI-CREATORS",
     socialPagina: "COMUNIDADE"
   };
@@ -2402,6 +2403,7 @@ function mostrarPagina(
   }
   if (id === "digiGuessPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("guess"); }, 0);
   if (id === "digiZoomPagina" && typeof window.inicializarDigiGame === "function") setTimeout(function () { window.inicializarDigiGame("zoom"); }, 0);
+  if (id === "digiSilhouettePagina" && typeof window.inicializarDigiSilhouette === "function") setTimeout(window.inicializarDigiSilhouette, 0);
   if (id === "digiCreatorsPagina") setTimeout(inicializarDigiCreators, 0);
   if (id === "homePagina") setTimeout(inicializarHomeCreators, 0);
 
@@ -2433,6 +2435,7 @@ function mostrarPagina(
       sorteioPagina: "sorteio",
       digiGuessPagina: "digi-guess",
       digiZoomPagina: "digi-zoom",
+      digiSilhouettePagina: "digi-silhouette",
       digiCreatorsPagina: "digi-creators",
       socialPagina: "comunidade"
     };
@@ -2486,6 +2489,7 @@ function abrirPaginaPelaUrl() {
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
     "digi-guess": { pagina: "digiGuessPagina", botao: "btnFeatures" },
     "digi-zoom": { pagina: "digiZoomPagina", botao: "btnFeatures" },
+    "digi-silhouette": { pagina: "digiSilhouettePagina", botao: "btnFeatures" },
     "digi-creators": { pagina: "digiCreatorsPagina", botao: "btnFeatures" },
     social: { pagina: "socialPagina", botao: "btnSocial" },
     comunidade: { pagina: "socialPagina", botao: "btnSocial" }
@@ -12269,6 +12273,11 @@ function abrirDigiZoom(){
   fecharFeaturesNavMenu();
   mostrarPagina("digiZoomPagina",document.getElementById("btnFeatures"));
   if(typeof window.inicializarDigiGame==="function")window.inicializarDigiGame("zoom");
+}
+function abrirDigiSilhouette(){
+  fecharFeaturesNavMenu();
+  mostrarPagina("digiSilhouettePagina",document.getElementById("btnFeatures"));
+  if(typeof window.inicializarDigiSilhouette==="function")window.inicializarDigiSilhouette();
 }
 function abrirDigiCreators(){
   fecharFeaturesNavMenu();
