@@ -4,7 +4,8 @@
 ===================================================== */
 
 const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.workers.dev";
-const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v2_";
+// Nova versão para não reutilizar o cache antigo que continha os IDs legados.
+const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v3_hgid_";
 
 function tempoCacheApiNavegador(api) {
   const minutos = {
