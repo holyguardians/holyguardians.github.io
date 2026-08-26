@@ -177,10 +177,12 @@
             <form id="digiSilhouetteForm" class="digi-silhouette-form" autocomplete="off">
               <label for="digiSilhouetteGuess">SEU CHUTE</label>
               <div class="digi-silhouette-input-wrap">
-                <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" disabled>
+                <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" autocomplete="off" list="digiSilhouetteSuggestions" disabled>
                 <button id="digiSilhouetteGuessBtn" type="submit" disabled>CHUTAR</button>
               </div>
             </form>
+
+            <datalist id="digiSilhouetteSuggestions"></datalist>
 
             <div class="digi-silhouette-actions">
               <button id="digiSilhouetteHintBtn" type="button" disabled>DICA</button>
@@ -211,6 +213,16 @@
     $("#digiSilhouetteHintBtn", root).addEventListener("click", showHint);
     $("#digiSilhouetteRevealBtn", root).addEventListener("click", function () { reveal(false); });
     $("#digiSilhouetteNextBtn", root).addEventListener("click", function () { newRound(true); });
+
+    const guessInput = $("#digiSilhouetteGuess", root);
+    if (guessInput) {
+      guessInput.addEventListener("input", function () {
+        updateSuggestionList(guessInput.value);
+      });
+      guessInput.addEventListener("focus", function () {
+        updateSuggestionList(guessInput.value);
+      });
+    }
   }
 
   function setStatus(message, tone) {
@@ -251,6 +263,31 @@
     const el = $("#digiSilhouetteAttemptBadge");
     if (!el) return;
     el.textContent = state.attempts + (state.attempts === 1 ? " TENTATIVA" : " TENTATIVAS");
+  }
+
+  function updateSuggestionList(query) {
+    const list = $("#digiSilhouetteSuggestions");
+    if (!list) return;
+
+    const names = Array.isArray(state.catalog) ? state.catalog : [];
+    const normalizedQuery = normalizarResposta(query || "");
+
+    let matches = names;
+    if (normalizedQuery) {
+      const starts = [];
+      const contains = [];
+      names.forEach(function (name) {
+        const normalizedName = normalizarResposta(name);
+        if (!normalizedName) return;
+        if (normalizedName.indexOf(normalizedQuery) === 0) starts.push(name);
+        else if (normalizedName.indexOf(normalizedQuery) !== -1) contains.push(name);
+      });
+      matches = starts.concat(contains);
+    }
+
+    list.innerHTML = matches.slice(0, 40).map(function (name) {
+      return '<option value="' + escaparAttr(name) + '"></option>';
+    }).join("");
   }
 
   function resetHints() {
@@ -364,6 +401,7 @@
     const cached = catalogFromCache(false);
     if (cached) {
       state.catalog = cached;
+      updateSuggestionList("");
       return state.catalog;
     }
 
@@ -375,6 +413,7 @@
       if (stale) {
         state.catalog = stale;
         setStatus("DAPI LENTA // USANDO CATÁLOGO LOCAL EM CACHE.", "loading");
+        updateSuggestionList("");
         return state.catalog;
       }
       throw error;
@@ -400,6 +439,7 @@
 
     state.catalog = names;
     saveCatalogCache(names);
+    updateSuggestionList("");
     return state.catalog;
   }
 
