@@ -11,6 +11,8 @@
   const OPENCV_URL = "https://docs.opencv.org/4.x/opencv.js";
   const CATALOG_CACHE_KEY = "hg_digi_silhouette_catalog_v1";
   const CATALOG_CACHE_MS = 12 * 60 * 60 * 1000;
+  const NETWORK_TIMEOUT_MS = 12000;
+  const MAX_CANDIDATE_ATTEMPTS = 3;
 
   const SEGMENT = Object.freeze({
     BG_BRIGHT_MIN: 238,
@@ -23,8 +25,8 @@
     FRAME_MIN: 4,
     MIN_SEED_AREA: 8,
     MIN_FINAL_AREA: 10,
-    GRABCUT_ITERATIONS: 8,
-    MAX_PROCESS_SIDE: 640
+    GRABCUT_ITERATIONS: 3,
+    MAX_PROCESS_SIDE: 320
   });
 
   const state = {
@@ -249,14 +251,51 @@
     }
   }
 
-  function catalogFromCache() {
+  function catalogFromCache(allowExpired) {
     try {
       const saved = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
-      if (!saved || !Array.isArray(saved.names) || !saved.names.length || Number(saved.expiresAt) <= Date.now()) return null;
+      if (!saved || !Array.isArray(saved.names) || !saved.names.length) return null;
+      if (!allowExpired && Number(saved.expiresAt) <= Date.now()) return null;
       return saved.names;
     } catch (error) {
       return null;
     }
+  }
+
+  function yieldToBrowser() {
+    return new Promise(function (resolve) {
+      requestAnimationFrame(function () {
+        setTimeout(resolve, 0);
+      });
+    });
+  }
+
+  function fetchWithTimeout(url, options, timeoutMs) {
+    const opts = Object.assign({}, options || {});
+    const parentSignal = opts.signal || null;
+    const controller = new AbortController();
+    const limit = Number(timeoutMs) > 0 ? Number(timeoutMs) : NETWORK_TIMEOUT_MS;
+    let timedOut = false;
+
+    const onParentAbort = function () { controller.abort(); };
+    if (parentSignal) {
+      if (parentSignal.aborted) controller.abort();
+      else parentSignal.addEventListener("abort", onParentAbort, { once: true });
+    }
+
+    opts.signal = controller.signal;
+    const timer = setTimeout(function () {
+      timedOut = true;
+      controller.abort();
+    }, limit);
+
+    return fetch(url, opts).catch(function (error) {
+      if (timedOut) throw new Error("A DAPI demorou demais para responder.");
+      throw error;
+    }).finally(function () {
+      clearTimeout(timer);
+      if (parentSignal) parentSignal.removeEventListener("abort", onParentAbort);
+    });
   }
 
   function saveCatalogCache(names) {
@@ -270,16 +309,28 @@
     }
   }
 
-  async function loadCatalog() {
+  async function loadCatalog(signal) {
     if (state.catalog.length) return state.catalog;
 
-    const cached = catalogFromCache();
+    const cached = catalogFromCache(false);
     if (cached) {
       state.catalog = cached;
       return state.catalog;
     }
 
-    const response = await fetch(DAPI_LIST_URL, { mode: "cors", cache: "default" });
+    let response;
+    try {
+      response = await fetchWithTimeout(DAPI_LIST_URL, { mode: "cors", cache: "default", signal: signal }, NETWORK_TIMEOUT_MS);
+    } catch (error) {
+      const stale = catalogFromCache(true);
+      if (stale) {
+        state.catalog = stale;
+        setStatus("DAPI LENTA // USANDO CATÁLOGO LOCAL EM CACHE.", "loading");
+        return state.catalog;
+      }
+      throw error;
+    }
+
     if (!response.ok) throw new Error("DAPI indisponível para carregar o catálogo.");
     const data = await response.json();
 
@@ -313,11 +364,11 @@
   }
 
   async function loadDetailByName(name, signal) {
-    const response = await fetch(DAPI_DETAIL_URL + encodeURIComponent(name), {
+    const response = await fetchWithTimeout(DAPI_DETAIL_URL + encodeURIComponent(name), {
       mode: "cors",
       cache: "default",
       signal: signal
-    });
+    }, NETWORK_TIMEOUT_MS);
     if (!response.ok) throw new Error("Não foi possível carregar " + name + ".");
     return response.json();
   }
@@ -383,7 +434,7 @@
           return;
         }
 
-        if (Date.now() - started > 25000) {
+        if (Date.now() - started > 15000) {
           reject(new Error("Tempo esgotado ao preparar a segmentação local."));
           return;
         }
@@ -706,7 +757,9 @@
       mask = alphaMaskFromCanvas(source);
     } else {
       setStatus("SEGMENTANDO O OBJETO LOCALMENTE...", "loading");
+      await yieldToBrowser();
       mask = await segmentObject(source);
+      await yieldToBrowser();
     }
 
     const quality = evaluateMask(mask, source.width, source.height);
@@ -746,16 +799,16 @@
     setStatus("CONSULTANDO CATÁLOGO PÚBLICO DA DAPI...", "loading");
 
     try {
-      const catalog = await loadCatalog();
+      const catalog = await loadCatalog(signal);
       let lastError = null;
 
-      for (let attempt = 0; attempt < 7; attempt += 1) {
+      for (let attempt = 0; attempt < MAX_CANDIDATE_ATTEMPTS; attempt += 1) {
         if (signal.aborted) throw new DOMException("Aborted", "AbortError");
         const name = chooseName(catalog);
         state.usedNames.add(name);
 
         try {
-          setLoading(true, "GERANDO SILHUETA...", "Teste automático de máscara " + (attempt + 1) + "/7");
+          setLoading(true, "GERANDO SILHUETA...", "Teste automático de máscara " + (attempt + 1) + "/" + MAX_CANDIDATE_ATTEMPTS);
           const candidate = await prepareCandidate(name, signal);
           state.current = candidate;
           paintSilhouette(candidate.mask, candidate.width, candidate.height);
@@ -784,6 +837,7 @@
           if (error && error.name === "AbortError") throw error;
           lastError = error;
           console.warn("[Digi Silhouette] candidato descartado:", name, error);
+          await yieldToBrowser();
         }
       }
 
