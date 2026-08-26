@@ -153,6 +153,7 @@
 
             <div class="digi-silhouette-terminal-workspace">
             <div class="digi-silhouette-device-stage" id="digiSilhouetteDeviceStage">
+              <div id="digiSilhouetteDeviceTooltip" class="digi-silhouette-device-tooltip" hidden></div>
               <div class="digi-silhouette-terminal-top">
                 <div class="digi-silhouette-screen" id="digiSilhouetteScreen">
                   <div class="digi-silhouette-scanlines" aria-hidden="true"></div>
@@ -185,12 +186,19 @@
 
               <img class="digi-silhouette-terminal-frame" src="digi_silhouette_terminal.png" alt="" aria-hidden="true">
 
-              <button id="digiSilhouetteStreamerDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-streamer" type="button" aria-label="Alternar modo streamer" aria-pressed="false" title="Modo Streamer"></button>
-              <button id="digiSilhouetteZoomDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-zoom" type="button" aria-label="Abrir Digi Zoom" title="Digi Zoom"></button>
-              <button id="digiSilhouetteHintDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-hint" type="button" aria-label="Liberar dica" title="Dica" disabled></button>
-              <button id="digiSilhouetteRevealDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-reveal" type="button" aria-label="Revelar Digimon" title="Revelar" disabled></button>
-              <button id="digiSilhouetteNextDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-next" type="button" aria-label="Próximo Digimon" title="Próximo"></button>
+              <button id="digiSilhouetteStreamerDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-streamer" type="button" aria-label="Alternar modo streamer" aria-pressed="false" data-tip="MODO STREAMER"></button>
+              <button id="digiSilhouetteZoomDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-zoom" type="button" aria-label="Abrir Digi Zoom" data-tip="ABRIR DIGI ZOOM"></button>
+              <button id="digiSilhouetteHintDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-hint" type="button" aria-label="Liberar dica" data-tip="LIBERAR DICA" disabled></button>
+              <button id="digiSilhouetteRevealDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-reveal" type="button" aria-label="Revelar Digimon" data-tip="REVELAR DIGIMON" disabled></button>
+              <button id="digiSilhouetteNextDeviceBtn" class="digi-silhouette-device-btn digi-silhouette-device-next" type="button" aria-label="Próximo Digimon" data-tip="PRÓXIMO ALVO"></button>
             </div>
+              <div class="digi-silhouette-device-map" aria-label="Guia dos controles do terminal">
+                <span><b>◒</b> STREAMER</span>
+                <span><b>◓</b> DIGI ZOOM</span>
+                <span><b>▲</b> DICA</span>
+                <span><b>▼</b> REVELAR</span>
+                <span><b>●</b> PRÓXIMO</span>
+              </div>
                   <aside class="digi-silhouette-control digi-silhouette-identification-panel digi-silhouette-sidecar tech-corners">
                 <form id="digiSilhouetteForm" class="digi-silhouette-side-guess" autocomplete="off">
                   <div class="digi-silhouette-guess-dock-head">
@@ -244,6 +252,15 @@
 
     const zoomDevice = $("#digiSilhouetteZoomDeviceBtn", root);
     if (zoomDevice) zoomDevice.addEventListener("click", openDigiZoom);
+
+    root.querySelectorAll(".digi-silhouette-device-btn[data-tip]").forEach(function (button) {
+      const show = function () { showDeviceTooltip(button.dataset.tip || button.getAttribute("aria-label") || ""); };
+      const hide = function () { hideDeviceTooltip(); };
+      button.addEventListener("mouseenter", show);
+      button.addEventListener("mouseleave", hide);
+      button.addEventListener("focus", show);
+      button.addEventListener("blur", hide);
+    });
 
     const guessInput = $("#digiSilhouetteGuess", root);
     if (guessInput) {
@@ -300,6 +317,19 @@
     }
   }
 
+  function showDeviceTooltip(text) {
+    const tooltip = $("#digiSilhouetteDeviceTooltip");
+    if (!tooltip) return;
+    tooltip.textContent = String(text || "");
+    syncHidden(tooltip, false);
+  }
+
+  function hideDeviceTooltip() {
+    const tooltip = $("#digiSilhouetteDeviceTooltip");
+    if (!tooltip) return;
+    syncHidden(tooltip, true);
+  }
+
   function setControls(enabled) {
     const ids = [
       "digiSilhouetteGuess",
@@ -331,11 +361,12 @@
 
     const shell = $("#digiSilhouetteShell");
     if (shell) shell.classList.toggle("is-streamer", next);
+    document.body.classList.toggle("hg-digi-silhouette-stream-body", next);
 
     const button = $("#digiSilhouetteStreamerDeviceBtn");
     if (button) {
       button.setAttribute("aria-pressed", next ? "true" : "false");
-      button.title = next ? "Sair do Modo Streamer" : "Modo Streamer";
+      button.dataset.tip = next ? "SAIR DO MODO STREAMER" : "MODO STREAMER";
     }
 
     setStatus(next ? "MODO STREAMER ATIVADO." : "MODO STREAMER DESATIVADO.", next ? "success" : "normal");

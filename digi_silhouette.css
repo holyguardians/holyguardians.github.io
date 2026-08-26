@@ -1522,3 +1522,170 @@
     margin-top: 8px !important;
   }
 }
+
+/* =====================================================
+   DIGI SILHOUETTE V13 — SOLID PNG + TOOLTIP + STREAM FIX
+   The red physical buttons are now part of the PNG itself.
+   Hitboxes sit underneath the PNG, which is pointer-events:none.
+===================================================== */
+
+/* New PNG already contains solid red physical controls. */
+.digi-silhouette-device-hint::before,
+.digi-silhouette-device-hint::after,
+.digi-silhouette-device-reveal::before,
+.digi-silhouette-device-reveal::after,
+.digi-silhouette-device-next::before,
+.digi-silhouette-device-next::after,
+.digi-silhouette-device-streamer::before,
+.digi-silhouette-device-streamer::after,
+.digi-silhouette-device-zoom::before,
+.digi-silhouette-device-zoom::after {
+  display: none !important;
+}
+
+.digi-silhouette-device-btn {
+  z-index: 16 !important; /* frame is z-index 20; buttons are clickable through pointer-events:none */
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.digi-silhouette-terminal-frame {
+  z-index: 20 !important;
+  pointer-events: none !important;
+}
+
+/* Keep the hitboxes aligned with the physical artwork. */
+.digi-silhouette-device-streamer {
+  left: 18.45% !important;
+  top: 52.75% !important;
+  width: 11.65% !important;
+  height: 6.55% !important;
+}
+.digi-silhouette-device-zoom {
+  left: 18.45% !important;
+  top: 59.25% !important;
+  width: 11.65% !important;
+  height: 6.35% !important;
+}
+.digi-silhouette-device-hint {
+  left: 17.55% !important;
+  top: 69.35% !important;
+  width: 7.65% !important;
+  height: 10.20% !important;
+}
+.digi-silhouette-device-reveal {
+  left: 19.65% !important;
+  top: 76.55% !important;
+  width: 8.05% !important;
+  height: 10.35% !important;
+}
+.digi-silhouette-device-next {
+  left: 25.95% !important;
+  top: 68.60% !important;
+  width: 5.15% !important;
+  height: 6.65% !important;
+}
+
+/* Tooltip lives above the device, not over the art. */
+.digi-silhouette-device-tooltip {
+  position: absolute;
+  z-index: 60;
+  left: 50%;
+  top: -8px;
+  transform: translate(-50%, -100%);
+  min-width: 150px;
+  max-width: 260px;
+  padding: 8px 12px;
+  border: 1px solid rgba(78, 222, 255, .55);
+  border-radius: 8px;
+  color: #eafcff;
+  background: rgba(2, 15, 35, .97);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 16px rgba(42, 196, 255, .17);
+  font: 900 9px "Oxanium", Arial, sans-serif;
+  letter-spacing: .09em;
+  text-align: center;
+  pointer-events: none;
+}
+.digi-silhouette-device-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(78, 222, 255, .55);
+}
+
+/* Guide returns below the PNG. */
+.digi-silhouette-device-map {
+  display: flex !important;
+  grid-column: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 13px;
+  margin: -2px 0 8px !important;
+  color: #789db6;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+.digi-silhouette-device-map b { color: #62dfff; }
+
+/* Search module: pull it right up beside the upper display. */
+.digi-silhouette-terminal-workspace {
+  grid-template-columns: minmax(680px, 900px) minmax(270px, 310px) !important;
+  gap: 0 !important;
+  overflow: visible;
+}
+.digi-silhouette-sidecar {
+  position: relative;
+  z-index: 45;
+  padding-top: 90px !important;
+  transform: translateX(-138px);
+}
+.digi-silhouette-side-guess {
+  width: 100%;
+}
+
+/* Streamer mode: keep the guess box; hide the global site chrome and Impmon. */
+body.hg-digi-silhouette-stream-body .topbar,
+body.hg-digi-silhouette-stream-body .hg-impmon-live {
+  display: none !important;
+}
+
+.digi-silhouette-shell.is-streamer .digi-silhouette-terminal-workspace {
+  grid-template-columns: minmax(680px, 900px) minmax(270px, 310px) !important;
+  justify-content: center !important;
+}
+.digi-silhouette-shell.is-streamer .digi-silhouette-sidecar {
+  display: block !important;
+  padding-top: 90px !important;
+  transform: translateX(-138px);
+}
+.digi-silhouette-shell.is-streamer .digi-silhouette-device-stage {
+  width: 100% !important;
+  margin: 4px 0 10px !important;
+}
+.digi-silhouette-shell.is-streamer .digi-silhouette-device-map {
+  display: flex !important;
+}
+
+@media (max-width: 1180px) {
+  .digi-silhouette-terminal-workspace,
+  .digi-silhouette-shell.is-streamer .digi-silhouette-terminal-workspace {
+    grid-template-columns: minmax(0, 820px) !important;
+  }
+  .digi-silhouette-sidecar,
+  .digi-silhouette-shell.is-streamer .digi-silhouette-sidecar {
+    width: min(100%, 560px);
+    padding-top: 0 !important;
+    margin: 0 auto !important;
+    transform: none !important;
+  }
+  .digi-silhouette-device-map {
+    grid-column: 1;
+  }
+}
