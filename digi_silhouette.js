@@ -235,6 +235,13 @@
       </div>
     `;
 
+    const localTooltip = root.querySelector("#digiSilhouetteDeviceTooltip");
+    if (localTooltip) {
+      const staleTooltip = document.body.querySelector("#digiSilhouetteDeviceTooltip");
+      if (staleTooltip && staleTooltip !== localTooltip) staleTooltip.remove();
+      document.body.appendChild(localTooltip);
+    }
+
     const form = $("#digiSilhouetteForm", root);
     if (form) form.addEventListener("submit", onGuess);
 
@@ -323,25 +330,44 @@
     const tooltip = $("#digiSilhouetteDeviceTooltip");
     if (!tooltip || tooltip.hidden) return;
 
-    let x = window.innerWidth * 0.5;
-    let y = 24;
+    let x;
+    let y;
 
     if (event && typeof event.clientX === "number" && typeof event.clientY === "number") {
       x = event.clientX;
-      y = event.clientY - 16;
+      y = event.clientY;
     } else if (button && button.getBoundingClientRect) {
       const btnRect = button.getBoundingClientRect();
       x = btnRect.left + btnRect.width * 0.5;
-      y = btnRect.top - 12;
+      y = btnRect.top + btnRect.height * 0.5;
+    } else {
+      return;
     }
 
-    const pad = 12;
-    x = Math.max(pad, Math.min(window.innerWidth - pad, x));
-    y = Math.max(8, y);
-
+    // First position directly above the real viewport cursor.
+    tooltip.style.position = "fixed";
     tooltip.style.left = x + "px";
-    tooltip.style.top = y + "px";
+    tooltip.style.top = (y - 14) + "px";
     tooltip.style.transform = "translate(-50%, -100%)";
+
+    // Clamp only after the element is visible, so its real dimensions are known.
+    const rect = tooltip.getBoundingClientRect();
+    const pad = 8;
+    const half = rect.width * 0.5;
+    const clampedX = Math.max(half + pad, Math.min(window.innerWidth - half - pad, x));
+
+    tooltip.style.left = clampedX + "px";
+
+    // If there is no room above the cursor, put the tooltip just below it.
+    if (y - 14 - rect.height < pad) {
+      tooltip.style.top = (y + 16) + "px";
+      tooltip.style.transform = "translate(-50%, 0)";
+      tooltip.dataset.side = "below";
+    } else {
+      tooltip.style.top = (y - 14) + "px";
+      tooltip.style.transform = "translate(-50%, -100%)";
+      tooltip.dataset.side = "above";
+    }
   }
 
   function showDeviceTooltip(text, event, button) {

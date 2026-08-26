@@ -1843,3 +1843,22 @@ body.hg-digi-silhouette-stream-body .live-monitor-shell {
   pointer-events: none !important;
   transform: translate(-50%, -100%);
 }
+
+
+/* =====================================================
+   DIGI SILHOUETTE V16 — TOOLTIP BODY PORTAL
+   Tooltip is a direct child of body, so fixed coordinates are true viewport coordinates.
+===================================================== */
+body > #digiSilhouetteDeviceTooltip {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+body > #digiSilhouetteDeviceTooltip[data-side="below"]::after {
+  top: auto !important;
+  bottom: 100% !important;
+  border-top-color: transparent !important;
+  border-bottom-color: rgba(78, 222, 255, .55) !important;
+}
