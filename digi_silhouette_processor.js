@@ -1,90 +1,51 @@
 /* =====================================================
-   HOLY GUARDIANS — DIGI SILHOUETTE PROCESSOR
-   Browser Web Worker only. Runs OpenCV segmentation off the UI thread.
+   HOLY GUARDIANS — DIGI SILHOUETTE PROCESSOR V6
+   Browser MODULE Web Worker only. Runs OpenCV segmentation off the UI thread.
+   Uses the dedicated @opencvjs/worker loader instead of the docs build,
+   which avoids the initialization deadlock seen with importScripts().
    No Cloudflare Worker / no Holy Guardians API / no legacy identifiers.
 ===================================================== */
 "use strict";
 
-const OPENCV_URL = "https://docs.opencv.org/4.x/opencv.js";
+import { loadOpenCV } from "https://esm.sh/@opencvjs/worker@5.0.0-release.2?bundle";
+
 let cvReadyPromise = null;
 
 function ensureOpenCv() {
   if (cvReadyPromise) return cvReadyPromise;
 
-  cvReadyPromise = new Promise(function (resolve, reject) {
-    let settled = false;
-    const started = Date.now();
-
-    function finish(value) {
-      if (settled) return;
-      if (value && value.Mat) {
-        settled = true;
-        resolve(value);
+  cvReadyPromise = Promise.resolve()
+    .then(function () {
+      self.postMessage({ type: "init-progress", stage: "loading" });
+      return loadOpenCV();
+    })
+    .then(function (cv) {
+      if (!cv || typeof cv.Mat !== "function") {
+        throw new Error("OpenCV Worker iniciou sem cv.Mat.");
       }
-    }
 
-    function fail(error) {
-      if (settled) return;
-      settled = true;
-      reject(error instanceof Error ? error : new Error(String(error || "OpenCV indisponível.")));
-    }
-
-    try {
-      importScripts(OPENCV_URL);
-    } catch (error) {
-      fail(new Error("Não foi possível carregar o módulo local de segmentação."));
-      return;
-    }
-
-    try {
-      // OpenCV.js can expose `cv` either as the ready module, a real Promise,
-      // or a Promise-like thenable whose .then() does NOT return a Promise.
-      // Therefore never chain `.catch()` from cv.then(). Use the rejection
-      // callback passed directly to `.then(success, failure)` instead.
-      if (self.cv && self.cv.Mat) {
-        finish(self.cv);
-      } else if (self.cv && typeof self.cv.then === "function") {
-        self.cv.then(function (resolved) {
-          if (resolved && resolved.Mat) {
-            self.cv = resolved;
-            finish(resolved);
-          }
-          // Some OpenCV thenables resolve without returning the module.
-          // The poll below will finish as soon as self.cv.Mat becomes ready.
-        }, fail);
-      } else {
-        finish(self.cv);
+      // Real runtime smoke test. A false-positive ready signal is worse than
+      // spending a few microseconds validating a Mat constructor.
+      let probe = null;
+      try {
+        probe = new cv.Mat(1, 1, cv.CV_8UC1);
+      } finally {
+        if (probe && typeof probe.delete === "function") probe.delete();
       }
-    } catch (error) {
-      fail(error);
-      return;
-    }
 
-    (function poll() {
-      if (settled) return;
-      if (self.cv && self.cv.Mat) {
-        finish(self.cv);
-        return;
-      }
-      if (Date.now() - started > 40000) {
-        fail(new Error("Tempo esgotado ao iniciar o processador de máscara (40 s)."));
-        return;
-      }
-      setTimeout(poll, 50);
-    })();
-  });
+      self.postMessage({ type: "init-progress", stage: "runtime-ready" });
+      return cv;
+    });
 
   return cvReadyPromise;
 }
 
-// Preload OpenCV as soon as the worker is created. This one-time warm-up is
-// intentionally separate from the per-mask timeout in the main thread.
 ensureOpenCv().then(function () {
   self.postMessage({ type: "ready" });
-}).catch(function (error) {
+}, function (error) {
   self.postMessage({
     type: "init-error",
-    message: error && error.message ? error.message : String(error || "Falha ao iniciar OpenCV.")
+    message: error && error.message ? error.message : String(error || "Falha ao iniciar OpenCV Worker.")
   });
 });
 

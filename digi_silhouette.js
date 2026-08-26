@@ -14,7 +14,7 @@
   const MAX_CANDIDATE_ATTEMPTS = 2;
   const PROCESSOR_INIT_TIMEOUT_MS = 45000;
   const SEGMENT_TIMEOUT_MS = 12000;
-  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v5";
+  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v6";
 
   const SEGMENT = Object.freeze({
     BG_BRIGHT_MIN: 238,
@@ -467,7 +467,7 @@
     // from becoming an unhandled promise while keeping the original promise reusable.
     state.processorReadyPromise.catch(function () {});
 
-    const worker = new Worker(PROCESSOR_URL);
+    const worker = new Worker(PROCESSOR_URL, { type: "module", name: "hg-digi-silhouette" });
     state.processorWorker = worker;
 
     state.processorInitTimer = setTimeout(function () {
