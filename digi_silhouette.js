@@ -1,6 +1,6 @@
 /* =====================================================
    HOLY GUARDIANS — DIGI SILHOUETTE
-   Client-side only. DAPI direct + lazy OpenCV.js segmentation.
+   Client-side only. DAPI direct + OpenCV.js segmentation in a browser Web Worker.
    Does not use the Holy Guardians Worker/API or legacy identifiers.
 ===================================================== */
 (function () {
@@ -8,11 +8,12 @@
 
   const DAPI_LIST_URL = "https://digi-api.com/api/v1/digimon?pageSize=2000";
   const DAPI_DETAIL_URL = "https://digi-api.com/api/v1/digimon/";
-  const OPENCV_URL = "https://docs.opencv.org/4.x/opencv.js";
   const CATALOG_CACHE_KEY = "hg_digi_silhouette_catalog_v1";
   const CATALOG_CACHE_MS = 12 * 60 * 60 * 1000;
   const NETWORK_TIMEOUT_MS = 12000;
-  const MAX_CANDIDATE_ATTEMPTS = 3;
+  const MAX_CANDIDATE_ATTEMPTS = 2;
+  const SEGMENT_TIMEOUT_MS = 10000;
+  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v3";
 
   const SEGMENT = Object.freeze({
     BG_BRIGHT_MIN: 238,
@@ -25,7 +26,7 @@
     FRAME_MIN: 4,
     MIN_SEED_AREA: 8,
     MIN_FINAL_AREA: 10,
-    GRABCUT_ITERATIONS: 3,
+    GRABCUT_ITERATIONS: 2,
     MAX_PROCESS_SIDE: 320
   });
 
@@ -38,8 +39,11 @@
     attempts: 0,
     revealed: false,
     usedNames: new Set(),
-    cvPromise: null,
-    abortController: null
+    abortController: null,
+    processorWorker: null,
+    processorPending: new Map(),
+    processorJobSeq: 0,
+    roundSeq: 0
   };
 
   const $ = function (selector, root) {
@@ -161,7 +165,7 @@
     $("#digiSilhouetteForm", root).addEventListener("submit", onGuess);
     $("#digiSilhouetteHintBtn", root).addEventListener("click", showHint);
     $("#digiSilhouetteRevealBtn", root).addEventListener("click", function () { reveal(false); });
-    $("#digiSilhouetteNextBtn", root).addEventListener("click", newRound);
+    $("#digiSilhouetteNextBtn", root).addEventListener("click", function () { newRound(true); });
   }
 
   function setStatus(message, tone) {
@@ -411,56 +415,52 @@
     });
   }
 
-  function waitForOpenCv() {
-    if (state.cvPromise) return state.cvPromise;
-
-    state.cvPromise = new Promise(function (resolve, reject) {
-      const started = Date.now();
-
-      function finishWhenReady() {
-        let cvValue = window.cv;
-
-        if (cvValue && typeof cvValue.then === "function") {
-          cvValue.then(function (resolved) {
-            window.cv = resolved;
-            if (resolved && resolved.Mat) resolve(resolved);
-            else reject(new Error("OpenCV carregou sem o módulo esperado."));
-          }).catch(reject);
-          return;
-        }
-
-        if (cvValue && cvValue.Mat) {
-          resolve(cvValue);
-          return;
-        }
-
-        if (Date.now() - started > 15000) {
-          reject(new Error("Tempo esgotado ao preparar a segmentação local."));
-          return;
-        }
-
-        setTimeout(finishWhenReady, 60);
-      }
-
-      if (window.cv) {
-        finishWhenReady();
-        return;
-      }
-
-      let script = document.querySelector('script[data-hg-opencv="1"]');
-      if (!script) {
-        script = document.createElement("script");
-        script.src = OPENCV_URL;
-        script.async = true;
-        script.dataset.hgOpencv = "1";
-        script.onerror = function () { reject(new Error("Não foi possível carregar o módulo de segmentação.")); };
-        document.head.appendChild(script);
-      }
-
-      finishWhenReady();
+  function rejectProcessorPending(error) {
+    state.processorPending.forEach(function (job) {
+      clearTimeout(job.timer);
+      if (job.signal && job.onAbort) job.signal.removeEventListener("abort", job.onAbort);
+      job.reject(error);
     });
+    state.processorPending.clear();
+  }
 
-    return state.cvPromise;
+  function terminateProcessorWorker(error) {
+    if (state.processorWorker) {
+      try { state.processorWorker.terminate(); } catch (ignore) {}
+      state.processorWorker = null;
+    }
+    if (state.processorPending.size) {
+      rejectProcessorPending(error || new Error("Processamento cancelado."));
+    }
+  }
+
+  function ensureProcessorWorker() {
+    if (state.processorWorker) return state.processorWorker;
+
+    const worker = new Worker(PROCESSOR_URL);
+    worker.onmessage = function (event) {
+      const data = event && event.data || {};
+      const job = state.processorPending.get(data.id);
+      if (!job) return;
+
+      state.processorPending.delete(data.id);
+      clearTimeout(job.timer);
+      if (job.signal && job.onAbort) job.signal.removeEventListener("abort", job.onAbort);
+
+      if (data.type === "result" && data.maskBuffer) {
+        job.resolve(new Uint8Array(data.maskBuffer));
+      } else {
+        job.reject(new Error(data.message || "Falha no processador de máscara."));
+      }
+    };
+
+    worker.onerror = function () {
+      const error = new Error("O processador local de máscara falhou.");
+      terminateProcessorWorker(error);
+    };
+
+    state.processorWorker = worker;
+    return worker;
   }
 
   function sourceCanvasForImage(image) {
@@ -575,120 +575,79 @@
     return mask;
   }
 
-  async function segmentObject(canvas) {
-    const cv = await waitForOpenCv();
+  function segmentObject(canvas, signal) {
     const width = canvas.width;
     const height = canvas.height;
-    const total = width * height;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const rgba = ctx.getImageData(0, 0, width, height).data;
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const worker = ensureProcessorWorker();
+    const id = ++state.processorJobSeq;
 
-    const whiteish = new Uint8Array(total);
-    const strong = new Uint8Array(total);
-    const mins = new Uint8Array(total);
-    const chromas = new Uint8Array(total);
+    return new Promise(function (resolve, reject) {
+      let settled = false;
 
-    for (let p = 0, i = 0; p < total; p += 1, i += 4) {
-      const r = rgba[i];
-      const g = rgba[i + 1];
-      const b = rgba[i + 2];
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      const chroma = max - min;
-      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-      const sat = saturation255(r, g, b);
+      function finishResolve(mask) {
+        if (settled) return;
+        settled = true;
+        resolve(mask);
+      }
 
-      mins[p] = min;
-      chromas[p] = chroma;
-      if (min >= SEGMENT.BG_BRIGHT_MIN && chroma <= SEGMENT.BG_CHROMA_MAX) whiteish[p] = 1;
-      if (sat > SEGMENT.FG_SAT_MIN || gray < SEGMENT.FG_DARK_MAX) strong[p] = 1;
-    }
+      function finishReject(error) {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      }
 
-    const sureBackground = borderConnected(whiteish, width, height);
-    const frame = Math.max(SEGMENT.FRAME_MIN, Math.round(Math.min(width, height) * SEGMENT.FRAME_RATIO));
-    const safeFrame = frame * 2;
+      const onAbort = function () {
+        const job = state.processorPending.get(id);
+        if (!job) return;
+        state.processorPending.delete(id);
+        clearTimeout(job.timer);
+        terminateProcessorWorker(new DOMException("Aborted", "AbortError"));
+        finishReject(new DOMException("Aborted", "AbortError"));
+      };
 
-    for (let y = 0; y < height; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        if (x < safeFrame || y < safeFrame || x >= width - safeFrame || y >= height - safeFrame) {
-          strong[y * width + x] = 0;
+      if (signal) {
+        if (signal.aborted) {
+          finishReject(new DOMException("Aborted", "AbortError"));
+          return;
         }
-      }
-    }
-
-    const strongFiltered = filterSmallComponents(strong, width, height, SEGMENT.MIN_SEED_AREA).binary;
-    const seed = new Uint8Array(total);
-    seed.fill(cv.GC_PR_FGD);
-
-    for (let p = 0; p < total; p += 1) {
-      if (sureBackground[p]) seed[p] = cv.GC_BGD;
-      else if (mins[p] >= SEGMENT.PROB_BG_BRIGHT_MIN && chromas[p] <= SEGMENT.PROB_BG_CHROMA_MAX) seed[p] = cv.GC_PR_BGD;
-    }
-
-    for (let y = 0; y < height; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        if (x < frame || y < frame || x >= width - frame || y >= height - frame) seed[y * width + x] = cv.GC_BGD;
-      }
-    }
-
-    for (let p = 0; p < total; p += 1) {
-      if (strongFiltered[p]) seed[p] = cv.GC_FGD;
-    }
-
-    let src = null;
-    let rgb = null;
-    let maskMat = null;
-    let bgdModel = null;
-    let fgdModel = null;
-    let cleanMat = null;
-    let closedMat = null;
-    let smoothMat = null;
-    let kernel = null;
-
-    try {
-      src = cv.imread(canvas);
-      rgb = new cv.Mat();
-      cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB);
-
-      maskMat = new cv.Mat(height, width, cv.CV_8UC1);
-      maskMat.data.set(seed);
-      bgdModel = new cv.Mat();
-      fgdModel = new cv.Mat();
-
-      cv.grabCut(
-        rgb,
-        maskMat,
-        new cv.Rect(0, 0, width, height),
-        bgdModel,
-        fgdModel,
-        SEGMENT.GRABCUT_ITERATIONS,
-        cv.GC_INIT_WITH_MASK
-      );
-
-      const rawForeground = new Uint8Array(total);
-      for (let p = 0; p < total; p += 1) {
-        const value = maskMat.data[p];
-        if (value === cv.GC_FGD || value === cv.GC_PR_FGD) rawForeground[p] = 1;
+        signal.addEventListener("abort", onAbort, { once: true });
       }
 
-      const filtered = filterSmallComponents(rawForeground, width, height, SEGMENT.MIN_FINAL_AREA).binary;
-      cleanMat = new cv.Mat(height, width, cv.CV_8UC1);
-      for (let p = 0; p < total; p += 1) cleanMat.data[p] = filtered[p] ? 255 : 0;
+      const timer = setTimeout(function () {
+        if (!state.processorPending.has(id)) return;
+        state.processorPending.delete(id);
+        if (signal) signal.removeEventListener("abort", onAbort);
+        const error = new Error("A máscara demorou demais e foi cancelada automaticamente.");
+        terminateProcessorWorker(error);
+        finishReject(error);
+      }, SEGMENT_TIMEOUT_MS);
 
-      kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(3, 3));
-      closedMat = new cv.Mat();
-      smoothMat = new cv.Mat();
-      cv.morphologyEx(cleanMat, closedMat, cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 1);
-      cv.medianBlur(closedMat, smoothMat, 3);
-
-      const finalMask = new Uint8Array(total);
-      for (let p = 0; p < total; p += 1) finalMask[p] = smoothMat.data[p] > 127 ? 1 : 0;
-      return finalMask;
-    } finally {
-      [src, rgb, maskMat, bgdModel, fgdModel, cleanMat, closedMat, smoothMat, kernel].forEach(function (mat) {
-        if (mat && typeof mat.delete === "function") mat.delete();
+      state.processorPending.set(id, {
+        resolve: finishResolve,
+        reject: finishReject,
+        timer: timer,
+        signal: signal,
+        onAbort: onAbort
       });
-    }
+
+      try {
+        worker.postMessage({
+          type: "segment",
+          id: id,
+          width: width,
+          height: height,
+          config: SEGMENT,
+          rgbaBuffer: imageData.data.buffer
+        }, [imageData.data.buffer]);
+      } catch (error) {
+        state.processorPending.delete(id);
+        clearTimeout(timer);
+        if (signal) signal.removeEventListener("abort", onAbort);
+        finishReject(error);
+      }
+    });
   }
 
   function evaluateMask(mask, width, height) {
@@ -756,9 +715,9 @@
     if (imageInfo.transparent) {
       mask = alphaMaskFromCanvas(source);
     } else {
-      setStatus("SEGMENTANDO O OBJETO LOCALMENTE...", "loading");
+      setStatus("SEGMENTANDO EM THREAD SEPARADA // SITE CONTINUA RESPONSIVO...", "loading");
       await yieldToBrowser();
-      mask = await segmentObject(source);
+      mask = await segmentObject(source, signal);
       await yieldToBrowser();
     }
 
@@ -776,8 +735,12 @@
     };
   }
 
-  async function newRound() {
-    if (state.loadingRound) return;
+  async function newRound(force) {
+    if (state.loadingRound && !force) return;
+
+    if (state.abortController) state.abortController.abort();
+
+    const roundId = ++state.roundSeq;
     state.loadingRound = true;
     state.revealed = false;
     state.current = null;
@@ -791,7 +754,6 @@
     const roundLabel = $("#digiSilhouetteRoundLabel");
     if (roundLabel) roundLabel.textContent = "ANALISANDO SINAL...";
 
-    if (state.abortController) state.abortController.abort();
     state.abortController = new AbortController();
     const signal = state.abortController.signal;
 
@@ -800,6 +762,7 @@
 
     try {
       const catalog = await loadCatalog(signal);
+      if (roundId !== state.roundSeq) return;
       let lastError = null;
 
       for (let attempt = 0; attempt < MAX_CANDIDATE_ATTEMPTS; attempt += 1) {
@@ -810,6 +773,7 @@
         try {
           setLoading(true, "GERANDO SILHUETA...", "Teste automático de máscara " + (attempt + 1) + "/" + MAX_CANDIDATE_ATTEMPTS);
           const candidate = await prepareCandidate(name, signal);
+          if (roundId !== state.roundSeq) return;
           state.current = candidate;
           paintSilhouette(candidate.mask, candidate.width, candidate.height);
 
@@ -848,7 +812,7 @@
       setLoading(true, "NÃO FOI POSSÍVEL GERAR A SILHUETA", "Clique em PRÓXIMO para tentar novamente");
       setStatus(error && error.message ? error.message.toUpperCase() : "ERRO AO PREPARAR O JOGO.", "error");
     } finally {
-      state.loadingRound = false;
+      if (roundId === state.roundSeq) state.loadingRound = false;
     }
   }
 
