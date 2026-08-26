@@ -50,7 +50,11 @@
     processorInitTimer: null,
     processorPending: new Map(),
     processorJobSeq: 0,
-    roundSeq: 0
+    roundSeq: 0,
+    suggestionItems: [],
+    suggestionIndex: -1,
+    suggestionThumbs: Object.create(null),
+    suggestionThumbPending: new Set()
   };
 
   const $ = function (selector, root) {
@@ -193,25 +197,25 @@
               <span><b>●</b> PRÓXIMO</span>
             </div>
 
-            <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
-          </section>
-
-          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
-            <div class="digi-silhouette-control-head">
-              <small>IDENTIFICATION INPUT</small>
-              <strong>QUAL É O DIGIMON?</strong>
-            </div>
-
-            <form id="digiSilhouetteForm" class="digi-silhouette-form" autocomplete="off">
+            <form id="digiSilhouetteForm" class="digi-silhouette-guess-dock tech-corners" autocomplete="off">
+              <div class="digi-silhouette-guess-dock-head">
+                <small>IDENTIFICATION INPUT</small>
+                <strong>QUAL É O DIGIMON?</strong>
+              </div>
               <label for="digiSilhouetteGuess">SEU CHUTE</label>
-              <div class="digi-silhouette-input-wrap">
-                <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" autocomplete="off" list="digiSilhouetteSuggestions" disabled>
+              <div class="digi-silhouette-input-wrap digi-silhouette-dock-input-wrap">
+                <div class="digi-silhouette-input-stack">
+                  <input id="digiSilhouetteGuess" type="text" maxlength="90" placeholder="Digite o nome..." spellcheck="false" autocomplete="off" disabled>
+                  <div id="digiSilhouetteSuggestions" class="digi-silhouette-suggestions" hidden></div>
+                </div>
                 <button id="digiSilhouetteGuessBtn" type="submit" disabled>CHUTAR</button>
               </div>
             </form>
 
-            <datalist id="digiSilhouetteSuggestions"></datalist>
+            <div class="digi-silhouette-status" id="digiSilhouetteStatus" aria-live="polite">INICIALIZANDO TERMINAL...</div>
+          </section>
 
+          <aside class="digi-silhouette-control digi-silhouette-identification-panel tech-corners">
             <div class="digi-silhouette-control-help">
               <small>CONTROLES DO TERMINAL</small>
               <p>Use os botões físicos à esquerda do aparelho para Dica, Revelar, Próximo e Modo Streamer.</p>
@@ -247,8 +251,26 @@
         updateSuggestionList(guessInput.value);
       });
       guessInput.addEventListener("focus", function () {
-        updateSuggestionList(guessInput.value);
+        if (guessInput.value && guessInput.value.trim()) updateSuggestionList(guessInput.value);
       });
+      guessInput.addEventListener("keydown", onSuggestionKeydown);
+    }
+
+    const suggestionBox = $("#digiSilhouetteSuggestions", root);
+    if (suggestionBox) {
+      suggestionBox.addEventListener("mousedown", function (event) {
+        const item = event.target.closest(".digi-silhouette-suggestion");
+        if (!item) return;
+        event.preventDefault();
+        applySuggestion(item.dataset.name || "");
+      });
+    }
+
+    if (!root.dataset.suggestionOutsideBound) {
+      document.addEventListener("click", function (event) {
+        if (!root.contains(event.target)) hideSuggestions();
+      });
+      root.dataset.suggestionOutsideBound = "1";
     }
   }
 
@@ -289,6 +311,7 @@
       const el = document.getElementById(name);
       if (el) el.disabled = !enabled;
     });
+    if (!enabled) hideSuggestions();
   }
 
   function toggleStreamerMode(force) {
@@ -313,33 +336,138 @@
     el.textContent = state.attempts + (state.attempts === 1 ? " TENTATIVA" : " TENTATIVAS");
   }
 
-  function updateSuggestionList(query) {
+  function hideSuggestions() {
     const list = $("#digiSilhouetteSuggestions");
     if (!list) return;
+    state.suggestionItems = [];
+    state.suggestionIndex = -1;
+    syncHidden(list, true);
+    list.innerHTML = "";
+  }
 
+  function getSuggestionThumb(name) {
+    return state.suggestionThumbs[name] || "";
+  }
+
+  function requestSuggestionThumb(name, currentQuery) {
+    if (!name || state.suggestionThumbs[name] || state.suggestionThumbPending.has(name)) return;
+    state.suggestionThumbPending.add(name);
+
+    fetchWithTimeout(DAPI_DETAIL_URL + encodeURIComponent(name), {
+      mode: "cors",
+      cache: "force-cache"
+    }, 7000)
+      .then(function (response) {
+        if (!response.ok) throw new Error("thumb");
+        return response.json();
+      })
+      .then(function (detail) {
+        const image = pickImage(detail);
+        state.suggestionThumbs[name] = image && image.href ? image.href : "";
+      })
+      .catch(function () {
+        state.suggestionThumbs[name] = "";
+      })
+      .finally(function () {
+        state.suggestionThumbPending.delete(name);
+        const input = $("#digiSilhouetteGuess");
+        if (!input) return;
+        if (normalizarResposta(input.value || "") !== currentQuery) return;
+        if (!state.suggestionItems.length) return;
+        renderSuggestionBox(state.suggestionItems, state.suggestionIndex);
+      });
+  }
+
+  function renderSuggestionBox(items, activeIndex) {
+    const list = $("#digiSilhouetteSuggestions");
+    if (!list) return;
+    if (!items.length) {
+      list.innerHTML = '<div class="digi-silhouette-suggestion-empty">Nenhum Digimon encontrado.</div>';
+      syncHidden(list, false);
+      return;
+    }
+
+    list.innerHTML = items.map(function (name, index) {
+      const thumb = getSuggestionThumb(name);
+      const active = index === activeIndex ? ' is-active' : '';
+      return [
+        '<button class="digi-silhouette-suggestion' + active + '" type="button" data-name="' + escaparAttr(name) + '">',
+          '<span class="digi-silhouette-suggestion-thumb">',
+            thumb ? '<img src="' + escaparAttr(thumb) + '" alt="">' : '<span>' + escaparAttr(name.slice(0, 1).toUpperCase()) + '</span>',
+          '</span>',
+          '<span class="digi-silhouette-suggestion-body">',
+            '<strong>' + escaparAttr(name) + '</strong>',
+          '</span>',
+        '</button>'
+      ].join('');
+    }).join('');
+    syncHidden(list, false);
+  }
+
+  function updateSuggestionList(query) {
     const names = Array.isArray(state.catalog) ? state.catalog : [];
     const normalizedQuery = normalizarResposta(query || "");
 
-    let matches = names;
-    if (normalizedQuery) {
-      const starts = [];
-      const contains = [];
-      names.forEach(function (name) {
-        const normalizedName = normalizarResposta(name);
-        if (!normalizedName) return;
-        if (normalizedName.indexOf(normalizedQuery) === 0) starts.push(name);
-        else if (normalizedName.indexOf(normalizedQuery) !== -1) contains.push(name);
-      });
-      matches = starts.concat(contains);
+    if (!normalizedQuery || normalizedQuery.length < 1) {
+      hideSuggestions();
+      return;
     }
 
-    list.innerHTML = matches.slice(0, 40).map(function (name) {
-      return '<option value="' + escaparAttr(name) + '"></option>';
-    }).join("");
+    const starts = [];
+    const contains = [];
+    names.forEach(function (name) {
+      const normalizedName = normalizarResposta(name);
+      if (!normalizedName) return;
+      if (normalizedName.indexOf(normalizedQuery) === 0) starts.push(name);
+      else if (normalizedName.indexOf(normalizedQuery) !== -1) contains.push(name);
+    });
+
+    const matches = starts.concat(contains).slice(0, 8);
+    state.suggestionItems = matches;
+    state.suggestionIndex = matches.length ? 0 : -1;
+    renderSuggestionBox(matches, state.suggestionIndex);
+    matches.forEach(function (name) { requestSuggestionThumb(name, normalizedQuery); });
+  }
+
+  function applySuggestion(name) {
+    const input = $("#digiSilhouetteGuess");
+    if (!input) return;
+    input.value = name || "";
+    hideSuggestions();
+    input.focus({ preventScroll: true });
+  }
+
+  function onSuggestionKeydown(event) {
+    const items = state.suggestionItems || [];
+    if (event.key === "Escape") {
+      hideSuggestions();
+      return;
+    }
+
+    if (!items.length) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      state.suggestionIndex = state.suggestionIndex < items.length - 1 ? state.suggestionIndex + 1 : 0;
+      renderSuggestionBox(items, state.suggestionIndex);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      state.suggestionIndex = state.suggestionIndex > 0 ? state.suggestionIndex - 1 : items.length - 1;
+      renderSuggestionBox(items, state.suggestionIndex);
+      return;
+    }
+
+    if (event.key === "Enter" && state.suggestionIndex >= 0) {
+      applySuggestion(items[state.suggestionIndex]);
+    }
   }
 
   function resetHints() {
     state.hintsShown = 0;
+    hideSuggestions();
     const list = $("#digiSilhouetteHintsList");
     if (list) list.innerHTML = '<div class="digi-silhouette-hint-empty">Nenhuma dica liberada.</div>';
   }
