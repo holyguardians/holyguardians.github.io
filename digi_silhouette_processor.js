@@ -37,11 +37,21 @@ function ensureOpenCv() {
     }
 
     try {
-      if (self.cv && typeof self.cv.then === "function") {
+      // OpenCV.js can expose `cv` either as the ready module, a real Promise,
+      // or a Promise-like thenable whose .then() does NOT return a Promise.
+      // Therefore never chain `.catch()` from cv.then(). Use the rejection
+      // callback passed directly to `.then(success, failure)` instead.
+      if (self.cv && self.cv.Mat) {
+        finish(self.cv);
+      } else if (self.cv && typeof self.cv.then === "function") {
         self.cv.then(function (resolved) {
-          self.cv = resolved;
-          finish(resolved);
-        }).catch(fail);
+          if (resolved && resolved.Mat) {
+            self.cv = resolved;
+            finish(resolved);
+          }
+          // Some OpenCV thenables resolve without returning the module.
+          // The poll below will finish as soon as self.cv.Mat becomes ready.
+        }, fail);
       } else {
         finish(self.cv);
       }
@@ -56,8 +66,8 @@ function ensureOpenCv() {
         finish(self.cv);
         return;
       }
-      if (Date.now() - started > 18000) {
-        fail(new Error("Tempo esgotado ao iniciar o processador de máscara."));
+      if (Date.now() - started > 40000) {
+        fail(new Error("Tempo esgotado ao iniciar o processador de máscara (40 s)."));
         return;
       }
       setTimeout(poll, 50);

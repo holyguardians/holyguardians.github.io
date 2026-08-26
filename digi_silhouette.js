@@ -14,7 +14,7 @@
   const MAX_CANDIDATE_ATTEMPTS = 2;
   const PROCESSOR_INIT_TIMEOUT_MS = 45000;
   const SEGMENT_TIMEOUT_MS = 12000;
-  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v4";
+  const PROCESSOR_URL = "digi_silhouette_processor.js?v=20260826-v5";
 
   const SEGMENT = Object.freeze({
     BG_BRIGHT_MIN: 238,
