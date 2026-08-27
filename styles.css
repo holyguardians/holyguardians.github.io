@@ -26746,3 +26746,21 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
     line-height: 1.52;
   }
 }
+
+/* =====================================================
+   DIGIDEX — QUEBRA INTELIGENTE DE NOMES
+   Só quebra nos pontos <wbr> gerados pelo script (ex.: ':' e '(')
+   e nos espaços naturais; nunca hifeniza no meio do nome.
+===================================================== */
+#databasePagina .card-name {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.18;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
