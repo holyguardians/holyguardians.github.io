@@ -19286,7 +19286,7 @@ if (document.readyState === "loading") {
    Feed servido pelo Worker, com a chave do YouTube protegida nele.
 ===================================================== */
 const DIGI_CREATORS_API_URL = "https://evil-guardians-digi-creators.hiltongiuseppechiarelo.workers.dev/feed";
-const digiCreatorsState = { iniciado: false, carregado: false, carregando: false, filtro: "todos", busca: "", livesRecolhidas: false };
+const digiCreatorsState = { iniciado: false, carregado: false, carregando: false, filtro: "todos", busca: "", livesRecolhidas: false, totalCriadores: 0 };
 window.DIGI_CREATORS_VIDEOS = window.DIGI_CREATORS_VIDEOS || [];
 window.DIGI_CREATORS_LIVES = window.DIGI_CREATORS_LIVES || [];
 
@@ -19403,6 +19403,7 @@ function carregarDigiCreators() {
     .then(function(payload) {
       if (!payload || payload.ok !== true) throw new Error(payload?.error || "Feed indisponível.");
       window.DIGI_CREATORS_VIDEOS = Array.isArray(payload.videos) ? payload.videos : [];
+      digiCreatorsState.totalCriadores = Math.max(0, Number(payload.creators) || 0);
       digiCreatorsSincronizarLives(window.HG_LIVE_MONITOR_LIVES || payload.lives || []);
       digiCreatorsState.carregado = true;
       renderDigiCreators();
@@ -19429,6 +19430,8 @@ function digiCreatorsSincronizarLives(lives) {
       .map(function(video) { return digiCreatorsNormalizarNome(video.creator); })
       .filter(Boolean)
   );
+  const totalCriadores = Math.max(0, Number(digiCreatorsState.totalCriadores) || 0);
+  const feedCompleto = totalCriadores > 0 && criadoresDoFeed.size >= totalCriadores;
   const lista = Array.isArray(lives) ? lives : [];
   window.DIGI_CREATORS_LIVES = lista
     .map(function(live) {
@@ -19445,7 +19448,9 @@ function digiCreatorsSincronizarLives(lives) {
         provider: digiCreatorsProvider(live)
       };
     })
-    .filter(function(live) { return criadoresDoFeed.has(digiCreatorsNormalizarNome(live.creator)); });
+    .filter(function(live) {
+      return !feedCompleto || criadoresDoFeed.has(digiCreatorsNormalizarNome(live.creator));
+    });
 }
 
 function inicializarDigiCreators() {
