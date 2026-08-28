@@ -4070,6 +4070,23 @@ function numeroEvolution(valor) {
   return Number.isFinite(numero) ? numero : null;
 }
 
+/* Google Sheets entrega células formatadas como porcentagem pelo valor decimal
+   efetivo (ex.: 95% = 0.95, 4% = 0.04). Aceita também dados antigos já
+   expressos em porcentagem inteira e strings como "95%" sem multiplicar duas vezes. */
+function numeroPercentualEvolution(valor) {
+  if (valor == null) return null;
+  const texto = String(valor).trim();
+  if (!texto) return null;
+
+  const temSinalPercentual = texto.includes("%");
+  const numero = Number(texto.replace("%", "").replace(",", "."));
+  if (!Number.isFinite(numero)) return null;
+
+  if (temSinalPercentual) return numero;
+  if (numero !== 0 && Math.abs(numero) <= 1) return numero * 100;
+  return numero;
+}
+
 function formatarEvolutionNumero(valor) {
   const numero = numeroEvolution(valor);
   if (numero === null) return "";
@@ -4357,12 +4374,12 @@ function evolutionStatsComRequisito(row) {
   const stats = row && row.stats ? row.stats : {};
   return ["str", "int", "def", "res", "spd"].filter(function(stat) {
     const info = stats[stat] || {};
-    return numeroEvolution(info.required) !== null || numeroEvolution(info.percent) !== null;
+    return numeroEvolution(info.required) !== null || numeroPercentualEvolution(info.percent) !== null;
   });
 }
 
 function evolutionTemPotential(row) {
-  const cubo = numeroEvolution(row && row.cubePercent);
+  const cubo = numeroPercentualEvolution(row && row.cubePercent);
   if (cubo === null || cubo <= 0) return false;
   return evolutionStatsComRequisito(row).some(function(stat) {
     const pct = numeroEvolution(((row.stats || {})[stat] || {}).percent);
@@ -4436,7 +4453,7 @@ function renderEvolutionRequirementsBox(row) {
   evolutionStatsComRequisito(row).forEach(function(stat) {
     const info = stats[stat] || {};
     const req = numeroEvolution(info.required);
-    const pct = numeroEvolution(info.percent);
+    const pct = numeroPercentualEvolution(info.percent);
     // Na lista de requisitos, o que importa para o jogador é o percentual de Potential.
     // O valor natural e o valor final exigido continuam preservados nos dados e no modal
     // "Mostrar Potencial", mas não poluem mais o resumo da evolução.
@@ -4497,7 +4514,7 @@ function converterEvolutionParaPotential(row) {
   const stats = {};
   ["str", "int", "def", "res", "spd"].forEach(function(stat) {
     const info = statsOrig[stat] || {};
-    const pct = numeroEvolution(info.percent);
+    const pct = numeroPercentualEvolution(info.percent);
     if (pct === null) return;
     stats[stat.toUpperCase()] = {
       value: numeroEvolution(info.required),
@@ -4511,7 +4528,7 @@ function converterEvolutionParaPotential(row) {
     to: row.to,
     displayName: row.to,
     requirementOwner: row.requirementOwner || row.from,
-    cubePercent: numeroEvolution(row.cubePercent),
+    cubePercent: numeroPercentualEvolution(row.cubePercent),
     requirements: {
       level: numeroEvolution(row.level),
       bond: numeroEvolution(row.bond),
@@ -8791,7 +8808,8 @@ function renderizarRequisitosDigivolution(item) {
 
   Object.keys(stats).forEach(function(nome) {
     const stat = stats[nome] || {};
-    const valorNecessario = Number.isFinite(Number(stat.percent)) ? `${Number(stat.percent)}%` : (stat.value || "-");
+    const percentual = numeroPercentualEvolution(stat.percent);
+    const valorNecessario = percentual !== null ? `${formatarEvolutionNumero(percentual)}%` : (stat.value || "-");
     requisitos.push(`<span class="req-${nome.toLowerCase()}"><small>${escaparHtml(nome)}</small><strong>${escaparHtml(valorNecessario)}</strong></span>`);
   });
 
@@ -8847,8 +8865,8 @@ function assinaturaRequisitosDigivolution(item) {
 }
 
 function numeroProbabilidadeDigivolution(valor) {
-  const numero = Number(String(valor || "").replace("%", "").replace(",", ".").trim());
-  return Number.isFinite(numero) ? numero : 0;
+  const numero = numeroPercentualEvolution(valor);
+  return numero === null ? 0 : numero;
 }
 
 function formatarProbabilidadeDigivolution(valor) {
@@ -8994,7 +9012,7 @@ function criarCardDigivolution(item) {
           <div class="digivolution-target-copy">
             <div class="digivolution-tags"><span>${escaparHtml(item.stage || "-")}</span><span>${escaparHtml(categoriaVisivel)}</span></div>
             <h3>${escaparHtml(item.displayName || item.to)}</h3>
-            <small>PROBABILIDADE: ${escaparHtml(item.probability || "-")}</small>
+            <small>PROBABILIDADE: ${escaparHtml(item.probability == null || String(item.probability).trim() === "" ? "-" : formatarProbabilidadeDigivolution(numeroProbabilidadeDigivolution(item.probability)))}</small>
           </div>
         </div>
       `}
@@ -9139,7 +9157,7 @@ function atualizarPotentialPlanner() {
   if (!digivolutionAtual) return;
   atualizarTituloPotentialModal();
   const stats = digivolutionAtual.requirements.stats || {};
-  const cubo = Number(digivolutionAtual.cubePercent) || 4;
+  const cubo = numeroPercentualEvolution(digivolutionAtual.cubePercent) || 4;
   const totalBaby = POTENTIAL_STATS.reduce(function(total, stat) { return total + (Number(babyCorrections[stat]) || 0); }, 0);
   const totalEl = document.getElementById("babyCorrectionTotal");
   const track = document.getElementById("babyCorrectionTrack");
@@ -9152,13 +9170,13 @@ function atualizarPotentialPlanner() {
   const blocos = [];
   Object.keys(stats).forEach(function(stat) {
     const info = stats[stat] || {};
-    if (!Number.isFinite(Number(info.percent))) return;
-    const necessario = Number(info.percent);
+    const necessario = numeroPercentualEvolution(info.percent);
+    if (necessario === null) return;
     const baby = Number(babyCorrections[stat]) || 0;
     const restante = Math.max(0, necessario - baby);
     const quantidade = Math.ceil(restante / cubo - 1e-9);
     const potencial = restante;
-    requisitos.push(`<div><span><b>${potentialStatLabel(stat)}</b><small>${info.value || "-"} (+${necessario}%)</small></span><strong>${baby}% ${potentialText("baby")} + ${potencial}% ${potentialText("potential")}</strong></div>`);
+    requisitos.push(`<div><span><b>${potentialStatLabel(stat)}</b><small>${info.value || "-"} (+${formatarEvolutionNumero(necessario)}%)</small></span><strong>${baby}% ${potentialText("baby")} + ${formatarEvolutionNumero(potencial)}% ${potentialText("potential")}</strong></div>`);
     for (let i = 0; i < quantidade; i += 1) {
       const valorDoCubo = Math.min(cubo, restante - (i * cubo));
       blocos.push({ stat: stat, valor: Number(valorDoCubo.toFixed(10)) });
@@ -9178,7 +9196,7 @@ function atualizarPotentialPlanner() {
   const result = document.getElementById("potentialResult");
   if (reqEl) reqEl.innerHTML = requisitos.join("") || `<div class="potential-unavailable">${potentialText("unavailable")}</div>`;
   if (board) board.innerHTML = blocosVisiveis.map(function(bloco) {
-    return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${potentialStatLabel(bloco.stat)}</strong><span>${bloco.valor}%</span></div>`;
+    return `<div class="potential-cube" style="--cube-color:${POTENTIAL_COLORS[bloco.stat] || "#46dfff"}"><strong>${potentialStatLabel(bloco.stat)}</strong><span>${formatarEvolutionNumero(bloco.valor)}%</span></div>`;
   }).join("") + Array.from({ length: espacosVazios }, function() {
     return `<div class="potential-cube potential-cube-empty" aria-hidden="true"></div>`;
   }).join("");
