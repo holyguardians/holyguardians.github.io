@@ -4364,7 +4364,7 @@ function renderEvolutionStage(stage) {
 }
 
 function renderEvolutionProbability(probability) {
-  const valor = numeroEvolution(probability);
+  const valor = numeroPercentualEvolution(probability);
   return valor === null
     ? ""
     : `<strong class="digidex-evo-probability">${escaparHtml(formatarEvolutionNumero(valor))}%</strong>`;
@@ -4446,7 +4446,7 @@ function renderEvolutionRequirementsBox(row) {
     linhas.push(`<span class="digidex-evo-req-item"><i>LEVEL</i><b>${escaparHtml(formatarEvolutionNumero(level))}</b></span>`);
   }
   if (bond !== null) {
-    linhas.push(`<span class="digidex-evo-req-item"><i>BOND</i><b>${escaparHtml(formatarEvolutionNumero(bond))}</b></span>`);
+    linhas.push(`<span class="digidex-evo-req-item"><i>BOND</i><b>${escaparHtml(formatarEvolutionNumero(bond))}%</b></span>`);
   }
 
   const stats = row.stats || {};
