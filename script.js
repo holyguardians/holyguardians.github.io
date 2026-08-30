@@ -6499,7 +6499,7 @@ function mostrarElementoSelecionado() {
 
     <div class="elemento-resultado-nome">
 
-      ${renderizarIconeElemento(elemento)}
+      ${srcElementoSelecionado ? `<span class="element-icon-wrap" title="${escaparHtml(elemento)}"><img class="element-icon-img" src="${escaparHtml(srcElementoSelecionado)}" alt="${escaparHtml(elemento)}"></span>` : ""}
 
       <span>
         ${elemento}
@@ -7462,6 +7462,12 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
     const meta = metaSkills.find(function(item) {
       return Number(item && item.slot) === numero;
     }) || metaSkills[index] || null;
+    const masterDigi = evolutionMaster && evolutionMaster.byName
+      ? evolutionMaster.byName[normalizarNomeEvolution(nomeDigimon)] : null;
+    const masterSkill = masterDigi && evolutionMaster.skillsByHgid
+      ? (evolutionMaster.skillsByHgid[masterDigi.hgid] || []).find(function(item) {
+          return Number(item && item.slot) === numero;
+        }) : null;
 
     const efeitos = [];
     const categoriaApi = String(apiSkill && apiSkill.effectCategory || "").toUpperCase();
@@ -7487,7 +7493,7 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
     skill.icon = String(
       apiSkill && apiSkill.icon
         ? apiSkill.icon
-        : (meta && meta.icon ? meta.icon : "")
+        : (meta && meta.icon ? meta.icon : (masterSkill && masterSkill.icon ? masterSkill.icon : ""))
     );
 
     skill.effectName = String(apiSkill && apiSkill.effectName || "").trim();
@@ -7743,6 +7749,10 @@ function inicializarCalculadora() {
     pvpCarregarDatabase().then(function() {
       atualizarCalculadora();
     });
+  }
+
+  if (typeof carregarEvolutionMaster === "function" && !evolutionMaster) {
+    carregarEvolutionMaster().then(function() { atualizarCalculadora(); });
   }
 
   atualizarCalculadora();
