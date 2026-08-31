@@ -6499,7 +6499,7 @@ function mostrarElementoSelecionado() {
 
     <div class="elemento-resultado-nome">
 
-      ${srcElementoSelecionado ? `<span class="element-icon-wrap" title="${escaparHtml(elemento)}"><img class="element-icon-img" src="${escaparHtml(srcElementoSelecionado)}" alt="${escaparHtml(elemento)}"></span>` : ""}
+      ${srcElementoSelecionado ? `<span class="element-icon-wrap" title="${escaparHtml(elemento)}"><img class="element-icon-img" src="${escaparHtml(srcElementoSelecionado)}" alt="" onerror="this.parentElement.style.display='none'"></span>` : ""}
 
       <span>
         ${elemento}
