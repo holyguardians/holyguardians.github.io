@@ -26760,3 +26760,8 @@ body.tierlist-dmo-modal-open{overflow:hidden;}
   overflow-wrap: normal;
   hyphens: none;
 }
+
+/* O seletor já mostra o ícone; no título do resultado fica somente o nome. */
+#elementosPagina .elementos-board-ui .elemento-resultado-nome .element-icon-wrap {
+  display: none !important;
+}
