@@ -15,6 +15,7 @@ const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.work
     const quadro=(Math.floor(fase/passo)%quadros)+1;
     const p=voltando?100-(fase/(duracao/2))*100:(fase/(duracao/2))*100;
     el.src='assets/Loading/frames/'+(voltando?'sad/hg-loader-sad-':'happy/hg-loader-happy-')+String(quadro).padStart(2,'0')+'.png';
+    document.querySelectorAll('.hg-retro-loader-dots i').forEach(function(dot,i){dot.classList.toggle('is-on',!voltando&&i<quadro*2);});
     el.style.left=p+'%';
     requestAnimationFrame(animar);
   }
