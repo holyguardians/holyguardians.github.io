@@ -3086,8 +3086,7 @@ body {
 .hg-retro-loading-base{display:block;width:100%;height:100%;object-fit:contain}
 .hg-retro-loader-route{position:absolute;left:19%;right:19%;top:39%;height:26%;overflow:hidden}
 .hg-retro-loader-mascot{position:absolute;bottom:0;left:0;width:12%;height:auto;image-rendering:pixelated;transform:translateX(-50%)}
-.hg-retro-loader-dots{position:absolute;left:18%;top:66%;display:flex;gap:5px}.hg-retro-loader-dots i{width:10px;height:10px;background:#07b8c9;animation:hgDot 1s infinite alternate}.hg-retro-loader-dots i:nth-child(2){animation-delay:.15s}.hg-retro-loader-dots i:nth-child(3){animation-delay:.3s}.hg-retro-loader-dots i:nth-child(4){animation-delay:.45s}.hg-retro-loader-dots i:nth-child(5){animation-delay:.6s}
-@keyframes hgDot{to{opacity:.22}}
+.hg-retro-loader-progress{position:absolute;left:18%;top:66%;font:700 clamp(7px,1.1vw,12px) monospace;color:#1f2930;text-align:center}.hg-retro-loader-dots{display:flex;gap:4px;margin-bottom:5px}.hg-retro-loader-dots i{width:8px;height:8px;background:#d1e8e9}.hg-retro-loader-dots i.is-on{background:#07b8c9}
 
 
 .erro {
