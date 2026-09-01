@@ -4,6 +4,22 @@
 ===================================================== */
 
 const HG_API_URL = "https://holy-guardians-api-cache.hiltongiuseppechiarelo.workers.dev";
+/* Loading retrô: usa frames individuais para preservar o mascote e a carta. */
+(function(){
+  const inicio=Date.now(),duracao=6400,quadros=8,passo=120;
+  function animar(){
+    const el=document.getElementById('hgRetroLoaderMascot');
+    if(!el)return;
+    const t=(Date.now()-inicio)%duracao,voltando=t>=duracao/2;
+    const fase=voltando?t-duracao/2:t;
+    const quadro=(Math.floor(fase/passo)%quadros)+1;
+    const p=voltando?100-(fase/(duracao/2))*100:(fase/(duracao/2))*100;
+    el.src='assets/Loading/frames/'+(voltando?'sad/hg-loader-sad-':'happy/hg-loader-happy-')+String(quadro).padStart(2,'0')+'.png';
+    el.style.left=p+'%';
+    requestAnimationFrame(animar);
+  }
+  requestAnimationFrame(animar);
+})();
 // Contrato HGID: nunca reutiliza respostas antigas baseadas em identificadores legados.
 const HG_API_BROWSER_CACHE_PREFIX = "hg_api_response_v4_hgid_";
 

@@ -3084,12 +3084,10 @@ body {
 #loading.hg-retro-loading{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:rgba(4,8,15,.9);padding:20px}
 .hg-retro-loading-window{position:relative;width:min(92vw,980px);aspect-ratio:3/1}
 .hg-retro-loading-base{display:block;width:100%;height:100%;object-fit:contain}
-.hg-retro-loader-route{position:absolute;left:14%;right:14%;top:38%;height:34%;overflow:hidden}
-.hg-retro-loader-mascot{position:absolute;bottom:0;width:18%;aspect-ratio:271/300;background-size:800% 100%;background-repeat:no-repeat;image-rendering:pixelated}
-.hg-retro-loader-happy{background-image:url('assets/Loading/hg-loader-happy-spritesheet.png');animation:hgWalkRight 3.2s steps(8) infinite,hgTravelRight 3.2s linear infinite}
-.hg-retro-loader-sad{background-image:url('assets/Loading/hg-loader-sad-return-spritesheet.png');opacity:0;animation:hgWalkLeft 3.2s steps(8) infinite,hgTravelLeft 3.2s linear infinite}
-.hg-retro-loader-dots{position:absolute;left:15%;bottom:13%;display:flex;gap:6px}.hg-retro-loader-dots i{width:11px;height:11px;background:#07b8c9;animation:hgDot 1s infinite alternate}.hg-retro-loader-dots i:nth-child(2){animation-delay:.15s}.hg-retro-loader-dots i:nth-child(3){animation-delay:.3s}.hg-retro-loader-dots i:nth-child(4){animation-delay:.45s}.hg-retro-loader-dots i:nth-child(5){animation-delay:.6s}
-@keyframes hgWalkRight{to{background-position:100% 0}}@keyframes hgTravelRight{0%{left:0;opacity:1}48%{left:82%;opacity:1}50%,100%{left:82%;opacity:0}}@keyframes hgWalkLeft{to{background-position:100% 0}}@keyframes hgTravelLeft{0%,50%{left:82%;opacity:0}52%{left:82%;opacity:1}98%{left:0;opacity:1}100%{left:0;opacity:0}}@keyframes hgDot{to{opacity:.22}}
+.hg-retro-loader-route{position:absolute;left:19%;right:19%;top:39%;height:26%;overflow:hidden}
+.hg-retro-loader-mascot{position:absolute;bottom:0;left:0;width:12%;height:auto;image-rendering:pixelated;transform:translateX(-50%)}
+.hg-retro-loader-dots{position:absolute;left:18%;top:66%;display:flex;gap:5px}.hg-retro-loader-dots i{width:10px;height:10px;background:#07b8c9;animation:hgDot 1s infinite alternate}.hg-retro-loader-dots i:nth-child(2){animation-delay:.15s}.hg-retro-loader-dots i:nth-child(3){animation-delay:.3s}.hg-retro-loader-dots i:nth-child(4){animation-delay:.45s}.hg-retro-loader-dots i:nth-child(5){animation-delay:.6s}
+@keyframes hgDot{to{opacity:.22}}
 
 
 .erro {
