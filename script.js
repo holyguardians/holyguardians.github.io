@@ -10988,10 +10988,7 @@ function carregarDatabase() {
         montarFiltroStatusEffectsDigidex();
 
         if (loading) {
-          // Durante o teste, deixa o ciclo completo (ida e volta) visível.
-          window.setTimeout(function() {
-            loading.style.display = "none";
-          }, 6500);
+          loading.style.display = "none";
         }
 
         filtrar();
