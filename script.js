@@ -19693,3 +19693,33 @@ if (document.readyState === "loading") {
 } else {
   inicializarHomeCreators();
 }
+
+function aplicarHomeConfig() {
+  chamarApiJsonp("home").then(function(resposta) {
+    const itens = Array.isArray(resposta.items) ? resposta.items : [];
+    const botoes = { digidex: document.getElementById("homeActionDigidex"), team_builder: document.getElementById("homeActionTeamBuilder") };
+    itens.filter(function(item) { return item.section === "BUTTON"; }).forEach(function(item) {
+      const botao = botoes[item.itemId];
+      if (!botao) return;
+      Array.from(botao.childNodes).forEach(function(no) { if (no.nodeType === Node.TEXT_NODE && no.textContent.trim() && item.titlePt) no.textContent = "\n              " + item.titlePt + "\n\n              "; });
+      if (item.link) botao.onclick = function() {
+        const destino = item.link.replace(/^#/, "");
+        const interno = { digidex: ["databasePagina", "btnDatabase"], "team-builder": ["builderPagina", "btnBuilder"] };
+        if (item.link.charAt(0) === "#" && interno[destino]) return mostrarPagina(interno[destino][0], document.getElementById(interno[destino][1]));
+        window.open(item.link, "_blank", "noopener");
+      };
+    });
+    itens.filter(function(item) { return item.section === "SOCIAL"; }).forEach(function(item) {
+      const card = document.querySelector('[data-home-social="' + item.itemId + '"]');
+      if (!card) return;
+      if (item.link) card.href = item.link;
+      const titulo = card.querySelector(".home-social-title");
+      const texto = card.querySelector(".home-social-sub");
+      if (titulo && item.titlePt) titulo.textContent = item.titlePt;
+      if (texto && item.textPt) texto.textContent = item.textPt;
+    });
+  }).catch(function() { /* fallback: preserva o HTML atual */ });
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", aplicarHomeConfig);
+else aplicarHomeConfig();
