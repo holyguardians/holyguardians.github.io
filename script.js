@@ -19694,14 +19694,23 @@ if (document.readyState === "loading") {
   inicializarHomeCreators();
 }
 
-function aplicarHomeConfig() {
-  chamarApiJsonp("home").then(function(resposta) {
-    const itens = Array.isArray(resposta.items) ? resposta.items : [];
+const hgHomeConfig = { itens: [] };
+
+function textoHomeNoIdioma(item, tipo) {
+  const idioma = typeof window.hgGetLanguage === "function" ? window.hgGetLanguage() : "pt-BR";
+  const sufixo = idioma === "en-US" ? "En" : (idioma === "ko-KR" ? "Kr" : "Pt");
+  return item[tipo + sufixo] || item[tipo + "Pt"] || "";
+}
+
+function renderizarHomeConfig() {
+  const itens = hgHomeConfig.itens;
+  if (!itens.length) return;
     const botoes = { digidex: document.getElementById("homeActionDigidex"), team_builder: document.getElementById("homeActionTeamBuilder") };
     itens.filter(function(item) { return item.section === "BUTTON"; }).forEach(function(item) {
       const botao = botoes[item.itemId];
       if (!botao) return;
-      Array.from(botao.childNodes).forEach(function(no) { if (no.nodeType === Node.TEXT_NODE && no.textContent.trim() && item.titlePt) no.textContent = "\n              " + item.titlePt + "\n\n              "; });
+      const titulo = textoHomeNoIdioma(item, "title");
+      Array.from(botao.childNodes).forEach(function(no) { if (no.nodeType === Node.TEXT_NODE && no.textContent.trim() && titulo) no.textContent = "\n              " + titulo + "\n\n              "; });
       if (item.link) botao.onclick = function() {
         const destino = item.link.replace(/^#/, "");
         const interno = { digidex: ["databasePagina", "btnDatabase"], "team-builder": ["builderPagina", "btnBuilder"] };
@@ -19715,11 +19724,21 @@ function aplicarHomeConfig() {
       if (item.link) card.href = item.link;
       const titulo = card.querySelector(".home-social-title");
       const texto = card.querySelector(".home-social-sub");
-      if (titulo && item.titlePt) titulo.textContent = item.titlePt;
-      if (texto && item.textPt) texto.textContent = item.textPt;
+      const tituloTraduzido = textoHomeNoIdioma(item, "title");
+      const textoTraduzido = textoHomeNoIdioma(item, "text");
+      if (titulo && tituloTraduzido) titulo.textContent = tituloTraduzido;
+      if (texto && textoTraduzido) texto.textContent = textoTraduzido;
     });
+}
+
+function aplicarHomeConfig() {
+  chamarApiJsonp("home").then(function(resposta) {
+    hgHomeConfig.itens = Array.isArray(resposta.items) ? resposta.items : [];
+    renderizarHomeConfig();
   }).catch(function() { /* fallback: preserva o HTML atual */ });
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", aplicarHomeConfig);
 else aplicarHomeConfig();
+
+document.addEventListener("hg:languagechange", renderizarHomeConfig);
