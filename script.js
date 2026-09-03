@@ -17634,7 +17634,9 @@ function sorteioAtualizarEstadoInscricoes(){
     document.getElementById("sorteioAddBtn"),
     document.getElementById("sorteioListaInput"),
     document.getElementById("sorteioAddListBtn"),
-    document.getElementById("sorteioImportBtn")
+    document.getElementById("sorteioImportBtn"),
+    document.getElementById("sorteioMultiManualInput"),
+    document.getElementById("sorteioMultiManualAddBtn")
   ];
 
   if(status)status.textContent=liveSemConexao?("AGUARDANDO "+nomePlataforma):(sorteioInscricoesAbertas?"INSCRIÇÕES ABERTAS":"INSCRIÇÕES ENCERRADAS");
@@ -17648,7 +17650,12 @@ function sorteioAtualizarEstadoInscricoes(){
     else lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
     lock.disabled=sorteioGirando||sorteioRevelando||liveSemConexao;
   }
-  controles.forEach(function(el){if(el)el.disabled=sorteioFonteAtiva!=="manual"||!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;});
+  controles.forEach(function(el){
+    if(!el)return;
+    const campoMulti=el.id==="sorteioMultiManualInput"||el.id==="sorteioMultiManualAddBtn";
+    const fontePermitida=campoMulti?sorteioFonteAtiva==="multi":sorteioFonteAtiva==="manual";
+    el.disabled=!fontePermitida||!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;
+  });
   if(spin)spin.disabled=sorteioGirando||sorteioRevelando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
   sorteioAtualizarFonteUI();
 }
@@ -17789,6 +17796,15 @@ async function sorteioImportarArquivo(file){
 
 function sorteioRemoverParticipante(id){
   if(!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando)return;
+  if(sorteioFonteAtiva==="multi"){
+    const participante=sorteioParticipantes.find(function(item){return item.id===id;});
+    if(!participante||String(participante.origem||participante.platform||"").toLowerCase()!=="manual")return;
+    sorteioMultiManualParticipantes=sorteioMultiManualParticipantes.filter(function(item){return item.id!==id;});
+    sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==id;});
+    sorteioSalvarLiveLocal();
+    sorteioAtualizarTudo();
+    return;
+  }
   if(sorteioFonteAtiva!=="manual")return;
   sorteioParticipantes=sorteioParticipantes.filter(function(item){return item.id!==id});
   sorteioAtualizarTudo();
@@ -17806,6 +17822,7 @@ async function sorteioLimparParticipantes(){
     try{
       const data=await sorteioLiveRequest("/api/session/"+encodeURIComponent(sorteioLiveSessionId)+"/round/clear",{method:"POST"});
       sorteioLiveRemovedIds.clear();
+      if(sorteioFonteAtiva==="multi")sorteioMultiManualParticipantes=[];
       sorteioVencedorAtualId="";
       sorteioOcultarVencedor();
       sorteioOcultarDigitama(true);
@@ -17845,7 +17862,8 @@ function sorteioRenderParticipantes(){
 
   lista.innerHTML=sorteioParticipantes.map(function(item,index){
     const origem=sorteioOrigemLabel(item.origem||item.platform);
-    const botao=sorteioFonteAtiva==="manual"
+    const entradaManual=String(item.origem||item.platform||"").toLowerCase()==="manual";
+    const botao=(sorteioFonteAtiva==="manual"||(sorteioFonteAtiva==="multi"&&entradaManual))
       ?'<button type="button" data-sorteio-remove="'+sorteioEscaparHtml(item.id)+'" aria-label="Remover '+sorteioEscaparHtml(item.nome)+'" '+(!sorteioInscricoesAbertas?'disabled':'')+'>×</button>'
       :'<span class="sorteio-live-user-mark" title="Entrada validada pelo Evil Guardians">✓</span>';
     return '<div class="sorteio-participant-row">'+
@@ -18279,6 +18297,7 @@ function inicializarSorteio(){
 ===================================================== */
 
 const HG_SORTEIO_MULTI_PLATFORMS = ["youtube","twitch","kick"];
+let sorteioMultiManualParticipantes = [];
 
 function sorteioFonteEhLive(fonte){
   return fonte==="youtube"||fonte==="twitch"||fonte==="kick"||fonte==="multi";
@@ -18374,6 +18393,13 @@ function sorteioCarregarLiveLocal(){
     if(!salvo)return;
     if(salvo.sessionId)sorteioLiveSessionId=String(salvo.sessionId);
     if(Array.isArray(salvo.removedIds))sorteioLiveRemovedIds=new Set(salvo.removedIds.map(String));
+    if(Array.isArray(salvo.multiManualParticipants)){
+      sorteioMultiManualParticipantes=salvo.multiManualParticipants
+        .filter(function(item){return item&&item.nome;})
+        .map(function(item){
+          return {id:String(item.id||sorteioGerarId()),nome:String(item.nome).trim().slice(0,80),origem:"manual",platform:"manual"};
+        });
+    }
     if(["youtube","twitch","kick","multi"].includes(salvo.source))sorteioFonteAtiva=salvo.source;
     const comando=salvo.command||"!sorteio";
     sorteioSincronizarComandos(comando);
@@ -18391,7 +18417,8 @@ function sorteioSalvarLiveLocal(){
       sessionId:sorteioLiveSessionId,
       youtubeUrl:urlInput?urlInput.value.trim():(fallbackUrl?fallbackUrl.value.trim():""),
       command:command,
-      removedIds:Array.from(sorteioLiveRemovedIds)
+      removedIds:Array.from(sorteioLiveRemovedIds),
+      multiManualParticipants:sorteioMultiManualParticipantes
     }));
   }catch(erro){}
 }
@@ -18406,7 +18433,7 @@ function sorteioAplicarSessaoLive(session,render){
   }
   sorteioInscricoesAbertas=!!session.accepting;
   const removidos=sorteioLiveRemovedIds;
-  sorteioParticipantes=(Array.isArray(session.participants)?session.participants:[])
+  const participantesLive=(Array.isArray(session.participants)?session.participants:[])
     .filter(function(item){
       const origem=String(item&&((item.origem||item.platform)||"")).toLowerCase();
       if(!item||!item.nome||removidos.has(String(item.id||"")))return false;
@@ -18423,6 +18450,12 @@ function sorteioAplicarSessaoLive(session,render){
         userId:item.userId||""
       };
     });
+  const nomesLive=new Set(participantesLive.map(function(item){return sorteioNormalizarNome(item.nome);}));
+  sorteioParticipantes=participantesLive.concat(
+    sorteioFonteAtiva==="multi"
+      ?sorteioMultiManualParticipantes.filter(function(item){return !nomesLive.has(sorteioNormalizarNome(item.nome));})
+      :[]
+  );
   sorteioSalvarLiveLocal();
   if(render!==false){
     sorteioRenderParticipantes();
@@ -18894,7 +18927,9 @@ function sorteioAtualizarEstadoInscricoes(){
     document.getElementById("sorteioAddBtn"),
     document.getElementById("sorteioListaInput"),
     document.getElementById("sorteioAddListBtn"),
-    document.getElementById("sorteioImportBtn")
+    document.getElementById("sorteioImportBtn"),
+    document.getElementById("sorteioMultiManualInput"),
+    document.getElementById("sorteioMultiManualAddBtn")
   ];
 
   if(status)status.textContent=liveSemConexao?("AGUARDANDO "+nomePlataforma):(sorteioInscricoesAbertas?"INSCRIÇÕES ABERTAS":"INSCRIÇÕES ENCERRADAS");
@@ -18908,7 +18943,12 @@ function sorteioAtualizarEstadoInscricoes(){
     else lock.textContent=sorteioInscricoesAbertas?"FECHAR INSCRIÇÕES":"REABRIR INSCRIÇÕES";
     lock.disabled=sorteioGirando||sorteioRevelando||liveSemConexao;
   }
-  controles.forEach(function(el){if(el)el.disabled=sorteioFonteAtiva!=="manual"||!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;});
+  controles.forEach(function(el){
+    if(!el)return;
+    const campoMulti=el.id==="sorteioMultiManualInput"||el.id==="sorteioMultiManualAddBtn";
+    const fontePermitida=campoMulti?sorteioFonteAtiva==="multi":sorteioFonteAtiva==="manual";
+    el.disabled=!fontePermitida||!sorteioInscricoesAbertas||sorteioGirando||sorteioRevelando;
+  });
   if(spin)spin.disabled=sorteioGirando||sorteioRevelando||sorteioInscricoesAbertas||sorteioParticipantes.length<2;
   sorteioAtualizarFonteUI();
 }
@@ -19011,7 +19051,8 @@ function sorteioRenderParticipantes(){
 
   lista.innerHTML=sorteioParticipantes.map(function(item,index){
     const origem=sorteioOrigemLabel(item.origem||item.platform);
-    const botao=sorteioFonteAtiva==="manual"
+    const entradaManual=String(item.origem||item.platform||"").toLowerCase()==="manual";
+    const botao=(sorteioFonteAtiva==="manual"||(sorteioFonteAtiva==="multi"&&entradaManual))
       ?'<button type="button" data-sorteio-remove="'+sorteioEscaparHtml(item.id)+'" aria-label="Remover '+sorteioEscaparHtml(item.nome)+'" '+(!sorteioInscricoesAbertas?'disabled':'')+'>×</button>'
       :'<span class="sorteio-live-user-mark" title="Entrada validada pelo Evil Guardians">✓</span>';
     return '<div class="sorteio-participant-row">'+
@@ -19026,6 +19067,17 @@ function sorteioRenderParticipantes(){
 }
 
 function sorteioV114BindMultiControls(){
+  const multiManualInput=document.getElementById("sorteioMultiManualInput");
+  if(multiManualInput&&multiManualInput.dataset.hgMultiBound!=="1"){
+    multiManualInput.dataset.hgMultiBound="1";
+    multiManualInput.addEventListener("keydown",function(event){
+      if(event.key==="Enter"){
+        event.preventDefault();
+        sorteioAdicionarManualMulti();
+      }
+    });
+  }
+
   const commandIds=["sorteioLiveCommand","sorteioTwitchCommand","sorteioKickCommand","sorteioMultiCommand"];
   commandIds.forEach(function(id){
     const input=document.getElementById(id);
@@ -19700,6 +19752,30 @@ function textoHomeNoIdioma(item, tipo) {
   const idioma = typeof window.hgGetLanguage === "function" ? window.hgGetLanguage() : "pt-BR";
   const sufixo = idioma === "en-US" ? "En" : (idioma === "ko-KR" ? "Kr" : "Pt");
   return item[tipo + sufixo] || item[tipo + "Pt"] || "";
+}
+
+function sorteioAdicionarManualMulti(){
+  const input=document.getElementById("sorteioMultiManualInput");
+  if(!input||sorteioFonteAtiva!=="multi")return;
+  const limpo=String(input.value||"").trim().replace(/\s+/g," ");
+  if(!limpo)return;
+  if(!sorteioInscricoesAbertas){
+    sorteioDefinirFeedback("As inscrições estão encerradas. Reabra para adicionar nomes.","warn");
+    return;
+  }
+  const chave=sorteioNormalizarNome(limpo);
+  if(sorteioParticipantes.some(function(item){return sorteioNormalizarNome(item.nome)===chave;})){
+    sorteioDefinirFeedback("Esse nome já está participando. Entrada duplicada ignorada.","warn");
+    return;
+  }
+  const participante={id:sorteioGerarId(),nome:limpo.slice(0,80),origem:"manual",platform:"manual"};
+  sorteioMultiManualParticipantes.push(participante);
+  sorteioParticipantes.push(participante);
+  input.value="";
+  sorteioSalvarLiveLocal();
+  sorteioAtualizarTudo();
+  sorteioDefinirFeedback("Participante adicionado à roleta.","ok");
+  input.focus();
 }
 
 function renderizarHomeConfig() {

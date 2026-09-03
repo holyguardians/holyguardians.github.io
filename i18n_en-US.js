@@ -1431,5 +1431,6 @@ Object.assign(window.HG_I18N["en-US"], {
   "digiCreators.noFeedText": "We will connect the partner channels from the spreadsheet to fill this grid.",
   "digiCreators.unavailable": "We couldn't load the videos right now",
   "digiCreators.unavailableText": "Please try again in a few moments.",
-  "digiCreators.videoFallback": "Digimon video"
+  "digiCreators.videoFallback": "Digimon video",
+  "giveaway.multiManualEntry": "ADD MANUAL PARTICIPANT"
 });

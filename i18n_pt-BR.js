@@ -866,5 +866,6 @@ Object.assign(window.HG_I18N["pt-BR"], {
   "digiCreators.noFeedText": "Vamos conectar os canais parceiros da planilha para preencher esta grade.",
   "digiCreators.unavailable": "Não foi possível carregar os vídeos agora",
   "digiCreators.unavailableText": "Tente novamente em alguns instantes.",
-  "digiCreators.videoFallback": "Vídeo Digimon"
+  "digiCreators.videoFallback": "Vídeo Digimon",
+  "giveaway.multiManualEntry": "ADICIONAR PARTICIPANTE MANUAL"
 });

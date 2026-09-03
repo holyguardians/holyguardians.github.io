@@ -2087,6 +2087,11 @@
       setText(one(".sorteio-multi-note b", multiPanel), translate("giveaway.multiUnified", "MULTI STREAM // LISTA ÚNICA"));
       setHtml(one(".sorteio-multi-note small", multiPanel), translate("giveaway.multiDescHtml", "Conecte quantas plataformas quiser. Todos os <strong>!sorteio</strong> entram na mesma roleta em tempo real."));
       setText(one(":scope > .sorteio-field > span", multiPanel), translate("giveaway.commandAll", "COMANDO PARA ENTRAR EM TODAS"));
+      var multiManualField = one("#sorteioMultiManualField", multiPanel);
+      if (multiManualField) {
+        setText(one(":scope > span", multiManualField), translate("giveaway.multiManualEntry", "ADICIONAR PARTICIPANTE MANUAL"));
+        phase8SetAttr(one("#sorteioMultiManualInput", multiManualField), "placeholder", "giveaway.nameExample", "Ex: GrimSleep");
+      }
       setText(one(".sorteio-multi-platform-card.youtube .sorteio-field > span", multiPanel), translate("giveaway.liveLink", "LINK DA LIVE"));
       var summary = one(".sorteio-multi-summary span", multiPanel);
       if (summary) phase8SetTextNode(summary, "giveaway.platformsConnected", "/3 PLATAFORMAS CONECTADAS");

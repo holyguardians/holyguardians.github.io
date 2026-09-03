@@ -2137,5 +2137,6 @@ Object.assign(window.HG_I18N["ko-KR"], {
   "digiCreators.noFeedText": "스프레드시트의 파트너 채널을 연결하여 이 목록을 채웁니다.",
   "digiCreators.unavailable": "지금은 영상을 불러올 수 없습니다",
   "digiCreators.unavailableText": "잠시 후 다시 시도해 주세요.",
-  "digiCreators.videoFallback": "디지몬 영상"
+  "digiCreators.videoFallback": "디지몬 영상",
+  "giveaway.multiManualEntry": "수동 참가자 추가"
 });
