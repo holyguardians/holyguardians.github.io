@@ -1637,6 +1637,14 @@
         </div>
       </div>
       <div id="pvpSlots" class="pvp-grid" aria-label="PvP Team Slots"></div>
+
+      <section class="pvp-battle-card-loadout tech-corners" aria-labelledby="pvpBattleCardLoadoutTitle">
+        <div class="pvp-battle-card-loadout-head">
+          <div><small>TEAM LOADOUT // BATTLE CARDS</small><strong id="pvpBattleCardLoadoutTitle">ESCOLHA 3 BATTLE CARDS</strong><span>F1 / F2 / F3 · cada uso custa 1 Gauge durante a batalha.</span></div>
+          <b id="pvpBattleCardLoadoutStatus">0 / 3 EQUIPPED</b>
+        </div>
+        <div id="pvpBattleCardLoadout" class="pvp-battle-card-loadout-grid"></div>
+      </section>
     </div>
 
     <div id="pvpPickerOverlay" class="pvp-picker-overlay" aria-hidden="true">
@@ -2055,7 +2063,11 @@
               <aside class="pvp-battle-controls tech-corners">
                 <div class="pvp-gauge-block">
                   <div class="pvp-gauge-label"><span>GAUGE</span><b id="pvpBattleGaugeText">1.00 / 5</b></div>
-                  <div id="pvpBattleGaugeSegments" class="pvp-gauge-track pvp-gauge-segments" aria-label="Gauge de substituição"></div>
+                  <div id="pvpBattleGaugeSegments" class="pvp-gauge-track pvp-gauge-segments" aria-label="Gauge de ações"></div>
+                </div>
+                <div class="pvp-battle-card-panel">
+                  <div class="pvp-battle-card-panel-head"><span>BATTLE CARDS</span><small>1 GAUGE / USE</small></div>
+                  <div id="pvpBattleCards" class="pvp-battle-card-buttons"></div>
                 </div>
                 <div id="pvpBattleActionHint" class="pvp-battle-action-hint">SELECT SKILL</div>
                 <button id="pvpSubstitutionBtn" type="button" class="pvp-action-btn pvp-substitution-btn" onclick="pvpBattleAbrirSubstituicao()">SUBSTITUTION <span id="pvpSubstitutionCount">3/3</span></button>
@@ -2072,7 +2084,7 @@
               <button id="pvpSubCloseBtn" type="button" onclick="pvpBattleFecharSubstituicao()">×</button>
             </div>
             <div class="pvp-sub-section">
-              <span>DEPLOY DIGIMON</span>
+              <span>FIELD DIGIMON</span>
               <div id="pvpSubDeployGrid" class="pvp-sub-grid"></div>
             </div>
             <div class="pvp-sub-arrow">⇅</div>
