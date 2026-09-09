@@ -12716,6 +12716,7 @@ function pvpRestaurarEstadoLocal(){
     }
 
     pvpTeamDeck=pvpNormalizarTeamDeck(deckFonte);
+    pvpBattleCards=pvpNormalizarBattleCards(pacote&&pacote.battleCards);
 
     if(pacote&&Array.isArray(pacote.slots)){
       document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
@@ -20492,3 +20493,57 @@ pvpMatchLocalAction=function(type,payload){
 document.addEventListener("DOMContentLoaded",function(){
   pvpMatchRenderPostMatchV53();
 });
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.3.2 — INVITE AUTO-LOBBY
+   Opens shared ?room= links directly in the Match lobby.
+   V5.3.1 Battle Card persistence is preserved above.
+===================================================== */
+let pvpMatchInviteAutoOpenedV532=false;
+
+function pvpMatchRoomFromUrlV532(){
+  try{
+    const url=new URL(window.location.href);
+    return String(url.searchParams.get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  }catch(erro){
+    return "";
+  }
+}
+
+function pvpMatchAbrirConviteNoLobbyV532(){
+  const room=pvpMatchRoomFromUrlV532();
+  if(!room||pvpMatchInviteAutoOpenedV532)return false;
+  pvpMatchInviteAutoOpenedV532=true;
+
+  // A pessoa que abriu o convite cai diretamente em PvP > MATCH.
+  abrirPvpMatch();
+
+  // abrirPvpMatch carrega a database antes de montar o lobby; reforçamos o
+  // Room ID e levamos a tela até ENTRAR EM SALA assim que o campo existir.
+  let tentativas=0;
+  const timer=setInterval(function(){
+    tentativas++;
+    const input=document.getElementById("pvpMatchJoinCode");
+    const lobby=document.getElementById("pvpMatchLobby");
+    if(input){
+      input.value=room;
+      if(typeof pvpMatchAplicarStreamerMode==="function")pvpMatchAplicarStreamerMode();
+    }
+    if(lobby&&lobby.classList.contains("ativa")&&input){
+      clearInterval(timer);
+      requestAnimationFrame(function(){
+        const joinCard=input.closest(".pvp-match-lobby-card")||input.parentElement;
+        if(joinCard&&joinCard.scrollIntoView)joinCard.scrollIntoView({behavior:"smooth",block:"center"});
+        try{input.focus({preventScroll:true})}catch(erro){try{input.focus()}catch(e){}}
+      });
+    }else if(tentativas>=80){
+      clearInterval(timer);
+    }
+  },50);
+  return true;
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(pvpMatchAbrirConviteNoLobbyV532,0)});
+}else{
+  setTimeout(pvpMatchAbrirConviteNoLobbyV532,0);
+}
