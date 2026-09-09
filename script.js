@@ -20280,3 +20280,215 @@ document.addEventListener("DOMContentLoaded",function(){
   pvpMatchAplicarStreamerMode();
   pvpMatchAtualizarQuickEditBarV52();
 });
+
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.3 — REMATCH + RETURN TO LOBBY
+   Adds consensual rematch and in-room team editing.
+   Existing battle, Gauge, Cards and substitution logic is unchanged.
+===================================================== */
+let pvpMatchRoomEditV53 = false;
+
+function pvpMatchResetTransientBattleUiV53(){
+  pvpBattlePendingAction=null;
+  pvpBattleSelectedTarget=null;
+  pvpBattlePendingCardSlot=null;
+  pvpBattleSubOut=null;
+  pvpBattleSubIn=null;
+  pvpBattleSubMode="manual";
+  pvpBattleIntentByUnit=Object.create(null);
+}
+
+function pvpMatchRematchStateV53(){
+  const state=pvpMatchRoomState||{};
+  const r=state.rematch&&typeof state.rematch==="object"?state.rematch:{};
+  return {host:!!r.host,guest:!!r.guest};
+}
+
+function pvpMatchPedirRematchV53(){
+  const state=pvpMatchRoomState;if(!state||state.phase!=="finished")return;
+  const me=pvpBattleMyRole(),r=pvpMatchRematchStateV53();
+  if(r[me]){pvpMatchSend("rematch_cancel",{});return}
+  pvpMatchSend("rematch_request",{});
+}
+
+function pvpMatchVoltarLobbyPosPartidaV53(){
+  const state=pvpMatchRoomState;if(!state||state.phase!=="finished")return;
+  if(!confirm("Voltar os dois jogadores ao lobby desta sala? O resultado atual será encerrado e vocês poderão editar o time antes da próxima Match."))return;
+  pvpMatchSend("return_lobby",{});
+}
+
+function pvpMatchRenderPostMatchV53(){
+  const room=pvpMatchRoomState,b=room&&room.battle,target=document.getElementById("pvpBattleTarget");
+  if(!room||room.phase!=="finished"||!b||!b.winner||!target)return;
+  const me=pvpBattleMyRole(),opp=pvpMatchOpponentRole(me),won=b.winner===me;
+  const winner=room.players&&room.players[b.winner],opponent=room.players&&room.players[opp];
+  const r=pvpMatchRematchStateV53(),mine=!!r[me],theirs=!!r[opp];
+  let status="Escolha REMATCH ou volte ao lobby para ajustar o time.";
+  let statusClass="";
+  let rematchLabel="PEDIR REMATCH";
+  let requestedClass="";
+  if(mine&&!theirs){
+    status="REMATCH enviado · aguardando "+(opponent&&opponent.nick?opponent.nick:"oponente")+" aceitar.";
+    statusClass="waiting";rematchLabel="CANCELAR REMATCH";requestedClass=" requested";
+  }else if(!mine&&theirs){
+    status=(opponent&&opponent.nick?opponent.nick:"O oponente")+" pediu REMATCH.";
+    statusClass="request";rematchLabel="ACEITAR REMATCH";
+  }else if(mine&&theirs){
+    status="REMATCH aceito · preparando novo Draft...";statusClass="request";rematchLabel="REMATCH ACEITO";
+  }
+  target.innerHTML=
+    '<div class="pvp-postmatch-panel '+(won?'win':'loss')+'">'+
+      '<div class="pvp-postmatch-result"><small>'+(won?'VICTORY':'DEFEAT')+'</small><strong>'+pvpEscapeHtml((winner&&winner.nick?winner.nick:"PLAYER")+' WINS!')+'</strong></div>'+
+      '<div class="pvp-postmatch-status '+statusClass+'">'+pvpEscapeHtml(status)+'</div>'+
+      '<div class="pvp-postmatch-actions">'+
+        '<button type="button" class="pvp-action-btn pvp-postmatch-rematch'+requestedClass+'" onclick="pvpMatchPedirRematchV53()" '+(mine&&theirs?'disabled':'')+'>'+rematchLabel+'</button>'+
+        '<button type="button" class="pvp-action-btn pvp-postmatch-lobby" onclick="pvpMatchVoltarLobbyPosPartidaV53()">VOLTAR AO LOBBY</button>'+
+      '</div>'+
+    '</div>';
+}
+
+const _pvpBattleRenderV53=pvpBattleRender;
+pvpBattleRender=function(){
+  const out=_pvpBattleRenderV53.apply(this,arguments);
+  pvpMatchRenderPostMatchV53();
+  return out;
+};
+
+function pvpMatchEditarTimeSalaV53(){
+  const state=pvpMatchRoomState;if(!state||state.phase!=="lobby")return;
+  const me=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;
+  const player=state.players&&state.players[me];
+  if(player&&player.ready)pvpMatchSend("ready",{});
+  pvpMatchRoomEditV53=true;
+  pvpMatchQuickEditReturnV52=true;
+  pvpMatchQuickEditTargetStageV52=state.stage||pvpStageAtual;
+  pvpCriarSlots();
+  pvpRenderBattleCardLoadout();
+  const d=pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+  if(d.filled<8||!d.stageOk||!d.cardsOk)pvpMostrarView("build");
+  else if(d.completos<8)pvpMatchAbrirPrimeiroBuildPendenteV52();
+  else pvpMostrarView("build");
+  pvpMatchAtualizarQuickEditBarV52();
+  pvpMatchAplicarStreamerMode();
+  requestAnimationFrame(function(){
+    const bar=document.getElementById("pvpMatchQuickEditBar");if(bar)bar.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+
+const _pvpMatchAtualizarQuickEditBarV53=pvpMatchAtualizarQuickEditBarV52;
+pvpMatchAtualizarQuickEditBarV52=function(){
+  _pvpMatchAtualizarQuickEditBarV53();
+  if(!pvpMatchRoomEditV53)return;
+  const text=document.getElementById("pvpMatchQuickEditText");
+  const d=pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+  if(text&&d.ready)text.textContent="Time pronto · sincronizando com a Challenge Room...";
+  else if(text)text.textContent=String(text.textContent||"").replace("você volta automaticamente para a Match","o time é sincronizado e você volta automaticamente para a sala");
+}
+
+const _pvpMatchTentarRetornoAutomaticoV53=pvpMatchTentarRetornoAutomaticoV52;
+pvpMatchTentarRetornoAutomaticoV52=function(avancar){
+  if(!pvpMatchRoomEditV53)return _pvpMatchTentarRetornoAutomaticoV53(avancar);
+  if(!pvpMatchQuickEditReturnV52)return false;
+  pvpSalvarEstadoLocal();
+  const d=pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+  pvpMatchAtualizarQuickEditBarV52();
+  if(d.ready){
+    const team=pvpMatchTeamAtual();
+    pvpMatchQuickEditReturnV52=false;
+    pvpMatchRoomEditV53=false;
+    pvpMatchSend("update_team",{team:team});
+    pvpMostrarView("match");
+    pvpMatchTela("pvpMatchWaiting");
+    pvpMatchRenderWaiting();
+    pvpMatchAtualizarQuickEditBarV52();
+    pvpMatchAplicarStreamerMode();
+    requestAnimationFrame(function(){
+      const waiting=document.getElementById("pvpMatchWaiting");if(waiting)waiting.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    return true;
+  }
+  if(avancar){
+    if(d.filled===8&&d.cardsOk&&d.completos<8)pvpMatchAbrirPrimeiroBuildPendenteV52();
+    else if(d.filled===8&&d.completos===8&&!d.cardsOk){pvpMostrarView("build");pvpRenderBattleCardLoadout()}
+    pvpMatchAtualizarQuickEditBarV52();
+  }
+  return false;
+};
+
+const _pvpMatchCancelarEditorRapidoV53=pvpMatchCancelarEditorRapido;
+pvpMatchCancelarEditorRapido=function(){
+  if(!pvpMatchRoomEditV53)return _pvpMatchCancelarEditorRapidoV53();
+  pvpSalvarEstadoLocal();
+  pvpMatchRoomEditV53=false;
+  pvpMatchQuickEditReturnV52=false;
+  pvpMostrarView("match");
+  pvpMatchTela("pvpMatchWaiting");
+  pvpMatchRenderWaiting();
+  pvpMatchAtualizarQuickEditBarV52();
+  pvpMatchAplicarStreamerMode();
+};
+
+const _pvpMatchToggleReadyV53=pvpMatchToggleReady;
+pvpMatchToggleReady=function(){
+  const state=pvpMatchRoomState;if(!state||state.phase!=="lobby")return _pvpMatchToggleReadyV53();
+  const me=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole,player=state.players&&state.players[me];
+  if(player&&player.ready)return pvpMatchSend("ready",{});
+  const team=pvpMatchTeamAtual();
+  if(!pvpMatchTeamValido(team,state.stage)){
+    alert("Seu time precisa estar completo na Stage da sala e com 3 Battle Cards antes de marcar READY.");
+    pvpMatchEditarTimeSalaV53();
+    return;
+  }
+  pvpMatchSend("ready",{team:team});
+};
+
+const _pvpMatchRenderWaitingV53=pvpMatchRenderWaiting;
+pvpMatchRenderWaiting=function(){
+  const out=_pvpMatchRenderWaitingV53.apply(this,arguments);
+  const state=pvpMatchRoomState||{},btn=document.getElementById("pvpMatchRoomEditBtn");
+  if(btn){
+    btn.disabled=state.phase!=="lobby";
+    btn.title="Editar o time sem sair da Challenge Room";
+  }
+  return out;
+};
+
+const _pvpMatchRenderByPhaseV53=pvpMatchRenderByPhase;
+pvpMatchRenderByPhase=function(){
+  const state=pvpMatchRoomState;
+  if(state&&state.phase!=="battle"&&state.phase!=="finished")pvpMatchResetTransientBattleUiV53();
+  return _pvpMatchRenderByPhaseV53.apply(this,arguments);
+};
+
+const _pvpMatchLocalActionV53=pvpMatchLocalAction;
+pvpMatchLocalAction=function(type,payload){
+  const s=pvpMatchRoomState;if(!s)return;
+  let role=pvpMatchLocalRole,opp=pvpMatchOpponentRole(role);
+  if(type==="update_team"&&s.phase==="lobby"){
+    const team=payload&&payload.team;if(!pvpMatchTeamValido(team,s.stage))return;
+    s.players[role].team=team;s.players[role].ready=false;pvpMatchReceberEstado(s);return;
+  }
+  if(type==="ready"&&s.phase==="lobby"&&payload&&payload.team&&pvpMatchTeamValido(payload.team,s.stage)){
+    s.players[role].team=payload.team;
+  }
+  if(type==="rematch_request"&&s.phase==="finished"){
+    s.rematch=s.rematch||{host:false,guest:false};s.rematch[role]=true;
+    // LOCAL TEST simulates the Rival accepting immediately.
+    s.rematch[opp]=true;
+    s.phase="draft";s.players.host.ready=false;s.players.guest.ready=false;
+    s.draft={picks:{host:[],guest:[]},blockIndex:0,blockRemaining:1};s.bans={host:null,guest:null};s.formations={host:null,guest:null};s.battle=null;s.rematch={host:false,guest:false};pvpMatchLocalRole="host";
+    pvpMatchReceberEstado(s);return;
+  }
+  if(type==="rematch_cancel"&&s.phase==="finished"){s.rematch=s.rematch||{host:false,guest:false};s.rematch[role]=false;pvpMatchReceberEstado(s);return}
+  if(type==="return_lobby"&&s.phase==="finished"){
+    s.phase="lobby";s.players.host.ready=false;s.players.guest.ready=false;s.draft={picks:{host:[],guest:[]},blockIndex:0,blockRemaining:1};s.bans={host:null,guest:null};s.formations={host:null,guest:null};s.battle=null;s.rematch={host:false,guest:false};pvpMatchLocalRole="host";
+    pvpMatchReceberEstado(s);return;
+  }
+  return _pvpMatchLocalActionV53(type,payload);
+};
+
+// Re-render the post-match controls whenever the shared room state changes.
+document.addEventListener("DOMContentLoaded",function(){
+  pvpMatchRenderPostMatchV53();
+});

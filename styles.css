@@ -26964,3 +26964,90 @@ body.hg-pvp-stream-body #pvpPagina>.pvp-wrap{
   #pvpPagina .pvp-match-quick-edit-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
   #pvpPagina .pvp-match-check-right{flex-wrap:wrap}
 }
+
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.3 — REMATCH + ROOM LOBBY EDIT
+   Post-match consent flow. Battle mechanics remain untouched.
+===================================================== */
+#pvpPagina .pvp-match-room-edit-btn{
+  border-color:rgba(91,205,255,.48)!important;
+  background:linear-gradient(180deg,rgba(18,91,160,.88),rgba(5,38,82,.94))!important;
+  color:#dff8ff!important;
+}
+#pvpPagina .pvp-match-room-edit-btn:hover{
+  border-color:#62dcff!important;
+  box-shadow:0 0 14px rgba(62,201,255,.22)!important;
+}
+#pvpPagina .pvp-postmatch-panel{
+  display:grid;
+  gap:7px;
+  width:100%;
+  text-align:center;
+}
+#pvpPagina .pvp-postmatch-result{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+}
+#pvpPagina .pvp-postmatch-result small{
+  padding:2px 5px;
+  border:1px solid rgba(92,183,255,.28);
+  border-radius:4px;
+  color:#7fb7db;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.8px;
+}
+#pvpPagina .pvp-postmatch-result strong{
+  color:#ffd65b;
+  font-size:17px;
+  font-weight:1000;
+  line-height:1.05;
+  text-shadow:0 0 12px rgba(255,201,51,.22);
+}
+#pvpPagina .pvp-postmatch-panel.loss .pvp-postmatch-result strong{color:#ff8ea2;text-shadow:0 0 12px rgba(255,65,97,.2)}
+#pvpPagina .pvp-postmatch-status{
+  min-height:15px;
+  color:#9fc7df;
+  font-size:7px;
+  font-weight:800;
+  line-height:1.35;
+}
+#pvpPagina .pvp-postmatch-status.waiting{color:#ffd65b}
+#pvpPagina .pvp-postmatch-status.request{color:#72e5ff}
+#pvpPagina .pvp-postmatch-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+#pvpPagina .pvp-postmatch-actions .pvp-action-btn{
+  min-height:31px!important;
+  padding:5px 9px!important;
+  font-size:7px!important;
+}
+#pvpPagina .pvp-postmatch-rematch{
+  border-color:rgba(85,231,184,.58)!important;
+  background:linear-gradient(180deg,rgba(10,132,95,.9),rgba(4,66,54,.96))!important;
+  color:#dffff4!important;
+}
+#pvpPagina .pvp-postmatch-rematch.requested{
+  border-color:rgba(255,199,70,.55)!important;
+  background:linear-gradient(180deg,rgba(143,102,16,.86),rgba(74,48,5,.95))!important;
+  color:#ffe49a!important;
+}
+#pvpPagina .pvp-postmatch-lobby{
+  border-color:rgba(85,173,255,.46)!important;
+  background:linear-gradient(180deg,rgba(16,84,154,.88),rgba(4,37,81,.95))!important;
+}
+#pvpPagina .pvp-match-room-sync-note{
+  color:#64dfff;
+  font-size:7px;
+  font-weight:800;
+}
+@media(max-width:620px){
+  #pvpPagina .pvp-postmatch-actions{grid-template-columns:1fr}
+  #pvpPagina .pvp-match-ready-actions{display:grid!important;grid-template-columns:1fr!important;width:100%}
+}
