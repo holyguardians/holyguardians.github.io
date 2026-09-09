@@ -21103,3 +21103,328 @@ if(document.readyState==="loading"){
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(reconciliarV536,60)});
   else setTimeout(reconciliarV536,60);
 })();
+
+
+/* =====================================================
+   PVP V5.3.7 — CANONICAL LOADOUT + LOCAL STAGE + REFRESH VIEW
+   Final stabilization patch:
+   - Battle Cards are persisted ONLY from explicit user selection in a
+     canonical key, so startup/save wrappers cannot wipe them on refresh.
+   - Match/Create/Local use the real Stage derived from the 8 HGIDs.
+   - Local Test is created directly with that canonical Stage (no wrapper chain).
+   - F5/Ctrl+F5 returns to MATCH when MATCH was the last PvP view in this tab.
+===================================================== */
+(function(){
+  const PVP_V537_CARD_KEY="hg_pvp_battle_cards_canonical_v1";
+  const PVP_V537_VIEW_KEY="hg_pvp_last_subview_v1";
+
+  function pvpV537ParseCards(raw){
+    try{
+      const value=typeof raw==="string"?JSON.parse(raw):raw;
+      return Array.isArray(value)?pvpNormalizarBattleCards(value):null;
+    }catch(erro){return null}
+  }
+
+  function pvpV537ReadCanonicalCards(){
+    try{
+      const own=localStorage.getItem(PVP_V537_CARD_KEY);
+      if(own!==null){
+        const parsed=pvpV537ParseCards(own);
+        if(parsed)return parsed;
+      }
+
+      // One-time migration from the previous preset keys / saved team.
+      const candidates=[];
+      try{candidates.push(localStorage.getItem("hg_pvp_battle_cards_v2"))}catch(erro){}
+      try{candidates.push(localStorage.getItem(PVP_BATTLE_CARD_PRESET_KEY))}catch(erro){}
+      try{
+        const team=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+        if(team&&Array.isArray(team.battleCards))candidates.push(team.battleCards);
+      }catch(erro){}
+
+      for(const candidate of candidates){
+        const cards=pvpV537ParseCards(candidate);
+        if(cards&&cards.some(Boolean)){
+          localStorage.setItem(PVP_V537_CARD_KEY,JSON.stringify(cards));
+          return cards;
+        }
+      }
+    }catch(erro){}
+    return null;
+  }
+
+  function pvpV537WriteCanonicalCards(cards){
+    const normal=pvpNormalizarBattleCards(cards);
+    try{localStorage.setItem(PVP_V537_CARD_KEY,JSON.stringify(normal))}catch(erro){}
+    // Keep old consumers synchronized, but they are no longer authoritative.
+    try{localStorage.setItem("hg_pvp_battle_cards_v2",JSON.stringify(normal))}catch(erro){}
+    try{localStorage.setItem(PVP_BATTLE_CARD_PRESET_KEY,JSON.stringify(normal))}catch(erro){}
+    try{
+      const team=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+      if(team&&team.format==="holy-guardians-pvp-team"){
+        team.battleCards=normal.slice();
+        localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(team));
+      }
+    }catch(erro){}
+    return normal;
+  }
+
+  function pvpV537HydrateCards(){
+    const cards=pvpV537ReadCanonicalCards();
+    if(cards)pvpBattleCards=cards.slice();
+    return cards;
+  }
+
+  // Hydrate immediately, before any late DOMContentLoaded reconciliation.
+  pvpV537HydrateCards();
+
+  const _pvpSelecionarBattleCardV537=pvpSelecionarBattleCard;
+  pvpSelecionarBattleCard=function(slotNumero,id){
+    const out=_pvpSelecionarBattleCardV537.apply(this,arguments);
+    pvpV537WriteCanonicalCards(pvpBattleCards);
+    return out;
+  };
+
+  const _pvpRenderBattleCardLoadoutV537=pvpRenderBattleCardLoadout;
+  pvpRenderBattleCardLoadout=function(){
+    pvpV537HydrateCards();
+    return _pvpRenderBattleCardLoadoutV537.apply(this,arguments);
+  };
+
+  const _pvpRestaurarEstadoLocalV537=pvpRestaurarEstadoLocal;
+  pvpRestaurarEstadoLocal=function(){
+    const out=_pvpRestaurarEstadoLocalV537.apply(this,arguments);
+    pvpV537HydrateCards();
+    _pvpRenderBattleCardLoadoutV537();
+    return out;
+  };
+
+  const _pvpLerEstadoV537=pvpLerEstado;
+  pvpLerEstado=function(){
+    pvpV537HydrateCards();
+    const team=_pvpLerEstadoV537.apply(this,arguments);
+    const cards=pvpV537ReadCanonicalCards();
+    if(team&&cards)team.battleCards=cards.slice();
+    const real=pvpV537StageFromTeam(team);
+    if(team&&real){
+      team.stage=real;
+      team.level=PVP_STAGE_LEVEL[real]||team.level;
+    }
+    return team;
+  };
+
+  const _pvpSalvarEstadoLocalV537=pvpSalvarEstadoLocal;
+  pvpSalvarEstadoLocal=function(){
+    pvpV537HydrateCards();
+    const out=_pvpSalvarEstadoLocalV537.apply(this,arguments);
+    const cards=pvpV537ReadCanonicalCards();
+    try{
+      const team=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+      if(team&&team.format==="holy-guardians-pvp-team"){
+        if(cards)team.battleCards=cards.slice();
+        const real=pvpV537StageFromTeam(team);
+        if(real){team.stage=real;team.level=PVP_STAGE_LEVEL[real]||team.level}
+        localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(team));
+      }
+    }catch(erro){}
+    return out;
+  };
+
+  const _pvpLimparTimeCompletoV537=pvpLimparTimeCompleto;
+  pvpLimparTimeCompleto=function(){
+    const out=_pvpLimparTimeCompletoV537.apply(this,arguments);
+    try{localStorage.removeItem(PVP_V537_CARD_KEY)}catch(erro){}
+    return out;
+  };
+
+  // Saves directly from the actual selects as a second line of defense.
+  document.addEventListener("change",function(event){
+    const select=event.target&&event.target.closest?event.target.closest("#pvpBattleCardLoadout select"):null;
+    if(!select)return;
+    setTimeout(function(){pvpV537WriteCanonicalCards(pvpBattleCards)},0);
+  },true);
+
+  function pvpV537CanonStage(value){
+    const key=String(value||"").trim().toUpperCase();
+    if(key==="ROOKIE")return "Rookie";
+    if(key==="CHAMPION")return "Champion";
+    if(key==="ULTIMATE")return "Ultimate";
+    if(key==="MEGA")return "Mega";
+    return "";
+  }
+
+  function pvpV537StageFromTeam(team){
+    if(!team||!Array.isArray(team.slots)||team.slots.length<8||!Array.isArray(pvpDatabase)||!pvpDatabase.length)return "";
+    const slots=team.slots.filter(function(s){return s&&normalizarHgid(s.hgid)});
+    if(slots.length!==8)return "";
+    const stages=slots.map(function(slot){
+      const hgid=normalizarHgid(slot.hgid);
+      const digi=pvpDatabase.find(function(item){return mesmoHgid(item&&item.hgid,hgid)});
+      return pvpV537CanonStage(digi&&digi.stage);
+    });
+    if(stages.some(function(stage){return !stage}))return "";
+    const unique=Array.from(new Set(stages));
+    return unique.length===1?unique[0]:"";
+  }
+
+  function pvpV537ApplyCanonicalStage(team){
+    const real=pvpV537StageFromTeam(team);
+    if(!real)return "";
+    pvpStageAtual=real;
+    if(team){team.stage=real;team.level=PVP_STAGE_LEVEL[real]||team.level}
+    const label=document.getElementById("pvpStageLabel");if(label)label.textContent=pvpStageTexto(real);
+    const select=document.getElementById("pvpMatchCreateStage");if(select)select.value=real;
+    try{
+      const saved=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+      if(saved&&saved.format==="holy-guardians-pvp-team"){
+        saved.stage=real;saved.level=PVP_STAGE_LEVEL[real]||saved.level;
+        const cards=pvpV537ReadCanonicalCards();if(cards)saved.battleCards=cards.slice();
+        localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(saved));
+      }
+    }catch(erro){}
+    return real;
+  }
+
+  pvpStageRealDoTimeV535=function(){
+    const team=_pvpLerEstadoV537.apply(this,arguments);
+    return pvpV537StageFromTeam(team);
+  };
+  pvpSincronizarStageRealDoTimeV535=function(){
+    const team=_pvpLerEstadoV537.apply(this,arguments);
+    return pvpV537ApplyCanonicalStage(team);
+  };
+
+  function pvpV537CanonicalTeam(){
+    pvpV537HydrateCards();
+    const team=_pvpLerEstadoV537();
+    const cards=pvpV537ReadCanonicalCards();
+    if(cards)team.battleCards=cards.slice();
+    pvpV537ApplyCanonicalStage(team);
+    return team;
+  }
+
+  // Reimplemented directly to bypass the old Local Test wrapper chain.
+  pvpMatchIniciarTesteLocal=function(){
+    const nick=pvpMatchNickValido();if(!nick)return;
+    const team=pvpV537CanonicalTeam();
+    const stage=pvpV537StageFromTeam(team)||pvpV537CanonStage(document.getElementById("pvpMatchCreateStage")?.value)||pvpStageAtual;
+    if(stage){
+      pvpStageAtual=stage;team.stage=stage;team.level=PVP_STAGE_LEVEL[stage]||team.level;
+      const select=document.getElementById("pvpMatchCreateStage");if(select)select.value=stage;
+    }
+    if(!pvpMatchTeamValido(team,stage)){
+      if(typeof pvpMatchAbrirEditorRapido==="function")pvpMatchAbrirEditorRapido("auto",stage);
+      else alert("Para o teste local, conclua os 8 builds e equipe 3 Battle Cards.");
+      return;
+    }
+    const clone=JSON.parse(JSON.stringify(team));
+    pvpMatchLocalMode=true;pvpMatchLocalRole="host";pvpMatchRole="host";pvpMatchRoomId="LOCAL01";
+    pvpMatchRoomState={
+      roomId:"LOCAL01",stage:stage,phase:"lobby",
+      players:{host:{nick:nick,team:team,ready:false},guest:{nick:"Rival",team:clone,ready:false}},
+      draft:{picks:{host:[],guest:[]},blockIndex:0,blockRemaining:1},
+      bans:{host:null,guest:null},formations:{host:null,guest:null},battle:null
+    };
+    pvpMatchSetConnection("local");
+    pvpMatchRenderByPhase();
+  };
+
+  pvpMatchCriarSala=async function(){
+    const nick=pvpMatchNickValido();if(!nick)return;
+    const team=pvpV537CanonicalTeam();
+    const stage=pvpV537StageFromTeam(team)||pvpV537CanonStage(document.getElementById("pvpMatchCreateStage")?.value)||pvpStageAtual;
+    if(stage){
+      pvpStageAtual=stage;team.stage=stage;team.level=PVP_STAGE_LEVEL[stage]||team.level;
+      const select=document.getElementById("pvpMatchCreateStage");if(select)select.value=stage;
+    }
+    if(!pvpMatchTeamValido(team,stage)){
+      if(typeof pvpMatchAbrirEditorRapido==="function")pvpMatchAbrirEditorRapido("auto",stage);
+      else alert("Seu time precisa ter 8 builds completos da mesma Stage e 3 Battle Cards equipadas.");
+      return;
+    }
+    try{
+      const data=await pvpMatchRequest("/api/rooms",{method:"POST",body:JSON.stringify({nick:nick,stage:stage,team:team})});
+      pvpMatchRole="host";pvpMatchToken=data.token;pvpMatchRoomId=data.roomId;pvpMatchLocalMode=false;
+      pvpMatchConectarSocket();
+    }catch(erro){alert(erro.message||erro)}
+  };
+
+  pvpMatchEntrarSala=async function(){
+    const nick=pvpMatchNickValido();if(!nick)return;
+    const code=String(document.getElementById("pvpMatchJoinCode")?.value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    if(code.length<4){alert("Digite um Room ID válido.");return}
+    const team=pvpV537CanonicalTeam();
+    if(!team||!pvpTodosBuildsConcluidos()||!pvpBattleCardsCompletos(team.battleCards)){
+      if(typeof pvpMatchAbrirEditorRapido==="function")pvpMatchAbrirEditorRapido("auto");
+      else alert("Conclua os 8 builds e equipe 3 Battle Cards antes de entrar em uma Match.");
+      return;
+    }
+    try{
+      const data=await pvpMatchRequest("/api/rooms/"+encodeURIComponent(code)+"/join",{method:"POST",body:JSON.stringify({nick:nick,team:team})});
+      pvpMatchRole="guest";pvpMatchToken=data.token;pvpMatchRoomId=data.roomId;pvpMatchLocalMode=false;
+      pvpMatchConectarSocket();
+    }catch(erro){
+      if(/stage/i.test(String(erro.message||"")))alert((erro.message||"")+"\n\nUse EDITAR TIME e monte um time da Stage exigida pela sala.");
+      else alert(erro.message||erro);
+    }
+  };
+
+  // Canonicalize room-edit team payloads too.
+  const _pvpMatchSendV537=pvpMatchSend;
+  pvpMatchSend=function(type,payload){
+    if(type==="update_team"&&payload&&payload.team){
+      const fixed=JSON.parse(JSON.stringify(payload));
+      const cards=pvpV537ReadCanonicalCards();if(cards)fixed.team.battleCards=cards.slice();
+      const real=pvpV537StageFromTeam(fixed.team);if(real){fixed.team.stage=real;fixed.team.level=PVP_STAGE_LEVEL[real]||fixed.team.level}
+      return _pvpMatchSendV537.call(this,type,fixed);
+    }
+    return _pvpMatchSendV537.apply(this,arguments);
+  };
+
+  // Remember the last PvP sub-view in this tab so refresh doesn't throw MATCH back to BUILD.
+  const _pvpMostrarViewV537=pvpMostrarView;
+  pvpMostrarView=function(nome){
+    const out=_pvpMostrarViewV537.apply(this,arguments);
+    try{sessionStorage.setItem(PVP_V537_VIEW_KEY,String(nome||""))}catch(erro){}
+    return out;
+  };
+
+  function pvpV537RestoreRefreshView(){
+    try{
+      const url=new URL(window.location.href);
+      const route=String(url.hash||"").replace(/^#/,"").split("/")[0].toLowerCase();
+      if(route!=="pvp"||url.searchParams.get("room"))return;
+      const last=sessionStorage.getItem(PVP_V537_VIEW_KEY)||"";
+      if(last!=="match")return;
+      Promise.resolve(pvpCarregarDatabase()).then(function(){
+        pvpV537HydrateCards();
+        const team=pvpV537CanonicalTeam();
+        pvpV537ApplyCanonicalStage(team);
+        abrirPvpMatch();
+      }).catch(function(){});
+    }catch(erro){}
+  }
+
+  function pvpV537FinalReconcile(){
+    pvpV537HydrateCards();
+    pvpRenderBattleCardLoadout();
+    Promise.resolve(pvpCarregarDatabase()).then(function(){
+      const team=pvpV537CanonicalTeam();
+      pvpV537ApplyCanonicalStage(team);
+      if(typeof pvpMatchAtualizarTeamCheck==="function")pvpMatchAtualizarTeamCheck();
+    }).catch(function(){});
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(pvpV537FinalReconcile,140);
+      setTimeout(pvpV537RestoreRefreshView,220);
+    });
+  }else{
+    setTimeout(pvpV537FinalReconcile,140);
+    setTimeout(pvpV537RestoreRefreshView,220);
+  }
+
+  try{document.documentElement.setAttribute("data-hg-pvp-build","5.3.7")}catch(erro){}
+  try{console.info("[HG PvP] build 5.3.7 · canonical cards/stage/refresh view")}catch(erro){}
+})();
