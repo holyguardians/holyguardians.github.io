@@ -20898,6 +20898,7 @@ if(document.readyState==="loading"){
 ===================================================== */
 (function(){
   const PVP_CARD_STATE_KEY="hg_pvp_battle_cards_stable_v1";
+  const PVP_CARD_COOKIE_KEY="hg_pvp_cards";
 
   function pvpV54Cards(raw){
     try{
@@ -20905,8 +20906,19 @@ if(document.readyState==="loading"){
       return Array.isArray(value)?pvpNormalizarBattleCards(value):null;
     }catch(erro){return null}
   }
+  function pvpV54ReadCookie(){
+    try{
+      const item=String(document.cookie||"").split("; ").find(function(part){return part.indexOf(PVP_CARD_COOKIE_KEY+"=")===0});
+      return item?pvpV54Cards(decodeURIComponent(item.slice(PVP_CARD_COOKIE_KEY.length+1))):null;
+    }catch(erro){return null}
+  }
+  function pvpV54WriteCookie(cards){
+    try{document.cookie=PVP_CARD_COOKIE_KEY+"="+encodeURIComponent(JSON.stringify(cards))+"; Max-Age=31536000; Path=/; SameSite=Lax"}catch(erro){}
+  }
   function pvpV54ReadCards(){
     try{
+      const cookie=pvpV54ReadCookie();
+      if(cookie)return cookie;
       const own=localStorage.getItem(PVP_CARD_STATE_KEY);
       if(own!==null)return pvpV54Cards(own)||pvpCriarBattleCardsPadrao();
       const candidates=[localStorage.getItem(PVP_BATTLE_CARD_PRESET_KEY)];
@@ -20919,6 +20931,7 @@ if(document.readyState==="loading"){
   function pvpV54SaveCards(cards){
     const normal=pvpNormalizarBattleCards(cards);
     pvpBattleCards=normal.slice();
+    pvpV54WriteCookie(normal);
     try{localStorage.setItem(PVP_CARD_STATE_KEY,JSON.stringify(normal))}catch(erro){}
     try{localStorage.setItem(PVP_BATTLE_CARD_PRESET_KEY,JSON.stringify(normal))}catch(erro){}
     try{
@@ -20993,4 +21006,3 @@ if(document.readyState==="loading"){
   else setTimeout(function(){pvpBattleCards=pvpV54ReadCards();pvpRenderBattleCardLoadout();pvpSincronizarStageRealDoTimeV535()},50);
   try{document.documentElement.setAttribute("data-hg-pvp-build","5.4-clean")}catch(erro){}
 })();
-

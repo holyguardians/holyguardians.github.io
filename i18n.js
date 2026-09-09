@@ -2600,7 +2600,13 @@
 
       var m = raw.match(/(ROOKIE|CHAMPION|ULTIMATE|MEGA)(?:\s*·\s*LV\.\s*(\d+))?/i);
       if (!m) return;
-      var original = element.getAttribute("data-hg-pvp-stage-original") || (m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase());
+      var detected = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
+      /* Em PT/EN, o texto canônico recém-renderizado é a fonte correta.
+         Reusar o atributo antigo fazia Rookie/Champion/Ultimate virarem Mega
+         enquanto preservava apenas o level novo (ex.: MEGA · LV. 15). */
+      var original = currentLanguage === "ko-KR"
+        ? (element.getAttribute("data-hg-pvp-stage-original") || detected)
+        : detected;
       element.setAttribute("data-hg-pvp-stage-original", original);
       var level = m[2] || "";
       var nextStage = phase9PvpStageLabel(original, level || null);
