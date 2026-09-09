@@ -12002,6 +12002,7 @@ const PVP_BATTLE_CARD_DEFS = {
   def:{id:"def",name:"Defense Charge Data L",short:"DEF +20% · 3T",icon:"PVP_ASSETS/pvp_pot_def.png",kind:"def",pct:20,turns:3}
 };
 
+const PVP_BATTLE_CARD_PRESET_KEY = "hg_pvp_battle_cards_v1";
 function pvpCriarBattleCardsPadrao(){return [null,null,null]}
 function pvpNormalizarBattleCards(cards){
   const raw=Array.isArray(cards)?cards:[];
@@ -12010,12 +12011,24 @@ function pvpNormalizarBattleCards(cards){
     return PVP_BATTLE_CARD_DEFS[id]?id:null;
   });
 }
-let pvpBattleCards=pvpCriarBattleCardsPadrao();
+function pvpLerBattleCardsPreset(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(PVP_BATTLE_CARD_PRESET_KEY)||"null");
+    if(!Array.isArray(raw))return null;
+    const cards=pvpNormalizarBattleCards(raw);
+    return cards.some(Boolean)?cards:null;
+  }catch(erro){return null}
+}
+function pvpSalvarBattleCardsPreset(cards){
+  try{localStorage.setItem(PVP_BATTLE_CARD_PRESET_KEY,JSON.stringify(pvpNormalizarBattleCards(cards)))}catch(erro){}
+}
+let pvpBattleCards=pvpLerBattleCardsPreset()||pvpCriarBattleCardsPadrao();
 function pvpBattleCardsCompletos(cards){return pvpNormalizarBattleCards(cards==null?pvpBattleCards:cards).every(Boolean)}
 function pvpSelecionarBattleCard(slotNumero,id){
   const index=Math.max(0,Math.min(2,Number(slotNumero)-1));
   const key=String(id||"").toLowerCase();
   pvpBattleCards[index]=PVP_BATTLE_CARD_DEFS[key]?key:null;
+  pvpSalvarBattleCardsPreset(pvpBattleCards);
   pvpRenderBattleCardLoadout();
   pvpSalvarEstadoLocal();
   if(typeof pvpMatchAtualizarTeamCheck==="function")pvpMatchAtualizarTeamCheck();
@@ -12474,6 +12487,7 @@ async function pvpCarregarDatabase(){
         vistos.add(digi.hgid);
       });
       sincronizarIconesPvpComDatabase();pvpAtualizarTodosSlots();
+      pvpSincronizarStageRealDoTimeV535();
       if(document.querySelector("#pvpSlots .pvp-slot"))pvpSalvarEstadoLocal();
       return pvpDatabase
     })
@@ -12653,7 +12667,10 @@ function pvpAplicarEstado(pacote){
   }
 
   pvpTeamDeck=pvpNormalizarTeamDeck(deckFonte);
-  pvpBattleCards=pvpNormalizarBattleCards(pacote.battleCards);
+  const cardsImportados=pvpNormalizarBattleCards(pacote.battleCards);
+  const presetCards=pvpLerBattleCardsPreset();
+  pvpBattleCards=cardsImportados.some(Boolean)?cardsImportados:(presetCards||pvpCriarBattleCardsPadrao());
+  if(pvpBattleCards.some(Boolean))pvpSalvarBattleCardsPreset(pvpBattleCards);
   pvpSelecionarStage(stage,PVP_STAGE_LEVEL[stage]);
 
   document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
@@ -12716,7 +12733,10 @@ function pvpRestaurarEstadoLocal(){
     }
 
     pvpTeamDeck=pvpNormalizarTeamDeck(deckFonte);
-    pvpBattleCards=pvpNormalizarBattleCards(pacote&&pacote.battleCards);
+    const presetCards=pvpLerBattleCardsPreset();
+    const cardsDoTime=pvpNormalizarBattleCards(pacote&&pacote.battleCards);
+    pvpBattleCards=presetCards||cardsDoTime;
+    if(!presetCards&&pvpBattleCards.some(Boolean))pvpSalvarBattleCardsPreset(pvpBattleCards);
 
     if(pacote&&Array.isArray(pacote.slots)){
       document.querySelectorAll("#pvpSlots .pvp-slot").forEach(function(slot,index){
@@ -12735,7 +12755,8 @@ function pvpRestaurarEstadoLocal(){
       })
     }
 
-    pvpAtualizarTodosSlots()
+    pvpAtualizarTodosSlots();
+    pvpRenderBattleCardLoadout()
   }catch(erro){
     pvpTeamDeck=pvpCriarTeamDeckPadrao();
     pvpSelecionarStage("Mega",100)
@@ -13775,6 +13796,7 @@ function pvpLimparTimeCompleto(){
   });
 
   localStorage.removeItem(PVP_STORAGE_KEY);
+  localStorage.removeItem(PVP_BATTLE_CARD_PRESET_KEY);
   PVP_LEGACY_STORAGE_KEYS.forEach(function(chave){localStorage.removeItem(chave)});
   pvpBuildIndex=0;
   pvpMostrarView("build");
@@ -13908,6 +13930,30 @@ function pvpMatchNickValido(){
   return nick;
 }
 
+function pvpStageRealDoTimeV535(){
+  const slots=typeof pvpBuildSlots==="function"?pvpBuildSlots():Array.from(document.querySelectorAll("#pvpSlots .pvp-slot"));
+  const preenchidos=slots.filter(function(slot){return !!normalizarHgid(slot&&slot.dataset&&slot.dataset.hgid)});
+  if(preenchidos.length!==8||!Array.isArray(pvpDatabase)||!pvpDatabase.length)return "";
+  const stages=preenchidos.map(function(slot){
+    const hgid=normalizarHgid(slot.dataset.hgid);
+    const digi=pvpDatabase.find(function(item){return mesmoHgid(item&&item.hgid,hgid)});
+    return digi&&PVP_STAGE_LEVEL[digi.stage]?digi.stage:"";
+  }).filter(Boolean);
+  if(stages.length!==8)return "";
+  const unica=Array.from(new Set(stages));
+  return unica.length===1?unica[0]:"";
+}
+function pvpSincronizarStageRealDoTimeV535(){
+  const real=pvpStageRealDoTimeV535();
+  if(!real)return "";
+  pvpStageAtual=real;
+  const label=document.getElementById("pvpStageLabel");
+  if(label)label.textContent=pvpStageTexto(real);
+  const select=document.getElementById("pvpMatchCreateStage");
+  if(select)select.value=real;
+  return real;
+}
+
 function pvpMatchTeamAtual(){
   try{return pvpLerEstado()}catch(erro){return null}
 }
@@ -13988,9 +14034,11 @@ abrirPvpMatch=function(){
     const nick=document.getElementById("pvpMatchNick");
     if(nick&&!nick.value)nick.value=localStorage.getItem(PVP_MATCH_NICK_KEY)||"";
     const stage=document.getElementById("pvpMatchCreateStage");
+    const realStage=pvpSincronizarStageRealDoTimeV535();
     const savedTeam=pvpMatchTeamAtual();
-    const savedStage=savedTeam&&savedTeam.stage?savedTeam.stage:pvpStageAtual;
+    const savedStage=realStage||(savedTeam&&savedTeam.stage?savedTeam.stage:pvpStageAtual);
     if(stage)stage.value=savedStage;
+    if(realStage)pvpSalvarEstadoLocal();
     pvpMatchAtualizarTeamCheck();
     pvpMatchAtualizarServerHint();
     pvpMatchSetConnection("offline");
@@ -14022,7 +14070,9 @@ async function pvpMatchRequest(path,options){
 
 async function pvpMatchCriarSala(){
   const nick=pvpMatchNickValido();if(!nick)return;
-  const stage=document.getElementById("pvpMatchCreateStage")?.value||pvpStageAtual;
+  const stage=pvpSincronizarStageRealDoTimeV535()||document.getElementById("pvpMatchCreateStage")?.value||pvpStageAtual;
+  if(document.getElementById("pvpMatchCreateStage"))document.getElementById("pvpMatchCreateStage").value=stage;
+  pvpSalvarEstadoLocal();
   const team=pvpMatchTeamAtual();
   if(!pvpMatchTeamValido(team,stage)){
     alert("Seu time precisa ter 8 builds completos da mesma Stage e 3 Battle Cards equipadas para criar a sala. Use EDITAR TIME para corrigir.");
@@ -14274,7 +14324,9 @@ function pvpMatchConfirmarFormacao(){
 
 function pvpMatchIniciarTesteLocal(){
   const nick=pvpMatchNickValido();if(!nick)return;
-  const stage=document.getElementById("pvpMatchCreateStage")?.value||pvpStageAtual;
+  const stage=pvpSincronizarStageRealDoTimeV535()||document.getElementById("pvpMatchCreateStage")?.value||pvpStageAtual;
+  if(document.getElementById("pvpMatchCreateStage"))document.getElementById("pvpMatchCreateStage").value=stage;
+  pvpSalvarEstadoLocal();
   const team=pvpMatchTeamAtual();
   if(!pvpMatchTeamValido(team,stage)){alert("Para o teste local, conclua os 8 builds e equipe 3 Battle Cards.");return}
   const clone=JSON.parse(JSON.stringify(team));
@@ -20248,7 +20300,7 @@ mostrarPagina = function(id,botao,atualizarUrl){
 
 const _pvpMatchCriarSalaV52 = pvpMatchCriarSala;
 pvpMatchCriarSala = function(){
-  const stage = document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
+  const stage = pvpSincronizarStageRealDoTimeV535() || document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
   if(!pvpMatchTeamValido(pvpMatchTeamAtual(),stage)){
     pvpMatchAbrirEditorRapido("auto",stage);
     return;
@@ -20258,7 +20310,7 @@ pvpMatchCriarSala = function(){
 
 const _pvpMatchIniciarTesteLocalV52 = pvpMatchIniciarTesteLocal;
 pvpMatchIniciarTesteLocal = function(){
-  const stage = document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
+  const stage = pvpSincronizarStageRealDoTimeV535() || document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
   if(!pvpMatchTeamValido(pvpMatchTeamAtual(),stage)){
     pvpMatchAbrirEditorRapido("auto",stage);
     return;
@@ -20836,3 +20888,28 @@ if(document.readyState==="loading"){
 }else{
   setTimeout(pvpMatchAbrirConviteSmartV533,20);
 }
+
+
+/* =====================================================
+   PVP V5.3.5 — HARD REFRESH PERSISTENCE + CANONICAL STAGE
+   Battle Card preset uses its own localStorage key. Stage is reconciled
+   from the 8 actual Digimon after pvp-data is loaded.
+===================================================== */
+(function(){
+  function reconciliarV535(){
+    try{
+      const preset=pvpLerBattleCardsPreset();
+      if(preset){pvpBattleCards=preset;pvpRenderBattleCardLoadout()}
+      Promise.resolve(pvpCarregarDatabase()).then(function(){
+        const real=pvpSincronizarStageRealDoTimeV535();
+        if(real){
+          const sel=document.getElementById("pvpMatchCreateStage");if(sel)sel.value=real;
+          pvpSalvarEstadoLocal();
+          if(typeof pvpMatchAtualizarTeamCheck==="function")pvpMatchAtualizarTeamCheck();
+        }
+      }).catch(function(){});
+    }catch(erro){}
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(reconciliarV535,30)});
+  else setTimeout(reconciliarV535,30);
+})();
