@@ -12475,17 +12475,163 @@ function pvpMostrarView(nome){
 function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build");pvpCriarSlots();pvpRenderBattleCardLoadout();pvpCarregarDatabase()}
 function abrirPvpMatch(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("match");pvpMatchAplicarStreamerMode()}
 
+function pvpNumeroMaster(valor){
+  if(typeof valor==="number")return Number.isFinite(valor)?valor:null;
+  const texto=String(valor==null?"":valor).trim();
+  if(!texto)return null;
+  const numero=Number(texto.replace(",","."));
+  return Number.isFinite(numero)?numero:null;
+}
+
+function pvpTextoMaster(valor,fallback){
+  const texto=String(valor==null?"":valor).trim();
+  return texto&&!/^\?+$/.test(texto)&&texto!=="-"&&texto.toUpperCase()!=="N/A"
+    ?texto
+    :String(fallback==null?"":fallback).trim();
+}
+
+function pvpMasterCompletoParaPvp(master){
+  const stage=pvpTextoMaster(master&&master.stage,"");
+  if(!PVP_STAGE_LEVEL[stage])return false;
+  if(!["hp","sp","str","int","def","res","spd"].every(function(chave){return Number(pvpNumeroMaster(master&&master[chave]))>0}))return false;
+  return [1,2,3].every(function(slot){
+    const resumo=master&&master["skill"+slot];
+    if(!resumo||typeof resumo!=="object"||!pvpTextoMaster(resumo.base,""))return false;
+    return /(\d+)\s*[x×]\s*(\d+(?:[.,]\d+)?)%\s*=\s*(\d+(?:[.,]\d+)?)%/i.test(String(resumo.calculo||resumo.texto||""));
+  });
+}
+
+function pvpMasterMarcaSkill(valor,slot){
+  const texto=String(valor==null?"":valor).trim().toUpperCase();
+  if(!texto||texto==="NO"||texto==="NÃO"||texto==="NAO")return false;
+  const slots=texto.match(/\d+/g);
+  return slots?slots.map(Number).includes(Number(slot)):texto==="YES"||texto==="SIM";
+}
+
+function pvpMasterSkill(master,slot,anterior){
+  const resumo=master&&master["skill"+slot]&&typeof master["skill"+slot]==="object"
+    ?master["skill"+slot]
+    :{};
+  const calculo=String(resumo.calculo||resumo.texto||"");
+  const formula=calculo.match(/(\d+)\s*[x×]\s*(\d+(?:[.,]\d+)?)%\s*=\s*(\d+(?:[.,]\d+)?)%/i);
+  const hits=formula?Number(formula[1]):Number(anterior&&anterior.hits)||1;
+  const perHit=formula?pvpNumeroMaster(formula[2]):pvpNumeroMaster(anterior&&anterior.perHit);
+  const baseTotal=formula?pvpNumeroMaster(formula[3]):pvpNumeroMaster(anterior&&anterior.baseTotal);
+  const atributo=normalizarElemento(resumo.base||(anterior&&anterior.attribute)||"");
+  const conversoes=[];
+  [atributo].concat(Array.isArray(resumo.elementos)?resumo.elementos:[],Array.isArray(anterior&&anterior.conversions)?anterior.conversions:[])
+    .forEach(function(item){
+      const elemento=normalizarElemento(item);
+      if(elemento&&!conversoes.includes(elemento))conversoes.push(elemento);
+    });
+  const iconPath=String(master&&master.iconPath||"");
+  const iconBase=iconPath.split("/").pop().replace(/\.(webp|png|jpe?g)$/i,"");
+  const ccMaster=pvpMasterMarcaSkill(master&&master.cc,slot);
+  const dotMaster=pvpMasterMarcaSkill(master&&master.dot,slot);
+  const defBreakMaster=pvpMasterMarcaSkill(master&&master.defBreak,slot);
+
+  return Object.assign({},anterior||{}, {
+    slot:Number(slot),
+    id:(anterior&&anterior.id)||Number(String(master&&master.hgid||"").replace(/\D/g,""))*100+Number(slot),
+    name:(anterior&&anterior.name)||("SKILL "+slot),
+    description:(anterior&&anterior.description)||String(resumo.texto||""),
+    icon:(anterior&&anterior.icon)||(iconBase?"PVP_ASSETS/skill/"+iconBase+"_"+slot+".webp":""),
+    skillType:(anterior&&anterior.skillType)||"Attack",
+    attribute:atributo,
+    conversions:conversoes,
+    appliesTo:(anterior&&anterior.appliesTo)||"enemy",
+    scope:(anterior&&anterior.scope)||"Single Ranged",
+    hits:hits,
+    perHit:perHit,
+    baseTotal:baseTotal,
+    damageText:(anterior&&anterior.damageText)||(formula?("Base damage * Number of attacks * "+String(perHit)+"%"):calculo),
+    costHp:(anterior&&anterior.costHp)||"0",
+    costSp:(anterior&&anterior.costSp)||"0",
+    effectRaw:(anterior&&anterior.effectRaw)||"",
+    cc:(ccMaster||String(anterior&&anterior.cc||"").toUpperCase()==="YES")?"YES":"NO",
+    ccType:(anterior&&anterior.ccType)||"",
+    effectChance:anterior&&anterior.effectChance!=null?anterior.effectChance:null,
+    dot:(dotMaster||String(anterior&&anterior.dot||"").toUpperCase()==="YES")?"YES":"NO",
+    defBreak:(defBreakMaster||String(anterior&&anterior.defBreak||"").toUpperCase()==="YES")?"YES":"NO",
+    attributeEffects:(anterior&&anterior.attributeEffects)||""
+  });
+}
+
+function pvpRegistroMaster(master,anterior){
+  const stage=pvpTextoMaster(master&&master.stage,anterior&&anterior.stage);
+  const skills=[1,2,3].map(function(slot){
+    const antiga=Array.isArray(anterior&&anterior.skills)
+      ?anterior.skills.find(function(skill){return Number(skill&&skill.slot)===slot})
+      :null;
+    return pvpMasterSkill(master,slot,antiga);
+  });
+  const elements=[];
+  skills.forEach(function(skill){
+    [skill.attribute].concat(skill.conversions||[]).forEach(function(elemento){
+      const normal=normalizarElemento(elemento);
+      if(normal&&!elements.includes(normal))elements.push(normal);
+    });
+  });
+  const nome=pvpTextoMaster(master&&master.digimon||master&&master.name,anterior&&anterior.name);
+  return Object.assign({},anterior||{}, {
+    hgid:normalizarHgid(master&&master.hgid||(anterior&&anterior.hgid)),
+    name:nome,
+    slug:(anterior&&anterior.slug)||nome.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),
+    stage:stage,
+    level:PVP_STAGE_LEVEL[stage]||Number(anterior&&anterior.level)||100,
+    attribute:pvpTextoMaster(master&&master.type,(anterior&&anterior.attribute)||"Unknown"),
+    fields:pvpTextoMaster(master&&master.field,anterior&&anterior.fields),
+    icon:pvpTextoMaster(master&&master.icon||master&&master.iconPath,anterior&&anterior.icon),
+    strong:pvpTextoMaster(master&&master.strong,anterior&&anterior.strong),
+    strongEffect:pvpTextoMaster(master&&master.strongEffect,anterior&&anterior.strongEffect),
+    weak:pvpTextoMaster(master&&master.weak,anterior&&anterior.weak),
+    weakEffect:pvpTextoMaster(master&&master.weakEffect,anterior&&anterior.weakEffect),
+    baseHP:(pvpNumeroMaster(master&&master.hp)??(Number(anterior&&anterior.baseHP)||0)),
+    baseSP:(pvpNumeroMaster(master&&master.sp)??(Number(anterior&&anterior.baseSP)||0)),
+    baseSTR:(pvpNumeroMaster(master&&master.str)??(Number(anterior&&anterior.baseSTR)||0)),
+    baseINT:(pvpNumeroMaster(master&&master.int)??(Number(anterior&&anterior.baseINT)||0)),
+    baseDEF:(pvpNumeroMaster(master&&master.def)??(Number(anterior&&anterior.baseDEF)||0)),
+    baseRES:(pvpNumeroMaster(master&&master.res)??(Number(anterior&&anterior.baseRES)||0)),
+    baseSPD:(pvpNumeroMaster(master&&master.spd)??(Number(anterior&&anterior.baseSPD)||0)),
+    elements:elements,
+    skills:skills
+  });
+}
+
+function pvpMesclarDatabaseMaster(dadosPvp,dadosMaster){
+  const porHgid=new Map();
+  (Array.isArray(dadosPvp)?dadosPvp:[]).forEach(function(item){
+    const hgid=normalizarHgid(item&&item.hgid);
+    if(hgid)porHgid.set(hgid,Object.assign({},item,{hgid:hgid}));
+  });
+  (Array.isArray(dadosMaster)?dadosMaster:[]).forEach(function(master){
+    const hgid=normalizarHgid(master&&master.hgid);
+    if(!hgid)return;
+    const anterior=porHgid.get(hgid)||null;
+    if(!anterior&&!pvpMasterCompletoParaPvp(master))return;
+    porHgid.set(hgid,pvpRegistroMaster(master,anterior));
+  });
+  return Array.from(porHgid.values());
+}
+
 async function pvpCarregarDatabase(){
   if(pvpDatabase.length)return pvpDatabase;
   if(pvpDadosCarregando)return pvpDadosCarregando;
-  pvpDadosCarregando=fetch(PVP_DATA_URL,{cache:"no-store"})
+  const detalhesPromise=fetch(PVP_DATA_URL,{cache:"no-store"})
     .then(function(resp){if(!resp.ok)throw new Error("HTTP "+resp.status);return resp.json()})
-    .then(function(data){
-      pvpDatabase=Array.isArray(data)?data:[];
+    .catch(function(erro){console.warn("[PvP] Detalhes legados indisponíveis",erro);return[]});
+  const masterPromise=(Array.isArray(database)&&database.length
+    ?Promise.resolve(database)
+    :chamarApiJsonp("database").then(function(resposta){return Array.isArray(resposta&&resposta.database)?resposta.database:[]}))
+    .catch(function(erro){console.warn("[PvP] MASTERS indisponível; usando detalhes legados",erro);return[]});
+  pvpDadosCarregando=Promise.all([detalhesPromise,masterPromise])
+    .then(function(fontes){
+      pvpDatabase=pvpMesclarDatabaseMaster(fontes[0],fontes[1]);
+      if(!pvpDatabase.length)throw new Error("Nenhuma fonte de dados PvP disponível.");
       const vistos=new Set();
       pvpDatabase.forEach(function(digi){
         digi.hgid=normalizarHgid(digi&&digi.hgid);
-        if(!digi.hgid||vistos.has(digi.hgid))throw new Error("HG_ID inválido ou duplicado em pvp-data.json: "+(digi&&digi.name||"registro desconhecido"));
+        if(!digi.hgid||vistos.has(digi.hgid))throw new Error("HG_ID inválido ou duplicado na DATABASE PvP: "+(digi&&digi.name||"registro desconhecido"));
         vistos.add(digi.hgid);
       });
       sincronizarIconesPvpComDatabase();pvpAtualizarTodosSlots();
@@ -12493,7 +12639,7 @@ async function pvpCarregarDatabase(){
       if(document.querySelector("#pvpSlots .pvp-slot"))pvpSalvarEstadoLocal();
       return pvpDatabase
     })
-    .catch(function(erro){console.error("[PvP] Falha ao carregar pvp-data.json",erro);alert("Não foi possível carregar a DATABASE PvP. Confirme que pvp-data.json está no GitHub ao lado do index.html.");return[]})
+    .catch(function(erro){console.error("[PvP] Falha ao carregar a DATABASE",erro);alert("Não foi possível carregar a DATABASE PvP.");return[]})
     .finally(function(){pvpDadosCarregando=null});
   return pvpDadosCarregando
 }
@@ -21005,4 +21151,41 @@ if(document.readyState==="loading"){
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(function(){pvpBattleCards=pvpV54ReadCards();pvpRenderBattleCardLoadout();pvpSincronizarStageRealDoTimeV535()},50)});
   else setTimeout(function(){pvpBattleCards=pvpV54ReadCards();pvpRenderBattleCardLoadout();pvpSincronizarStageRealDoTimeV535()},50);
   try{document.documentElement.setAttribute("data-hg-pvp-build","5.4-clean")}catch(erro){}
+})();
+
+/* =====================================================
+   PVP V5.5 — MATCH NO F5 + ROSTER MASTERS
+   Persiste apenas a subview. Estado de sala, Streamer e Rematch
+   continuam sob os fluxos V5.2/V5.3 existentes.
+===================================================== */
+(function(){
+  const PVP_LAST_VIEW_KEY="hg_pvp_last_subview_v2";
+
+  function pvpV55Route(){
+    return String(window.location.hash||"").replace(/^#/,"").split("/")[0].toLowerCase();
+  }
+  function pvpV55SaveView(nome){
+    try{sessionStorage.setItem(PVP_LAST_VIEW_KEY,String(nome||""))}catch(erro){}
+  }
+  const pvpV55MostrarView=pvpMostrarView;
+  pvpMostrarView=function(nome){
+    const result=pvpV55MostrarView.apply(this,arguments);
+    pvpV55SaveView(nome);
+    return result;
+  };
+
+  function pvpV55RestoreMatch(){
+    if(pvpV55Route()!=="pvp")return false;
+    try{if(new URL(window.location.href).searchParams.get("room"))return false}catch(erro){}
+    try{if(sessionStorage.getItem(PVP_LAST_VIEW_KEY)!=="match")return false}catch(erro){return false}
+    abrirPvpMatch();
+    return true;
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){setTimeout(pvpV55RestoreMatch,80)});
+  }else{
+    setTimeout(pvpV55RestoreMatch,80);
+  }
+  try{document.documentElement.setAttribute("data-hg-pvp-build","5.5-masters-match-refresh")}catch(erro){}
 })();
