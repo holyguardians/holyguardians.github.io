@@ -26864,3 +26864,103 @@ body.hg-pvp-streamer-mode #pvpPagina #pvpMatchJoinCode{letter-spacing:3px}
   #pvpPagina .pvp-match-room-side{width:100%;justify-content:space-between}
   #pvpPagina .pvp-streamer-toggle.compact{width:auto}
 }
+
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.2 — STREAMER FULL + QUICK EDIT
+   Full-screen stream layout and a return-to-match editing flow.
+===================================================== */
+#pvpPagina .pvp-streamer-exit{
+  position:fixed;
+  z-index:999999;
+  top:14px;
+  right:14px;
+  min-height:40px;
+  padding:0 14px;
+  border:1px solid rgba(185,119,255,.64);
+  border-radius:10px;
+  color:#f5ebff;
+  background:rgba(18,8,35,.95);
+  box-shadow:0 10px 28px rgba(0,0,0,.42),0 0 18px rgba(159,75,255,.12);
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  cursor:pointer;
+}
+#pvpPagina .pvp-streamer-exit:hover{border-color:#d5a6ff;color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.42),0 0 22px rgba(175,90,255,.24)}
+body.hg-pvp-stream-body{overflow-x:hidden}
+body.hg-pvp-stream-body .topbar{display:none!important}
+body.hg-pvp-stream-body #pvpPagina{min-height:100vh;width:100%}
+body.hg-pvp-stream-body #pvpPagina>.pvp-wrap{
+  width:100%!important;
+  max-width:none!important;
+  min-height:100vh;
+  margin:0!important;
+  padding:10px 14px 24px!important;
+}
+#pvpPagina.pvp-stream-mode #pvpMatchView .pvp-match-shell{width:100%;max-width:none!important;margin:0!important;padding:0!important}
+#pvpPagina.pvp-stream-mode #pvpMatchView .pvp-match-head{display:none!important}
+#pvpPagina.pvp-stream-mode #pvpMatchLobby .pvp-streamer-toolbar{display:none!important}
+#pvpPagina.pvp-stream-mode #pvpMatchLobby .pvp-match-lobby-grid{margin-top:0}
+#pvpPagina.pvp-stream-mode #pvpMatchBattle .pvp-battle-hud{margin-top:0}
+
+#pvpPagina .pvp-match-quick-edit-bar{
+  position:sticky;
+  z-index:500;
+  top:8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:0 0 14px;
+  padding:11px 13px;
+  border:1px solid rgba(75,211,255,.42);
+  background:linear-gradient(90deg,rgba(6,48,78,.97),rgba(5,21,48,.97) 58%,rgba(35,14,73,.95));
+  box-shadow:0 10px 24px rgba(0,0,0,.22),inset 0 0 18px rgba(59,203,255,.06);
+  backdrop-filter:blur(8px);
+}
+#pvpPagina .pvp-match-quick-edit-bar[hidden]{display:none!important}
+#pvpPagina .pvp-match-quick-edit-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+#pvpPagina .pvp-match-quick-edit-copy small{color:#62dcff;font-size:7px;font-weight:900;letter-spacing:1px}
+#pvpPagina .pvp-match-quick-edit-copy strong{color:#f2fbff;font-size:11px;font-weight:900;letter-spacing:.55px}
+#pvpPagina .pvp-match-quick-edit-copy span{color:#91b7d2;font-size:8px;font-weight:700;line-height:1.4}
+#pvpPagina .pvp-match-quick-edit-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+#pvpPagina .pvp-match-check-right{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0}
+#pvpPagina .pvp-match-check-action{
+  min-height:24px;
+  padding:3px 7px;
+  border:1px solid rgba(72,190,255,.35);
+  border-radius:5px;
+  background:rgba(7,39,76,.82);
+  color:#aeeaff;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.35px;
+  cursor:pointer;
+}
+#pvpPagina .pvp-match-check-action:hover{border-color:#55dbff;color:#fff;box-shadow:0 0 10px rgba(55,202,255,.12)}
+#pvpPagina .pvp-match-check-action.stage{border-color:rgba(183,118,255,.38);background:rgba(48,20,82,.72);color:#d8b8ff}
+#pvpPagina .pvp-match-check-fix{
+  width:100%;
+  min-height:31px;
+  margin-top:3px;
+  border:1px solid rgba(74,210,255,.42);
+  border-radius:6px;
+  background:linear-gradient(180deg,rgba(12,73,123,.72),rgba(5,38,79,.86));
+  color:#dcf7ff;
+  font-family:"Oxanium",Arial,sans-serif;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.55px;
+  cursor:pointer;
+}
+#pvpPagina .pvp-match-check-fix:hover{border-color:#59e4ff;color:#fff;box-shadow:0 0 13px rgba(58,210,255,.14)}
+@media(max-width:820px){
+  body.hg-pvp-stream-body #pvpPagina>.pvp-wrap{padding:8px!important}
+  #pvpPagina .pvp-streamer-exit{top:8px;right:8px;min-height:34px;padding:0 10px;font-size:7px}
+  #pvpPagina .pvp-match-quick-edit-bar{position:relative;top:auto;align-items:flex-start;flex-direction:column}
+  #pvpPagina .pvp-match-quick-edit-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  #pvpPagina .pvp-match-check-right{flex-wrap:wrap}
+}

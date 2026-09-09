@@ -19953,3 +19953,330 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 else aplicarHomeConfig();
 
 document.addEventListener("hg:languagechange", renderizarHomeConfig);
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.2 — STREAMER FULL + QUICK EDIT
+   Compatibility patch over V5.1. Keeps battle mechanics untouched.
+===================================================== */
+let pvpMatchStreamerRuntimeV52 = null;
+let pvpMatchQuickEditReturnV52 = false;
+let pvpMatchQuickEditTargetStageV52 = "";
+
+function pvpMatchStreamerModeAtivoV52(){
+  if(typeof pvpMatchStreamerRuntimeV52 === "boolean") return pvpMatchStreamerRuntimeV52;
+  try{
+    pvpMatchStreamerRuntimeV52 = localStorage.getItem(PVP_MATCH_STREAMER_KEY) === "1";
+  }catch(erro){
+    pvpMatchStreamerRuntimeV52 = false;
+  }
+  return pvpMatchStreamerRuntimeV52;
+}
+
+pvpMatchStreamerModeAtivo = function(){
+  return pvpMatchStreamerModeAtivoV52();
+};
+
+pvpMatchAplicarStreamerMode = function(){
+  const active = pvpMatchStreamerModeAtivoV52();
+  const pagina = document.getElementById("pvpPagina");
+  const matchView = document.getElementById("pvpMatchView");
+  const matchVisivel = !!(pagina && pagina.classList.contains("ativa") && matchView && matchView.classList.contains("ativa"));
+  const full = active && matchVisivel;
+
+  document.body.classList.toggle("hg-pvp-streamer-mode", active);
+  document.body.classList.toggle("hg-pvp-stream-body", full);
+  if(pagina) pagina.classList.toggle("pvp-stream-mode", full);
+
+  ["pvpStreamerModeLobbyBtn","pvpStreamerModeWaitingBtn"].forEach(function(id){
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    btn.classList.toggle("ativo", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    const state = btn.querySelector("b");
+    if(state) state.textContent = active ? "ON" : "OFF";
+  });
+
+  const exit = document.getElementById("pvpStreamerModeExit");
+  if(exit) exit.hidden = !full;
+
+  const join = document.getElementById("pvpMatchJoinCode");
+  if(join) join.type = active ? "password" : "text";
+
+  const state = pvpMatchRoomState || {};
+  const room = document.getElementById("pvpMatchRoomCode");
+  if(room) room.textContent = active && state.roomId ? "••••••" : (state.roomId || "------");
+
+  const invite = document.getElementById("pvpMatchInviteLink");
+  if(invite && invite.dataset.realInvite){
+    invite.value = active ? "STREAMER MODE // LINK OCULTO" : invite.dataset.realInvite;
+  }
+};
+
+pvpMatchToggleStreamerMode = function(forcar){
+  const next = typeof forcar === "boolean" ? forcar : !pvpMatchStreamerModeAtivoV52();
+  pvpMatchStreamerRuntimeV52 = next;
+  try{ localStorage.setItem(PVP_MATCH_STREAMER_KEY, next ? "1" : "0"); }catch(erro){}
+  pvpMatchAplicarStreamerMode();
+  if(next){
+    requestAnimationFrame(function(){
+      const view = document.getElementById("pvpMatchView");
+      if(view) view.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  }
+};
+
+function pvpMatchDiagnosticoV52(stageForcada){
+  const team = pvpMatchTeamAtual();
+  const slots = team && Array.isArray(team.slots) ? team.slots : [];
+  const filled = slots.filter(function(s){return s && s.hgid}).length;
+  const completos = slots.filter(function(s){return s && s.hgid && s.build && s.build.complete}).length;
+  const cards = team ? pvpNormalizarBattleCards(team.battleCards) : pvpCriarBattleCardsPadrao();
+  const cardsTotal = cards.filter(Boolean).length;
+  const teamStage = team && team.stage ? team.stage : pvpStageAtual;
+  const stageSelect = document.getElementById("pvpMatchCreateStage");
+  const roomStage = stageForcada || (stageSelect && stageSelect.value) || teamStage;
+  return {
+    team:team, slots:slots, filled:filled, completos:completos, cardsTotal:cardsTotal,
+    cardsOk:cardsTotal===3, teamStage:teamStage, roomStage:roomStage,
+    stageOk:teamStage===roomStage,
+    ready:filled===8 && completos===8 && cardsTotal===3 && teamStage===roomStage
+  };
+}
+
+function pvpMatchAtualizarQuickEditBarV52(){
+  const bar = document.getElementById("pvpMatchQuickEditBar");
+  if(!bar) return;
+  bar.hidden = !pvpMatchQuickEditReturnV52;
+  if(!pvpMatchQuickEditReturnV52) return;
+
+  const d = pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+  const faltas = [];
+  if(d.filled < 8) faltas.push((8-d.filled)+" Digimon"+(8-d.filled===1?"":"s")+" no time");
+  if(d.filled === 8 && d.completos < 8) faltas.push((8-d.completos)+" build"+(8-d.completos===1?"":"s")+" pendente"+(8-d.completos===1?"":"s"));
+  if(d.cardsTotal < 3) faltas.push((3-d.cardsTotal)+" Battle Card"+(3-d.cardsTotal===1?"":"s"));
+  if(!d.stageOk) faltas.push("Stage do time "+String(d.teamStage||"-").toUpperCase()+" ≠ Match "+String(d.roomStage||"-").toUpperCase());
+
+  const text = document.getElementById("pvpMatchQuickEditText");
+  if(text) text.textContent = faltas.length ? "Falta: "+faltas.join(" · ")+". Ao concluir os ajustes, você volta automaticamente para a Match." : "Tudo pronto. Voltando para a Match...";
+
+  const next = document.getElementById("pvpMatchQuickEditNextBtn");
+  if(next) next.disabled = d.ready;
+}
+
+function pvpMatchAbrirPrimeiroBuildPendenteV52(){
+  const slots = pvpBuildSlots();
+  let idx = slots.findIndex(function(slot){
+    return !!slot.dataset.hgid && !pvpGetSlotBuild(slot).complete;
+  });
+  if(idx < 0) idx = 0;
+  pvpBuildIndex = idx;
+  pvpMostrarView("individual");
+  pvpRenderBuildTabs();
+  pvpRenderBuildAtual();
+}
+
+function pvpMatchAbrirEditorRapido(tipo,stageForcada){
+  tipo = String(tipo || "auto").toLowerCase();
+
+  if(pvpMatchRoomState){
+    if(!confirm("Para editar o time, a Challenge Room atual precisa ser encerrada. Continuar?")) return;
+    pvpMatchSairSala(true);
+  }
+
+  const dAntes = pvpMatchDiagnosticoV52(stageForcada);
+  if(!pvpMatchQuickEditReturnV52){
+    pvpMatchQuickEditTargetStageV52 = stageForcada || dAntes.roomStage || dAntes.teamStage || pvpStageAtual;
+  }else if(stageForcada){
+    pvpMatchQuickEditTargetStageV52 = stageForcada;
+  }
+  pvpMatchQuickEditReturnV52 = true;
+
+  pvpCriarSlots();
+  pvpRenderBattleCardLoadout();
+  const d = pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+
+  if(tipo === "manual") {
+    pvpMatchAbrirPrimeiroBuildPendenteV52();
+  } else if(tipo === "builds") {
+    if(d.filled < 8) pvpMostrarView("build");
+    else pvpMatchAbrirPrimeiroBuildPendenteV52();
+  } else if(tipo === "cards" || tipo === "team" || tipo === "stage") {
+    pvpMostrarView("build");
+  } else {
+    if(d.filled < 8 || !d.stageOk || !d.cardsOk) pvpMostrarView("build");
+    else if(d.completos < 8) pvpMatchAbrirPrimeiroBuildPendenteV52();
+    else pvpMostrarView("build");
+  }
+
+  pvpMatchAtualizarQuickEditBarV52();
+  pvpMatchAplicarStreamerMode();
+  requestAnimationFrame(function(){
+    const bar = document.getElementById("pvpMatchQuickEditBar");
+    if(bar) bar.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+
+function pvpMatchCancelarEditorRapido(){
+  pvpSalvarEstadoLocal();
+  const stage = pvpMatchQuickEditTargetStageV52 || pvpStageAtual;
+  pvpMatchQuickEditReturnV52 = false;
+  pvpMostrarView("match");
+  const sel = document.getElementById("pvpMatchCreateStage");
+  if(sel) sel.value = stage;
+  pvpMatchTela("pvpMatchLobby");
+  pvpMatchAtualizarTeamCheck();
+  pvpMatchAtualizarQuickEditBarV52();
+  pvpMatchAplicarStreamerMode();
+}
+
+function pvpMatchTentarRetornoAutomaticoV52(avancar){
+  if(!pvpMatchQuickEditReturnV52) return false;
+  pvpSalvarEstadoLocal();
+  const d = pvpMatchDiagnosticoV52(pvpMatchQuickEditTargetStageV52);
+  pvpMatchAtualizarQuickEditBarV52();
+
+  if(d.ready){
+    const stage = pvpMatchQuickEditTargetStageV52 || d.teamStage || pvpStageAtual;
+    pvpMatchQuickEditReturnV52 = false;
+    pvpMostrarView("match");
+    const sel = document.getElementById("pvpMatchCreateStage");
+    if(sel) sel.value = stage;
+    pvpMatchTela("pvpMatchLobby");
+    pvpMatchAtualizarTeamCheck();
+    pvpMatchAtualizarQuickEditBarV52();
+    pvpMatchAplicarStreamerMode();
+    requestAnimationFrame(function(){
+      const lobby = document.getElementById("pvpMatchLobby");
+      if(lobby) lobby.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    return true;
+  }
+
+  if(avancar){
+    if(d.filled === 8 && d.cardsOk && d.completos < 8){
+      pvpMatchAbrirPrimeiroBuildPendenteV52();
+    }else if(d.filled === 8 && d.completos === 8 && !d.cardsOk){
+      pvpMostrarView("build");
+      pvpRenderBattleCardLoadout();
+    }
+    pvpMatchAtualizarQuickEditBarV52();
+  }
+  return false;
+}
+
+function pvpMatchUsarStageDoTimeV52(){
+  const d = pvpMatchDiagnosticoV52();
+  const sel = document.getElementById("pvpMatchCreateStage");
+  if(sel && d.teamStage) sel.value = d.teamStage;
+  pvpMatchQuickEditTargetStageV52 = d.teamStage || pvpMatchQuickEditTargetStageV52;
+  pvpMatchAtualizarTeamCheck();
+}
+
+pvpMatchAtualizarTeamCheck = function(){
+  const box = document.getElementById("pvpMatchTeamCheck");
+  if(!box) return;
+  const d = pvpMatchDiagnosticoV52();
+  const buildAction = d.filled < 8
+    ? '<button type="button" class="pvp-match-check-action" onclick="pvpMatchAbrirEditorRapido(\'team\')">EDITAR</button>'
+    : (!d.ready && d.completos < 8 ? '<button type="button" class="pvp-match-check-action" onclick="pvpMatchAbrirEditorRapido(\'builds\')">BUILD</button>' : '');
+  const cardAction = d.cardsOk ? '' : '<button type="button" class="pvp-match-check-action" onclick="pvpMatchAbrirEditorRapido(\'cards\')">EQUIPAR</button>';
+  const stageAction = d.stageOk ? '' : '<button type="button" class="pvp-match-check-action stage" onclick="pvpMatchUsarStageDoTimeV52()">USAR STAGE DO TIME</button>';
+
+  box.innerHTML =
+    '<div><span>TEAM</span><span class="pvp-match-check-right"><b class="'+(d.completos===8?'ok':'bad')+'">'+d.completos+'/8 BUILDS</b>'+buildAction+'</span></div>'+
+    '<div><span>BATTLE CARDS</span><span class="pvp-match-check-right"><b class="'+(d.cardsOk?'ok':'bad')+'">'+d.cardsTotal+'/3 EQUIPPED</b>'+cardAction+'</span></div>'+
+    '<div><span>STAGE DO TIME</span><span class="pvp-match-check-right"><b class="'+(d.stageOk?'ok':'bad')+'">'+pvpEscapeHtml(String(d.teamStage||"-").toUpperCase())+'</b></span></div>'+
+    '<div><span>STAGE DA SALA</span><span class="pvp-match-check-right"><b class="'+(d.stageOk?'ok':'bad')+'">'+pvpEscapeHtml(String(d.roomStage||"-").toUpperCase())+'</b>'+stageAction+'</span></div>'+
+    '<div><span>MATCH READY</span><span class="pvp-match-check-right"><b class="'+(d.ready?'ok':'bad')+'">'+(d.ready?'READY':'AJUSTE O TIME')+'</b></span></div>'+
+    (d.ready ? '' : '<button type="button" class="pvp-match-check-fix" onclick="pvpMatchAbrirEditorRapido(\'auto\')">CORRIGIR AGORA →</button>');
+};
+
+const _pvpSelecionarBattleCardV52 = pvpSelecionarBattleCard;
+pvpSelecionarBattleCard = function(slotNumero,id){
+  const out = _pvpSelecionarBattleCardV52(slotNumero,id);
+  pvpMatchTentarRetornoAutomaticoV52(true);
+  return out;
+};
+
+const _pvpConcluirBuildAtualV52 = pvpConcluirBuildAtual;
+pvpConcluirBuildAtual = function(){
+  const out = _pvpConcluirBuildAtualV52();
+  pvpMatchTentarRetornoAutomaticoV52(true);
+  return out;
+};
+
+const _pvpEscolherDigimonV52 = pvpEscolherDigimon;
+pvpEscolherDigimon = function(hgid){
+  const out = _pvpEscolherDigimonV52(hgid);
+  pvpMatchAtualizarQuickEditBarV52();
+  return out;
+};
+
+const _pvpSelecionarStageV52 = pvpSelecionarStage;
+pvpSelecionarStage = function(stage,level){
+  const out = _pvpSelecionarStageV52(stage,level);
+  pvpMatchAtualizarQuickEditBarV52();
+  return out;
+};
+
+const _pvpMostrarViewV52 = pvpMostrarView;
+pvpMostrarView = function(nome){
+  const out = _pvpMostrarViewV52(nome);
+  requestAnimationFrame(function(){
+    pvpMatchAtualizarQuickEditBarV52();
+    pvpMatchAplicarStreamerMode();
+  });
+  return out;
+};
+
+const _mostrarPaginaPvpV52 = mostrarPagina;
+mostrarPagina = function(id,botao,atualizarUrl){
+  if(id !== "pvpPagina"){
+    document.body.classList.remove("hg-pvp-stream-body");
+    const pagina = document.getElementById("pvpPagina");
+    if(pagina) pagina.classList.remove("pvp-stream-mode");
+    const exit = document.getElementById("pvpStreamerModeExit");
+    if(exit) exit.hidden = true;
+  }
+  const out = _mostrarPaginaPvpV52.apply(this,arguments);
+  if(id === "pvpPagina") requestAnimationFrame(pvpMatchAplicarStreamerMode);
+  return out;
+};
+
+const _pvpMatchCriarSalaV52 = pvpMatchCriarSala;
+pvpMatchCriarSala = function(){
+  const stage = document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
+  if(!pvpMatchTeamValido(pvpMatchTeamAtual(),stage)){
+    pvpMatchAbrirEditorRapido("auto",stage);
+    return;
+  }
+  return _pvpMatchCriarSalaV52();
+};
+
+const _pvpMatchIniciarTesteLocalV52 = pvpMatchIniciarTesteLocal;
+pvpMatchIniciarTesteLocal = function(){
+  const stage = document.getElementById("pvpMatchCreateStage")?.value || pvpStageAtual;
+  if(!pvpMatchTeamValido(pvpMatchTeamAtual(),stage)){
+    pvpMatchAbrirEditorRapido("auto",stage);
+    return;
+  }
+  return _pvpMatchIniciarTesteLocalV52();
+};
+
+const _pvpMatchEntrarSalaV52 = pvpMatchEntrarSala;
+pvpMatchEntrarSala = function(){
+  const team = pvpMatchTeamAtual();
+  if(!team || !pvpTodosBuildsConcluidos() || !pvpBattleCardsCompletos(team.battleCards)){
+    pvpMatchAbrirEditorRapido("auto");
+    return;
+  }
+  return _pvpMatchEntrarSalaV52();
+};
+
+// Reaplica o estado ao carregar. O query-string V5.2 no index também evita
+// que o navegador mantenha o script V5 em cache enquanto o HTML já é V5.2.
+document.addEventListener("DOMContentLoaded",function(){
+  pvpMatchStreamerRuntimeV52 = null;
+  pvpMatchAplicarStreamerMode();
+  pvpMatchAtualizarQuickEditBarV52();
+});
