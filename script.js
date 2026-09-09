@@ -11998,7 +11998,7 @@ let pvpTeamDeck=pvpCriarTeamDeckPadrao();
 const PVP_BATTLE_CARD_DEFS = {
   hp:{id:"hp",name:"HP Change Data L",short:"HP +600",icon:"PVP_ASSETS/pvp_pot_hp.png",kind:"hp",amount:600},
   sp:{id:"sp",name:"SP Change Data L",short:"SP +300",icon:"PVP_ASSETS/pvp_pot_sp.png",kind:"sp",amount:300},
-  atk:{id:"atk",name:"Attack Charge Data L",short:"ATK +20% · 3T",icon:"PVP_ASSETS/pvp_pot_atk.png",kind:"atk",pct:20,turns:3},
+  atk:{id:"atk",name:"Attack Charge Data L",short:"STR +20% · 3T",icon:"PVP_ASSETS/pvp_pot_atk.png",kind:"atk",pct:20,turns:3},
   def:{id:"def",name:"Defense Charge Data L",short:"DEF +20% · 3T",icon:"PVP_ASSETS/pvp_pot_def.png",kind:"def",pct:20,turns:3}
 };
 
@@ -13988,7 +13988,9 @@ abrirPvpMatch=function(){
     const nick=document.getElementById("pvpMatchNick");
     if(nick&&!nick.value)nick.value=localStorage.getItem(PVP_MATCH_NICK_KEY)||"";
     const stage=document.getElementById("pvpMatchCreateStage");
-    if(stage)stage.value=pvpStageAtual;
+    const savedTeam=pvpMatchTeamAtual();
+    const savedStage=savedTeam&&savedTeam.stage?savedTeam.stage:pvpStageAtual;
+    if(stage)stage.value=savedStage;
     pvpMatchAtualizarTeamCheck();
     pvpMatchAtualizarServerHint();
     pvpMatchSetConnection("offline");
@@ -14515,8 +14517,8 @@ function pvpBattleApplyCardState(b,role,slotNo,targetId){
   target.tempBuffs=target.tempBuffs||{};
   if(def.kind==="hp")target.hp=Math.min(target.maxHp,Number(target.hp||0)+Number(def.amount||0));
   else if(def.kind==="sp")target.sp=Math.min(target.maxSp,Number(target.sp||0)+Number(def.amount||0));
-  else if(def.kind==="atk")target.tempBuffs.ATTACK={pct:Number(def.pct)||20,turns:Number(def.turns)||3,type:"ATK +20%",icon:def.icon,description:"Attack power increased by 20%."};
-  else if(def.kind==="def")target.tempBuffs.DEFENSE={pct:Number(def.pct)||20,turns:Number(def.turns)||3,type:"DEF +20%",icon:def.icon,description:"Defense increased by 20%."};
+  else if(def.kind==="atk")target.tempBuffs.CARD_STR={pct:Number(def.pct)||20,turns:Number(def.turns)||3,type:"STR +20%",icon:def.icon,description:"STR increased by 20%."};
+  else if(def.kind==="def")target.tempBuffs.CARD_DEF={pct:Number(def.pct)||20,turns:Number(def.turns)||3,type:"DEF +20%",icon:def.icon,description:"DEF increased by 20%."};
   pvpBattleLog((pvpMatchPlayer(role)&&pvpMatchPlayer(role).nick||"Player")+" uses ["+def.name+"] on "+target.name+" · Cost 1 Gauge.");
   return true;
 }
@@ -14737,10 +14739,10 @@ function pvpBattleComputeDamage(actor,target,slot,skill,isBurst){
   const element=pvpBattleElementForSkill(slot,skill),boost=Number(slot.build.attrBoost&&slot.build.attrBoost[element]||0),dmgInfo=pvpSkillDamage(skill,element,boost,isBurst?3:1);
   if(!dmgInfo.available)return {damage:0,crit:false,element:element};
   const useStr=String(element).toUpperCase()==="PHYSICAL";let offense=useStr?actor.stats.STR:actor.stats.INT,defense=useStr?target.stats.DEF:target.stats.RES;
-  const genericAtk=actor.tempBuffs&&actor.tempBuffs.ATTACK;if(genericAtk&&genericAtk.turns>0)offense*=1+Number(genericAtk.pct||0)/100;
+  const cardStr=actor.tempBuffs&&(actor.tempBuffs.CARD_STR||actor.tempBuffs.ATTACK);if(useStr&&cardStr&&cardStr.turns>0)offense*=1+Number(cardStr.pct||0)/100;
   Object.keys(actor.tempBuffs||{}).forEach(function(k){const bf=actor.tempBuffs[k];if(bf&&bf.turns>0&&k===(useStr?"STR":"INT"))offense*=1+Number(bf.pct||0)/100});
   if(pvpBattleStatusTurns(target.status.defBreak)>0)defense*=.80;
-  const genericDef=target.tempBuffs&&target.tempBuffs.DEFENSE;if(genericDef&&genericDef.turns>0)defense*=1+Number(genericDef.pct||0)/100;
+  const cardDef=target.tempBuffs&&(target.tempBuffs.CARD_DEF||target.tempBuffs.DEFENSE);if(useStr&&cardDef&&cardDef.turns>0)defense*=1+Number(cardDef.pct||0)/100;
   Object.keys(target.tempBuffs||{}).forEach(function(k){const bf=target.tempBuffs[k];if(bf&&bf.turns>0&&k===(useStr?"DEF":"RES"))defense*=1+Number(bf.pct||0)/100});
   const raw=offense*(dmgInfo.total/100),mitigation=offense/(offense+Math.max(1,defense)*.72);let damage=raw*mitigation;
   const rangeMin=Number(actor.crit.damageRangeMin||95),rangeMax=Number(actor.crit.damageRangeMax||105);damage*=pvpBattleRandom(rangeMin,rangeMax)/100;
