@@ -20913,3 +20913,193 @@ if(document.readyState==="loading"){
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(reconciliarV535,30)});
   else setTimeout(reconciliarV535,30);
 })();
+
+
+/* =====================================================
+   PVP V5.3.6 — PERSISTÊNCIA REAL DAS POTS + STAGE CANÔNICA
+   - Battle Cards usam um preset V2 redundante, salvo também dentro do team.
+   - Stage é derivada dos 8 Digimons reais do roster, com fallback visual.
+   - Local Test força o Stage Lock correto antes e depois de criar LOCAL01.
+===================================================== */
+(function(){
+  const PVP_BATTLE_CARD_PRESET_KEY_V536="hg_pvp_battle_cards_v2";
+
+  function pvpLerCardsDaChaveV536(chave){
+    try{
+      const raw=JSON.parse(localStorage.getItem(chave)||"null");
+      if(!Array.isArray(raw))return null;
+      const cards=pvpNormalizarBattleCards(raw);
+      return cards.some(Boolean)?cards:null;
+    }catch(erro){return null}
+  }
+
+  function pvpLerCardsDoTeamSalvoV536(){
+    try{
+      const team=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+      if(!team||!Array.isArray(team.battleCards))return null;
+      const cards=pvpNormalizarBattleCards(team.battleCards);
+      return cards.some(Boolean)?cards:null;
+    }catch(erro){return null}
+  }
+
+  function pvpLerBattleCardsPersistentesV536(){
+    return pvpLerCardsDaChaveV536(PVP_BATTLE_CARD_PRESET_KEY_V536)
+      ||pvpLerCardsDaChaveV536(PVP_BATTLE_CARD_PRESET_KEY)
+      ||pvpLerCardsDoTeamSalvoV536()
+      ||null;
+  }
+
+  function pvpSalvarBattleCardsPersistentesV536(cards){
+    const normal=pvpNormalizarBattleCards(cards);
+    try{localStorage.setItem(PVP_BATTLE_CARD_PRESET_KEY_V536,JSON.stringify(normal))}catch(erro){}
+    try{localStorage.setItem(PVP_BATTLE_CARD_PRESET_KEY,JSON.stringify(normal))}catch(erro){}
+    try{
+      const team=JSON.parse(localStorage.getItem(PVP_STORAGE_KEY)||"null");
+      if(team&&team.format==="holy-guardians-pvp-team"){
+        team.battleCards=normal;
+        localStorage.setItem(PVP_STORAGE_KEY,JSON.stringify(team));
+      }
+    }catch(erro){}
+    return normal;
+  }
+
+  // Hidrata ANTES do DOMContentLoaded, impedindo que um refresh grave 0/3 por cima.
+  const cardsIniciaisV536=pvpLerBattleCardsPersistentesV536();
+  if(cardsIniciaisV536)pvpBattleCards=cardsIniciaisV536.slice();
+
+  const _pvpSelecionarBattleCardV536=pvpSelecionarBattleCard;
+  pvpSelecionarBattleCard=function(slotNumero,id){
+    const out=_pvpSelecionarBattleCardV536.apply(this,arguments);
+    pvpSalvarBattleCardsPersistentesV536(pvpBattleCards);
+    return out;
+  };
+
+  const _pvpSalvarEstadoLocalV536=pvpSalvarEstadoLocal;
+  pvpSalvarEstadoLocal=function(){
+    const out=_pvpSalvarEstadoLocalV536.apply(this,arguments);
+    pvpSalvarBattleCardsPersistentesV536(pvpBattleCards);
+    return out;
+  };
+
+  const _pvpRestaurarEstadoLocalV536=pvpRestaurarEstadoLocal;
+  pvpRestaurarEstadoLocal=function(){
+    const out=_pvpRestaurarEstadoLocalV536.apply(this,arguments);
+    const persistidas=pvpLerBattleCardsPersistentesV536();
+    if(persistidas)pvpBattleCards=persistidas.slice();
+    if(pvpBattleCards&&pvpBattleCards.some(Boolean))pvpSalvarBattleCardsPersistentesV536(pvpBattleCards);
+    pvpRenderBattleCardLoadout();
+    return out;
+  };
+
+  const _pvpAplicarEstadoV536=pvpAplicarEstado;
+  pvpAplicarEstado=function(pacote){
+    const out=_pvpAplicarEstadoV536.apply(this,arguments);
+    const persistidas=pvpLerBattleCardsPersistentesV536();
+    if(persistidas)pvpBattleCards=persistidas.slice();
+    if(pvpBattleCards&&pvpBattleCards.some(Boolean))pvpSalvarBattleCardsPersistentesV536(pvpBattleCards);
+    pvpRenderBattleCardLoadout();
+    return out;
+  };
+
+  // Captura a seleção mesmo se outro wrapper futuro interceptar o onchange inline.
+  document.addEventListener("change",function(event){
+    const select=event.target&&event.target.closest?event.target.closest("#pvpBattleCardLoadout select"):null;
+    if(!select)return;
+    setTimeout(function(){pvpSalvarBattleCardsPersistentesV536(pvpBattleCards)},0);
+  },true);
+  window.addEventListener("pagehide",function(){pvpSalvarBattleCardsPersistentesV536(pvpBattleCards)});
+
+  const _pvpLimparTimeCompletoV536=pvpLimparTimeCompleto;
+  pvpLimparTimeCompleto=function(){
+    const out=_pvpLimparTimeCompletoV536.apply(this,arguments);
+    try{
+      if(!pvpBattleCards||!pvpBattleCards.some(Boolean))localStorage.removeItem(PVP_BATTLE_CARD_PRESET_KEY_V536);
+    }catch(erro){}
+    return out;
+  };
+
+  function pvpCanonizarStageV536(valor){
+    const key=String(valor||"").trim().toUpperCase();
+    if(key==="ROOKIE")return "Rookie";
+    if(key==="CHAMPION")return "Champion";
+    if(key==="ULTIMATE")return "Ultimate";
+    if(key==="MEGA")return "Mega";
+    return "";
+  }
+
+  function pvpStageDoSlotV536(slot){
+    if(!slot)return "";
+    const hgid=normalizarHgid(slot.dataset&&slot.dataset.hgid);
+    const nome=String(slot.dataset&&slot.dataset.digimon||"").trim().toLowerCase();
+    let digi=null;
+    if(Array.isArray(pvpDatabase)&&pvpDatabase.length){
+      if(hgid)digi=pvpDatabase.find(function(item){return mesmoHgid(item&&item.hgid,hgid)})||null;
+      if(!digi&&nome)digi=pvpDatabase.find(function(item){return String(item&&item.name||"").trim().toLowerCase()===nome})||null;
+    }
+    let stage=pvpCanonizarStageV536(digi&&digi.stage);
+    if(stage)return stage;
+    const meta=slot.querySelector&&slot.querySelector(".pvp-slot-meta");
+    const visual=String(meta&&meta.textContent||"").toUpperCase();
+    const achou=visual.match(/\b(ROOKIE|CHAMPION|ULTIMATE|MEGA)\b/);
+    return achou?pvpCanonizarStageV536(achou[1]):"";
+  }
+
+  function pvpStageRealDoTimeV536(){
+    const slots=typeof pvpBuildSlots==="function"?pvpBuildSlots():Array.from(document.querySelectorAll("#pvpSlots .pvp-slot"));
+    const usados=slots.filter(function(slot){return !!normalizarHgid(slot&&slot.dataset&&slot.dataset.hgid)});
+    if(usados.length!==8)return "";
+    const stages=usados.map(pvpStageDoSlotV536).filter(Boolean);
+    if(stages.length!==8)return "";
+    const unicas=Array.from(new Set(stages));
+    return unicas.length===1?unicas[0]:"";
+  }
+
+  pvpStageRealDoTimeV535=pvpStageRealDoTimeV536;
+  pvpSincronizarStageRealDoTimeV535=function(){
+    const real=pvpStageRealDoTimeV536();
+    if(!real)return "";
+    pvpStageAtual=real;
+    const label=document.getElementById("pvpStageLabel");
+    if(label)label.textContent=pvpStageTexto(real);
+    const select=document.getElementById("pvpMatchCreateStage");
+    if(select)select.value=real;
+    return real;
+  };
+
+  const _pvpMatchIniciarTesteLocalV536=pvpMatchIniciarTesteLocal;
+  pvpMatchIniciarTesteLocal=function(){
+    const real=pvpSincronizarStageRealDoTimeV535();
+    if(real){
+      pvpStageAtual=real;
+      const select=document.getElementById("pvpMatchCreateStage");if(select)select.value=real;
+      pvpSalvarEstadoLocal();
+    }
+    const out=_pvpMatchIniciarTesteLocalV536.apply(this,arguments);
+    if(real&&pvpMatchLocalMode&&pvpMatchRoomState&&pvpMatchRoomState.roomId==="LOCAL01"){
+      pvpMatchRoomState.stage=real;
+      ["host","guest"].forEach(function(role){
+        const player=pvpMatchRoomState.players&&pvpMatchRoomState.players[role];
+        if(player&&player.team)player.team.stage=real;
+      });
+      pvpMatchRenderByPhase();
+    }
+    return out;
+  };
+
+  function reconciliarV536(){
+    const persistidas=pvpLerBattleCardsPersistentesV536();
+    if(persistidas){pvpBattleCards=persistidas.slice();pvpRenderBattleCardLoadout()}
+    Promise.resolve(pvpCarregarDatabase()).then(function(){
+      const real=pvpSincronizarStageRealDoTimeV535();
+      if(real){
+        pvpStageAtual=real;
+        const select=document.getElementById("pvpMatchCreateStage");if(select)select.value=real;
+        pvpSalvarEstadoLocal();
+      }
+      if(typeof pvpMatchAtualizarTeamCheck==="function")pvpMatchAtualizarTeamCheck();
+    }).catch(function(){});
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(reconciliarV536,60)});
+  else setTimeout(reconciliarV536,60);
+})();
