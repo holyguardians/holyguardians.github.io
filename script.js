@@ -20547,3 +20547,290 @@ if(document.readyState==="loading"){
 }else{
   setTimeout(pvpMatchAbrirConviteNoLobbyV532,0);
 }
+
+/* =====================================================
+   CHALLENGE ROOM ALPHA V5.3.3 — SMART INVITE LOBBY
+   Invite links open directly in a safe room preview. The challenger can
+   see the host/stage immediately, fix missing requirements, then join.
+===================================================== */
+let pvpMatchInvitePreviewV533 = null;
+let pvpMatchInviteEditingV533 = false;
+let pvpMatchInviteSmartStartedV533 = false;
+let pvpMatchInviteJoiningV533 = false;
+
+function pvpMatchInvitePreviewAtivoV533(){
+  return !!(pvpMatchInvitePreviewV533 && !pvpMatchRoomState);
+}
+
+function pvpMatchInviteNickV533(){
+  const own=document.getElementById("pvpMatchInviteNick");
+  const lobby=document.getElementById("pvpMatchNick");
+  let nick=String(own&&own.value||lobby&&lobby.value||"").replace(/[^A-Za-z0-9]/g,"").slice(0,16);
+  if(!nick){try{nick=String(localStorage.getItem(PVP_MATCH_NICK_KEY)||"").replace(/[^A-Za-z0-9]/g,"").slice(0,16)}catch(erro){}}
+  return nick;
+}
+
+function pvpMatchInviteNickInputV533(input){
+  if(!input)return;
+  pvpMatchSanitizarNick(input);
+  const lobby=document.getElementById("pvpMatchNick");
+  if(lobby)lobby.value=input.value;
+  pvpMatchRenderInvitePreviewV533();
+}
+
+function pvpMatchInviteDiagnosticoV533(){
+  const preview=pvpMatchInvitePreviewV533||{};
+  const d=pvpMatchDiagnosticoV52(preview.stage||undefined);
+  const nick=pvpMatchInviteNickV533();
+  const nickOk=/^[A-Za-z0-9]{3,16}$/.test(nick);
+  const lobbyLivre=preview.phase==="lobby"&&!preview.guest;
+  return Object.assign({},d,{
+    nick:nick,
+    nickOk:nickOk,
+    lobbyLivre:lobbyLivre,
+    accessReady:nickOk&&d.ready&&lobbyLivre
+  });
+}
+
+function pvpMatchInviteSetPlayerCardV533(id,name,roleLabel,extraClass){
+  const card=document.getElementById(id);if(!card)return;
+  const strong=card.querySelector("strong"),span=card.querySelector("span");
+  if(strong)strong.textContent=name||"AGUARDANDO...";
+  if(span)span.textContent=roleLabel||"";
+  card.classList.remove("ready","invite-you","invite-blocked");
+  if(extraClass)card.classList.add(extraClass);
+}
+
+function pvpMatchRenderInvitePreviewV533(){
+  const preview=pvpMatchInvitePreviewV533;if(!preview)return;
+  const waiting=document.getElementById("pvpMatchWaiting"),prep=document.getElementById("pvpMatchInvitePrep");
+  if(!waiting||!prep)return;
+
+  pvpMostrarView("match");
+  pvpMatchTela("pvpMatchWaiting");
+  waiting.classList.add("invite-preview");
+  prep.hidden=false;
+
+  const streamer=typeof pvpMatchStreamerModeAtivoV52==="function"?pvpMatchStreamerModeAtivoV52():pvpMatchStreamerModeAtivo();
+  const room=document.getElementById("pvpMatchRoomCode");if(room)room.textContent=streamer?"••••••":String(preview.roomId||"------");
+  const stage=document.getElementById("pvpMatchRoomStage");if(stage)stage.textContent=String(preview.stage||"-").toUpperCase();
+
+  const d=pvpMatchInviteDiagnosticoV533();
+  pvpMatchInviteSetPlayerCardV533("pvpMatchHostCard",preview.host&&preview.host.nick||"HOST","HOST","");
+  if(preview.guest){
+    pvpMatchInviteSetPlayerCardV533("pvpMatchGuestCard",preview.guest.nick||"CHALLENGER","SALA OCUPADA","invite-blocked");
+  }else{
+    pvpMatchInviteSetPlayerCardV533("pvpMatchGuestCard",d.nickOk?d.nick:"VOCÊ","CHALLENGER","invite-you");
+  }
+
+  const nickInput=document.getElementById("pvpMatchInviteNick");
+  if(nickInput&&document.activeElement!==nickInput)nickInput.value=d.nick||"";
+
+  const req=document.getElementById("pvpMatchInviteRequirements");
+  const hasTeam=d.filled>0;
+  const stageVisualOk=hasTeam&&d.stageOk;
+  if(req){
+    req.innerHTML=
+      '<div><span class="pvp-invite-row-label">NICK</span><span class="pvp-match-check-right"><b class="'+(d.nickOk?'ok':'bad')+'">'+(d.nickOk?pvpEscapeHtml(d.nick):'NÃO DEFINIDO')+'</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">TEAM</span><span class="pvp-match-check-right"><b class="'+(d.filled===8?'ok':'bad')+'">'+d.filled+'/8 DIGIMONS</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">BUILDS</span><span class="pvp-match-check-right"><b class="'+(d.completos===8?'ok':'bad')+'">'+d.completos+'/8 COMPLETE</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">BATTLE CARDS <small>/ POTS</small></span><span class="pvp-match-check-right"><b class="'+(d.cardsOk?'ok':'bad')+'">'+d.cardsTotal+'/3 SELECTED</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">STAGE DO TIME</span><span class="pvp-match-check-right"><b class="'+(stageVisualOk?'ok':'bad')+'">'+pvpEscapeHtml(hasTeam?String(d.teamStage||"-").toUpperCase():'NÃO CRIADO')+'</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">STAGE DA SALA</span><span class="pvp-match-check-right"><b class="ok">'+pvpEscapeHtml(String(preview.stage||"-").toUpperCase())+'</b></span></div>'+ 
+      '<div><span class="pvp-invite-row-label">MATCH READY</span><span class="pvp-match-check-right"><b class="'+(d.accessReady?'ok':'bad')+'">'+(d.accessReady?'READY':'AJUSTE NECESSÁRIO')+'</b></span></div>';
+  }
+
+  const alertBox=document.getElementById("pvpMatchInviteAlert"),badge=document.getElementById("pvpMatchInviteStatusBadge");
+  const faltas=[];
+  if(!d.nickOk)faltas.push("defina um nick de 3 a 16 caracteres");
+  if(d.filled<8)faltas.push("selecione 8 Digimons");
+  if(d.completos<8)faltas.push("conclua os 8 builds");
+  if(d.cardsTotal<3)faltas.push("selecione 3 Battle Cards / Pots");
+  if(hasTeam&&!d.stageOk)faltas.push("o time precisa ser "+String(preview.stage||"-").toUpperCase());
+
+  const blocked=preview.phase!=="lobby"||!!preview.guest;
+  if(alertBox){
+    alertBox.classList.remove("ok","blocked");
+    if(preview.phase!=="lobby"){
+      alertBox.classList.add("blocked");
+      alertBox.textContent="Esta Challenge Room já iniciou a partida. Peça ao host um novo convite quando a sala voltar ao lobby.";
+    }else if(preview.guest){
+      alertBox.classList.add("blocked");
+      alertBox.textContent="Esta Challenge Room já possui um Challenger conectado.";
+    }else if(faltas.length){
+      alertBox.innerHTML='<strong>ANTES DE ENTRAR:</strong> '+faltas.map(pvpEscapeHtml).join(' · ')+'.';
+    }else{
+      alertBox.classList.add("ok");
+      alertBox.textContent="Tudo pronto. Seu time atende aos requisitos desta sala.";
+    }
+  }
+  if(badge){
+    badge.classList.remove("ok","blocked");
+    if(blocked){badge.textContent="INDISPONÍVEL";badge.classList.add("blocked")}
+    else if(d.accessReady){badge.textContent="READY";badge.classList.add("ok")}
+    else badge.textContent="AJUSTAR";
+  }
+
+  const copy=document.getElementById("pvpMatchInvitePrepCopy");
+  if(copy)copy.textContent="Sala "+String(preview.stage||"-").toUpperCase()+" encontrada. Corrija apenas o que estiver em vermelho e entre sem voltar ao menu.";
+  const msg=document.getElementById("pvpMatchWaitingMessage");
+  if(msg){
+    if(blocked)msg.textContent="CONVITE RECONHECIDO // SALA INDISPONÍVEL";
+    else if(d.accessReady)msg.textContent="CONVITE RECONHECIDO // TUDO PRONTO PARA ENTRAR";
+    else msg.textContent="CONVITE RECONHECIDO // COMPLETE OS REQUISITOS ABAIXO";
+  }
+
+  const fix=document.getElementById("pvpMatchInviteFixBtn");
+  if(fix){fix.textContent=d.filled===0?"CRIAR TIME":"EDITAR / CORRIGIR TIME";fix.disabled=blocked}
+  const join=document.getElementById("pvpMatchInviteJoinBtn");
+  if(join){join.disabled=!d.accessReady||pvpMatchInviteJoiningV533;join.textContent=pvpMatchInviteJoiningV533?"ENTRANDO...":"ENTRAR NA SALA"}
+
+  pvpMatchAplicarStreamerMode();
+}
+
+async function pvpMatchBuscarPreviewV533(room){
+  return pvpMatchRequest("/api/rooms/"+encodeURIComponent(room)+"/preview",{method:"GET"});
+}
+
+function pvpMatchInviteCorrigirV533(){
+  const preview=pvpMatchInvitePreviewV533;if(!preview||preview.phase!=="lobby"||preview.guest)return;
+  pvpMatchInviteEditingV533=true;
+  pvpMatchAbrirEditorRapido("auto",preview.stage||undefined);
+  pvpMatchAtualizarQuickEditBarV52();
+}
+
+async function pvpMatchInviteEntrarV533(){
+  if(pvpMatchInviteJoiningV533)return;
+  const preview=pvpMatchInvitePreviewV533;if(!preview)return;
+  const d=pvpMatchInviteDiagnosticoV533();
+  if(!d.accessReady){pvpMatchRenderInvitePreviewV533();return}
+  const team=pvpMatchTeamAtual();
+  pvpMatchInviteJoiningV533=true;pvpMatchRenderInvitePreviewV533();
+  try{
+    const fresh=await pvpMatchBuscarPreviewV533(preview.roomId);
+    if(!fresh||fresh.phase!=="lobby"||fresh.guest){
+      pvpMatchInvitePreviewV533=fresh||preview;
+      throw new Error(fresh&&fresh.guest?"Esta sala acabou de receber outro Challenger.":"Esta sala não está mais disponível para entrada.");
+    }
+    const data=await pvpMatchRequest("/api/rooms/"+encodeURIComponent(preview.roomId)+"/join",{method:"POST",body:JSON.stringify({nick:d.nick,team:team})});
+    try{localStorage.setItem(PVP_MATCH_NICK_KEY,d.nick)}catch(erro){}
+    const lobbyNick=document.getElementById("pvpMatchNick");if(lobbyNick)lobbyNick.value=d.nick;
+    pvpMatchRole="guest";pvpMatchToken=data.token;pvpMatchRoomId=data.roomId;pvpMatchLocalMode=false;
+    pvpMatchInvitePreviewV533=null;pvpMatchInviteEditingV533=false;pvpMatchInviteJoiningV533=false;
+    const waiting=document.getElementById("pvpMatchWaiting");if(waiting)waiting.classList.remove("invite-preview");
+    const prep=document.getElementById("pvpMatchInvitePrep");if(prep)prep.hidden=true;
+    pvpMatchConectarSocket();
+  }catch(erro){
+    pvpMatchInviteJoiningV533=false;
+    try{pvpMatchInvitePreviewV533=await pvpMatchBuscarPreviewV533(preview.roomId)}catch(e){}
+    pvpMatchRenderInvitePreviewV533();
+    alert(erro&&erro.message?erro.message:String(erro));
+  }
+}
+
+async function pvpMatchAbrirConviteSmartV533(){
+  const room=pvpMatchRoomFromUrlV532();
+  if(!room||pvpMatchInviteSmartStartedV533)return false;
+  pvpMatchInviteSmartStartedV533=true;
+  abrirPvpMatch();
+  try{
+    await pvpCarregarDatabase();
+    const preview=await pvpMatchBuscarPreviewV533(room);
+    pvpMatchInvitePreviewV533=preview;
+    const saved=pvpMatchInviteNickV533();
+    const inviteNick=document.getElementById("pvpMatchInviteNick");if(inviteNick)inviteNick.value=saved;
+    pvpMatchRenderInvitePreviewV533();
+    requestAnimationFrame(function(){
+      const waiting=document.getElementById("pvpMatchWaiting");if(waiting)waiting.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    return true;
+  }catch(erro){
+    pvpMatchInvitePreviewV533=null;
+    pvpMatchTela("pvpMatchLobby");
+    pvpMatchAtualizarTeamCheck();
+    alert("Não foi possível abrir este convite de Challenge Room. "+(erro&&erro.message?erro.message:""));
+    return false;
+  }
+}
+
+// Replace the V5.3.2 generic invite behavior with the smart room preview.
+pvpMatchAbrirConviteNoLobbyV532=function(){
+  pvpMatchAbrirConviteSmartV533();
+  return true;
+};
+
+// Streamer Mode also knows the Room ID while the user is only previewing an invite.
+const _pvpMatchAplicarStreamerModeV533=pvpMatchAplicarStreamerMode;
+pvpMatchAplicarStreamerMode=function(){
+  const out=_pvpMatchAplicarStreamerModeV533.apply(this,arguments);
+  if(pvpMatchInvitePreviewAtivoV533()){
+    const active=typeof pvpMatchStreamerModeAtivoV52==="function"?pvpMatchStreamerModeAtivoV52():pvpMatchStreamerModeAtivo();
+    const room=document.getElementById("pvpMatchRoomCode");
+    if(room)room.textContent=active?"••••••":String(pvpMatchInvitePreviewV533.roomId||"------");
+  }
+  return out;
+};
+
+// When the real WebSocket room state arrives, leave preview mode automatically.
+const _pvpMatchRenderWaitingV533=pvpMatchRenderWaiting;
+pvpMatchRenderWaiting=function(){
+  const out=_pvpMatchRenderWaitingV533.apply(this,arguments);
+  if(pvpMatchRoomState){
+    const waiting=document.getElementById("pvpMatchWaiting");if(waiting)waiting.classList.remove("invite-preview");
+    const prep=document.getElementById("pvpMatchInvitePrep");if(prep)prep.hidden=true;
+  }
+  return out;
+};
+
+// Quick Edit returns to the invitation preview instead of the generic Match lobby.
+const _pvpMatchAtualizarQuickEditBarV533=pvpMatchAtualizarQuickEditBarV52;
+pvpMatchAtualizarQuickEditBarV52=function(){
+  const out=_pvpMatchAtualizarQuickEditBarV533.apply(this,arguments);
+  if(pvpMatchInviteEditingV533){
+    const text=document.getElementById("pvpMatchQuickEditText");
+    if(text)text.textContent=String(text.textContent||"").replace("você volta automaticamente para a Match","você volta automaticamente para o convite").replace("o time é sincronizado e você volta automaticamente para a sala","você volta automaticamente para o convite");
+  }
+  return out;
+};
+
+const _pvpMatchTentarRetornoAutomaticoV533=pvpMatchTentarRetornoAutomaticoV52;
+pvpMatchTentarRetornoAutomaticoV52=function(avancar){
+  if(!pvpMatchInviteEditingV533)return _pvpMatchTentarRetornoAutomaticoV533(avancar);
+  if(!pvpMatchQuickEditReturnV52||!pvpMatchInvitePreviewV533)return false;
+  pvpSalvarEstadoLocal();
+  const d=pvpMatchDiagnosticoV52(pvpMatchInvitePreviewV533.stage||undefined);
+  pvpMatchAtualizarQuickEditBarV52();
+  if(d.ready){
+    pvpMatchQuickEditReturnV52=false;
+    pvpMatchInviteEditingV533=false;
+    pvpMostrarView("match");
+    pvpMatchTela("pvpMatchWaiting");
+    pvpMatchRenderInvitePreviewV533();
+    requestAnimationFrame(function(){const waiting=document.getElementById("pvpMatchWaiting");if(waiting)waiting.scrollIntoView({behavior:"smooth",block:"start"})});
+    return true;
+  }
+  if(avancar){
+    if(d.filled===8&&d.cardsOk&&d.completos<8)pvpMatchAbrirPrimeiroBuildPendenteV52();
+    else if(d.filled===8&&d.completos===8&&!d.cardsOk){pvpMostrarView("build");pvpRenderBattleCardLoadout()}
+    pvpMatchAtualizarQuickEditBarV52();
+  }
+  return false;
+};
+
+const _pvpMatchCancelarEditorRapidoV533=pvpMatchCancelarEditorRapido;
+pvpMatchCancelarEditorRapido=function(){
+  if(!pvpMatchInviteEditingV533)return _pvpMatchCancelarEditorRapidoV533();
+  pvpSalvarEstadoLocal();
+  pvpMatchInviteEditingV533=false;
+  pvpMatchQuickEditReturnV52=false;
+  pvpMostrarView("match");
+  pvpMatchTela("pvpMatchWaiting");
+  pvpMatchRenderInvitePreviewV533();
+};
+
+// Extra kickoff handles browsers that execute the V5.3.2 ready callback first.
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(pvpMatchAbrirConviteSmartV533,20)});
+}else{
+  setTimeout(pvpMatchAbrirConviteSmartV533,20);
+}
