@@ -1881,6 +1881,18 @@
         </div>
 
         <section id="pvpMatchLobby" class="pvp-match-screen ativa">
+          <div class="pvp-streamer-toolbar tech-corners">
+            <div class="pvp-streamer-copy">
+              <small>PRIVACY // STREAM</small>
+              <strong>STREAMER MODE</strong>
+              <span>Oculta Room ID, link de convite e o código digitado nesta tela.</span>
+            </div>
+            <button id="pvpStreamerModeLobbyBtn" type="button" class="pvp-streamer-toggle" aria-pressed="false" onclick="pvpMatchToggleStreamerMode()">
+              <span class="pvp-streamer-eye" aria-hidden="true">◉</span>
+              <b>OFF</b>
+            </button>
+          </div>
+
           <div class="pvp-match-lobby-grid">
             <article class="pvp-match-card tech-corners">
               <div class="pvp-match-card-title">
@@ -1942,9 +1954,15 @@
                 <small>CHALLENGE ROOM</small>
                 <strong id="pvpMatchRoomCode">------</strong>
               </div>
-              <div class="pvp-match-room-stage">
-                <span>STAGE LOCK</span>
-                <b id="pvpMatchRoomStage">MEGA</b>
+              <div class="pvp-match-room-side">
+                <button id="pvpStreamerModeWaitingBtn" type="button" class="pvp-streamer-toggle compact" aria-pressed="false" onclick="pvpMatchToggleStreamerMode()" title="Ocultar Room ID e link de convite na transmissão">
+                  <span class="pvp-streamer-eye" aria-hidden="true">◉</span>
+                  <b>OFF</b>
+                </button>
+                <div class="pvp-match-room-stage">
+                  <span>STAGE LOCK</span>
+                  <b id="pvpMatchRoomStage">MEGA</b>
+                </div>
               </div>
             </div>
 

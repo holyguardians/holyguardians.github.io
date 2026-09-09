@@ -12458,7 +12458,7 @@ function pvpMostrarView(nome){
   if(alvo)alvo.classList.add("ativa")
 }
 function abrirPvpBuild(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("build");pvpCriarSlots();pvpRenderBattleCardLoadout();pvpCarregarDatabase()}
-function abrirPvpMatch(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("match")}
+function abrirPvpMatch(){fecharPvpNavMenu();mostrarPagina("pvpPagina",document.getElementById("btnPvp"));pvpMostrarView("match");pvpMatchAplicarStreamerMode()}
 
 async function pvpCarregarDatabase(){
   if(pvpDatabase.length)return pvpDatabase;
@@ -13819,6 +13819,7 @@ pvpRestaurarEstadoLocal=function(){
 
 const PVP_MATCH_SERVER_B64 = "aHR0cHM6Ly9ob2x5LWd1YXJkaWFucy1jaGFsbGVuZ2Utcm9vbS5oaWx0b25naXVzZXBwZWNoaWFyZWxvLndvcmtlcnMuZGV2";
 const PVP_MATCH_NICK_KEY = "hg_pvp_match_nick_v1";
+const PVP_MATCH_STREAMER_KEY = "hg_pvp_streamer_mode_v1";
 const PVP_MATCH_STAGE_LEVELS = { Rookie:15, Champion:60, Ultimate:90, Mega:100 };
 const PVP_MATCH_DRAFT_BLOCKS = [
   { role:"host", count:1 },
@@ -13855,6 +13856,40 @@ function pvpMatchApiBase(){
   } catch (erro) {
     return "";
   }
+}
+
+function pvpMatchStreamerModeAtivo(){
+  try{return localStorage.getItem(PVP_MATCH_STREAMER_KEY)==="1"}catch(erro){return false}
+}
+
+function pvpMatchAplicarStreamerMode(){
+  const active=pvpMatchStreamerModeAtivo();
+  document.body.classList.toggle("hg-pvp-streamer-mode",active);
+
+  ["pvpStreamerModeLobbyBtn","pvpStreamerModeWaitingBtn"].forEach(function(id){
+    const btn=document.getElementById(id);if(!btn)return;
+    btn.classList.toggle("ativo",active);
+    btn.setAttribute("aria-pressed",active?"true":"false");
+    const state=btn.querySelector("b");if(state)state.textContent=active?"ON":"OFF";
+  });
+
+  const join=document.getElementById("pvpMatchJoinCode");
+  if(join)join.type=active?"password":"text";
+
+  const state=pvpMatchRoomState||{};
+  const room=document.getElementById("pvpMatchRoomCode");
+  if(room)room.textContent=active&&state.roomId?"••••••":(state.roomId||"------");
+
+  const invite=document.getElementById("pvpMatchInviteLink");
+  if(invite&&invite.dataset.realInvite){
+    invite.value=active?"STREAMER MODE // LINK OCULTO":invite.dataset.realInvite;
+  }
+}
+
+function pvpMatchToggleStreamerMode(){
+  const next=!pvpMatchStreamerModeAtivo();
+  try{localStorage.setItem(PVP_MATCH_STREAMER_KEY,next?"1":"0")}catch(erro){}
+  pvpMatchAplicarStreamerMode();
 }
 
 function pvpMatchSanitizarNick(input){
@@ -14068,7 +14103,8 @@ function pvpMatchRenderWaiting(){
   const state=pvpMatchRoomState||{};
   const host=state.players&&state.players.host;
   const guest=state.players&&state.players.guest;
-  const room=document.getElementById("pvpMatchRoomCode");if(room)room.textContent=state.roomId||"------";
+  const streamer=pvpMatchStreamerModeAtivo();
+  const room=document.getElementById("pvpMatchRoomCode");if(room)room.textContent=streamer&&state.roomId?"••••••":(state.roomId||"------");
   const stage=document.getElementById("pvpMatchRoomStage");if(stage)stage.textContent=String(state.stage||"-").toUpperCase();
   function playerCard(id,p,label){
     const card=document.getElementById(id);if(!card)return;
@@ -14080,8 +14116,12 @@ function pvpMatchRenderWaiting(){
   playerCard("pvpMatchHostCard",host,"HOST");playerCard("pvpMatchGuestCard",guest,"CHALLENGER");
   const invite=document.getElementById("pvpMatchInviteLink");
   if(invite){
-    try{const u=new URL(window.location.href);u.searchParams.set("room",state.roomId||"");invite.value=u.toString()}catch(erro){invite.value=state.roomId||""}
+    let realInvite="";
+    try{const u=new URL(window.location.href);u.searchParams.set("room",state.roomId||"");realInvite=u.toString()}catch(erro){realInvite=state.roomId||""}
+    invite.dataset.realInvite=realInvite;
+    invite.value=streamer?"STREAMER MODE // LINK OCULTO":realInvite;
   }
+  pvpMatchAplicarStreamerMode();
   const msg=document.getElementById("pvpMatchWaitingMessage");
   if(msg)msg.textContent=!guest?"Aguardando oponente...":(host.ready&&guest.ready?"Iniciando Draft...":"Os dois jogadores precisam marcar READY.");
   const me=state.players&&state.players[pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole];
@@ -14091,8 +14131,9 @@ function pvpMatchRenderWaiting(){
 
 function pvpMatchCopiarConvite(){
   const input=document.getElementById("pvpMatchInviteLink");if(!input)return;
-  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(input.value).then(function(){alert("Link da Challenge Room copiado!")});
-  else{input.select();document.execCommand("copy");alert("Link da Challenge Room copiado!")}
+  const real=input.dataset.realInvite||input.value;
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(real).then(function(){alert("Link da Challenge Room copiado!")});
+  else{const shown=input.value;input.value=real;input.select();document.execCommand("copy");input.value=shown;alert("Link da Challenge Room copiado!")}
 }
 
 function pvpMatchToggleReady(){pvpMatchSend("ready",{})}
@@ -14837,6 +14878,7 @@ document.addEventListener("keydown",pvpMatchKeyboard);
 document.addEventListener("DOMContentLoaded",function(){
   const nick=document.getElementById("pvpMatchNick");if(nick)nick.value=localStorage.getItem(PVP_MATCH_NICK_KEY)||"";
   pvpMatchAtualizarServerHint();
+  pvpMatchAplicarStreamerMode();
 });
 
 /* =====================================================
