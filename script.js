@@ -7760,11 +7760,10 @@ function calcBurstRateUpPercent(skill) {
 
 function calcBurstDisponivel(skill) {
   /*
-   * Qualquer Burst cadastrada continua visível/selecionável.
-   * Somente DAMAGE_VALUE_UP pode alterar o dano.
+   * Apenas DAMAGE_VALUE_UP pode ser selecionada na calculadora de dano.
+   * Outros BURST_MODE continuam visíveis, porém bloqueados.
    */
-  const burst = calcBurstMeta(skill);
-  return Boolean(burst && String(burst.functionType || "").trim());
+  return calcBurstEhDano(skill);
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
@@ -8619,21 +8618,20 @@ function atualizarCalculadora() {
   const opcoesBurst =
     digi.skills
       .map(function(skill, index) {
+        const burstMode = calcBurstModo(skill);
+        if (!burstMode) return "";
+
         const disponivel = calcBurstDisponivel(skill);
         const nome = calcNomeSkill(skill, index);
-        const burstMode = calcBurstModo(skill);
-        const motivo = !disponivel
-          ? "Esta Skill não possui Burst cadastrada"
-          : burstMode === "DAMAGE_VALUE_UP"
-            ? "Burst com aumento de dano (DAMAGE_VALUE_UP)"
-            : "Burst " + burstMode + ": existe, mas não altera o dano";
+        const motivo = disponivel
+          ? "Burst com aumento de dano (DAMAGE_VALUE_UP)"
+          : "Burst " + burstMode + ": visível apenas para referência; não pode ser selecionada nesta calculadora";
 
         return `
           <button
             type="button"
-            class="calc-burst-skill-option ${index === calcBurstSkillSelecionada ? "ativo" : ""} ${disponivel ? "" : "indisponivel"}"
-            onclick="calcSelecionarBurstSkill(${index})"
-            ${disponivel ? "" : "disabled"}
+            class="calc-burst-skill-option ${disponivel && index === calcBurstSkillSelecionada ? "ativo" : ""} ${disponivel ? "" : "indisponivel"}"
+            ${disponivel ? `onclick="calcSelecionarBurstSkill(${index})"` : "disabled"}
             title="${escaparHtml(nome + " — " + motivo)}"
           >
             ${calcSkillIdentityHtml(skill, index, true, "burst")}
