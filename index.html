@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v2-1-command-center">
+  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v2-2-tech-polish">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -1911,33 +1911,15 @@
                 <input id="hgTournamentCreateName" type="text" maxlength="60" autocomplete="off" placeholder="HG Rookie Cup">
               </label>
 
-              <label class="pvp-tournament-field">
-                <span data-i18n="tournament.organizer">ORGANIZADOR</span>
-                <input id="hgTournamentCreateOrganizer" type="text" maxlength="16" autocomplete="off" placeholder="GrimSleep" oninput="hgTournamentSanitizeNick(this)">
-              </label>
+              <!-- Regras e identidade do organizador são resolvidas dentro da sala. Mantemos defaults ocultos para compatibilidade com o Worker atual. -->
+              <input id="hgTournamentCreateOrganizer" type="hidden" value="">
+              <input id="hgTournamentCreatePlayers" type="hidden" value="8">
+              <input id="hgTournamentCreateStage" type="hidden" value="Rookie">
 
-              <div class="pvp-tournament-field-row">
-                <label class="pvp-tournament-field">
-                  <span data-i18n="tournament.participants">PARTICIPANTES</span>
-                  <input id="hgTournamentCreatePlayers" type="number" min="2" max="256" step="1" value="8">
-                </label>
-
-                <label class="pvp-tournament-field">
-                  <span data-i18n="tournament.stage">STAGE</span>
-                  <select id="hgTournamentCreateStage">
-                    <option value="Rookie">ROOKIE · LV. 15</option>
-                    <option value="Champion">CHAMPION · LV. 60</option>
-                    <option value="Ultimate">ULTIMATE · LV. 90</option>
-                    <option value="Mega">MEGA · LV. 100</option>
-                  </select>
-                </label>
-              </div>
-
-              <small class="pvp-tournament-help" data-i18n="tournament.stageRuleHint">A Stage escolhida será obrigatória para todos os times confirmados.</small>
-
-              <label class="pvp-tournament-play-toggle">
+              <label class="pvp-tournament-play-toggle hg-tour-v22-create-toggle">
                 <input id="hgTournamentCreateOrganizerPlays" type="checkbox" checked>
-                <span>
+                <span class="hg-tour-v22-check-ui" aria-hidden="true"><i>✓</i></span>
+                <span class="hg-tour-v22-check-copy">
                   <strong data-i18n="tournament.organizerPlays">EU TAMBÉM VOU JOGAR</strong>
                   <small data-i18n="tournament.organizerPlaysHint">O organizador será inscrito automaticamente e contará como uma das vagas.</small>
                 </span>
@@ -3540,7 +3522,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-tournament-v2-1-command-center"></script>
+<script src="script.js?v=20260910-tournament-v2-2-tech-polish"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>

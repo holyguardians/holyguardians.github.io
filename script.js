@@ -22103,6 +22103,10 @@ async function hgTournamentCreate(){
     hgTournamentNotice(organizerPlays
       ?hgTournamentT("tournament.createdPlaying","Torneio criado e você já foi inscrito como jogador. Agora monte e confirme seu time.")
       :hgTournamentT("tournament.created","Torneio criado. Compartilhe o convite com os jogadores."),"ok");
+    // V2.2: criação ficou propositalmente mínima; regras são definidas já dentro da sala.
+    setTimeout(function(){
+      try{hgTournamentOpenRulesV21()}catch(erro){}
+    },120);
   }catch(erro){
     hgTournamentNotice(erro.message,"bad");
   }finally{
@@ -23173,9 +23177,9 @@ function hgTournamentEnsureRulesModalV21(){
       '<div id="hgTournamentRulesStageHintV21" class="hg-tour-v21-rules-hint"></div>'+ 
       '<div class="hg-tour-v21-rules-format">'+
         '<div><small>'+hgTournamentEscape(hgTournamentT("tournament.bracketFormat","FORMATO DA CHAVE"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.singleElimination","ELIMINAÇÃO SIMPLES"))+'</strong><span>'+hgTournamentEscape(hgTournamentT("tournament.singleEliminationHint","Uma derrota elimina o jogador."))+'</span></div>'+ 
-        '<label class="hg-tour-v21-coming-toggle"><input type="checkbox" disabled><span><b>'+hgTournamentEscape(hgTournamentT("tournament.loserBracket","LOSER BRACKET"))+'</b><small>'+hgTournamentEscape(hgTournamentT("tournament.loserBracketSoon","Double-elimination exige uma nova engine de chaveamento e será ativada em uma etapa própria."))+'</small></span></label>'+ 
+        '<label class="hg-tour-v21-coming-toggle hg-tour-v22-rule-toggle"><input type="checkbox" disabled><span class="hg-tour-v22-switch-ui" aria-hidden="true"><i></i><b>OFF</b></span><span class="hg-tour-v22-rule-copy"><b>'+hgTournamentEscape(hgTournamentT("tournament.loserBracket","LOSER BRACKET"))+'</b><small>'+hgTournamentEscape(hgTournamentT("tournament.loserBracketSoon","Double-elimination exige uma nova engine de chaveamento e será ativada em uma etapa própria."))+'</small></span></label>'+ 
       '</div>'+ 
-      '<footer><span id="hgTournamentRulesStateV21"></span><button id="hgTournamentRulesSaveV21" type="button" class="pvp-action-btn pvp-action-success" onclick="hgTournamentSaveRulesV21()">'+hgTournamentEscape(hgTournamentT("tournament.saveRules","SALVAR REGRAS"))+'</button></footer>'+ 
+      '<footer><span id="hgTournamentRulesStateV21"></span><button id="hgTournamentRulesSaveV21" type="button" class="pvp-action-btn pvp-action-success hg-tour-v22-save-rules" onclick="hgTournamentSaveRulesV21()">'+hgTournamentEscape(hgTournamentT("tournament.saveRules","SALVAR REGRAS"))+'</button></footer>'+ 
     '</section>';
   document.body.appendChild(modal);
   return modal;
