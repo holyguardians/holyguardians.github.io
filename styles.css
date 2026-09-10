@@ -28540,3 +28540,143 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
   .hg-tour-v22-create-toggle{grid-template-columns:38px minmax(0,1fr)}
   .hg-tour-v22-check-ui{width:32px;height:32px}
 }
+
+/* ==========================================================
+   HG TOURNAMENT V2.3 — UI POLISH HOTFIX
+   - organizer corner accent softened
+   - rules modal controls look less native/Win98
+   - team portraits get tighter framed shells
+   ========================================================== */
+
+/* Soften the chunky cyan slab on organizer/participant side panels. */
+#hgTournamentOrganizerPanel::before,
+.hg-tour-v21-participants-side::before{
+  top:12px!important;
+  left:12px!important;
+  width:18px!important;
+  height:18px!important;
+  background:none!important;
+  border-top:2px solid #59eaff!important;
+  border-left:2px solid #59eaff!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 0 7px rgba(89,234,255,.48));
+}
+#hgTournamentOrganizerPanel::after,
+.hg-tour-v21-participants-side::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  width:18px;
+  height:18px;
+  border-right:2px solid rgba(147,92,255,.92);
+  border-bottom:2px solid rgba(147,92,255,.92);
+  filter:drop-shadow(0 0 7px rgba(147,92,255,.34));
+  pointer-events:none;
+}
+
+/* Rules modal controls: darker HG look instead of default browser vibe. */
+.hg-tour-v21-rules-grid label{
+  position:relative;
+}
+.hg-tour-v21-rules-grid input,
+.hg-tour-v21-rules-grid select{
+  appearance:none;
+  -webkit-appearance:none;
+  min-height:46px;
+  border:1px solid rgba(73,192,241,.34)!important;
+  background:
+    linear-gradient(180deg,rgba(8,30,58,.98),rgba(3,17,35,.99))!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(25,96,142,.12),
+    inset 0 10px 18px rgba(0,0,0,.12);
+}
+.hg-tour-v21-rules-grid label:has(select)::after{
+  content:"⌄";
+  position:absolute;
+  right:15px;
+  bottom:14px;
+  color:#6beaff;
+  font:900 16px/1 "Oxanium",sans-serif;
+  pointer-events:none;
+  text-shadow:0 0 10px rgba(71,222,255,.18);
+}
+.hg-tour-v21-rules-grid select{
+  padding-right:40px!important;
+  cursor:pointer;
+}
+.hg-tour-v21-rules-grid input[type="number"]{
+  padding-right:12px!important;
+}
+.hg-tour-v21-rules-grid input[type="number"]::-webkit-outer-spin-button,
+.hg-tour-v21-rules-grid input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+.hg-tour-v21-rules-grid input[type="number"]{
+  -moz-appearance:textfield;
+}
+.hg-tour-v21-rules-grid select option{
+  background:#07172d;
+  color:#eefbff;
+}
+.hg-tour-v21-rules-grid input:focus,
+.hg-tour-v21-rules-grid select:focus{
+  border-color:#62e8ff!important;
+  box-shadow:
+    0 0 0 2px rgba(79,224,255,.10),
+    inset 0 0 0 1px rgba(25,96,142,.15),
+    inset 0 10px 18px rgba(0,0,0,.14)!important;
+}
+
+/* Tighter portrait shell instead of a giant blue slab. */
+.hg-tour-v21-team-portrait{
+  justify-self:center;
+  align-self:start;
+  width:108px;
+  min-height:96px;
+  height:96px;
+  padding:8px;
+  border:1px solid rgba(72,198,245,.24);
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 30%,rgba(82,230,255,.16),transparent 52%),
+    linear-gradient(180deg,rgba(7,27,53,.96),rgba(2,12,27,.98));
+  box-shadow:inset 0 0 20px rgba(62,197,240,.04);
+  position:relative;
+}
+.hg-tour-v21-team-portrait::before,
+.hg-tour-v21-team-portrait::after{
+  content:"";
+  position:absolute;
+  width:12px;
+  height:12px;
+  pointer-events:none;
+}
+.hg-tour-v21-team-portrait::before{
+  top:5px;
+  left:5px;
+  border-top:1px solid rgba(96,234,255,.92);
+  border-left:1px solid rgba(96,234,255,.92);
+}
+.hg-tour-v21-team-portrait::after{
+  right:5px;
+  bottom:5px;
+  border-right:1px solid rgba(149,95,255,.84);
+  border-bottom:1px solid rgba(149,95,255,.84);
+}
+.hg-tour-v21-team-portrait img{
+  width:80px!important;
+  height:80px!important;
+  object-fit:contain;
+}
+.hg-tour-v21-team-portrait span{
+  font-size:22px!important;
+}
+
+/* Give the slot index chip the same softer shell. */
+.hg-tour-v2-team-card-head>span{
+  background:linear-gradient(180deg,rgba(16,73,111,.54),rgba(7,33,61,.82))!important;
+  border:1px solid rgba(67,194,242,.22);
+  box-shadow:inset 0 0 10px rgba(59,202,237,.05);
+}
