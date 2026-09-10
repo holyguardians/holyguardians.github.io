@@ -8826,8 +8826,20 @@ function atualizarCalculadora() {
       `;
     } else if (calcBurstEhDano(skillBurst) && skillBurst.available) {
       /* DAMAGE_VALUE_UP: usa o coeficiente real cadastrado na MASTER. */
-      const burstPerHit = Number(burstMeta.perHit);
       const burstBaseTotal = Number(burstMeta.total);
+      const burstPerHitCadastrado = Number(burstMeta.perHit);
+      /*
+       * O bônus elemental precisa do dano Burst POR HIT. Algumas linhas da
+       * MASTER têm BURST_TOTAL preenchido, mas BURST_PER_HIT vazio. Nesses
+       * casos derivamos o valor por hit do total real, sem alterar a regra
+       * que identifica a Burst. Ex.: 435 / 5 = 87.
+       */
+      const burstPerHit =
+        Number.isFinite(burstPerHitCadastrado) && burstPerHitCadastrado > 0
+          ? burstPerHitCadastrado
+          : (Number.isFinite(burstBaseTotal) && burstBaseTotal > 0 && Number(skillBurst.hits) > 0
+              ? burstBaseTotal / Number(skillBurst.hits)
+              : 0);
 
       const bonusBurstPorHit =
         aplicaBurst
