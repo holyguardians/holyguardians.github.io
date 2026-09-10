@@ -7586,20 +7586,20 @@ function calcBurstMeta(skill) {
     : null;
 }
 
-function calcBurstEhEfeito(skill) {
+function calcBurstModo(skill) {
   const burst = calcBurstMeta(skill);
-  return Boolean(
-    burst &&
-    String(burst.functionType || "").toUpperCase() === "EFFECT_RATE_UP"
-  );
+  return burst
+    ? String(burst.functionType || "").trim().toUpperCase()
+    : "";
+}
+
+function calcBurstEhEfeito(skill) {
+  const modo = calcBurstModo(skill);
+  return Boolean(modo && modo !== "DAMAGE_VALUE_UP");
 }
 
 function calcBurstEhDano(skill) {
-  const burst = calcBurstMeta(skill);
-  return Boolean(
-    burst &&
-    String(burst.functionType || "").toUpperCase() === "DAMAGE_VALUE_UP"
-  );
+  return calcBurstModo(skill) === "DAMAGE_VALUE_UP";
 }
 
 function calcBurstRateUpPercent(skill) {
@@ -7615,18 +7615,13 @@ function calcBurstRateUpPercent(skill) {
 
 function calcBurstDisponivel(skill) {
   /*
-   * REGRA DA CALCULADORA:
-   * Burst não vem de uma tabela separada. A pessoa escolhe uma Skill
-   * ofensiva Lv.10 e a Burst usa essa base ×3 (inclusive seu bônus
-   * elemental). Skills sem coeficiente de dano continuam indisponíveis.
+   * REGRA DA CALCULADORA DE ELEMENTOS:
+   * - Só existe Burst quando a MASTER informa um BURST_MODE/functionType.
+   * - DAMAGE_VALUE_UP = Burst com coeficiente/aumento de dano.
+   * - Qualquer outro modo = Burst existe, mas NÃO altera o dano.
+   * - BURST_MODE vazio = não inventar Burst por fallback.
    */
-  return Boolean(
-    skill &&
-    skill.available &&
-    Number.isFinite(Number(skill.hits)) && Number(skill.hits) > 0 &&
-    Number.isFinite(Number(skill.perHit)) && Number(skill.perHit) > 0 &&
-    Number.isFinite(Number(skill.baseTotal)) && Number(skill.baseTotal) > 0
-  );
+  return Boolean(skill && calcBurstModo(skill));
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
@@ -8483,9 +8478,12 @@ function atualizarCalculadora() {
       .map(function(skill, index) {
         const disponivel = calcBurstDisponivel(skill);
         const nome = calcNomeSkill(skill, index);
-        const motivo = disponivel
-          ? "Burst = dano da Skill Lv.10 ×3; bônus elemental ×3"
-          : "Esta Skill não possui coeficiente de dano utilizável";
+        const burstMode = calcBurstModo(skill);
+        const motivo = !disponivel
+          ? "Esta Skill não possui Burst cadastrada"
+          : burstMode === "DAMAGE_VALUE_UP"
+            ? "Burst com aumento de dano (DAMAGE_VALUE_UP)"
+            : "Burst " + burstMode + ": existe, mas não altera o dano";
 
         return `
           <button
@@ -8516,7 +8514,7 @@ function atualizarCalculadora() {
             BURST SKILL
           </div>
           <div class="calc-skill-lv">
-            BASE: SKILL LV.10 ×3
+            BURST cadastrada na MASTER
           </div>
         </div>
       </div>
@@ -8527,7 +8525,7 @@ function atualizarCalculadora() {
       </div>
 
       <div class="calc-breakdown">
-        Nenhuma Skill com dados de Burst utilizáveis está disponível.
+        Nenhuma Skill com BURST_MODE cadastrado está disponível.
       </div>
     </article>
   `;
@@ -8541,6 +8539,7 @@ function atualizarCalculadora() {
     const nomeSkillBurst = calcNomeSkill(skillBurst, calcBurstSkillSelecionada);
     const burstMeta = calcBurstMeta(skillBurst) || {};
     const nomeBurst = String(burstMeta.name || nomeSkillBurst).trim();
+    const burstModeTexto = calcBurstModo(skillBurst) || "EFFECT";
 
     const aplicaBurst =
       Array.isArray(skillBurst.elements) &&
@@ -8559,7 +8558,7 @@ function atualizarCalculadora() {
         })
         .join("");
 
-    if (calcBurstEhEfeito(skillBurst) && !skillBurst.available) {
+    if (calcBurstEhEfeito(skillBurst)) {
       const effectName = String(skillBurst.effectName || (skillBurst.effects || []).join(" + ") || "Efeito").trim();
       const effectChance = calcNumeroMetaOpcional(skillBurst.effectChance);
       const rateUp = calcBurstRateUpPercent(skillBurst);
@@ -8590,12 +8589,12 @@ function atualizarCalculadora() {
                 BURST SKILL
               </div>
               <div class="calc-skill-lv">
-                ${escaparHtml(nomeBurst)} • LEVEL 10 • EFFECT RATE UP
+                ${escaparHtml(nomeBurst)} • LEVEL 10 • ${escaparHtml(burstModeTexto)}
               </div>
             </div>
 
             <span class="calc-status sim">
-              BURST DE EFEITO
+              SEM AUMENTO DE DANO
             </span>
           </div>
 
@@ -8622,13 +8621,13 @@ function atualizarCalculadora() {
 
             <div>
               <div class="calc-number-label">
-                ${skillBurst.available ? "Dano na Burst" : "Bônus Burst na taxa"}
+                ${skillBurst.available ? "Dano com Burst" : "Modo da Burst"}
               </div>
               <div class="calc-number final calc-burst-final">
                 ${
                   skillBurst.available
                     ? calcFormatar(danoNormalTotal) + "%"
-                    : (Number.isFinite(rateUp) ? "+" + calcFormatar(rateUp) + "%" : "RATE UP")
+                    : (burstModeTexto === "EFFECT_RATE_UP" && Number.isFinite(rateUp) ? "+" + calcFormatar(rateUp) + "%" : escaparHtml(burstModeTexto))
                 }
               </div>
             </div>
@@ -8642,11 +8641,13 @@ function atualizarCalculadora() {
             <br>
 
             Burst:
-            <strong>EFFECT RATE UP${Number.isFinite(rateUp) ? " +" + calcFormatar(rateUp) + "%" : ""}</strong>
+            <strong>${escaparHtml(burstModeTexto)}${burstModeTexto === "EFFECT_RATE_UP" && Number.isFinite(rateUp) ? " +" + calcFormatar(rateUp) + "%" : ""}</strong>
 
             <br>
 
-            <strong>O dano não é multiplicado pela Burst.</strong>
+            <strong>Esta Burst existe, mas não altera o dano.</strong>
+            <br>
+            Somente <strong>DAMAGE_VALUE_UP</strong> possui coeficiente de dano Burst nesta calculadora.
             ${
               skillBurst.available
                 ? `
@@ -8680,8 +8681,8 @@ function atualizarCalculadora() {
 
         </article>
       `;
-    } else if (skillBurst.available) {
-      /* Burst = Skill Lv.10 selecionada ×3, sem depender de API/tabela. */
+    } else if (calcBurstEhDano(skillBurst) && skillBurst.available) {
+      /* DAMAGE_VALUE_UP: Burst de dano. Mantém a regra de dano já usada pelo site. */
       const burstPerHit = Number(skillBurst.perHit) * 3;
       const burstBaseTotal = Number(skillBurst.baseTotal) * 3;
 
@@ -8707,7 +8708,7 @@ function atualizarCalculadora() {
                 BURST SKILL
               </div>
               <div class="calc-skill-lv">
-                ${escaparHtml(nomeBurst)} • LEVEL 10 • SKILL ×3
+                ${escaparHtml(nomeBurst)} • LEVEL 10 • DAMAGE_VALUE_UP
               </div>
             </div>
 
@@ -8781,6 +8782,25 @@ function atualizarCalculadora() {
             ${tagsBurst}
           </div>
 
+        </article>
+      `;
+    } else if (calcBurstEhDano(skillBurst)) {
+      cardBurst = `
+        <article class="calc-skill-card calc-burst-card nao-aplica">
+          <div class="calc-skill-top">
+            <div>
+              <div class="calc-skill-title calc-burst-title">BURST SKILL</div>
+              <div class="calc-skill-lv">${escaparHtml(nomeBurst)} • LEVEL 10 • DAMAGE_VALUE_UP</div>
+            </div>
+            <span class="calc-status nao">SEM COEFICIENTE UTILIZÁVEL</span>
+          </div>
+          <div class="calc-burst-selector-row">
+            <span class="calc-burst-selector-label">Burst baseada em</span>
+            <div class="calc-burst-skill-options">${opcoesBurst}</div>
+          </div>
+          <div class="calc-breakdown">
+            A MASTER marca esta Burst como <strong>DAMAGE_VALUE_UP</strong>, mas a Skill não possui dados de dano utilizáveis para o cálculo atual.
+          </div>
         </article>
       `;
     }
