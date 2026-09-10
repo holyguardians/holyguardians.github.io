@@ -21192,12 +21192,14 @@ if(document.readyState==="loading"){
 })();
 
 /* =====================================================
-   PVP TOURNAMENT V1.2 — ORGANIZER CONTROL + TEAM AUDIT
+   PVP TOURNAMENT V1.3 — CRITICAL SESSION FALLBACK + ORGANIZER CONTROL
    Tournament Worker + locked PvP teams + automatic Challenge Room.
 ===================================================== */
 const HG_TOURNAMENT_API_URL = "https://holy-guardians-tournament.hiltongiuseppechiarelo.workers.dev";
 const HG_TOURNAMENT_SESSIONS_KEY = "hg_tournament_sessions_v1";
 const HG_TOURNAMENT_ACTIVE_KEY = "hg_tournament_active_v1";
+const HG_TOURNAMENT_SESSION_COOKIE_PREFIX = "hg_ts_";
+const HG_TOURNAMENT_ACTIVE_COOKIE = "hg_tournament_active_v1";
 const HG_TOURNAMENT_MATCH_KEY = "hg_tournament_match_context_v1";
 const HG_TOURNAMENT_BUILDER_RETURN_KEY = "hg_tournament_builder_return_v1";
 
@@ -21259,15 +21261,73 @@ function hgTournamentSanitizeNick(input){
   if(input)input.value=String(input.value||"").replace(/[^A-Za-z0-9]/g,"").slice(0,16);
 }
 
+function hgTournamentCookieGet(name){
+  try{
+    const alvo=String(name||"")+"=";
+    const partes=String(document.cookie||"").split(";");
+    for(let i=0;i<partes.length;i++){
+      const item=partes[i].trim();
+      if(item.indexOf(alvo)===0)return decodeURIComponent(item.slice(alvo.length));
+    }
+  }catch(erro){}
+  return "";
+}
+
+function hgTournamentCookieSet(name,value,maxAge){
+  try{
+    const secure=location&&location.protocol==="https:"?"; Secure":"";
+    document.cookie=String(name||"")+"="+encodeURIComponent(String(value==null?"":value))+"; Path=/; Max-Age="+String(maxAge||31536000)+"; SameSite=Lax"+secure;
+    return true;
+  }catch(erro){return false}
+}
+
+function hgTournamentCookieSessions(){
+  const out={};
+  try{
+    String(document.cookie||"").split(";").forEach(function(parte){
+      const item=parte.trim();
+      const eq=item.indexOf("=");
+      if(eq<0)return;
+      const name=item.slice(0,eq);
+      if(name.indexOf(HG_TOURNAMENT_SESSION_COOKIE_PREFIX)!==0)return;
+      const id=hgTournamentNormalizeId(name.slice(HG_TOURNAMENT_SESSION_COOKIE_PREFIX.length));
+      if(!/^HG[A-Z2-9]{6}$/.test(id))return;
+      try{
+        const parsed=JSON.parse(decodeURIComponent(item.slice(eq+1))||"{}");
+        if(parsed&&typeof parsed==="object"&&!Array.isArray(parsed))out[id]=parsed;
+      }catch(erro){}
+    });
+  }catch(erro){}
+  return out;
+}
+
 function hgTournamentReadSessions(){
+  let local={};
   try{
     const raw=JSON.parse(localStorage.getItem(HG_TOURNAMENT_SESSIONS_KEY)||"{}");
-    return raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{};
-  }catch(erro){return {}}
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw))local=raw;
+  }catch(erro){}
+  const cookies=hgTournamentCookieSessions();
+  const merged={};
+  Object.keys(cookies).concat(Object.keys(local)).forEach(function(id){
+    merged[id]=Object.assign({},cookies[id]||{},local[id]||{});
+  });
+  return merged;
 }
 
 function hgTournamentWriteSessions(sessions){
-  try{localStorage.setItem(HG_TOURNAMENT_SESSIONS_KEY,JSON.stringify(sessions||{}))}catch(erro){}
+  const dados=sessions&&typeof sessions==="object"?sessions:{};
+  try{localStorage.setItem(HG_TOURNAMENT_SESSIONS_KEY,JSON.stringify(dados))}catch(erro){
+    console.warn("[Tournament] localStorage cheio/indisponível; usando cookie de recuperação para credenciais críticas.",erro);
+  }
+  Object.keys(dados).forEach(function(id){
+    const key=hgTournamentNormalizeId(id);
+    if(!/^HG[A-Z2-9]{6}$/.test(key))return;
+    const sess=dados[id]&&typeof dados[id]==="object"?dados[id]:{};
+    const critico={};
+    ["organizerToken","organizerNick","playerToken","nick","updatedAt"].forEach(function(k){if(sess[k]!=null&&sess[k]!=="")critico[k]=sess[k]});
+    if(Object.keys(critico).length)hgTournamentCookieSet(HG_TOURNAMENT_SESSION_COOKIE_PREFIX+key,JSON.stringify(critico),31536000);
+  });
 }
 
 function hgTournamentGetSession(id){
@@ -21293,10 +21353,16 @@ function hgTournamentSetActive(id){
     if(key)localStorage.setItem(HG_TOURNAMENT_ACTIVE_KEY,key);
     else localStorage.removeItem(HG_TOURNAMENT_ACTIVE_KEY);
   }catch(erro){}
+  if(key)hgTournamentCookieSet(HG_TOURNAMENT_ACTIVE_COOKIE,key,31536000);
+  else hgTournamentCookieSet(HG_TOURNAMENT_ACTIVE_COOKIE,"",1);
 }
 
 function hgTournamentGetActive(){
-  try{return hgTournamentNormalizeId(localStorage.getItem(HG_TOURNAMENT_ACTIVE_KEY)||"")}catch(erro){return ""}
+  try{
+    const local=hgTournamentNormalizeId(localStorage.getItem(HG_TOURNAMENT_ACTIVE_KEY)||"");
+    if(local)return local;
+  }catch(erro){}
+  return hgTournamentNormalizeId(hgTournamentCookieGet(HG_TOURNAMENT_ACTIVE_COOKIE)||"");
 }
 
 function hgTournamentReadMatchContext(){
