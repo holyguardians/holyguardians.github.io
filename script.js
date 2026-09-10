@@ -23677,6 +23677,45 @@ function hgSkillNormalizarChance(valor) {
   return hgSkillFormatNumero(Math.max(0, Math.min(100, numero)));
 }
 
+function hgSkillGarantirSpecialUI() {
+  if (hgSkillEl("hgSkillSpecial")) return;
+
+  const hpInput = hgSkillEl("hgSkillHp");
+  if (!hpInput) return;
+
+  if (!document.getElementById("hgSkillSpecialStyle")) {
+    const style = document.createElement("style");
+    style.id = "hgSkillSpecialStyle";
+    style.textContent = `
+      .hg-skill-special-box{margin-top:10px;padding:10px 12px;border:1px solid rgba(255,184,77,.35);border-radius:10px;background:rgba(255,184,77,.06)}
+      .hg-skill-special-toggle{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.04em;cursor:pointer}
+      .hg-skill-special-toggle input{accent-color:#ffb84d}
+      .hg-skill-special-curve{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+      .hg-skill-special-curve label{font-size:12px;opacity:.82;font-weight:700}
+      .hg-skill-special-curve input{width:90px;min-width:90px}
+      .hg-skill-special-help{display:block;margin-top:6px;font-size:11px;line-height:1.35;opacity:.7}
+    `;
+    document.head.appendChild(style);
+  }
+
+  const box = document.createElement("div");
+  box.id = "hgSkillSpecialBox";
+  box.className = "hg-skill-special-box";
+  box.innerHTML =
+    '<label class="hg-skill-special-toggle">' +
+      '<input type="checkbox" id="hgSkillSpecial">' +
+      '<span>SPECIAL</span>' +
+    '</label>' +
+    '<div id="hgSkillSpecialCurveWrap" class="hg-skill-special-curve" style="display:none">' +
+      '<label for="hgSkillSpecialStep">Growth / Lv.</label>' +
+      '<input id="hgSkillSpecialStep" type="text" inputmode="decimal" value="9,12" autocomplete="off">' +
+    '</div>' +
+    '<small class="hg-skill-special-help">Ative apenas quando a skill tiver uma curva especial confirmada. O valor informado é o crescimento TOTAL por level.</small>';
+
+  const anchor = hpInput.closest("label") || hpInput.parentElement;
+  if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor.nextSibling);
+}
+
 function hgSkillPerfilAtual(lv1Total) {
   const range = hgSkillEl("hgSkillRange") ? hgSkillEl("hgSkillRange").value : "Single Melee";
   const allArea = range === "All Area";
@@ -23685,6 +23724,9 @@ function hgSkillPerfilAtual(lv1Total) {
   const defBreak = !!(hgSkillEl("hgSkillDefBreak") && hgSkillEl("hgSkillDefBreak").checked);
   const cast = !!(hgSkillEl("hgSkillCast") && hgSkillEl("hgSkillCast").checked);
   const hp = !!(hgSkillEl("hgSkillHp") && hgSkillEl("hgSkillHp").checked);
+  const special = !!(hgSkillEl("hgSkillSpecial") && hgSkillEl("hgSkillSpecial").checked);
+  const specialStepRaw = hgSkillEl("hgSkillSpecialStep") ? hgSkillNumero(hgSkillEl("hgSkillSpecialStep").value) : 9.12;
+  const specialStep = Number.isFinite(specialStepRaw) && specialStepRaw > 0 ? specialStepRaw : 9.12;
 
   const efeitos = [];
   if (cc) efeitos.push("CC");
@@ -23719,15 +23761,15 @@ function hgSkillPerfilAtual(lv1Total) {
     };
   }
 
-  if (allArea && hp && cast) {
+  if (special) {
     return {
-      step: 9.12,
-      name: "AUTO · ALL AREA + HP + CAST" + efeitoTexto,
-      confidence: "medium",
-      confidenceText: "EM TESTE",
-      formula: "+9,12 pontos totais por level",
-      note: "Curva especial calibrada pelos endpoints observados de Flame Inferno: Lv1 130,81 → Lv10 212,89.",
-      warning: "HP + CAST ainda precisa de mais pares Lv1/Lv10 para confirmar que +9,12 é uma regra universal."
+      step: specialStep,
+      name: "SPECIAL · MANUAL" + (allArea ? " · ALL AREA" : " · SINGLE") + efeitoTexto,
+      confidence: "manual",
+      confidenceText: "SPECIAL",
+      formula: "+" + hgSkillFormatNumero(specialStep) + " pontos totais por level",
+      note: "Curva especial ativada manualmente. O Auto foi ignorado para esta skill.",
+      warning: "Use SPECIAL somente quando a curva diferente do padrão estiver confirmada por dados reais."
     };
   }
 
@@ -23739,7 +23781,9 @@ function hgSkillPerfilAtual(lv1Total) {
       confidenceText: "ALTO",
       formula: "+4,80 pontos totais por level",
       note: "Curva automática All Area. Na auditoria precisa, 36/37 skills fora da família de 90 seguiram aproximadamente +4,80.",
-      warning: "CC, DOT e DEF Break continuam visíveis, mas não escolhem a curva de dano."
+      warning: hp && cast
+        ? "HP + CAST detectado. Se esta skill tiver crescimento especial confirmado, marque SPECIAL e informe a curva."
+        : "CC, DOT e DEF Break continuam visíveis, mas não escolhem a curva de dano."
     };
   }
 
@@ -23750,10 +23794,10 @@ function hgSkillPerfilAtual(lv1Total) {
     confidenceText: hp && cast ? "EM TESTE" : "ALTO",
     formula: "+5,00 pontos totais por level",
     note: hp && cast
-      ? "Single + HP + CAST ainda não tem amostra suficiente para uma curva própria; o Auto mantém provisoriamente a curva Single."
+      ? "Single + HP + CAST: o Auto mantém a curva Single. Se houver uma curva especial confirmada, use a checkbox SPECIAL."
       : "Curva automática Single. Na auditoria precisa, 735/745 skills fora da família de 90 seguiram aproximadamente +5,00.",
     warning: hp && cast
-      ? "Combinação especial em validação. Compare com um Lv10 real quando disponível."
+      ? "HP + CAST detectado. SPECIAL só deve ser ativado quando houver valor real para a curva."
       : "CC, DOT e DEF Break continuam visíveis, mas não escolhem a curva de dano."
   };
 }
@@ -23911,6 +23955,9 @@ function hgSkillAtualizar() {
   const lv1PorHit = Math.max(0, Math.min(9999, hgSkillNumero(lv1Input.value)));
   const lv1Total = hgSkillRound2(lv1PorHit * hits);
   const perfil = hgSkillPerfilAtual(lv1Total);
+  const specialAtivo = !!(hgSkillEl("hgSkillSpecial") && hgSkillEl("hgSkillSpecial").checked);
+  const specialWrap = hgSkillEl("hgSkillSpecialCurveWrap");
+  if (specialWrap) specialWrap.style.display = specialAtivo ? "flex" : "none";
   const lv10 = hgSkillCalcularNivel(10, hits, lv1PorHit, perfil);
   const categoria = hgSkillCategoriaEfeito();
 
@@ -24027,6 +24074,8 @@ function hgSkillLimpar() {
   setValue("hgSkillEffectChance", "");
   setCheck("hgSkillCast", false);
   setCheck("hgSkillHp", false);
+  setCheck("hgSkillSpecial", false);
+  setValue("hgSkillSpecialStep", "9,12");
   setCheck("hgSkillSp", true);
   setCheck("hgSkillCc", false);
   setCheck("hgSkillDot", false);
@@ -24051,13 +24100,15 @@ function hgSkillCalcInicializar() {
   const pagina = hgSkillEl("hgSkillCalcPagina");
   if (!pagina) return;
 
+  hgSkillGarantirSpecialUI();
+
   if (!hgSkillCalcIniciado) {
     hgSkillCalcIniciado = true;
     hgSkillRenderElementos();
 
     [
       "hgSkillType", "hgSkillRange", "hgSkillHits", "hgSkillLv1PerHit",
-      "hgSkillCast", "hgSkillHp", "hgSkillSp", "hgSkillCc", "hgSkillDot",
+      "hgSkillCast", "hgSkillHp", "hgSkillSpecial", "hgSkillSpecialStep", "hgSkillSp", "hgSkillCc", "hgSkillDot",
       "hgSkillDefBreak", "hgSkillCcType", "hgSkillEffectName", "hgSkillEffectChance"
     ].forEach(function(id) {
       const el = hgSkillEl(id);
@@ -24066,10 +24117,11 @@ function hgSkillCalcInicializar() {
       el.addEventListener("change", hgSkillAtualizar);
     });
 
-    ["hgSkillLv1PerHit", "hgSkillEffectChance"].forEach(function(id) {
+    ["hgSkillLv1PerHit", "hgSkillEffectChance", "hgSkillSpecialStep"].forEach(function(id) {
       const el = hgSkillEl(id);
       if (el) el.addEventListener("blur", function() {
         if (id === "hgSkillEffectChance" && !el.value.trim()) return;
+        if (id === "hgSkillSpecialStep" && !el.value.trim()) el.value = "9,12";
         hgSkillSanitizarPercentualInput(el);
         hgSkillAtualizar();
       });
