@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v2-3-digidex-tools-v1">
+  <link rel="stylesheet" href="styles.css?v=20260910-digidex-tools-v2">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -970,43 +970,31 @@
         </p>
       </div>
 
+      <div class="digidex-tool-shortcuts" aria-label="Atalhos da Digidex">
+        <button
+          id="btnComparacao"
+          class="digidex-tool-shortcut"
+          type="button"
+          onclick="mostrarPagina('comparacaoPagina', this)"
+          title="Abrir Comparação"
+        >
+          <img id="digidexComparacaoShortcutIcon" class="digidex-tool-shortcut-icon" alt="" aria-hidden="true">
+          <span>COMPARAÇÃO</span>
+        </button>
+
+        <button
+          id="btnCounterFinder"
+          class="digidex-tool-shortcut"
+          type="button"
+          onclick="mostrarPagina('counterFinderPagina', this)"
+          title="Abrir Counter Finder"
+        >
+          <img class="digidex-tool-shortcut-icon" src="icon_counter_finder.png" alt="" aria-hidden="true">
+          <span>COUNTER FINDER</span>
+        </button>
+      </div>
+
       <div class="digidex-header-actions">
-
-        <div class="digidex-tool-shortcuts" aria-label="Ferramentas da Digidex">
-          <button
-            id="btnComparacao"
-            class="digidex-tool-shortcut"
-            type="button"
-            title="Abrir Comparação"
-            onclick="mostrarPagina('comparacaoPagina', this)"
-          >
-            <span class="digidex-tool-shortcut-icon" aria-hidden="true">
-              <img id="navIconComparacao" alt="">
-            </span>
-            <span class="digidex-tool-shortcut-copy">
-              <small>FERRAMENTA</small>
-              <strong>COMPARAÇÃO</strong>
-            </span>
-            <span class="digidex-tool-shortcut-arrow" aria-hidden="true">›</span>
-          </button>
-
-          <button
-            id="btnCounterFinder"
-            class="digidex-tool-shortcut"
-            type="button"
-            title="Abrir Counter Finder"
-            onclick="mostrarPagina('counterFinderPagina', this)"
-          >
-            <span class="digidex-tool-shortcut-icon" aria-hidden="true">
-              <img src="icon_counter_finder.png" alt="">
-            </span>
-            <span class="digidex-tool-shortcut-copy">
-              <small>FERRAMENTA</small>
-              <strong>COUNTER FINDER</strong>
-            </span>
-            <span class="digidex-tool-shortcut-arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
 
         <div class="digidex-view-toggle" aria-label="Modo de visualização">
           <button
@@ -3546,7 +3534,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-tournament-v2-3-digidex-tools-v1"></script>
+<script src="script.js?v=20260910-digidex-tools-v2"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>

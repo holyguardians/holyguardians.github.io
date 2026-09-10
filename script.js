@@ -2394,7 +2394,7 @@ function mostrarPagina(
 
   document
     .querySelectorAll(
-      ".nav-button, .digidex-tool-shortcut"
+      ".nav-button"
     )
     .forEach(
       function(btn) {
@@ -2895,7 +2895,7 @@ function aplicarAssetsHome() {
 
 
   definirImagem(
-    "navIconComparacao",
+    "digidexComparacaoShortcutIcon",
     "comparlayout"
   );
 
