@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-hg-admin-hub-v1">
+  <link rel="stylesheet" href="styles.css?v=20260910-hg-admin-skill-v2">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -3571,15 +3571,15 @@
         <span class="hg-admin-card-cta">ABRIR FERRAMENTA →</span>
       </button>
 
-      <button class="hg-admin-card hg-admin-card-next" type="button"
+      <button class="hg-admin-card hg-admin-card-ready" type="button"
               onclick="mostrarPagina('hgSkillCalcPagina', null)">
         <div class="hg-admin-card-top">
           <span class="hg-admin-card-icon">%</span>
-          <span class="hg-admin-card-status">PRÓXIMO</span>
+          <span class="hg-admin-card-status">PRONTO</span>
         </div>
         <strong>SKILL DAMAGE</strong>
-        <p>Calculadora de porcentagem de dano por level. O motor será calibrado com os dados reais das skills.</p>
-        <span class="hg-admin-card-cta">ABRIR ESTRUTURA →</span>
+        <p>Preditor Lv1 → Lv10 para alimentar a DATABASE assim que um Digimon novo for lançado.</p>
+        <span class="hg-admin-card-cta">ABRIR CALCULADORA →</span>
       </button>
 
       <button class="hg-admin-card hg-admin-card-build" type="button"
@@ -3597,7 +3597,7 @@
     <section class="hg-admin-overview">
       <div>
         <small>STATUS DO HUB</small>
-        <strong>1 / 3 ferramentas operacionais</strong>
+        <strong>2 / 3 ferramentas operacionais</strong>
       </div>
       <div>
         <small>MAP TOOL</small>
@@ -3605,7 +3605,7 @@
       </div>
       <div>
         <small>SKILL DAMAGE</small>
-        <strong>AGUARDANDO REGRAS DSR</strong>
+        <strong class="ok">LV10 PREDICTOR</strong>
       </div>
       <div>
         <small>ICON LAB</small>
@@ -3618,58 +3618,204 @@
 
 <!-- =====================================================
      SKILL DAMAGE CALCULATOR — ADMIN HG
-     Estrutura inicial; fórmula será alimentada com dados reais.
+     Preditor Lv1 -> Lv10 + gerador de linha da DATABASE.
 ===================================================== -->
 <section id="hgSkillCalcPagina" class="pagina">
-  <div class="internal-wrap hg-admin-wrap">
-    <header class="hg-admin-tool-header">
+  <div class="internal-wrap hg-admin-wrap hg-skill-tool-wrap">
+    <header class="hg-admin-tool-header hg-skill-tool-header">
       <div>
-        <div class="hg-admin-kicker">HG ADMIN HUB // DATA TOOL</div>
+        <div class="hg-admin-kicker">HG ADMIN HUB // DATABASE TOOL</div>
         <h2 class="page-title">SKILL DAMAGE CALCULATOR</h2>
-        <p class="page-subtitle">Estrutura pronta para receber a regra real de progressão de dano por level.</p>
+        <p class="page-subtitle">Informe a skill no Lv1 e gere a previsão de Lv10 já no padrão da planilha Holy Guardians.</p>
       </div>
       <button class="hg-admin-back" type="button" onclick="mostrarPagina('hgAdminPagina', null)">← VOLTAR AO ADMIN HUB</button>
     </header>
 
-    <div class="hg-skill-layout">
-      <section class="hg-admin-panel">
+    <div class="hg-skill-v2-grid">
+      <section class="hg-admin-panel hg-skill-v2-panel">
         <div class="hg-admin-panel-head">
-          <strong>DADOS DA SKILL</strong>
-          <span>CALIBRAÇÃO PENDENTE</span>
+          <strong>DADOS DO LANÇAMENTO</strong>
+          <span>LV1 INPUT</span>
         </div>
         <div class="hg-admin-panel-body">
-          <div class="hg-skill-form">
-            <label><small>NOME / REFERÊNCIA</small><input id="hgSkillName" type="text" placeholder="Ex.: Skill 1"></label>
-            <label><small>LEVEL INICIAL</small><input id="hgSkillLevelStart" type="number" min="1" value="1"></label>
-            <label><small>LEVEL FINAL</small><input id="hgSkillLevelEnd" type="number" min="1" value="10"></label>
-            <label><small>DANO / % DE REFERÊNCIA</small><input id="hgSkillReference" type="text" placeholder="Vamos definir com seus exemplos"></label>
+          <div class="hg-skill-v2-form-grid">
+            <label class="hg-skill-v2-field hg-skill-v2-field-wide">
+              <small>NOME / REFERÊNCIA <i>opcional</i></small>
+              <input id="hgSkillName" type="text" autocomplete="off" placeholder="Ex.: Final Mirage Burst">
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>SKILL_TYPE</small>
+              <select id="hgSkillType">
+                <option value="Attack">Attack</option>
+              </select>
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>RANGE</small>
+              <select id="hgSkillRange">
+                <option value="Single Melee">Single Melee</option>
+                <option value="Single Ranged">Single Ranged</option>
+                <option value="All Area">All Area</option>
+              </select>
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>HITS</small>
+              <input id="hgSkillHits" type="text" inputmode="numeric" autocomplete="off" value="4">
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>LV1 POR HIT</small>
+              <span class="hg-skill-percent-input">
+                <input id="hgSkillLv1PerHit" type="text" inputmode="decimal" autocomplete="off" value="25,00">
+                <b>%</b>
+              </span>
+            </label>
           </div>
 
-          <div class="hg-skill-await">
-            <b>MOTOR AINDA NÃO FOI CHUTADO 😈</b>
-            <span>Assim que você me passar exemplos reais de skills por level, eu calibro a fórmula sem inventar progressão.</span>
+          <div class="hg-skill-v2-lv1-total">
+            <span>LV1 TOTAL LIDO</span>
+            <strong id="hgSkillLv1Total">100%</strong>
+            <small id="hgSkillLv1Formula">4 × 25% = 100%</small>
+          </div>
+
+          <div class="hg-skill-v2-section-title">
+            <div><strong>CARACTERÍSTICAS</strong><small>Marque o que aparece no tooltip.</small></div>
+            <span id="hgSkillAreaBadge">SINGLE</span>
+          </div>
+
+          <div class="hg-skill-v2-check-grid">
+            <label class="hg-skill-check"><input id="hgSkillCast" type="checkbox"><span><b>CAST</b><small>Additional Cast Turn</small></span></label>
+            <label class="hg-skill-check"><input id="hgSkillHp" type="checkbox"><span><b>HP</b><small>Consumed HP</small></span></label>
+            <label class="hg-skill-check"><input id="hgSkillSp" type="checkbox" checked><span><b>SP</b><small>Consumed SP</small></span></label>
+            <label class="hg-skill-check"><input id="hgSkillCc" type="checkbox"><span><b>CC</b><small>Freeze, Seal, Stun...</small></span></label>
+            <label class="hg-skill-check"><input id="hgSkillDot" type="checkbox"><span><b>DOT</b><small>Burn, Bleed...</small></span></label>
+            <label class="hg-skill-check"><input id="hgSkillDefBreak" type="checkbox"><span><b>DEF BREAK</b><small>Defense decrease</small></span></label>
+          </div>
+
+          <div class="hg-skill-v2-form-grid hg-skill-v2-effect-fields">
+            <label class="hg-skill-v2-field">
+              <small>CC_TYPE</small>
+              <input id="hgSkillCcType" type="text" autocomplete="off" placeholder="Ex.: Freeze, Stun">
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>EFFECT_CATEGORY</small>
+              <input id="hgSkillEffectCategory" type="text" readonly placeholder="Automático">
+            </label>
+
+            <label class="hg-skill-v2-field hg-skill-v2-field-wide">
+              <small>EFFECT_NAME</small>
+              <input id="hgSkillEffectName" type="text" autocomplete="off" placeholder="Ex.: Bleed Lv10">
+            </label>
+
+            <label class="hg-skill-v2-field">
+              <small>EFFECT_CHANCE</small>
+              <span class="hg-skill-percent-input">
+                <input id="hgSkillEffectChance" type="text" inputmode="decimal" autocomplete="off" placeholder="65">
+                <b>%</b>
+              </span>
+            </label>
           </div>
         </div>
       </section>
 
-      <aside class="hg-admin-panel">
+      <section class="hg-admin-panel hg-skill-v2-panel">
         <div class="hg-admin-panel-head">
-          <strong>SAÍDA</strong>
-          <span>LV1 → LV10</span>
+          <strong>ELEMENTOS</strong>
+          <span>ÍCONES OFICIAIS DO SITE</span>
         </div>
         <div class="hg-admin-panel-body">
-          <div class="hg-skill-output-placeholder">
-            <span>LV</span><span>DANO %</span>
-            <b>1</b><em>—</em>
-            <b>2</b><em>—</em>
-            <b>3</b><em>—</em>
-            <b>...</b><em>...</em>
-            <b>10</b><em>—</em>
+          <div class="hg-skill-element-block">
+            <div class="hg-skill-v2-section-title compact">
+              <div><strong>BASE</strong><small>Selecione 1 elemento.</small></div>
+              <span id="hgSkillBaseText">NENHUM</span>
+            </div>
+            <div id="hgSkillBaseOptions" class="hg-skill-element-grid" role="radiogroup" aria-label="Elemento base"></div>
           </div>
-          <p class="hg-admin-note">Depois de calibrada, essa área vai gerar todos os levels automaticamente e terá botão para copiar a tabela pronta.</p>
+
+          <div class="hg-skill-element-block">
+            <div class="hg-skill-v2-section-title compact">
+              <div><strong>CAN_CHANGE_TO</strong><small>Marque quantos elementos precisar.</small></div>
+              <span id="hgSkillChangeCount">0 SELECTED</span>
+            </div>
+            <div id="hgSkillChangeOptions" class="hg-skill-element-grid" aria-label="Elementos convertíveis"></div>
+          </div>
+
+          <div class="hg-skill-v2-profile-box">
+            <div class="hg-skill-v2-profile-top">
+              <div>
+                <small>CURVA ATIVA</small>
+                <strong id="hgSkillProfileName">SINGLE NORMAL</strong>
+              </div>
+              <span id="hgSkillConfidence" data-level="high">ALTO</span>
+            </div>
+            <div class="hg-skill-v2-profile-formula" id="hgSkillProfileFormula">+5 pontos totais por level</div>
+            <p id="hgSkillProfileNote">Curva sustentada pelos pares Lv1 → Lv10 analisados.</p>
+          </div>
         </div>
-      </aside>
+      </section>
     </div>
+
+    <section class="hg-admin-panel hg-skill-v2-result-panel">
+      <div class="hg-admin-panel-head">
+        <strong>LV10 PREDICTOR</strong>
+        <span id="hgSkillResultStatus">READY</span>
+      </div>
+      <div class="hg-admin-panel-body">
+        <div class="hg-skill-v2-result-hero">
+          <div class="hg-skill-v2-result-main">
+            <small>LV10 POR HIT</small>
+            <strong id="hgSkillLv10PerHit">36,25%</strong>
+          </div>
+          <div class="hg-skill-v2-result-separator">×</div>
+          <div class="hg-skill-v2-result-main">
+            <small>HITS</small>
+            <strong id="hgSkillResultHits">4</strong>
+          </div>
+          <div class="hg-skill-v2-result-separator">=</div>
+          <div class="hg-skill-v2-result-main total">
+            <small>LV10 TOTAL</small>
+            <strong id="hgSkillLv10Total">145%</strong>
+          </div>
+        </div>
+
+        <div id="hgSkillWarning" class="hg-skill-v2-warning" data-level="high">
+          Perfil de cálculo sustentado pelos exemplos atuais.
+        </div>
+
+        <div class="hg-skill-v2-curve-wrap">
+          <div class="hg-skill-v2-section-title compact">
+            <div><strong>CURVA LV1 → LV10</strong><small>Por hit no padrão exibido pelo jogo.</small></div>
+          </div>
+          <div id="hgSkillCurve" class="hg-skill-v2-curve"></div>
+        </div>
+
+        <div class="hg-skill-v2-sheet-wrap">
+          <div class="hg-skill-v2-section-title compact">
+            <div><strong>LINHA DA DATABASE</strong><small>Mesma ordem das colunas da planilha.</small></div>
+          </div>
+          <div class="hg-skill-v2-table-scroll">
+            <table class="hg-skill-v2-table">
+              <thead>
+                <tr>
+                  <th>SKILL_TYPE</th><th>RANGE</th><th>HITS</th><th>LV10_PER_HIT</th><th>LV10_TOTAL</th><th>BASE</th><th>CAN_CHANGE_TO</th><th>EFFECT_CATEGORY</th><th>CC</th><th>CC_TYPE</th><th>DOT</th><th>DEF_BREAK</th><th>EFFECT_NAME</th><th>EFFECT_CHANCE</th>
+                </tr>
+              </thead>
+              <tbody><tr id="hgSkillSheetRow"></tr></tbody>
+            </table>
+          </div>
+
+          <textarea id="hgSkillSheetTsv" class="hg-skill-v2-tsv" readonly aria-label="Linha pronta para colar na planilha"></textarea>
+          <div class="hg-skill-v2-actions">
+            <button id="hgSkillCopyRow" class="hg-skill-v2-btn primary" type="button">COPIAR LINHA PARA SHEETS</button>
+            <button id="hgSkillReset" class="hg-skill-v2-btn" type="button">LIMPAR</button>
+            <span id="hgSkillCopyStatus" aria-live="polite"></span>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </section>
 
@@ -3845,7 +3991,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-hg-admin-hub-v1"></script>
+<script src="script.js?v=20260910-hg-admin-skill-v2"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>

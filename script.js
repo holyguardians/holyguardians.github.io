@@ -2447,6 +2447,7 @@ function mostrarPagina(
   if (id === "digiCreatorsPagina") setTimeout(inicializarDigiCreators, 0);
   if (id === "homePagina") setTimeout(inicializarHomeCreators, 0);
   if (id === "hgMapCoordinatePagina" && typeof hgMapCoordinateInicializar === "function") setTimeout(hgMapCoordinateInicializar, 0);
+  if (id === "hgSkillCalcPagina" && typeof hgSkillCalcInicializar === "function") setTimeout(hgSkillCalcInicializar, 0);
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -23599,4 +23600,488 @@ function hgMapCoordCopiar() {
     btn.textContent = ok ? "COPIADO ✓" : "COPIE MANUALMENTE";
     setTimeout(function() { btn.textContent = antigo; }, 1200);
   });
+}
+
+
+/* =====================================================
+   SKILL DAMAGE CALCULATOR V2 — HG ADMIN HUB
+   Objetivo: prever o Lv10 a partir do tooltip Lv1 e gerar
+   uma linha pronta para a DATABASE MASTER.
+===================================================== */
+
+let hgSkillCalcIniciado = false;
+let hgSkillBaseSelecionado = "";
+let hgSkillCanChangeSelecionados = new Set();
+
+const HG_SKILL_ELEMENTOS = [
+  "DARKNESS", "PHYSICAL", "FIRE", "WIND", "WATER", "ICE",
+  "THUNDER", "EARTH", "WOOD", "STEEL", "LIGHT"
+];
+
+function hgSkillEl(id) {
+  return document.getElementById(id);
+}
+
+function hgSkillNumero(valor) {
+  let txt = String(valor == null ? "" : valor)
+    .trim()
+    .replace(/%/g, "")
+    .replace(/\s+/g, "")
+    .replace(",", ".")
+    .replace(/[^0-9.\-]/g, "");
+
+  const partes = txt.split(".");
+  if (partes.length > 2) txt = partes.shift() + "." + partes.join("");
+  const numero = Number(txt);
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function hgSkillRound2(valor) {
+  return Math.round((Number(valor) + Number.EPSILON) * 100) / 100;
+}
+
+/* O tooltip do DSR costuma cortar a porcentagem por hit em 2 casas
+   (ex.: 130 / 3 => 43.33, não 43.34). A DATABASE segue o valor
+   exibido, então o predictor reproduz esse comportamento. */
+function hgSkillTrunc2(valor) {
+  const numero = Math.max(0, Number(valor) || 0);
+  return Math.floor((numero + 1e-9) * 100) / 100;
+}
+
+function hgSkillFormatNumero(valor) {
+  const numero = hgSkillRound2(valor);
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+}
+
+function hgSkillFormatPct(valor) {
+  return hgSkillFormatNumero(valor) + "%";
+}
+
+function hgSkillEscaparHtml(valor) {
+  return String(valor == null ? "" : valor)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function hgSkillNormalizarChance(valor) {
+  const raw = String(valor == null ? "" : valor).trim().replace(/%/g, "");
+  if (!raw) return "";
+  const numero = hgSkillNumero(raw);
+  if (!Number.isFinite(numero)) return "";
+  return hgSkillFormatNumero(Math.max(0, Math.min(100, numero)));
+}
+
+function hgSkillPerfilAtual() {
+  const range = hgSkillEl("hgSkillRange") ? hgSkillEl("hgSkillRange").value : "Single Melee";
+  const allArea = range === "All Area";
+  const cc = !!(hgSkillEl("hgSkillCc") && hgSkillEl("hgSkillCc").checked);
+  const dot = !!(hgSkillEl("hgSkillDot") && hgSkillEl("hgSkillDot").checked);
+  const defBreak = !!(hgSkillEl("hgSkillDefBreak") && hgSkillEl("hgSkillDefBreak").checked);
+  const cast = !!(hgSkillEl("hgSkillCast") && hgSkillEl("hgSkillCast").checked);
+  const hp = !!(hgSkillEl("hgSkillHp") && hgSkillEl("hgSkillHp").checked);
+  const effect = cc || dot || defBreak;
+
+  /* Perfis já observados. A ferramenta sinaliza quando a combinação
+     ainda é inferida, para não esconder incerteza durante os testes. */
+  if (allArea && hp && cast && !effect) {
+    return {
+      step: 41.72 / 9,
+      name: "ALL AREA + HP + CAST",
+      confidence: "confirmed",
+      confidenceText: "CONFIRMADO",
+      formula: "+4,6355... pontos totais por level",
+      note: "Perfil calibrado pelo par Flame Inferno: Lv1 146,48 → Lv10 188,20.",
+      warning: "Combinação confirmada em um mesmo skill Lv1/Lv10."
+    };
+  }
+
+  if (allArea) {
+    return {
+      step: 4.8,
+      name: effect ? "ALL AREA + EFEITO" : (cast || hp ? "ALL AREA + MODIFICADOR" : "ALL AREA"),
+      confidence: effect || cast || hp ? "medium" : "confirmed",
+      confidenceText: effect || cast || hp ? "MÉDIO" : "CONFIRMADO",
+      formula: "+4,80 pontos totais por level",
+      note: effect || cast || hp
+        ? "Usando provisoriamente a curva All Area até surgir um par idêntico Lv1/Lv10 desta combinação."
+        : "Curva confirmada por Shining V Force: Lv1 96 → Lv10 139,20.",
+      warning: effect || cast || hp
+        ? "Perfil combinado ainda é uma previsão. Confira quando houver dado Lv10 real."
+        : "Curva All Area confirmada pelos dados atuais."
+    };
+  }
+
+  if (effect) {
+    return {
+      step: 4.25,
+      name: "SINGLE + EFEITO",
+      confidence: "experimental",
+      confidenceText: "EXPERIMENTAL",
+      formula: "+4,25 pontos totais por level",
+      note: "Curva inferida pelos exemplos de efeito disponíveis: Lv1 90 → Lv10 128,25.",
+      warning: "Ainda falta um mesmo skill com efeito visto no Lv1 e no Lv10 para fechar esta curva."
+    };
+  }
+
+  if (hp && cast) {
+    return {
+      step: 5,
+      name: "SINGLE + HP + CAST",
+      confidence: "medium",
+      confidenceText: "MÉDIO",
+      formula: "+5,00 pontos totais por level",
+      note: "Usa a curva Single de +5 enquanto não temos um par puro HP + Cast Lv1/Lv10.",
+      warning: "HP + Cast muda o perfil, mas nesta v2 ainda herda a curva Single de +5."
+    };
+  }
+
+  return {
+    step: 5,
+    name: cast ? "SINGLE + CAST" : (hp ? "SINGLE + HP" : "SINGLE NORMAL"),
+    confidence: "high",
+    confidenceText: "ALTO",
+    formula: "+5,00 pontos totais por level",
+    note: cast
+      ? "Os exemplos Single com Cast são compatíveis com +5 pontos totais por level."
+      : hp
+        ? "Testament confirmou crescimento de +5 pontos totais por level em skill HP-only."
+        : "Dimension Destroyer confirmou crescimento de +5 pontos totais por level.",
+    warning: "Perfil sustentado pelos pares e validações atuais."
+  };
+}
+
+function hgSkillCalcularNivel(level, hits, lv1PorHit, perfil) {
+  const lv1TotalLido = lv1PorHit * hits;
+  const totalTeorico = lv1TotalLido + perfil.step * (level - 1);
+  const porHitExibido = hgSkillTrunc2(totalTeorico / hits);
+  const totalExibido = hgSkillRound2(porHitExibido * hits);
+  return {
+    level: level,
+    totalTeorico: totalTeorico,
+    perHit: porHitExibido,
+    total: totalExibido
+  };
+}
+
+function hgSkillCategoriaEfeito() {
+  const categorias = [];
+  if (hgSkillEl("hgSkillCc") && hgSkillEl("hgSkillCc").checked) categorias.push("CC");
+  if (hgSkillEl("hgSkillDot") && hgSkillEl("hgSkillDot").checked) categorias.push("DOT");
+  if (hgSkillEl("hgSkillDefBreak") && hgSkillEl("hgSkillDefBreak").checked) categorias.push("DEF BREAK");
+  return categorias.join(", ");
+}
+
+function hgSkillIconeElementoHtml(elemento) {
+  try {
+    if (typeof pvpElementIconHtml === "function") {
+      const html = pvpElementIconHtml(elemento);
+      if (html) return html;
+    }
+  } catch (erro) {}
+
+  try {
+    if (typeof renderizarIconeElemento === "function") {
+      const html = renderizarIconeElemento(elemento);
+      if (html) return html;
+    }
+  } catch (erro) {}
+
+  return '<span class="hg-skill-element-fallback">' + hgSkillEscaparHtml(elemento.slice(0, 2)) + '</span>';
+}
+
+function hgSkillRenderElementos() {
+  const baseBox = hgSkillEl("hgSkillBaseOptions");
+  const changeBox = hgSkillEl("hgSkillChangeOptions");
+  if (!baseBox || !changeBox) return;
+
+  baseBox.innerHTML = "";
+  changeBox.innerHTML = "";
+
+  HG_SKILL_ELEMENTOS.forEach(function(elemento) {
+    const baseLabel = document.createElement("label");
+    baseLabel.className = "hg-skill-element-choice" + (hgSkillBaseSelecionado === elemento ? " ativo" : "");
+    baseLabel.innerHTML =
+      '<input type="radio" name="hgSkillBase" value="' + hgSkillEscaparHtml(elemento) + '" ' +
+      (hgSkillBaseSelecionado === elemento ? "checked" : "") + '>' +
+      '<span class="hg-skill-element-icon">' + hgSkillIconeElementoHtml(elemento) + '</span>' +
+      '<b>' + hgSkillEscaparHtml(elemento) + '</b>';
+    const baseInput = baseLabel.querySelector("input");
+    baseInput.addEventListener("change", function() {
+      if (!baseInput.checked) return;
+      hgSkillBaseSelecionado = elemento;
+      if (!hgSkillCanChangeSelecionados.has(elemento)) {
+        hgSkillCanChangeSelecionados.add(elemento);
+      }
+      hgSkillRenderElementos();
+      hgSkillAtualizar();
+    });
+    baseBox.appendChild(baseLabel);
+
+    const changeLabel = document.createElement("label");
+    const selecionado = hgSkillCanChangeSelecionados.has(elemento);
+    changeLabel.className = "hg-skill-element-choice multi" + (selecionado ? " ativo" : "");
+    changeLabel.innerHTML =
+      '<input type="checkbox" value="' + hgSkillEscaparHtml(elemento) + '" ' + (selecionado ? "checked" : "") + '>' +
+      '<span class="hg-skill-element-icon">' + hgSkillIconeElementoHtml(elemento) + '</span>' +
+      '<b>' + hgSkillEscaparHtml(elemento) + '</b>';
+    const changeInput = changeLabel.querySelector("input");
+    changeInput.addEventListener("change", function() {
+      if (changeInput.checked) hgSkillCanChangeSelecionados.add(elemento);
+      else hgSkillCanChangeSelecionados.delete(elemento);
+      hgSkillRenderElementos();
+      hgSkillAtualizar();
+    });
+    changeBox.appendChild(changeLabel);
+  });
+}
+
+function hgSkillRenderCurva(hits, lv1PorHit, perfil) {
+  const box = hgSkillEl("hgSkillCurve");
+  if (!box) return;
+  box.innerHTML = "";
+  for (let level = 1; level <= 10; level++) {
+    const calc = hgSkillCalcularNivel(level, hits, lv1PorHit, perfil);
+    const item = document.createElement("div");
+    item.className = "hg-skill-v2-level" + (level === 1 ? " start" : level === 10 ? " end" : "");
+    item.innerHTML =
+      '<small>LV' + level + '</small>' +
+      '<strong>' + hgSkillFormatPct(calc.perHit) + '</strong>' +
+      '<span>' + hgSkillFormatPct(calc.total) + ' total</span>';
+    box.appendChild(item);
+  }
+}
+
+function hgSkillValoresLinha(hits, lv10, categoria) {
+  const cc = !!(hgSkillEl("hgSkillCc") && hgSkillEl("hgSkillCc").checked);
+  const dot = !!(hgSkillEl("hgSkillDot") && hgSkillEl("hgSkillDot").checked);
+  const defBreak = !!(hgSkillEl("hgSkillDefBreak") && hgSkillEl("hgSkillDefBreak").checked);
+  const changeOrdenado = HG_SKILL_ELEMENTOS.filter(function(elemento) {
+    return hgSkillCanChangeSelecionados.has(elemento);
+  });
+
+  return [
+    hgSkillEl("hgSkillType") ? hgSkillEl("hgSkillType").value : "Attack",
+    hgSkillEl("hgSkillRange") ? hgSkillEl("hgSkillRange").value : "Single Melee",
+    String(hits),
+    hgSkillFormatNumero(lv10.perHit),
+    hgSkillFormatNumero(lv10.total),
+    hgSkillBaseSelecionado,
+    changeOrdenado.join(", "),
+    categoria,
+    cc ? "YES" : "NO",
+    cc && hgSkillEl("hgSkillCcType") ? hgSkillEl("hgSkillCcType").value.trim() : "",
+    dot ? "YES" : "NO",
+    defBreak ? "YES" : "NO",
+    hgSkillEl("hgSkillEffectName") ? hgSkillEl("hgSkillEffectName").value.trim() : "",
+    hgSkillEl("hgSkillEffectChance") ? hgSkillNormalizarChance(hgSkillEl("hgSkillEffectChance").value) : ""
+  ];
+}
+
+function hgSkillRenderLinha(valores) {
+  const row = hgSkillEl("hgSkillSheetRow");
+  const tsv = hgSkillEl("hgSkillSheetTsv");
+  if (row) {
+    row.innerHTML = "";
+    valores.forEach(function(valor) {
+      const td = document.createElement("td");
+      td.textContent = valor;
+      row.appendChild(td);
+    });
+  }
+  if (tsv) tsv.value = valores.join("\t");
+}
+
+function hgSkillAtualizar() {
+  const hitsInput = hgSkillEl("hgSkillHits");
+  const lv1Input = hgSkillEl("hgSkillLv1PerHit");
+  if (!hitsInput || !lv1Input) return;
+
+  let hits = Math.round(hgSkillNumero(hitsInput.value));
+  if (!Number.isFinite(hits) || hits < 1) hits = 1;
+  hits = Math.min(99, hits);
+
+  const lv1PorHit = Math.max(0, Math.min(9999, hgSkillNumero(lv1Input.value)));
+  const lv1Total = hgSkillRound2(lv1PorHit * hits);
+  const perfil = hgSkillPerfilAtual();
+  const lv10 = hgSkillCalcularNivel(10, hits, lv1PorHit, perfil);
+  const categoria = hgSkillCategoriaEfeito();
+
+  const lv1TotalEl = hgSkillEl("hgSkillLv1Total");
+  const lv1Formula = hgSkillEl("hgSkillLv1Formula");
+  if (lv1TotalEl) lv1TotalEl.textContent = hgSkillFormatPct(lv1Total);
+  if (lv1Formula) lv1Formula.textContent = hits + " × " + hgSkillFormatPct(lv1PorHit) + " = " + hgSkillFormatPct(lv1Total);
+
+  const areaBadge = hgSkillEl("hgSkillAreaBadge");
+  if (areaBadge) {
+    const allArea = hgSkillEl("hgSkillRange") && hgSkillEl("hgSkillRange").value === "All Area";
+    areaBadge.textContent = allArea ? "AOE / ALL AREA" : "SINGLE";
+    areaBadge.classList.toggle("aoe", !!allArea);
+  }
+
+  const categoryInput = hgSkillEl("hgSkillEffectCategory");
+  if (categoryInput) categoryInput.value = categoria;
+
+  const ccType = hgSkillEl("hgSkillCcType");
+  if (ccType) {
+    const habilitado = !!(hgSkillEl("hgSkillCc") && hgSkillEl("hgSkillCc").checked);
+    ccType.disabled = !habilitado;
+    if (!habilitado) ccType.value = "";
+  }
+
+  const profileName = hgSkillEl("hgSkillProfileName");
+  const confidence = hgSkillEl("hgSkillConfidence");
+  const profileFormula = hgSkillEl("hgSkillProfileFormula");
+  const profileNote = hgSkillEl("hgSkillProfileNote");
+  const warning = hgSkillEl("hgSkillWarning");
+  if (profileName) profileName.textContent = perfil.name;
+  if (confidence) {
+    confidence.textContent = perfil.confidenceText;
+    confidence.dataset.level = perfil.confidence;
+  }
+  if (profileFormula) profileFormula.textContent = perfil.formula;
+  if (profileNote) profileNote.textContent = perfil.note;
+  if (warning) {
+    warning.textContent = perfil.warning;
+    warning.dataset.level = perfil.confidence;
+  }
+
+  const lv10PerHit = hgSkillEl("hgSkillLv10PerHit");
+  const lv10Total = hgSkillEl("hgSkillLv10Total");
+  const resultHits = hgSkillEl("hgSkillResultHits");
+  if (lv10PerHit) lv10PerHit.textContent = hgSkillFormatPct(lv10.perHit);
+  if (lv10Total) lv10Total.textContent = hgSkillFormatPct(lv10.total);
+  if (resultHits) resultHits.textContent = String(hits);
+
+  const baseText = hgSkillEl("hgSkillBaseText");
+  const changeCount = hgSkillEl("hgSkillChangeCount");
+  if (baseText) baseText.textContent = hgSkillBaseSelecionado || "NENHUM";
+  if (changeCount) changeCount.textContent = hgSkillCanChangeSelecionados.size + " SELECTED";
+
+  hgSkillRenderCurva(hits, lv1PorHit, perfil);
+  hgSkillRenderLinha(hgSkillValoresLinha(hits, lv10, categoria));
+}
+
+function hgSkillCopiarTexto(texto) {
+  if (!texto) return Promise.resolve(false);
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(texto).then(function() { return true; }).catch(function() { return false; });
+  }
+  return new Promise(function(resolve) {
+    const area = document.createElement("textarea");
+    area.value = texto;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (erro) {}
+    area.remove();
+    resolve(ok);
+  });
+}
+
+function hgSkillCopiarLinha() {
+  const tsv = hgSkillEl("hgSkillSheetTsv");
+  const btn = hgSkillEl("hgSkillCopyRow");
+  const status = hgSkillEl("hgSkillCopyStatus");
+  if (!tsv || !btn) return;
+
+  if (!hgSkillBaseSelecionado) {
+    if (status) status.textContent = "Selecione o elemento BASE antes de copiar.";
+    return;
+  }
+
+  hgSkillCopiarTexto(tsv.value).then(function(ok) {
+    const antigo = btn.textContent;
+    btn.textContent = ok ? "COPIADO ✓" : "SELECIONE A LINHA ABAIXO";
+    if (status) status.textContent = ok ? "Linha pronta para colar no Google Sheets." : "O navegador bloqueou o clipboard automático.";
+    if (!ok) {
+      tsv.focus();
+      tsv.select();
+    }
+    setTimeout(function() { btn.textContent = antigo; }, 1400);
+  });
+}
+
+function hgSkillLimpar() {
+  const setValue = function(id, value) { const el = hgSkillEl(id); if (el) el.value = value; };
+  const setCheck = function(id, value) { const el = hgSkillEl(id); if (el) el.checked = value; };
+
+  setValue("hgSkillName", "");
+  setValue("hgSkillType", "Attack");
+  setValue("hgSkillRange", "Single Melee");
+  setValue("hgSkillHits", "4");
+  setValue("hgSkillLv1PerHit", "25,00");
+  setValue("hgSkillCcType", "");
+  setValue("hgSkillEffectName", "");
+  setValue("hgSkillEffectChance", "");
+  setCheck("hgSkillCast", false);
+  setCheck("hgSkillHp", false);
+  setCheck("hgSkillSp", true);
+  setCheck("hgSkillCc", false);
+  setCheck("hgSkillDot", false);
+  setCheck("hgSkillDefBreak", false);
+
+  hgSkillBaseSelecionado = "";
+  hgSkillCanChangeSelecionados = new Set();
+  const status = hgSkillEl("hgSkillCopyStatus");
+  if (status) status.textContent = "";
+  hgSkillRenderElementos();
+  hgSkillAtualizar();
+}
+
+function hgSkillSanitizarPercentualInput(input) {
+  if (!input) return;
+  const valor = hgSkillNumero(input.value);
+  if (!input.value.trim()) return;
+  input.value = hgSkillFormatNumero(Math.max(0, valor));
+}
+
+function hgSkillCalcInicializar() {
+  const pagina = hgSkillEl("hgSkillCalcPagina");
+  if (!pagina) return;
+
+  if (!hgSkillCalcIniciado) {
+    hgSkillCalcIniciado = true;
+    hgSkillRenderElementos();
+
+    [
+      "hgSkillType", "hgSkillRange", "hgSkillHits", "hgSkillLv1PerHit",
+      "hgSkillCast", "hgSkillHp", "hgSkillSp", "hgSkillCc", "hgSkillDot",
+      "hgSkillDefBreak", "hgSkillCcType", "hgSkillEffectName", "hgSkillEffectChance"
+    ].forEach(function(id) {
+      const el = hgSkillEl(id);
+      if (!el) return;
+      el.addEventListener("input", hgSkillAtualizar);
+      el.addEventListener("change", hgSkillAtualizar);
+    });
+
+    ["hgSkillLv1PerHit", "hgSkillEffectChance"].forEach(function(id) {
+      const el = hgSkillEl(id);
+      if (el) el.addEventListener("blur", function() {
+        if (id === "hgSkillEffectChance" && !el.value.trim()) return;
+        hgSkillSanitizarPercentualInput(el);
+        hgSkillAtualizar();
+      });
+    });
+
+    const copy = hgSkillEl("hgSkillCopyRow");
+    const reset = hgSkillEl("hgSkillReset");
+    if (copy) copy.addEventListener("click", hgSkillCopiarLinha);
+    if (reset) reset.addEventListener("click", hgSkillLimpar);
+  } else {
+    /* Imagens do site podem ter terminado de carregar desde a última visita.
+       Renderizar de novo garante que os ícones reais apareçam. */
+    hgSkillRenderElementos();
+  }
+
+  hgSkillAtualizar();
 }
