@@ -14497,7 +14497,12 @@ function pvpMatchRenderDraft(){
   if(instruction)instruction.textContent=currentPlayer?currentPlayer.nick+" escolhe "+remaining+" Digimon"+(remaining!==1?"s":"")+".":"Finalizando picks...";
 
   const ownRole=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;
-  const own=state.players[ownRole];const grid=document.getElementById("pvpDraftRosterGrid");if(!own||!grid)return;
+  const grid=document.getElementById("pvpDraftRosterGrid");
+  if(pvpMatchSpectatorMode){
+    if(grid)grid.innerHTML='<div class="pvp-spectator-phase-note"><strong>MODO ESPECTADOR</strong><span>Os picks dos dois jogadores são atualizados em tempo real no placar acima.</span></div>';
+    return;
+  }
+  const own=state.players[ownRole];if(!own||!grid)return;
   const ownPicks=new Set((draft.picks&&draft.picks[ownRole]||[]).map(normalizarHgid).filter(Boolean));
   const canPick=pvpMatchLocalMode||current===ownRole;
   grid.innerHTML=pvpMatchSlotsDoTeam(own.team).map(function(slot){
@@ -14510,11 +14515,21 @@ function pvpMatchRenderDraft(){
 function pvpMatchEscolherPick(hgid){hgid=normalizarHgid(hgid);if(hgid)pvpMatchSend("pick",{hgid:hgid})}
 
 function pvpMatchRenderBan(){
-  const state=pvpMatchRoomState;const ownRole=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;const opp=pvpMatchOpponentRole(ownRole);
-  const myBan=state.bans&&state.bans[ownRole];const oppPicks=state.draft.picks[opp]||[];
+  const state=pvpMatchRoomState;
   const grid=document.getElementById("pvpBanTargetGrid");
-  grid.innerHTML=oppPicks.map(function(hgid){hgid=normalizarHgid(hgid);const d=pvpMatchDigi(hgid);return d?'<button type="button" class="pvp-ban-card" '+(myBan?'disabled':'')+' onclick="pvpMatchBanir(\''+hgid+'\')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · '+pvpEscapeHtml(d.attribute)+'</small></button>':''}).join("");
   const status=document.getElementById("pvpBanStatus");
+  if(pvpMatchSpectatorMode){
+    function banCard(role){
+      const player=state.players&&state.players[role],hgid=state.bans&&state.bans[role],d=hgid?pvpMatchDigi(hgid):null;
+      return '<article class="pvp-spectator-ban-card"><small>'+pvpEscapeHtml(player&&player.nick?player.nick:role.toUpperCase())+'</small>'+(d?'<img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><span>BAN CONFIRMADO</span>':'<strong>AGUARDANDO BAN...</strong>')+'</article>';
+    }
+    if(grid)grid.innerHTML=banCard("host")+banCard("guest");
+    if(status)status.textContent="MODO ESPECTADOR · acompanhando os bans dos dois jogadores.";
+    return;
+  }
+  const ownRole=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;const opp=pvpMatchOpponentRole(ownRole);
+  const myBan=state.bans&&state.bans[ownRole];const oppPicks=state.draft.picks[opp]||[];
+  grid.innerHTML=oppPicks.map(function(hgid){hgid=normalizarHgid(hgid);const d=pvpMatchDigi(hgid);return d?'<button type="button" class="pvp-ban-card" '+(myBan?'disabled':'')+' onclick="pvpMatchBanir(\''+hgid+'\')"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><small>'+pvpEscapeHtml(d.stage.toUpperCase())+' · '+pvpEscapeHtml(d.attribute)+'</small></button>':''}).join("");
   if(status)status.textContent=myBan?"Seu ban foi confirmado. Aguardando o adversário...":"Escolha 1 dos 4 picks do adversário.";
   if(pvpMatchLocalMode&&state.bans.host&&!state.bans.guest){pvpMatchLocalRole="guest";setTimeout(pvpMatchRenderBan,0)}
   else if(pvpMatchLocalMode&&state.bans.guest&&!state.bans.host){pvpMatchLocalRole="host";setTimeout(pvpMatchRenderBan,0)}
@@ -14527,7 +14542,20 @@ function pvpMatchSurvivors(role){
 }
 
 function pvpMatchRenderFormation(){
-  const state=pvpMatchRoomState;let role=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;
+  const state=pvpMatchRoomState;
+  if(pvpMatchSpectatorMode){
+    const grid=document.getElementById("pvpFormationGrid");
+    function side(role){
+      const player=state.players&&state.players[role],positions=state.formations&&state.formations[role],survivors=pvpMatchSurvivors(role);
+      const cards=survivors.map(function(hgid){const d=pvpMatchDigi(hgid),pos=positions&&positions[hgid]?positions[hgid]:"?";return d?'<article class="pvp-formation-card spectator"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><div class="pvp-spectator-position">'+pvpEscapeHtml(pos==="F"?"FRONT":pos==="B"?"BACK":"AGUARDANDO")+'</div></article>':''}).join("");
+      return '<section class="pvp-spectator-formation-side"><h4>'+pvpEscapeHtml(player&&player.nick?player.nick:role.toUpperCase())+'</h4><div class="pvp-spectator-formation-cards">'+cards+'</div><small>'+(positions?'FORMAÇÃO CONFIRMADA':'AGUARDANDO CONFIRMAÇÃO...')+'</small></section>';
+    }
+    if(grid)grid.innerHTML=side("host")+side("guest");
+    const head=document.querySelector("#pvpMatchFormation .pvp-formation-head span");if(head)head.textContent="MODO ESPECTADOR · formações dos dois jogadores.";
+    const btn=document.getElementById("pvpFormationConfirmBtn");if(btn)btn.hidden=true;
+    return;
+  }
+  let role=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;
   if(pvpMatchLocalMode&&state.formations&&state.formations[role])role=pvpMatchOpponentRole(role);
   pvpMatchLocalRole=role;
   const player=state.players[role];const survivors=pvpMatchSurvivors(role);
@@ -14538,7 +14566,7 @@ function pvpMatchRenderFormation(){
   const grid=document.getElementById("pvpFormationGrid");
   grid.innerHTML=survivors.map(function(hgid){const d=pvpMatchDigi(hgid),pos=pvpMatchFormationDraft[role][hgid]||"F";return '<article class="pvp-formation-card"><img src="'+d.icon+'" alt=""><strong>'+pvpEscapeHtml(d.name)+'</strong><div class="pvp-position-toggle"><button type="button" class="'+(pos==='F'?'ativo':'')+'" onclick="pvpMatchSetPosition(\''+hgid+'\',\'F\')">F · FRONT</button><button type="button" class="'+(pos==='B'?'ativo':'')+'" onclick="pvpMatchSetPosition(\''+hgid+'\',\'B\')">B · BACK</button></div></article>'}).join("");
   const head=document.querySelector("#pvpMatchFormation .pvp-formation-head span");if(head)head.textContent=player.nick+": defina a posição dos 3 Digimons.";
-  const btn=document.getElementById("pvpFormationConfirmBtn");if(btn)btn.disabled=!!(state.formations&&state.formations[role]);
+  const btn=document.getElementById("pvpFormationConfirmBtn");if(btn){btn.hidden=false;btn.disabled=!!(state.formations&&state.formations[role])}
 }
 function pvpMatchSetPosition(hgid,pos){
   const role=pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole;if(!pvpMatchFormationDraft[role])pvpMatchFormationDraft[role]={};
@@ -14675,7 +14703,7 @@ function pvpBattleRebuildOrder(battle,reset){
   if(current&&battle.turnOrder.includes(current))battle.turnIndex=battle.turnOrder.indexOf(current);else battle.turnIndex=0;
 }
 function pvpBattleCurrentUnit(){const b=pvpMatchRoomState&&pvpMatchRoomState.battle;if(!b||!b.turnOrder.length)return null;return pvpBattleUnitById(b,b.turnOrder[b.turnIndex%b.turnOrder.length])}
-function pvpBattleMyRole(){return pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole}
+function pvpBattleMyRole(){return pvpMatchSpectatorMode?"host":(pvpMatchLocalMode?pvpMatchLocalRole:pvpMatchRole)}
 function pvpBattleCanAct(){const u=pvpBattleCurrentUnit();return !!u&&(pvpMatchLocalMode||u.role===pvpMatchRole)}
 function pvpBattleUnitsByControl(role){
   const b=pvpMatchRoomState&&pvpMatchRoomState.battle;if(!b||!b.units||!b.units[role])return [];
@@ -14866,6 +14894,11 @@ function pvpBattleUnitHtml(u,current,targeted){
 function pvpBattleRenderOpponentLabel(){
   const box=document.getElementById("pvpBattleOpponentLabel");
   if(!box||!pvpMatchRoomState||!pvpMatchRoomState.players)return;
+  if(pvpMatchSpectatorMode){
+    const host=pvpMatchRoomState.players.host,guest=pvpMatchRoomState.players.guest;
+    box.innerHTML='<span>ESPECTADOR:</span><strong>'+pvpEscapeHtml(host&&host.nick?host.nick:"HOST")+' <b class="pvp-spectator-vs">VS</b> '+pvpEscapeHtml(guest&&guest.nick?guest.nick:"GUEST")+'</strong>';
+    return;
+  }
   const me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me),player=pvpMatchRoomState.players[enemy];
   box.innerHTML='<span>OPONENTE:</span><strong>'+pvpEscapeHtml(player&&player.nick?player.nick:"AGUARDANDO...")+'</strong>';
 }
@@ -14887,8 +14920,14 @@ function pvpBattleFieldRows(units,current){
 }
 function pvpBattleRenderFields(){
   const b=pvpMatchRoomState.battle,me=pvpBattleMyRole(),enemy=pvpMatchOpponentRole(me),current=pvpBattleCurrentUnit(),own=document.getElementById("pvpBattleOwnField"),opp=document.getElementById("pvpBattleEnemyField");
-  if(own)own.innerHTML=pvpBattleFieldRows(pvpBattleDeployedUnitsByControl(me),current);
-  if(opp)opp.innerHTML=pvpBattleFieldRows(pvpBattleDeployedUnitsByControl(enemy),current);
+  if(own){
+    own.innerHTML=pvpBattleFieldRows(pvpBattleDeployedUnitsByControl(me),current);
+    if(pvpMatchSpectatorMode)own.dataset.player=(pvpMatchRoomState.players&&pvpMatchRoomState.players[me]&&pvpMatchRoomState.players[me].nick)||"HOST";else delete own.dataset.player;
+  }
+  if(opp){
+    opp.innerHTML=pvpBattleFieldRows(pvpBattleDeployedUnitsByControl(enemy),current);
+    if(pvpMatchSpectatorMode)opp.dataset.player=(pvpMatchRoomState.players&&pvpMatchRoomState.players[enemy]&&pvpMatchRoomState.players[enemy].nick)||"GUEST";else delete opp.dataset.player;
+  }
 }
 
 function pvpBattleQueuePreview(b,count){
@@ -22486,13 +22525,59 @@ pvpMatchComTimeImportado=function(){
   hgTournamentReturnFromBuilder();
 };
 
+let hgTournamentLiveRefreshBusy=false;
+let hgTournamentLiveFingerprint="";
+
+function hgTournamentFingerprint(tournament){
+  if(!tournament)return "";
+  try{
+    return JSON.stringify({
+      id:tournament.id||"",
+      status:tournament.status||"",
+      updatedAt:tournament.updatedAt||tournament.updated_at||"",
+      playerCount:Number(tournament.playerCount||0),
+      readyCount:Number(tournament.readyCount||0),
+      players:(tournament.players||[]).map(function(p){return [p.id,p.nick,p.status,!!p.teamLocked,p.teamLockedAt||""]}),
+      bracket:tournament.bracket||null,
+      champion:tournament.champion||null
+    });
+  }catch(erro){return String(Date.now())}
+}
+
+async function hgTournamentLiveRefresh(){
+  const view=document.getElementById("pvpTournamentView");
+  if(document.hidden||!view||!view.classList.contains("ativa")||!hgTournamentData||hgTournamentLoading||hgTournamentLiveRefreshBusy)return;
+  hgTournamentLiveRefreshBusy=true;
+  try{
+    const id=hgTournamentData.id;
+    const data=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(id));
+    const tournament=data&&data.tournament;
+    if(!tournament)return;
+    const fingerprint=hgTournamentFingerprint(tournament);
+    if(fingerprint===hgTournamentLiveFingerprint)return;
+    const session=hgTournamentGetSession(id);
+    if(session.organizerToken)await hgTournamentLoadOrganizerView(tournament,session);
+    else hgTournamentOrganizerView=null;
+    hgTournamentLiveFingerprint=fingerprint;
+    hgTournamentRenderDashboard(tournament);
+  }catch(erro){
+    // Atualização silenciosa: uma falha temporária não derruba a tela atual.
+  }finally{
+    hgTournamentLiveRefreshBusy=false;
+  }
+}
+
+const _hgTournamentOpenV15=hgTournamentOpen;
+hgTournamentOpen=async function(id,silent){
+  const ok=await _hgTournamentOpenV15.apply(this,arguments);
+  if(ok&&hgTournamentData)hgTournamentLiveFingerprint=hgTournamentFingerprint(hgTournamentData);
+  return ok;
+};
+
 function hgTournamentStartPolling(){
-  if(hgTournamentPollTimer)return;
-  hgTournamentPollTimer=setInterval(function(){
-    const view=document.getElementById("pvpTournamentView");
-    if(document.hidden||!view||!view.classList.contains("ativa")||!hgTournamentData||hgTournamentLoading)return;
-    hgTournamentOpen(hgTournamentData.id,true);
-  },30000);
+  if(hgTournamentPollTimer){clearInterval(hgTournamentPollTimer);hgTournamentPollTimer=null}
+  hgTournamentPollTimer=setInterval(hgTournamentLiveRefresh,2000);
+  setTimeout(hgTournamentLiveRefresh,350);
 }
 
 const _hgTournamentReceiveState=pvpMatchReceberEstado;
