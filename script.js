@@ -21192,7 +21192,7 @@ if(document.readyState==="loading"){
 })();
 
 /* =====================================================
-   PVP TOURNAMENT V1.1 — FRONTEND
+   PVP TOURNAMENT V1.2 — ORGANIZER CONTROL + TEAM AUDIT
    Tournament Worker + locked PvP teams + automatic Challenge Room.
 ===================================================== */
 const HG_TOURNAMENT_API_URL = "https://holy-guardians-tournament.hiltongiuseppechiarelo.workers.dev";
@@ -21205,6 +21205,8 @@ let hgTournamentData = null;
 let hgTournamentLoading = false;
 let hgTournamentPollTimer = null;
 let hgTournamentResultBusy = false;
+let hgTournamentOrganizerView = null;
+let hgTournamentOrganizerViewBusy = false;
 let hgTournamentMatchContext = hgTournamentReadMatchContext();
 
 function hgTournamentLanguage(){
@@ -21570,6 +21572,70 @@ function hgTournamentRenderPlayerPanel(tournament,session){
     actionHtml;
 }
 
+function hgTournamentMapSummary(map,emptyText){
+  if(!map||typeof map!=="object")return emptyText||"—";
+  const parts=Object.keys(map).filter(function(key){return Number(map[key])!==0}).map(function(key){
+    const value=Number(map[key]);
+    const display=Number.isInteger(value)?String(value):String(Math.round(value*100)/100);
+    return String(key).toUpperCase()+" "+(value>0?"+":"")+display;
+  });
+  return parts.length?parts.join(" · "):(emptyText||"—");
+}
+
+function hgTournamentSkillElementsSummary(map){
+  if(!map||typeof map!=="object")return "—";
+  const parts=Object.keys(map).filter(function(key){return map[key]}).map(function(key){
+    const value=Array.isArray(map[key])?map[key].join("/"):String(map[key]);
+    return "S"+String(key).replace(/[^0-9]/g,"")+": "+value;
+  });
+  return parts.length?parts.join(" · "):"—";
+}
+
+function hgTournamentOrganizerTeamHtml(player){
+  const team=player&&player.team&&typeof player.team==="object"?player.team:null;
+  if(!team){
+    return '<div class="pvp-tournament-team-audit-empty">'+hgTournamentEscape(hgTournamentT("tournament.organizerNoTeam","Time ainda não confirmado."))+'</div>';
+  }
+  const slots=Array.isArray(team.slots)?team.slots:[];
+  const cards=Array.isArray(team.battleCards)?team.battleCards.filter(Boolean):[];
+  const deck=team.teamDeck&&typeof team.teamDeck==="object"?team.teamDeck:{};
+  const slotHtml=slots.map(function(slot,index){
+    const build=slot&&slot.build&&typeof slot.build==="object"?slot.build:{};
+    return '<article class="pvp-tournament-team-slot">'+
+      '<div class="pvp-tournament-team-slot-head"><span>#'+String(index+1).padStart(2,"0")+'</span><strong>'+hgTournamentEscape(slot&&slot.digimon?slot.digimon:(slot&&slot.hgid?slot.hgid:"—"))+'</strong><small>'+hgTournamentEscape(slot&&slot.hgid?slot.hgid:"—")+'</small></div>'+
+      '<div class="pvp-tournament-team-slot-data">'+
+        '<div><b>BABY</b><span>'+hgTournamentEscape(hgTournamentMapSummary(build.baby))+'</span></div>'+
+        '<div><b>TETRIS</b><span>'+hgTournamentEscape(hgTournamentMapSummary(build.tetris))+'</span></div>'+
+        '<div><b>SKILLS</b><span>'+hgTournamentEscape(hgTournamentSkillElementsSummary(build.skillElements))+'</span></div>'+
+        '<div><b>BURST</b><span>S'+Number(build.burstSkill||1)+'</span></div>'+
+      '</div>'+
+    '</article>';
+  }).join("");
+  return '<div class="pvp-tournament-team-audit-summary">'+
+      '<span><small>STAGE</small><b>'+hgTournamentEscape(hgTournamentStageLabel(team.stage||"-"))+'</b></span>'+
+      '<span><small>BATTLE CARDS</small><b>'+hgTournamentEscape(cards.length?cards.map(function(x){return String(x).toUpperCase()}).join(" · "):"—")+'</b></span>'+
+    '</div>'+
+    '<div class="pvp-tournament-team-deck">'+
+      '<div><b>BUFF DECK</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.buff))+'</span></div>'+
+      '<div><b>ATTR BOOST</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.attrBoost))+'</span></div>'+
+      '<div><b>ATTR REDUCE</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.attrReduce))+'</span></div>'+
+    '</div>'+
+    '<div class="pvp-tournament-team-slots">'+slotHtml+'</div>';
+}
+
+function hgTournamentRenderOrganizerTeams(view){
+  if(!view||!Array.isArray(view.players))return "";
+  return '<div class="pvp-tournament-organizer-teams">'+
+    '<div class="pvp-tournament-organizer-teams-head"><small>'+hgTournamentEscape(hgTournamentT("tournament.organizerTeamsKicker","LOCKED TEAMS // AUDIT"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.organizerTeamsTitle","TIMES DOS PARTICIPANTES"))+'</strong></div>'+
+    view.players.map(function(player){
+      return '<details class="pvp-tournament-team-audit" '+(player.teamLocked?'':'data-pending="1"')+'>'+
+        '<summary><span><b>'+hgTournamentEscape(player.nick)+'</b><small>'+hgTournamentEscape(player.teamLocked?hgTournamentT("tournament.teamConfirmed","TIME CONFIRMADO"):hgTournamentT("tournament.teamPending","TIME PENDENTE"))+'</small></span><strong>'+(player.teamLocked?"✓":"…")+'</strong></summary>'+
+        '<div class="pvp-tournament-team-audit-body">'+hgTournamentOrganizerTeamHtml(player)+'</div>'+
+      '</details>';
+    }).join("")+
+  '</div>';
+}
+
 function hgTournamentRenderOrganizerPanel(tournament,session){
   const box=document.getElementById("hgTournamentOrganizerPanel");
   if(!box)return;
@@ -21579,7 +21645,10 @@ function hgTournamentRenderOrganizerPanel(tournament,session){
     return;
   }
   box.hidden=false;
-  const canGenerate=tournament.status==="registration"&&Number(tournament.readyCount)>=2;
+  const view=hgTournamentOrganizerView&&hgTournamentOrganizerView.tournamentId===tournament.id?hgTournamentOrganizerView:null;
+  const total=Number(view&&view.playerCount!=null?view.playerCount:tournament.playerCount||0);
+  const ready=Number(view&&view.readyCount!=null?view.readyCount:tournament.readyCount||0);
+  const allReady=total>=2&&ready===total;
   const organizerPlayer=hgTournamentFindPlayer(tournament,session);
   const organizerIsPlayer=!!(session.playerToken&&organizerPlayer);
   const hasPlayerSlot=Number(tournament.playerCount||0)<Number(tournament.maxPlayers||0);
@@ -21594,17 +21663,19 @@ function hgTournamentRenderOrganizerPanel(tournament,session){
         '<button type="button" class="pvp-action-btn pvp-action-secondary" onclick="hgTournamentOrganizerJoinAsPlayer()" '+(hasPlayerSlot?'':'disabled')+'>'+hgTournamentEscape(hgTournamentT("tournament.organizerJoinPlayer","PARTICIPAR COMO JOGADOR"))+'</button>'+
       '</div>';
     }
-    controls=
-      playerControl+
-      '<p>'+hgTournamentEscape(hgTournamentT("tournament.organizerReadyHint","Ao gerar a chave, as inscrições fecham e somente jogadores com time confirmado entram."))+'</p>'+
-      '<button type="button" class="pvp-action-btn pvp-action-success pvp-tournament-main-btn" onclick="hgTournamentGenerateBracket()" '+(canGenerate?'':'disabled')+'>'+hgTournamentEscape(hgTournamentT("tournament.generateBracket","FECHAR INSCRIÇÕES + GERAR CHAVE"))+'</button>'+
-      (!canGenerate?'<small class="pvp-tournament-help">'+hgTournamentEscape(hgTournamentT("tournament.needTwoReady","São necessários pelo menos 2 jogadores com time confirmado."))+'</small>':'');
+    controls=playerControl+
+      '<div class="pvp-tournament-release-box '+(allReady?'ready':'waiting')+'">'+
+        '<div><small>'+hgTournamentEscape(hgTournamentT("tournament.releaseKicker","START // AUTHORIZATION"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.releaseTitle","LIBERAR JOGADORES"))+'</strong><span>'+hgTournamentEscape(hgTournamentT("tournament.releaseCount","{ready}/{total} times confirmados",{ready:ready,total:total}))+'</span></div>'+
+        '<button type="button" class="pvp-action-btn pvp-action-success pvp-tournament-main-btn" onclick="hgTournamentStartTournament()" '+(allReady?'':'disabled')+'>'+hgTournamentEscape(hgTournamentT("tournament.releaseButton","LIBERAR PARTIDAS + GERAR CHAVE"))+'</button>'+
+      '</div>'+
+      (!allReady?'<small class="pvp-tournament-help">'+hgTournamentEscape(hgTournamentT("tournament.releaseHint","O botão é liberado quando todos os jogadores inscritos tiverem confirmado e travado o time."))+'</small>':'');
   }else{
-    controls='<p>'+hgTournamentEscape(hgTournamentT("tournament.organizerLocked","A chave já foi gerada. As inscrições e os times estão fechados."))+'</p>';
+    controls='<div class="pvp-tournament-release-box done"><div><small>'+hgTournamentEscape(hgTournamentT("tournament.releaseKicker","START // AUTHORIZATION"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.releasedTitle","TORNEIO LIBERADO"))+'</strong><span>'+hgTournamentEscape(hgTournamentT("tournament.organizerLocked","A chave já foi gerada. As inscrições e os times estão fechados."))+'</span></div></div>';
   }
   box.innerHTML=
     '<div class="pvp-tournament-panel-title"><div><small>'+hgTournamentEscape(hgTournamentT("tournament.organizerKicker","ORGANIZER // CONTROL"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.organizerPanel","CONTROLE DO ORGANIZADOR"))+'</strong></div></div>'+
-    controls;
+    controls+
+    (view?hgTournamentRenderOrganizerTeams(view):'<div class="pvp-tournament-organizer-loading">'+hgTournamentEscape(hgTournamentT("tournament.organizerTeamsLoading","Carregando dados dos times..."))+'</div>');
 }
 
 function hgTournamentRenderParticipants(tournament,session){
@@ -21731,6 +21802,26 @@ function hgTournamentRenderDashboard(tournament){
   hgTournamentRenderBracket(tournament,session);
 }
 
+async function hgTournamentLoadOrganizerView(tournament,session){
+  if(!tournament||!session||!session.organizerToken){hgTournamentOrganizerView=null;return null}
+  if(hgTournamentOrganizerViewBusy)return hgTournamentOrganizerView;
+  hgTournamentOrganizerViewBusy=true;
+  try{
+    const view=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(tournament.id)+"/organizer",{
+      method:"GET",
+      headers:{Authorization:"Bearer "+session.organizerToken}
+    });
+    hgTournamentOrganizerView=view;
+    return view;
+  }catch(erro){
+    hgTournamentOrganizerView=null;
+    if(erro&&erro.code==="invalid_organizer_token")hgTournamentNotice(hgTournamentT("tournament.error.organizerToken","O acesso de organizador salvo neste navegador não é mais válido."),"bad");
+    return null;
+  }finally{
+    hgTournamentOrganizerViewBusy=false;
+  }
+}
+
 async function hgTournamentOpen(id,silent){
   const key=hgTournamentNormalizeId(id);
   if(!/^HG[A-Z2-9]{6}$/.test(key)){
@@ -21744,11 +21835,15 @@ async function hgTournamentOpen(id,silent){
     const data=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(key));
     hgTournamentSetActive(key);
     hgTournamentSetQuery(key);
+    const session=hgTournamentGetSession(key);
+    if(session.organizerToken)await hgTournamentLoadOrganizerView(data.tournament,session);
+    else hgTournamentOrganizerView=null;
     hgTournamentRenderDashboard(data.tournament);
     hgTournamentNotice("","");
     return true;
   }catch(erro){
     hgTournamentData=null;
+    hgTournamentOrganizerView=null;
     if(!silent){
       hgTournamentRenderLanding();
       hgTournamentNotice(erro.message||hgTournamentT("tournament.error.load","Não foi possível carregar o torneio."),"bad");
@@ -21773,6 +21868,7 @@ async function abrirPvpTournament(id){
 
 function hgTournamentTrocar(){
   hgTournamentData=null;
+  hgTournamentOrganizerView=null;
   hgTournamentSetActive("");
   hgTournamentSetQuery("");
   hgTournamentNotice("","");
@@ -21815,6 +21911,8 @@ async function hgTournamentCreate(){
     hgTournamentSetActive(id);
     hgTournamentSetQuery(id);
     hgTournamentRenderDashboard(tournament);
+    await hgTournamentLoadOrganizerView(tournament,hgTournamentGetSession(id));
+    hgTournamentRenderOrganizerPanel(tournament,hgTournamentGetSession(id));
     hgTournamentNotice(organizerPlays
       ?hgTournamentT("tournament.createdPlaying","Torneio criado e você já foi inscrito como jogador. Agora monte e confirme seu time.")
       :hgTournamentT("tournament.created","Torneio criado. Compartilhe o convite com os jogadores."),"ok");
@@ -21897,6 +21995,11 @@ async function hgTournamentConfirmTeam(){
       body:JSON.stringify({team:team})
     });
     hgTournamentRenderDashboard(data.tournament);
+    const organizerSession=hgTournamentGetSession(data.tournament.id);
+    if(organizerSession.organizerToken){
+      await hgTournamentLoadOrganizerView(data.tournament,organizerSession);
+      hgTournamentRenderOrganizerPanel(data.tournament,organizerSession);
+    }
     hgTournamentNotice(hgTournamentT("tournament.teamLockedSuccess","Time confirmado e travado com sucesso."),"ok");
   }catch(erro){
     hgTournamentNotice(erro.message,"bad");
@@ -21948,28 +22051,37 @@ async function hgTournamentOrganizerJoinAsPlayer(){
   return hgTournamentJoin(hgTournamentData.id,session.organizerNick||hgTournamentData.organizer||"");
 }
 
-async function hgTournamentGenerateBracket(){
+async function hgTournamentStartTournament(){
   if(!hgTournamentData)return;
   const session=hgTournamentGetSession(hgTournamentData.id);
   if(!session.organizerToken){hgTournamentNotice(hgTournamentT("tournament.error.noOrganizerAccess","Este navegador não possui o acesso do organizador."),"bad");return}
-  if(Number(hgTournamentData.readyCount)<2){hgTournamentNotice(hgTournamentT("tournament.needTwoReady","São necessários pelo menos 2 jogadores com time confirmado."),"bad");return}
-  const excluded=Math.max(0,Number(hgTournamentData.playerCount||0)-Number(hgTournamentData.readyCount||0));
-  const message=excluded
-    ?hgTournamentT("tournament.generateDialogExcluded","Gerar a chave agora? {count} jogador(es) sem time confirmado ficarão fora do torneio.",{count:excluded})
-    :hgTournamentT("tournament.generateDialog","Gerar a chave agora? As inscrições serão encerradas.");
-  if(!confirm(message))return;
-  hgTournamentNotice(hgTournamentT("tournament.generating","Gerando chaveamento..."),"info");
+  const view=await hgTournamentLoadOrganizerView(hgTournamentData,session);
+  const total=Number(view&&view.playerCount!=null?view.playerCount:hgTournamentData.playerCount||0);
+  const ready=Number(view&&view.readyCount!=null?view.readyCount:hgTournamentData.readyCount||0);
+  if(total<2||ready!==total){
+    hgTournamentNotice(hgTournamentT("tournament.releaseNotReady","Ainda existem jogadores sem time confirmado. O organizador só pode liberar quando todos estiverem prontos."),"bad");
+    hgTournamentRenderOrganizerPanel(hgTournamentData,session);
+    return;
+  }
+  if(!confirm(hgTournamentT("tournament.releaseDialog","Liberar o torneio agora? As inscrições serão encerradas, a chave será gerada e os jogadores poderão iniciar suas partidas.")))return;
+  hgTournamentNotice(hgTournamentT("tournament.releasing","Liberando torneio e gerando chave..."),"info");
   try{
-    const data=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(hgTournamentData.id)+"/bracket/generate",{
+    const data=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(hgTournamentData.id)+"/start",{
       method:"POST",
       headers:{Authorization:"Bearer "+session.organizerToken}
     });
+    hgTournamentOrganizerView=null;
     hgTournamentRenderDashboard(data.tournament);
-    hgTournamentNotice(hgTournamentT("tournament.bracketGenerated","Chaveamento gerado. As inscrições foram encerradas."),"ok");
+    await hgTournamentLoadOrganizerView(data.tournament,session);
+    hgTournamentRenderOrganizerPanel(data.tournament,session);
+    hgTournamentNotice(hgTournamentT("tournament.releasedSuccess","Torneio liberado. A chave foi gerada e as partidas já podem começar."),"ok");
   }catch(erro){
     hgTournamentNotice(erro.message,"bad");
   }
 }
+
+// Compatibilidade com botões/cache da V1.1.
+async function hgTournamentGenerateBracket(){return hgTournamentStartTournament()}
 
 async function hgTournamentCopyText(text,success){
   const value=String(text||"");
