@@ -23717,15 +23717,32 @@ function hgSkillPerfilAtual() {
     };
   }
 
+  /* SINGLE: os pares idênticos que já conseguimos validar apontam para
+     +5 pontos TOTAIS por nível. O caso Afterimage of Light é especialmente
+     importante: Lv1 128 → Lv8 163 → Lv9 168 → Lv10 173, mesmo sendo DOT + CAST.
+     Portanto efeito NÃO usa a antiga curva inferida de +4,25. */
   if (effect) {
+    const partes = ["SINGLE"];
+    if (hp) partes.push("HP");
+    if (cast) partes.push("CAST");
+    if (cc) partes.push("CC");
+    if (dot) partes.push("DOT");
+    if (defBreak) partes.push("DEF BREAK");
+
+    const afterimageConfirmado = dot && cast && !hp;
+
     return {
-      step: 4.25,
-      name: "SINGLE + EFEITO",
-      confidence: "experimental",
-      confidenceText: "EXPERIMENTAL",
-      formula: "+4,25 pontos totais por level",
-      note: "Curva inferida pelos exemplos de efeito disponíveis: Lv1 90 → Lv10 128,25.",
-      warning: "Ainda falta um mesmo skill com efeito visto no Lv1 e no Lv10 para fechar esta curva."
+      step: 5,
+      name: partes.join(" + "),
+      confidence: afterimageConfirmado ? "confirmed" : "medium",
+      confidenceText: afterimageConfirmado ? "CONFIRMADO" : "MÉDIO",
+      formula: "+5,00 pontos totais por level",
+      note: afterimageConfirmado
+        ? "Afterimage of Light confirma a curva: Lv1 128 → Lv8 163 → Lv9 168 → Lv10 173."
+        : "Os dados atuais indicam que skills Single mantêm +5 pontos totais por level mesmo com efeito.",
+      warning: afterimageConfirmado
+        ? "Curva Single + DOT + Cast confirmada em um mesmo skill do Lv1 ao Lv10."
+        : "Usando a curva Single de +5; esta combinação específica ainda não tem um par idêntico completo."
     };
   }
 
@@ -23736,8 +23753,8 @@ function hgSkillPerfilAtual() {
       confidence: "medium",
       confidenceText: "MÉDIO",
       formula: "+5,00 pontos totais por level",
-      note: "Usa a curva Single de +5 enquanto não temos um par puro HP + Cast Lv1/Lv10.",
-      warning: "HP + Cast muda o perfil, mas nesta v2 ainda herda a curva Single de +5."
+      note: "Os dados Single conhecidos seguem +5 pontos totais por level.",
+      warning: "HP + Cast ainda não tem um par puro completo, então usa a curva Single confirmada."
     };
   }
 
