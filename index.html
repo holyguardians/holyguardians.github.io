@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v1">
+  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v1-1">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -1816,7 +1816,7 @@
           <span>Os 8 Digimons estão configurados.</span>
         </div>
         <div class="pvp-final-buttons">
-          <button type="button" class="pvp-action-btn pvp-action-success" onclick="pvpSalvarTime()">SAVE TEAM → MATCH</button>
+          <button id="pvpSaveTeamBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="pvpSalvarTime()">SAVE TEAM → MATCH</button>
           <button type="button" class="pvp-action-btn" onclick="exportarTimePvp()">EXPORT TEAM</button>
         </div>
       </div>
@@ -1931,6 +1931,14 @@
               </div>
 
               <small class="pvp-tournament-help" data-i18n="tournament.stageRuleHint">A Stage escolhida será obrigatória para todos os times confirmados.</small>
+
+              <label class="pvp-tournament-play-toggle">
+                <input id="hgTournamentCreateOrganizerPlays" type="checkbox" checked>
+                <span>
+                  <strong data-i18n="tournament.organizerPlays">EU TAMBÉM VOU JOGAR</strong>
+                  <small data-i18n="tournament.organizerPlaysHint">O organizador será inscrito automaticamente e contará como uma das vagas.</small>
+                </span>
+              </label>
 
               <button id="hgTournamentCreateBtn" type="button" class="pvp-action-btn pvp-action-success pvp-tournament-main-btn" onclick="hgTournamentCreate()" data-i18n="tournament.createButton">CRIAR TORNEIO</button>
             </article>
@@ -3524,11 +3532,11 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
-<script src="i18n_pt-BR.js?v=20260910-tournament-v1"></script>
-<script src="i18n_en-US.js?v=20260910-tournament-v1"></script>
-<script src="i18n_ko-KR.js?v=20260910-tournament-v1"></script>
+<script src="i18n_pt-BR.js?v=20260910-tournament-v1-1"></script>
+<script src="i18n_en-US.js?v=20260910-tournament-v1-1"></script>
+<script src="i18n_ko-KR.js?v=20260910-tournament-v1-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-tournament-v1"></script>
+<script src="script.js?v=20260910-tournament-v1-1"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>

@@ -27259,6 +27259,36 @@ body.hg-pvp-stream-body #pvpPagina>.pvp-wrap{
   line-height:1.45;
 }
 .pvp-tournament-help{margin:-2px 0 14px}
+.pvp-tournament-play-toggle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 14px;
+  padding:10px 11px;
+  border:1px solid rgba(74,161,241,.28);
+  border-radius:7px;
+  background:rgba(3,17,37,.62);
+  cursor:pointer;
+}
+.pvp-tournament-play-toggle input{
+  width:17px;
+  height:17px;
+  flex:0 0 auto;
+  accent-color:#23c9ff;
+}
+.pvp-tournament-play-toggle>span{display:grid;gap:2px}
+.pvp-tournament-play-toggle strong{color:#dff7ff;font-size:10px;letter-spacing:.04em}
+.pvp-tournament-play-toggle small{color:#769ab8;font-size:9px;line-height:1.35}
+.pvp-tournament-organizer-player{
+  display:grid;
+  gap:8px;
+  margin-bottom:12px;
+  padding:10px;
+  border:1px solid rgba(35,201,255,.18);
+  border-radius:7px;
+  background:rgba(0,114,174,.06);
+}
+.pvp-tournament-organizer-player p{margin:0;color:#88aac4;font-size:9px;line-height:1.45}
 .pvp-tournament-main-btn{width:100%}
 .pvp-tournament-entry-actions{
   display:grid;
