@@ -2409,9 +2409,18 @@ function mostrarPagina(
     );
 
 
-  if (botao) {
+  const paginaFilhaDaDigidex =
+    id === "comparacaoPagina" ||
+    id === "counterFinderPagina" ||
+    id === "builderPagina";
 
-    botao
+  const botaoAtivo = paginaFilhaDaDigidex
+    ? document.getElementById("btnDatabase")
+    : botao;
+
+  if (botaoAtivo) {
+
+    botaoAtivo
       .classList
       .add(
         "ativo"

@@ -9791,10 +9791,10 @@ body {
 ===================================================== */
 
 .digidex-tool-shortcuts {
-  flex: 0 1 410px;
-  min-width: 300px;
+  flex: 0 1 585px;
+  min-width: 450px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(145px, 1fr));
+  grid-template-columns: repeat(3, minmax(145px, 1fr));
   gap: 10px;
   margin-left: auto;
 }
@@ -10361,6 +10361,10 @@ body {
     width: 100%;
     margin: 12px 0 0;
     gap: 8px;
+  }
+
+  .digidex-tool-shortcut:nth-child(3) {
+    grid-column: 1 / -1;
   }
 
   .digidex-tool-shortcut {
