@@ -2226,7 +2226,10 @@ function hgTituloPaginaHeader(id) {
     calculadoraPagina: "CALCULADORA",
     raidBossPagina: "RAID BOSS",
     dekyuTreasurePagina: "DEKYU TREASURE",
+    hgAdminPagina: "HG ADMIN HUB",
     hgMapCoordinatePagina: "MAP COORDINATE TOOL",
+    hgSkillCalcPagina: "SKILL DAMAGE",
+    hgIconLabPagina: "ICON LAB",
     tierListPagina: "TIER LIST DSR",
     tierListDmoPagina: "TIER LIST DMO",
     sorteioPagina: "SORTEIO",
@@ -2468,7 +2471,10 @@ function mostrarPagina(
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
+      hgAdminPagina: "hg-admin",
       hgMapCoordinatePagina: "map-coordinate-tool",
+      hgSkillCalcPagina: "skill-damage-tool",
+      hgIconLabPagina: "icon-lab",
       tierListPagina: "tier-list-dsr",
       tierListDmoPagina: "tier-list-dmo",
       sorteioPagina: "sorteio",
@@ -2523,7 +2529,10 @@ function abrirPaginaPelaUrl() {
     calculadora: { pagina: "calculadoraPagina", botao: "btnCalculadora" },
     "raid-boss": { pagina: "raidBossPagina", botao: "btnRaidBoss" },
     "dekyu-treasure": { pagina: "dekyuTreasurePagina", botao: "btnDekyuTreasure" },
-    "map-coordinate-tool": { pagina: "hgMapCoordinatePagina", botao: "btnDatabase" },
+    "hg-admin": { pagina: "hgAdminPagina", botao: null },
+    "map-coordinate-tool": { pagina: "hgMapCoordinatePagina", botao: null },
+    "skill-damage-tool": { pagina: "hgSkillCalcPagina", botao: null },
+    "icon-lab": { pagina: "hgIconLabPagina", botao: null },
     "tier-list-dsr": { pagina: "tierListPagina", botao: "btnFeatures" },
     "tier-list-dmo": { pagina: "tierListDmoPagina", botao: "btnFeatures" },
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
@@ -2539,7 +2548,7 @@ function abrirPaginaPelaUrl() {
 
   mostrarPagina(
     destino.pagina,
-    document.getElementById(destino.botao),
+    destino.botao ? document.getElementById(destino.botao) : null,
     false
   );
 

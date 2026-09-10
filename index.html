@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-map-coordinate-tool-v1">
+  <link rel="stylesheet" href="styles.css?v=20260910-hg-admin-hub-v1">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -3543,6 +3543,175 @@
 
 
 
+
+<!-- =====================================================
+     HG ADMIN HUB — ROTA OCULTA
+     Rota: #hg-admin
+===================================================== -->
+<section id="hgAdminPagina" class="pagina">
+  <div class="internal-wrap hg-admin-wrap">
+    <header class="hg-admin-hero">
+      <div>
+        <div class="hg-admin-kicker">HOLY GUARDIANS // ADMIN SYSTEM</div>
+        <h2 class="page-title">HG ADMIN HUB</h2>
+        <p class="page-subtitle">Ferramentas internas para manutenção de mapas, assets e dados do projeto.</p>
+      </div>
+      <div class="hg-admin-secret-pill" title="Esta rota não aparece no menu público">ROTA OCULTA</div>
+    </header>
+
+    <div class="hg-admin-grid">
+      <button class="hg-admin-card hg-admin-card-ready" type="button"
+              onclick="mostrarPagina('hgMapCoordinatePagina', null)">
+        <div class="hg-admin-card-top">
+          <span class="hg-admin-card-icon">⌖</span>
+          <span class="hg-admin-card-status">PRONTO</span>
+        </div>
+        <strong>MAP TOOL</strong>
+        <p>Abra mapas da DSR MAPS, marque pontos e copie coordenadas para Raid ou Dekyu.</p>
+        <span class="hg-admin-card-cta">ABRIR FERRAMENTA →</span>
+      </button>
+
+      <button class="hg-admin-card hg-admin-card-next" type="button"
+              onclick="mostrarPagina('hgSkillCalcPagina', null)">
+        <div class="hg-admin-card-top">
+          <span class="hg-admin-card-icon">%</span>
+          <span class="hg-admin-card-status">PRÓXIMO</span>
+        </div>
+        <strong>SKILL DAMAGE</strong>
+        <p>Calculadora de porcentagem de dano por level. O motor será calibrado com os dados reais das skills.</p>
+        <span class="hg-admin-card-cta">ABRIR ESTRUTURA →</span>
+      </button>
+
+      <button class="hg-admin-card hg-admin-card-build" type="button"
+              onclick="mostrarPagina('hgIconLabPagina', null)">
+        <div class="hg-admin-card-top">
+          <span class="hg-admin-card-icon">✦</span>
+          <span class="hg-admin-card-status">EM CONSTRUÇÃO</span>
+        </div>
+        <strong>ICON LAB</strong>
+        <p>Extrair ícones de prints, remover fundo, ajustar máscara, fazer upscale e exportar transparente.</p>
+        <span class="hg-admin-card-cta">VER PROJETO →</span>
+      </button>
+    </div>
+
+    <section class="hg-admin-overview">
+      <div>
+        <small>STATUS DO HUB</small>
+        <strong>1 / 3 ferramentas operacionais</strong>
+      </div>
+      <div>
+        <small>MAP TOOL</small>
+        <strong class="ok">ONLINE + LOCAL</strong>
+      </div>
+      <div>
+        <small>SKILL DAMAGE</small>
+        <strong>AGUARDANDO REGRAS DSR</strong>
+      </div>
+      <div>
+        <small>ICON LAB</small>
+        <strong>PIPELINE LOCAL</strong>
+      </div>
+    </section>
+  </div>
+</section>
+
+
+<!-- =====================================================
+     SKILL DAMAGE CALCULATOR — ADMIN HG
+     Estrutura inicial; fórmula será alimentada com dados reais.
+===================================================== -->
+<section id="hgSkillCalcPagina" class="pagina">
+  <div class="internal-wrap hg-admin-wrap">
+    <header class="hg-admin-tool-header">
+      <div>
+        <div class="hg-admin-kicker">HG ADMIN HUB // DATA TOOL</div>
+        <h2 class="page-title">SKILL DAMAGE CALCULATOR</h2>
+        <p class="page-subtitle">Estrutura pronta para receber a regra real de progressão de dano por level.</p>
+      </div>
+      <button class="hg-admin-back" type="button" onclick="mostrarPagina('hgAdminPagina', null)">← VOLTAR AO ADMIN HUB</button>
+    </header>
+
+    <div class="hg-skill-layout">
+      <section class="hg-admin-panel">
+        <div class="hg-admin-panel-head">
+          <strong>DADOS DA SKILL</strong>
+          <span>CALIBRAÇÃO PENDENTE</span>
+        </div>
+        <div class="hg-admin-panel-body">
+          <div class="hg-skill-form">
+            <label><small>NOME / REFERÊNCIA</small><input id="hgSkillName" type="text" placeholder="Ex.: Skill 1"></label>
+            <label><small>LEVEL INICIAL</small><input id="hgSkillLevelStart" type="number" min="1" value="1"></label>
+            <label><small>LEVEL FINAL</small><input id="hgSkillLevelEnd" type="number" min="1" value="10"></label>
+            <label><small>DANO / % DE REFERÊNCIA</small><input id="hgSkillReference" type="text" placeholder="Vamos definir com seus exemplos"></label>
+          </div>
+
+          <div class="hg-skill-await">
+            <b>MOTOR AINDA NÃO FOI CHUTADO 😈</b>
+            <span>Assim que você me passar exemplos reais de skills por level, eu calibro a fórmula sem inventar progressão.</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hg-admin-panel">
+        <div class="hg-admin-panel-head">
+          <strong>SAÍDA</strong>
+          <span>LV1 → LV10</span>
+        </div>
+        <div class="hg-admin-panel-body">
+          <div class="hg-skill-output-placeholder">
+            <span>LV</span><span>DANO %</span>
+            <b>1</b><em>—</em>
+            <b>2</b><em>—</em>
+            <b>3</b><em>—</em>
+            <b>...</b><em>...</em>
+            <b>10</b><em>—</em>
+          </div>
+          <p class="hg-admin-note">Depois de calibrada, essa área vai gerar todos os levels automaticamente e terá botão para copiar a tabela pronta.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================
+     ICON LAB — ADMIN HG
+     Estrutura visual inicial.
+===================================================== -->
+<section id="hgIconLabPagina" class="pagina">
+  <div class="internal-wrap hg-admin-wrap">
+    <header class="hg-admin-tool-header">
+      <div>
+        <div class="hg-admin-kicker">HG ADMIN HUB // ASSET TOOL</div>
+        <h2 class="page-title">ICON LAB</h2>
+        <p class="page-subtitle">Pipeline local para transformar prints do jogo em assets transparentes prontos para o site.</p>
+      </div>
+      <button class="hg-admin-back" type="button" onclick="mostrarPagina('hgAdminPagina', null)">← VOLTAR AO ADMIN HUB</button>
+    </header>
+
+    <section class="hg-admin-panel">
+      <div class="hg-admin-panel-head">
+        <strong>PIPELINE PLANEJADO</strong>
+        <span>PRÓXIMA ETAPA</span>
+      </div>
+      <div class="hg-admin-panel-body">
+        <div class="hg-iconlab-steps">
+          <div><b>01</b><strong>CARREGAR PRINT</strong><span>PNG, JPG ou WebP do jogo.</span></div>
+          <div><b>02</b><strong>RECORTAR ÍCONE</strong><span>Seleção da área diretamente na imagem.</span></div>
+          <div><b>03</b><strong>REMOVER FUNDO</strong><span>Segmentação local + ajuste manual de máscara.</span></div>
+          <div><b>04</b><strong>UPSCALE</strong><span>2× / 4× com opções Sharp e Smooth.</span></div>
+          <div><b>05</b><strong>EXPORTAR</strong><span>PNG/WebP transparente, recortado e centralizado.</span></div>
+        </div>
+        <div class="hg-skill-await">
+          <b>ICON LAB RESERVADO NO HUB</b>
+          <span>Depois da calculadora de skills, a gente liga esse motor sem precisar criar outra área administrativa.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+
 <!-- =====================================================
      MAP COORDINATE TOOL — ADMIN HG
      Rota oculta: #map-coordinate-tool
@@ -3551,11 +3720,11 @@
   <div class="internal-wrap hg-mapcoord-wrap">
     <header class="hg-mapcoord-header">
       <div>
-        <div class="hg-mapcoord-kicker">ADMIN TOOL // HOLY GUARDIANS</div>
+        <div class="hg-mapcoord-kicker">HG ADMIN HUB // MAP TOOL</div>
         <h2 class="page-title">MAP COORDINATE TOOL</h2>
         <p class="page-subtitle">Selecione um mapa da DSR MAPS ou carregue uma pasta local e clique para gerar coordenadas em porcentagem.</p>
       </div>
-      <button type="button" class="hg-mapcoord-back" onclick="mostrarPagina('databasePagina', document.getElementById('btnDatabase'))">← VOLTAR PARA DIGIDEX</button>
+      <button type="button" class="hg-mapcoord-back" onclick="mostrarPagina('hgAdminPagina', null)">← VOLTAR AO ADMIN HUB</button>
     </header>
 
     <div class="hg-mapcoord-layout">
@@ -3676,7 +3845,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-map-coordinate-tool-v1"></script>
+<script src="script.js?v=20260910-hg-admin-hub-v1"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>
