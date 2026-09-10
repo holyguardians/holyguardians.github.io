@@ -23677,7 +23677,7 @@ function hgSkillNormalizarChance(valor) {
   return hgSkillFormatNumero(Math.max(0, Math.min(100, numero)));
 }
 
-function hgSkillPerfilAtual() {
+function hgSkillPerfilAtual(lv1Total) {
   const range = hgSkillEl("hgSkillRange") ? hgSkillEl("hgSkillRange").value : "Single Melee";
   const allArea = range === "All Area";
   const cc = !!(hgSkillEl("hgSkillCc") && hgSkillEl("hgSkillCc").checked);
@@ -23685,91 +23685,76 @@ function hgSkillPerfilAtual() {
   const defBreak = !!(hgSkillEl("hgSkillDefBreak") && hgSkillEl("hgSkillDefBreak").checked);
   const cast = !!(hgSkillEl("hgSkillCast") && hgSkillEl("hgSkillCast").checked);
   const hp = !!(hgSkillEl("hgSkillHp") && hgSkillEl("hgSkillHp").checked);
-  const effect = cc || dot || defBreak;
 
-  /* Perfis já observados. A ferramenta sinaliza quando a combinação
-     ainda é inferida, para não esconder incerteza durante os testes. */
-  if (allArea && hp && cast && !effect) {
+  const efeitos = [];
+  if (cc) efeitos.push("CC");
+  if (dot) efeitos.push("DOT");
+  if (defBreak) efeitos.push("DEF BREAK");
+  const efeitoTexto = efeitos.length ? " | " + efeitos.join(" + ") : "";
+
+  /* HG AUTO v3 — auditoria DSRWorld/KR EXACT (2026-09-10)
+     Regra principal: a curva é determinada primeiro pelo TOTAL do Lv1 e pelo escopo.
+     CC / DOT / DEF BREAK continuam sendo exibidos, mas NÃO forçam a curva.
+
+     Na amostra precisa auditada:
+       - Total Lv1 ~90: 188/188 seguiram ~+4,25 total/level.
+       - All Area fora da família ~90: 36/37 seguiram ~+4,80.
+       - Single fora da família ~90: 735/745 seguiram ~+5,00.
+
+     HP + CAST permanece uma família especial. Flame Inferno indica crescimento médio
+     de +9,12 entre Lv1 e Lv10, porém ainda é uma calibração de um único par completo. */
+
+  const total = Number(lv1Total) || 0;
+  const familia90 = total >= 89.75 && total <= 90.25;
+
+  if (familia90) {
     return {
-      step: 41.72 / 9,
-      name: "ALL AREA + HP + CAST",
+      step: 4.25,
+      name: "AUTO · CURVA 90" + efeitoTexto,
       confidence: "confirmed",
       confidenceText: "CONFIRMADO",
-      formula: "+4,6355... pontos totais por level",
-      note: "Perfil calibrado pelo par Flame Inferno: Lv1 146,48 → Lv10 188,20.",
-      warning: "Combinação confirmada em um mesmo skill Lv1/Lv10."
+      formula: "+4,25 pontos totais por level",
+      note: "Total Lv1 ≈ 90%. Na auditoria precisa, 188/188 skills desta família seguiram a curva de aproximadamente +4,25 por level.",
+      warning: "CC, DOT e DEF Break são informativos e não alteram esta curva automaticamente."
+    };
+  }
+
+  if (allArea && hp && cast) {
+    return {
+      step: 9.12,
+      name: "AUTO · ALL AREA + HP + CAST" + efeitoTexto,
+      confidence: "medium",
+      confidenceText: "EM TESTE",
+      formula: "+9,12 pontos totais por level",
+      note: "Curva especial calibrada pelos endpoints observados de Flame Inferno: Lv1 130,81 → Lv10 212,89.",
+      warning: "HP + CAST ainda precisa de mais pares Lv1/Lv10 para confirmar que +9,12 é uma regra universal."
     };
   }
 
   if (allArea) {
     return {
       step: 4.8,
-      name: effect ? "ALL AREA + EFEITO" : (cast || hp ? "ALL AREA + MODIFICADOR" : "ALL AREA"),
-      confidence: effect || cast || hp ? "medium" : "confirmed",
-      confidenceText: effect || cast || hp ? "MÉDIO" : "CONFIRMADO",
+      name: "AUTO · ALL AREA" + (cast ? " + CAST" : "") + (hp ? " + HP" : "") + efeitoTexto,
+      confidence: "high",
+      confidenceText: "ALTO",
       formula: "+4,80 pontos totais por level",
-      note: effect || cast || hp
-        ? "Usando provisoriamente a curva All Area até surgir um par idêntico Lv1/Lv10 desta combinação."
-        : "Curva confirmada por Shining V Force: Lv1 96 → Lv10 139,20.",
-      warning: effect || cast || hp
-        ? "Perfil combinado ainda é uma previsão. Confira quando houver dado Lv10 real."
-        : "Curva All Area confirmada pelos dados atuais."
-    };
-  }
-
-  /* SINGLE: os pares idênticos que já conseguimos validar apontam para
-     +5 pontos TOTAIS por nível. O caso Afterimage of Light é especialmente
-     importante: Lv1 128 → Lv8 163 → Lv9 168 → Lv10 173, mesmo sendo DOT + CAST.
-     Portanto efeito NÃO usa a antiga curva inferida de +4,25. */
-  if (effect) {
-    const partes = ["SINGLE"];
-    if (hp) partes.push("HP");
-    if (cast) partes.push("CAST");
-    if (cc) partes.push("CC");
-    if (dot) partes.push("DOT");
-    if (defBreak) partes.push("DEF BREAK");
-
-    const afterimageConfirmado = dot && cast && !hp;
-
-    return {
-      step: 5,
-      name: partes.join(" + "),
-      confidence: afterimageConfirmado ? "confirmed" : "medium",
-      confidenceText: afterimageConfirmado ? "CONFIRMADO" : "MÉDIO",
-      formula: "+5,00 pontos totais por level",
-      note: afterimageConfirmado
-        ? "Afterimage of Light confirma a curva: Lv1 128 → Lv8 163 → Lv9 168 → Lv10 173."
-        : "Os dados atuais indicam que skills Single mantêm +5 pontos totais por level mesmo com efeito.",
-      warning: afterimageConfirmado
-        ? "Curva Single + DOT + Cast confirmada em um mesmo skill do Lv1 ao Lv10."
-        : "Usando a curva Single de +5; esta combinação específica ainda não tem um par idêntico completo."
-    };
-  }
-
-  if (hp && cast) {
-    return {
-      step: 5,
-      name: "SINGLE + HP + CAST",
-      confidence: "medium",
-      confidenceText: "MÉDIO",
-      formula: "+5,00 pontos totais por level",
-      note: "Os dados Single conhecidos seguem +5 pontos totais por level.",
-      warning: "HP + Cast ainda não tem um par puro completo, então usa a curva Single confirmada."
+      note: "Curva automática All Area. Na auditoria precisa, 36/37 skills fora da família de 90 seguiram aproximadamente +4,80.",
+      warning: "CC, DOT e DEF Break continuam visíveis, mas não escolhem a curva de dano."
     };
   }
 
   return {
     step: 5,
-    name: cast ? "SINGLE + CAST" : (hp ? "SINGLE + HP" : "SINGLE NORMAL"),
-    confidence: "high",
-    confidenceText: "ALTO",
+    name: "AUTO · SINGLE" + (cast ? " + CAST" : "") + (hp ? " + HP" : "") + efeitoTexto,
+    confidence: hp && cast ? "medium" : "high",
+    confidenceText: hp && cast ? "EM TESTE" : "ALTO",
     formula: "+5,00 pontos totais por level",
-    note: cast
-      ? "Os exemplos Single com Cast são compatíveis com +5 pontos totais por level."
-      : hp
-        ? "Testament confirmou crescimento de +5 pontos totais por level em skill HP-only."
-        : "Dimension Destroyer confirmou crescimento de +5 pontos totais por level.",
-    warning: "Perfil sustentado pelos pares e validações atuais."
+    note: hp && cast
+      ? "Single + HP + CAST ainda não tem amostra suficiente para uma curva própria; o Auto mantém provisoriamente a curva Single."
+      : "Curva automática Single. Na auditoria precisa, 735/745 skills fora da família de 90 seguiram aproximadamente +5,00.",
+    warning: hp && cast
+      ? "Combinação especial em validação. Compare com um Lv10 real quando disponível."
+      : "CC, DOT e DEF Break continuam visíveis, mas não escolhem a curva de dano."
   };
 }
 
@@ -23925,7 +23910,7 @@ function hgSkillAtualizar() {
 
   const lv1PorHit = Math.max(0, Math.min(9999, hgSkillNumero(lv1Input.value)));
   const lv1Total = hgSkillRound2(lv1PorHit * hits);
-  const perfil = hgSkillPerfilAtual();
+  const perfil = hgSkillPerfilAtual(lv1Total);
   const lv10 = hgSkillCalcularNivel(10, hits, lv1PorHit, perfil);
   const categoria = hgSkillCategoriaEfeito();
 
