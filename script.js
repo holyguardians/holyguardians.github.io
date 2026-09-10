@@ -2394,7 +2394,7 @@ function mostrarPagina(
 
   document
     .querySelectorAll(
-      ".nav-button"
+      ".nav-button, .digidex-tool-shortcut"
     )
     .forEach(
       function(btn) {

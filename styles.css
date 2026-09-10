@@ -9798,6 +9798,120 @@ body {
   gap: 12px;
 }
 
+
+/* Atalhos contextuais: Comparação + Counter Finder vivem dentro da Digidex. */
+.digidex-tool-shortcuts {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.digidex-tool-shortcut {
+  position: relative;
+  min-width: 154px;
+  min-height: 48px;
+  padding: 7px 10px 7px 8px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(53, 139, 223, .50);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(6, 29, 61, .80), rgba(2, 14, 34, .90));
+  color: #dff5ff;
+  font-family: "Oxanium", sans-serif;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    inset 0 0 16px rgba(34, 191, 255, .045),
+    0 5px 16px rgba(0, 0, 0, .16);
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease;
+}
+
+.digidex-tool-shortcut::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(69, 215, 255, .65), transparent);
+  opacity: .55;
+}
+
+.digidex-tool-shortcut:hover,
+.digidex-tool-shortcut:focus-visible,
+.digidex-tool-shortcut.ativo {
+  transform: translateY(-1px);
+  border-color: rgba(50, 207, 255, .86);
+  outline: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 57, 111, .90), rgba(3, 25, 58, .94));
+  box-shadow:
+    inset 0 0 18px rgba(42, 204, 255, .09),
+    0 0 13px rgba(31, 180, 255, .19);
+}
+
+.digidex-tool-shortcut-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(54, 180, 239, .32);
+  border-radius: 6px;
+  background: rgba(4, 25, 53, .78);
+  box-shadow: inset 0 0 10px rgba(45, 191, 255, .06);
+}
+
+.digidex-tool-shortcut-icon img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(65, 200, 255, .22));
+}
+
+.digidex-tool-shortcut-copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.digidex-tool-shortcut-copy small {
+  color: #5a8fb8;
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.digidex-tool-shortcut-copy strong {
+  overflow: hidden;
+  color: #dff5ff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .55px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.digidex-tool-shortcut-arrow {
+  color: #55d8ff;
+  font-size: 18px;
+  line-height: 1;
+  opacity: .72;
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+.digidex-tool-shortcut:hover .digidex-tool-shortcut-arrow,
+.digidex-tool-shortcut:focus-visible .digidex-tool-shortcut-arrow {
+  transform: translateX(2px);
+  opacity: 1;
+}
+
 .digidex-view-toggle {
   display: inline-flex;
   align-items: stretch;
@@ -10271,6 +10385,17 @@ body {
 
   .digidex-header-tech {
     display: block;
+  }
+
+  .digidex-tool-shortcuts {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .digidex-tool-shortcut {
+    min-width: 0;
+    width: 100%;
   }
 
   .digidex-header-actions {
@@ -28679,4 +28804,10 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
   background:linear-gradient(180deg,rgba(16,73,111,.54),rgba(7,33,61,.82))!important;
   border:1px solid rgba(67,194,242,.22);
   box-shadow:inset 0 0 10px rgba(59,202,237,.05);
+}
+
+@media (max-width: 470px) {
+  #databasePagina .digidex-tool-shortcuts {
+    grid-template-columns: 1fr;
+  }
 }
