@@ -2226,6 +2226,7 @@ function hgTituloPaginaHeader(id) {
     calculadoraPagina: "CALCULADORA",
     raidBossPagina: "RAID BOSS",
     dekyuTreasurePagina: "DEKYU TREASURE",
+    hgMapCoordinatePagina: "MAP COORDINATE TOOL",
     tierListPagina: "TIER LIST DSR",
     tierListDmoPagina: "TIER LIST DMO",
     sorteioPagina: "SORTEIO",
@@ -2442,6 +2443,7 @@ function mostrarPagina(
   if (id === "digiSilhouettePagina" && typeof window.inicializarDigiSilhouette === "function") setTimeout(window.inicializarDigiSilhouette, 0);
   if (id === "digiCreatorsPagina") setTimeout(inicializarDigiCreators, 0);
   if (id === "homePagina") setTimeout(inicializarHomeCreators, 0);
+  if (id === "hgMapCoordinatePagina" && typeof hgMapCoordinateInicializar === "function") setTimeout(hgMapCoordinateInicializar, 0);
 
   if (hgSiteNavCompacto()) {
     fecharMobileSiteNav();
@@ -2466,6 +2468,7 @@ function mostrarPagina(
       calculadoraPagina: "calculadora",
       raidBossPagina: "raid-boss",
       dekyuTreasurePagina: "dekyu-treasure",
+      hgMapCoordinatePagina: "map-coordinate-tool",
       tierListPagina: "tier-list-dsr",
       tierListDmoPagina: "tier-list-dmo",
       sorteioPagina: "sorteio",
@@ -2520,6 +2523,7 @@ function abrirPaginaPelaUrl() {
     calculadora: { pagina: "calculadoraPagina", botao: "btnCalculadora" },
     "raid-boss": { pagina: "raidBossPagina", botao: "btnRaidBoss" },
     "dekyu-treasure": { pagina: "dekyuTreasurePagina", botao: "btnDekyuTreasure" },
+    "map-coordinate-tool": { pagina: "hgMapCoordinatePagina", botao: "btnDatabase" },
     "tier-list-dsr": { pagina: "tierListPagina", botao: "btnFeatures" },
     "tier-list-dmo": { pagina: "tierListDmoPagina", botao: "btnFeatures" },
     sorteio: { pagina: "sorteioPagina", botao: "btnFeatures" },
@@ -23267,4 +23271,323 @@ if(document.readyState==="loading"){
 }else{
   hgTournamentEnsureRulesModalV21();
   hgTournamentEnsureSpectatorBackV21();
+}
+
+/* =====================================================
+   MAP COORDINATE TOOL — ADMIN HG
+   Rota oculta: #map-coordinate-tool
+===================================================== */
+
+let hgMapCoordMaps = [];
+let hgMapCoordFiltered = [];
+let hgMapCoordCurrent = null;
+let hgMapCoordPoints = [];
+let hgMapCoordMarkerType = "raid";
+let hgMapCoordFormat = "raid";
+let hgMapCoordGridOn = false;
+let hgMapCoordObjectUrl = "";
+let hgMapCoordBound = false;
+
+function hgMapCoordEl(id) { return document.getElementById(id); }
+
+function hgMapCoordNormalizar(valor) {
+  let texto = String(valor || "").trim().toLowerCase();
+  try { texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (erro) {}
+  return texto;
+}
+
+function hgMapCoordNomeSemExtensao(nome) {
+  return String(nome || "").replace(/\.(webp|png|jpg|jpeg|gif|bmp)$/i, "");
+}
+
+function hgMapCoordEhImagem(file) {
+  return Boolean(file && ((file.type && file.type.indexOf("image/") === 0) || /\.(webp|png|jpg|jpeg|gif|bmp)$/i.test(file.name || "")));
+}
+
+function hgMapCoordinateInicializar() {
+  const input = hgMapCoordEl("hgMapCoordFolderInput");
+  const busca = hgMapCoordEl("hgMapCoordSearch");
+  const select = hgMapCoordEl("hgMapCoordMapSelect");
+  const imagem = hgMapCoordEl("hgMapCoordImage");
+  if (!input || !busca || !select || !imagem || hgMapCoordBound) return;
+  hgMapCoordBound = true;
+
+  input.addEventListener("change", function() {
+    const files = Array.from(input.files || []).filter(hgMapCoordEhImagem);
+    hgMapCoordMaps = files.map(function(file) {
+      return {
+        name: file.name,
+        label: hgMapCoordNomeSemExtensao(file.name),
+        relative: file.webkitRelativePath || file.name,
+        file: file,
+        url: ""
+      };
+    }).sort(function(a, b) { return a.label.localeCompare(b.label, "pt-BR", { numeric: true, sensitivity: "base" }); });
+
+    const info = hgMapCoordEl("hgMapCoordFolderInfo");
+    const status = hgMapCoordEl("hgMapCoordSourceStatus");
+    if (!hgMapCoordMaps.length) {
+      if (info) info.textContent = "Nenhuma imagem encontrada nessa pasta.";
+      if (status) status.textContent = "SEM IMAGENS";
+      return;
+    }
+    const partes = String(hgMapCoordMaps[0].relative || "").split("/");
+    if (info) info.textContent = (partes.length > 1 ? partes[0] : "Pasta local") + " · " + hgMapCoordMaps.length + " imagem(ns)";
+    if (status) status.textContent = "PASTA LOCAL";
+    hgMapCoordCurrent = null;
+    hgMapCoordAplicarFiltro();
+  });
+
+  busca.addEventListener("input", hgMapCoordAplicarFiltro);
+  select.addEventListener("change", function() {
+    const indice = Number(select.value);
+    if (Number.isInteger(indice) && hgMapCoordFiltered[indice]) hgMapCoordAbrirMapa(hgMapCoordFiltered[indice]);
+  });
+
+  imagem.addEventListener("load", function() {
+    const meta = hgMapCoordEl("hgMapCoordImageMeta");
+    if (meta) meta.textContent = (hgMapCoordCurrent ? hgMapCoordCurrent.label : "Mapa") + " · " + imagem.naturalWidth + "×" + imagem.naturalHeight + " px";
+  });
+
+  imagem.addEventListener("mousemove", function(evento) {
+    const c = hgMapCoordCoordenadasEvento(evento);
+    const alvo = hgMapCoordEl("hgMapCoordCursor");
+    if (c && alvo) alvo.textContent = "Cursor: X " + Math.round(c.px) + " · Y " + Math.round(c.py) + " · " + c.x.toFixed(2) + "% / " + c.y.toFixed(2) + "%";
+  });
+  imagem.addEventListener("mouseleave", function() {
+    const alvo = hgMapCoordEl("hgMapCoordCursor");
+    if (alvo) alvo.textContent = "Cursor: —";
+  });
+  imagem.addEventListener("click", function(evento) {
+    const c = hgMapCoordCoordenadasEvento(evento);
+    if (!c) return;
+    hgMapCoordPoints.push(c);
+    hgMapCoordRender();
+  });
+
+  hgMapCoordRender();
+}
+
+function hgMapCoordCarregarOnline(forcar) {
+  const btn = hgMapCoordEl("hgMapCoordOnlineBtn");
+  const status = hgMapCoordEl("hgMapCoordSourceStatus");
+  const info = hgMapCoordEl("hgMapCoordFolderInfo");
+  if (btn) { btn.disabled = true; btn.textContent = "CARREGANDO..."; }
+  if (status) status.textContent = "CONSULTANDO DRIVE";
+
+  chamarApiJsonp("maps-dsr", forcar ? { refresh: Date.now() } : null)
+    .then(function(resposta) {
+      const bruto = Array.isArray(resposta.mapsDsr) ? resposta.mapsDsr : (Array.isArray(resposta.maps) ? resposta.maps : []);
+      hgMapCoordMaps = bruto.map(function(item) {
+        if (typeof item === "string") return { name: item, label: hgMapCoordNomeSemExtensao(item), url: item, relative: item };
+        const nome = item && (item.name || item.fileName || item.filename || item.label) || "Mapa";
+        return {
+          name: nome,
+          label: hgMapCoordNomeSemExtensao(item.label || nome),
+          url: item.url || item.mapUrl || item.src || "",
+          relative: nome,
+          file: null
+        };
+      }).filter(function(item) { return item.url; })
+        .sort(function(a, b) { return a.label.localeCompare(b.label, "pt-BR", { numeric: true, sensitivity: "base" }); });
+
+      if (!hgMapCoordMaps.length) throw new Error("A API não retornou mapas da DSR MAPS.");
+      hgMapCoordCurrent = null;
+      if (status) status.textContent = "DSR MAPS ONLINE";
+      if (info) info.textContent = hgMapCoordMaps.length + " mapa(s) encontrados diretamente na pasta DSR MAPS.";
+      hgMapCoordAplicarFiltro();
+    })
+    .catch(function(erro) {
+      if (status) status.textContent = "ONLINE INDISPONÍVEL";
+      if (info) info.textContent = "Não consegui carregar a rota maps-dsr ainda. Use PASTA LOCAL ou atualize a API. " + (erro && erro.message ? erro.message : "");
+    })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = "☁ DSR MAPS ONLINE"; }
+    });
+}
+
+function hgMapCoordAplicarFiltro() {
+  const busca = hgMapCoordEl("hgMapCoordSearch");
+  const select = hgMapCoordEl("hgMapCoordMapSelect");
+  if (!select) return;
+  const termo = hgMapCoordNormalizar(busca ? busca.value : "");
+  hgMapCoordFiltered = hgMapCoordMaps.filter(function(mapa) {
+    return !termo || hgMapCoordNormalizar(mapa.label).includes(termo) || hgMapCoordNormalizar(mapa.relative).includes(termo);
+  });
+  select.innerHTML = "";
+  if (!hgMapCoordFiltered.length) {
+    select.innerHTML = '<option value="">Nenhum mapa encontrado</option>';
+    select.disabled = true;
+    if (busca) busca.disabled = !hgMapCoordMaps.length;
+    return;
+  }
+  hgMapCoordFiltered.forEach(function(mapa, indice) {
+    const option = document.createElement("option");
+    option.value = String(indice);
+    option.textContent = mapa.label;
+    select.appendChild(option);
+  });
+  select.disabled = false;
+  if (busca) busca.disabled = false;
+
+  let indiceAtual = -1;
+  if (hgMapCoordCurrent) indiceAtual = hgMapCoordFiltered.findIndex(function(m) { return m === hgMapCoordCurrent || (m.url && m.url === hgMapCoordCurrent.url); });
+  if (indiceAtual < 0) {
+    indiceAtual = 0;
+    hgMapCoordAbrirMapa(hgMapCoordFiltered[0]);
+  }
+  select.value = String(indiceAtual);
+}
+
+function hgMapCoordAbrirMapa(mapa) {
+  const imagem = hgMapCoordEl("hgMapCoordImage");
+  const stage = hgMapCoordEl("hgMapCoordStage");
+  const vazio = hgMapCoordEl("hgMapCoordEmpty");
+  if (!imagem || !stage) return;
+  if (hgMapCoordObjectUrl) {
+    try { URL.revokeObjectURL(hgMapCoordObjectUrl); } catch (erro) {}
+    hgMapCoordObjectUrl = "";
+  }
+  hgMapCoordCurrent = mapa;
+  hgMapCoordPoints = [];
+  if (mapa.file) {
+    hgMapCoordObjectUrl = URL.createObjectURL(mapa.file);
+    imagem.src = hgMapCoordObjectUrl;
+  } else {
+    imagem.src = mapa.url;
+  }
+  stage.hidden = false;
+  if (vazio) vazio.hidden = true;
+  hgMapCoordRender();
+}
+
+function hgMapCoordCoordenadasEvento(evento) {
+  const imagem = hgMapCoordEl("hgMapCoordImage");
+  if (!imagem || !imagem.naturalWidth || !imagem.naturalHeight) return null;
+  const rect = imagem.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const rx = Math.max(0, Math.min(rect.width, evento.clientX - rect.left));
+  const ry = Math.max(0, Math.min(rect.height, evento.clientY - rect.top));
+  return {
+    px: rx / rect.width * imagem.naturalWidth,
+    py: ry / rect.height * imagem.naturalHeight,
+    x: rx / rect.width * 100,
+    y: ry / rect.height * 100
+  };
+}
+
+function hgMapCoordSetMarker(tipo) {
+  hgMapCoordMarkerType = tipo === "dekyu" ? "dekyu" : "raid";
+  hgMapCoordEl("hgMapCoordMarkerRaid")?.classList.toggle("ativo", hgMapCoordMarkerType === "raid");
+  hgMapCoordEl("hgMapCoordMarkerDekyu")?.classList.toggle("ativo", hgMapCoordMarkerType === "dekyu");
+  hgMapCoordRenderMarkers();
+}
+
+function hgMapCoordSetFormat(tipo) {
+  hgMapCoordFormat = tipo === "dekyu" ? "dekyu" : "raid";
+  hgMapCoordEl("hgMapCoordFormatRaid")?.classList.toggle("ativo", hgMapCoordFormat === "raid");
+  hgMapCoordEl("hgMapCoordFormatDekyu")?.classList.toggle("ativo", hgMapCoordFormat === "dekyu");
+  hgMapCoordRenderOutput();
+}
+
+function hgMapCoordToggleGrid() {
+  hgMapCoordGridOn = !hgMapCoordGridOn;
+  const grade = hgMapCoordEl("hgMapCoordGrid");
+  const btn = hgMapCoordEl("hgMapCoordGridBtn");
+  if (grade) grade.classList.toggle("ativo", hgMapCoordGridOn);
+  if (btn) btn.textContent = hgMapCoordGridOn ? "OCULTAR GRADE" : "MOSTRAR GRADE";
+}
+
+function hgMapCoordRenderMarkers() {
+  const box = hgMapCoordEl("hgMapCoordMarkers");
+  if (!box) return;
+  box.innerHTML = hgMapCoordPoints.map(function(ponto, indice) {
+    const classe = hgMapCoordMarkerType === "dekyu" ? "hg-mapcoord-marker-dekyu" : "hg-mapcoord-marker-raid";
+    const src = hgMapCoordMarkerType === "dekyu" ? "dekyu_treasure.png" : "raid_marker.png";
+    return '<span class="hg-mapcoord-marker ' + classe + '" style="left:' + ponto.x + '%;top:' + ponto.y + '%"><img src="' + src + '" alt=""><b>' + (indice + 1) + '</b></span>';
+  }).join("");
+}
+
+function hgMapCoordRenderOutput() {
+  const output = hgMapCoordEl("hgMapCoordOutput");
+  if (!output) return;
+  output.value = hgMapCoordFormat === "raid"
+    ? hgMapCoordPoints.map(function(p) { return p.x.toFixed(4) + "," + p.y.toFixed(4); }).join("; ")
+    : hgMapCoordPoints.map(function(p) { return p.x.toFixed(4) + "\t" + p.y.toFixed(4); }).join("\n");
+}
+
+function hgMapCoordRenderLista() {
+  const box = hgMapCoordEl("hgMapCoordPoints");
+  if (!box) return;
+  box.innerHTML = "";
+  hgMapCoordPoints.forEach(function(ponto, indice) {
+    const row = document.createElement("div");
+    row.className = "hg-mapcoord-point";
+    row.innerHTML = '<span>' + (indice + 1) + '</span><div><code>' + ponto.x.toFixed(4) + ',' + ponto.y.toFixed(4) + '</code><small>' + Math.round(ponto.px) + 'px · ' + Math.round(ponto.py) + 'px</small></div>';
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "×";
+    btn.title = "Remover ponto";
+    btn.addEventListener("click", function() {
+      hgMapCoordPoints.splice(indice, 1);
+      hgMapCoordRender();
+    });
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+}
+
+function hgMapCoordRender() {
+  const ultimo = hgMapCoordPoints[hgMapCoordPoints.length - 1] || null;
+  const set = function(id, valor) { const el = hgMapCoordEl(id); if (el) el.textContent = valor; };
+  set("hgMapCoordCount", hgMapCoordPoints.length + " PONTO" + (hgMapCoordPoints.length === 1 ? "" : "S"));
+  set("hgMapCoordXPx", ultimo ? Math.round(ultimo.px) : "—");
+  set("hgMapCoordYPx", ultimo ? Math.round(ultimo.py) : "—");
+  set("hgMapCoordXPct", ultimo ? ultimo.x.toFixed(4) + "%" : "—");
+  set("hgMapCoordYPct", ultimo ? ultimo.y.toFixed(4) + "%" : "—");
+  ["hgMapCoordCopy", "hgMapCoordUndo", "hgMapCoordClear"].forEach(function(id) {
+    const el = hgMapCoordEl(id); if (el) el.disabled = !hgMapCoordPoints.length;
+  });
+  hgMapCoordRenderMarkers();
+  hgMapCoordRenderOutput();
+  hgMapCoordRenderLista();
+}
+
+function hgMapCoordDesfazer() {
+  hgMapCoordPoints.pop();
+  hgMapCoordRender();
+}
+
+function hgMapCoordLimpar() {
+  hgMapCoordPoints = [];
+  hgMapCoordRender();
+}
+
+function hgMapCoordCopiarTexto(texto) {
+  if (!texto) return Promise.resolve(false);
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(texto).then(function() { return true; }).catch(function() { return false; });
+  }
+  return new Promise(function(resolve) {
+    const area = document.createElement("textarea");
+    area.value = texto;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.focus(); area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (erro) {}
+    area.remove(); resolve(ok);
+  });
+}
+
+function hgMapCoordCopiar() {
+  const output = hgMapCoordEl("hgMapCoordOutput");
+  const btn = hgMapCoordEl("hgMapCoordCopy");
+  if (!output || !output.value || !btn) return;
+  hgMapCoordCopiarTexto(output.value).then(function(ok) {
+    const antigo = btn.textContent;
+    btn.textContent = ok ? "COPIADO ✓" : "COPIE MANUALMENTE";
+    setTimeout(function() { btn.textContent = antigo; }, 1200);
+  });
 }

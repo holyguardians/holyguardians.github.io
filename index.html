@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260910-digidex-tools-v4-status-nav-team">
+  <link rel="stylesheet" href="styles.css?v=20260910-map-coordinate-tool-v1">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -3541,6 +3541,105 @@
   </div>
 </section>
 
+
+
+<!-- =====================================================
+     MAP COORDINATE TOOL — ADMIN HG
+     Rota oculta: #map-coordinate-tool
+===================================================== -->
+<section id="hgMapCoordinatePagina" class="pagina">
+  <div class="internal-wrap hg-mapcoord-wrap">
+    <header class="hg-mapcoord-header">
+      <div>
+        <div class="hg-mapcoord-kicker">ADMIN TOOL // HOLY GUARDIANS</div>
+        <h2 class="page-title">MAP COORDINATE TOOL</h2>
+        <p class="page-subtitle">Selecione um mapa da DSR MAPS ou carregue uma pasta local e clique para gerar coordenadas em porcentagem.</p>
+      </div>
+      <button type="button" class="hg-mapcoord-back" onclick="mostrarPagina('databasePagina', document.getElementById('btnDatabase'))">← VOLTAR PARA DIGIDEX</button>
+    </header>
+
+    <div class="hg-mapcoord-layout">
+      <section class="hg-mapcoord-panel hg-mapcoord-main">
+        <div class="hg-mapcoord-panel-head">
+          <strong>FONTE DO MAPA</strong>
+          <span id="hgMapCoordSourceStatus">AGUARDANDO</span>
+        </div>
+        <div class="hg-mapcoord-panel-body">
+          <div class="hg-mapcoord-source-row">
+            <button id="hgMapCoordOnlineBtn" class="hg-mapcoord-btn hg-mapcoord-btn-primary" type="button" onclick="hgMapCoordCarregarOnline(true)">☁ DSR MAPS ONLINE</button>
+            <label class="hg-mapcoord-folder-btn">📁 PASTA LOCAL
+              <input id="hgMapCoordFolderInput" type="file" webkitdirectory directory multiple accept="image/*">
+            </label>
+            <span id="hgMapCoordFolderInfo">A rota online usa a pasta DSR MAPS do Drive. Pasta local fica como fallback.</span>
+          </div>
+
+          <div class="hg-mapcoord-controls">
+            <label>
+              <small>MAPA</small>
+              <select id="hgMapCoordMapSelect" disabled><option value="">Carregue os mapas primeiro</option></select>
+            </label>
+            <label>
+              <small>FILTRAR NOME</small>
+              <input id="hgMapCoordSearch" type="search" placeholder="Ex.: dark area" disabled>
+            </label>
+            <div class="hg-mapcoord-marker-control">
+              <small>MARCADOR</small>
+              <div class="hg-mapcoord-segmented">
+                <button id="hgMapCoordMarkerRaid" class="ativo" type="button" onclick="hgMapCoordSetMarker('raid')"><img src="raid_marker.png" alt=""> RAID</button>
+                <button id="hgMapCoordMarkerDekyu" type="button" onclick="hgMapCoordSetMarker('dekyu')"><img src="dekyu_treasure.png" alt=""> DEKYU</button>
+              </div>
+            </div>
+            <div class="hg-mapcoord-grid-control">
+              <small>GRADE 10%</small>
+              <button id="hgMapCoordGridBtn" class="hg-mapcoord-btn" type="button" onclick="hgMapCoordToggleGrid()">MOSTRAR GRADE</button>
+            </div>
+          </div>
+
+          <div id="hgMapCoordMapShell" class="hg-mapcoord-map-shell">
+            <div id="hgMapCoordEmpty" class="hg-mapcoord-empty">Clique em <b>DSR MAPS ONLINE</b> para carregar os mapas do Drive<br>ou escolha sua pasta local.</div>
+            <div id="hgMapCoordStage" class="hg-mapcoord-stage" hidden>
+              <img id="hgMapCoordImage" alt="Mapa selecionado">
+              <div id="hgMapCoordGrid" class="hg-mapcoord-grid"></div>
+              <div id="hgMapCoordMarkers" class="hg-mapcoord-markers"></div>
+            </div>
+          </div>
+          <div class="hg-mapcoord-statusline"><span id="hgMapCoordCursor">Cursor: —</span><span id="hgMapCoordImageMeta">Nenhum mapa</span></div>
+        </div>
+      </section>
+
+      <aside class="hg-mapcoord-panel hg-mapcoord-side">
+        <div class="hg-mapcoord-panel-head"><strong>COORDENADAS</strong><span id="hgMapCoordCount">0 PONTOS</span></div>
+        <div class="hg-mapcoord-panel-body">
+          <div class="hg-mapcoord-kpis">
+            <div><small>X PIXEL</small><strong id="hgMapCoordXPx">—</strong></div>
+            <div><small>Y PIXEL</small><strong id="hgMapCoordYPx">—</strong></div>
+            <div><small>X %</small><strong id="hgMapCoordXPct">—</strong></div>
+            <div><small>Y %</small><strong id="hgMapCoordYPct">—</strong></div>
+          </div>
+
+          <div class="hg-mapcoord-format-title">FORMATO PARA COPIAR</div>
+          <div class="hg-mapcoord-segmented hg-mapcoord-format-toggle">
+            <button id="hgMapCoordFormatRaid" class="ativo" type="button" onclick="hgMapCoordSetFormat('raid')">RAID · SPOTS</button>
+            <button id="hgMapCoordFormatDekyu" type="button" onclick="hgMapCoordSetFormat('dekyu')">DEKYU · X / Y</button>
+          </div>
+
+          <textarea id="hgMapCoordOutput" class="hg-mapcoord-output" readonly placeholder="Clique no mapa para gerar coordenadas."></textarea>
+
+          <div class="hg-mapcoord-actions">
+            <button id="hgMapCoordCopy" class="hg-mapcoord-btn hg-mapcoord-btn-primary" type="button" onclick="hgMapCoordCopiar()" disabled>COPIAR</button>
+            <button id="hgMapCoordUndo" class="hg-mapcoord-btn" type="button" onclick="hgMapCoordDesfazer()" disabled>DESFAZER</button>
+            <button id="hgMapCoordClear" class="hg-mapcoord-btn hg-mapcoord-danger" type="button" onclick="hgMapCoordLimpar()" disabled>LIMPAR</button>
+          </div>
+
+          <div id="hgMapCoordPoints" class="hg-mapcoord-points"></div>
+          <div class="hg-mapcoord-hint">RAID copia no formato <b>X,Y; X,Y</b>. DEKYU copia duas colunas em TSV, pronto para colar diretamente nas colunas X e Y da planilha.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+
 <div id="loading" class="hg-retro-loading" role="status" aria-live="polite">
   <div class="hg-retro-loading-window">
     <img class="hg-retro-loading-base" src="assets/Loading/hg-loading-window-base.png" alt="">
@@ -3577,7 +3676,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260910-digidex-tools-v3-status-nav-team"></script>
+<script src="script.js?v=20260910-map-coordinate-tool-v1"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>
