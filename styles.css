@@ -28782,3 +28782,67 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
   border:1px solid rgba(67,194,242,.22);
   box-shadow:inset 0 0 10px rgba(59,202,237,.05);
 }
+
+/* =====================================================
+   DIGIDEX — VOLTAR DAS FERRAMENTAS
+===================================================== */
+.digidex-return-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0 10px;
+}
+
+.digidex-return-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(52, 193, 255, .48);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(8, 45, 92, .82), rgba(3, 19, 45, .92));
+  color: #bfeeff;
+  box-shadow: inset 0 0 14px rgba(51, 216, 255, .05), 0 4px 14px rgba(0, 0, 0, .16);
+  font-family: "Oxanium", sans-serif;
+  cursor: pointer;
+  transition: transform .16s ease, color .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+.digidex-return-button > span {
+  color: #42d9ff;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.digidex-return-button > strong {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .8px;
+}
+
+.digidex-return-button:hover,
+.digidex-return-button:focus-visible {
+  transform: translateX(-2px);
+  color: #fff;
+  border-color: #39d7ff;
+  background: linear-gradient(180deg, rgba(12, 78, 145, .86), rgba(5, 35, 79, .94));
+  box-shadow: inset 0 0 16px rgba(51, 216, 255, .10), 0 0 12px rgba(35, 192, 255, .20);
+  outline: 0;
+}
+
+@media (max-width: 760px) {
+  .digidex-return-row {
+    margin-bottom: 8px;
+  }
+
+  .digidex-return-button {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
+
+  .digidex-return-button > strong {
+    font-size: 8px;
+  }
+}
