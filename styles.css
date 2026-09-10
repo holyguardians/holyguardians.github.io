@@ -28013,3 +28013,194 @@ body.hg-pvp-spectator #pvpFormationGrid{
 body.hg-pvp-stream-body #hgImpmonLive{display:none!important}
 #pvpPagina .pvp-postmatch-panel.hg-tournament-spectator-postmatch .pvp-postmatch-actions{grid-template-columns:1fr!important}
 #pvpPagina .pvp-postmatch-panel.hg-tournament-spectator-postmatch .pvp-postmatch-actions .pvp-action-btn{width:100%!important}
+
+/* ======================================================================
+   HG TOURNAMENT V2 VISUAL — COMMAND CENTER / TEAM AUDIT / STREAMER HUB
+   ====================================================================== */
+
+/* Streamer mode can now be enabled before any room exists. */
+body.hg-pvp-streamer-global-v2{overflow-x:hidden}
+body.hg-pvp-streamer-global-v2 .topbar,
+body.hg-pvp-streamer-global-v2 #hgImpmonLive{display:none!important}
+body.hg-pvp-streamer-global-v2 #pvpPagina{min-height:100vh;width:100%!important;max-width:none!important}
+body.hg-pvp-streamer-global-v2 #pvpPagina>.pvp-wrap{width:min(1760px,calc(100vw - 28px));max-width:none!important;margin:0 auto!important;padding-top:14px!important}
+
+.pvp-tournament-streamer-btn{display:flex!important;align-items:center;gap:8px;min-width:154px;justify-content:center}
+.pvp-tournament-streamer-btn b{display:inline-grid;place-items:center;min-width:34px;padding:4px 7px;border-radius:999px;border:1px solid rgba(255,101,170,.28);color:#ff9fcb;background:rgba(255,62,145,.08);font-size:10px;letter-spacing:.08em}
+.pvp-tournament-streamer-btn.ativo{border-color:rgba(46,232,255,.65)!important;color:#c9fbff!important;box-shadow:0 0 18px rgba(46,232,255,.12)}
+.pvp-tournament-streamer-btn.ativo b{color:#7dffd0;border-color:rgba(51,226,160,.48);background:rgba(35,227,148,.10)}
+.hg-tournament-streamer-float-v2{position:fixed;z-index:9997;right:18px;bottom:18px;display:flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid rgba(64,223,255,.55);border-radius:8px;background:rgba(3,16,35,.94);box-shadow:0 8px 28px rgba(0,0,0,.42),0 0 18px rgba(47,216,255,.10);color:#dffbff;font-family:"Oxanium",sans-serif;cursor:pointer}
+.hg-tournament-streamer-float-v2[hidden]{display:none!important}
+.hg-tournament-streamer-float-v2>span{color:#5effba;text-shadow:0 0 8px rgba(94,255,186,.65)}
+.hg-tournament-streamer-float-v2>b{font-size:10px;letter-spacing:.07em}
+.hg-tournament-streamer-float-v2>small{font-size:8px;color:#79a9c7}
+
+/* General scale: readable at normal browser zoom. */
+.pvp-tournament-shell{width:min(1640px,100%);margin:0 auto;gap:20px}
+.pvp-tournament-head{padding:24px 28px}
+.pvp-tournament-head .page-title{font-size:34px}
+.pvp-tournament-head .page-subtitle{font-size:14px;line-height:1.5;max-width:980px}
+.pvp-tournament-card,.pvp-tournament-panel{padding:20px}
+.pvp-tournament-card-head>small,.pvp-tournament-panel-title small,.pvp-tournament-saved-head small{font-size:10px}
+.pvp-tournament-card-head>strong,.pvp-tournament-panel-title strong,.pvp-tournament-saved-head strong{font-size:17px}
+.pvp-tournament-help,.pvp-tournament-muted{font-size:12px}
+.pvp-tournament-field>span{font-size:10px}
+.pvp-tournament-field input,.pvp-tournament-field select{min-height:46px;font-size:13px}
+.pvp-tournament-play-toggle strong{font-size:12px}
+.pvp-tournament-play-toggle small{font-size:10px}
+
+.pvp-tournament-dashboard{gap:18px}
+.pvp-tournament-dashboard-top{padding:20px 22px;gap:16px 20px}
+.pvp-tournament-id-line>span{font-size:11px;padding:5px 8px}
+.pvp-tournament-status,.pvp-tournament-player-state,.pvp-tournament-mini-status{font-size:9px;padding:5px 8px}
+.pvp-tournament-title-block h3{font-size:24px}
+.pvp-tournament-title-block p{font-size:12px}
+.pvp-tournament-stats>div{padding:12px 14px}
+.pvp-tournament-stats small{font-size:10px}
+.pvp-tournament-stats strong{font-size:15px}
+.hg-tour-v2-role-badge{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;border:1px solid rgba(111,230,255,.32);background:rgba(34,175,220,.08);color:#a9efff;font-size:9px;letter-spacing:.09em}
+
+/* 70/30 command-center composition. */
+.pvp-tournament-dashboard-grid{grid-template-columns:minmax(0,2.2fr) minmax(340px,.88fr);gap:18px;align-items:start}
+.pvp-tournament-dashboard-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;min-width:0}
+.pvp-tournament-dashboard-main>#hgTournamentPlayerPanel,
+.pvp-tournament-dashboard-main>#hgTournamentMatchPanel{grid-column:auto}
+.pvp-tournament-dashboard-main>article:nth-child(3){grid-column:1/-1}
+.pvp-tournament-dashboard-side{display:grid;gap:18px;min-width:0;position:sticky;top:12px}
+.pvp-tournament-participants-panel{grid-column:1/-1}
+
+/* Once a bracket exists the bracket becomes the organizer's main canvas. */
+.pvp-tournament-dashboard.hg-organizer-mode:not(.hg-status-registration) .pvp-tournament-dashboard-main>article:nth-child(3){order:1}
+.pvp-tournament-dashboard.hg-organizer-mode:not(.hg-status-registration) #hgTournamentMatchPanel{order:2}
+.pvp-tournament-dashboard.hg-organizer-mode:not(.hg-status-registration) #hgTournamentPlayerPanel{order:3}
+.pvp-tournament-dashboard.hg-organizer-not-player #hgTournamentPlayerPanel,
+.pvp-tournament-dashboard.hg-organizer-not-player #hgTournamentMatchPanel{display:none!important}
+.pvp-tournament-dashboard.hg-organizer-not-player .pvp-tournament-dashboard-main>article:nth-child(3){grid-column:1/-1}
+.pvp-tournament-dashboard:not(.hg-organizer-mode) .pvp-tournament-dashboard-grid{grid-template-columns:1fr}
+.pvp-tournament-dashboard:not(.hg-organizer-mode) .pvp-tournament-dashboard-side{display:none}
+
+/* Player lobby is intentionally larger and more game-like. */
+.pvp-tournament-player-summary{padding:12px 14px;margin-bottom:14px}
+.pvp-tournament-player-summary span{font-size:10px}
+.pvp-tournament-player-summary strong{font-size:14px}
+.pvp-tournament-team-check{gap:8px;margin-bottom:12px}
+.pvp-tournament-team-check>div{padding:11px 12px}
+.pvp-tournament-team-check span{font-size:9px}
+.pvp-tournament-team-check b{font-size:12px}
+.pvp-tournament-player-actions .pvp-action-btn{min-height:44px}
+.pvp-tournament-locked-banner{padding:14px}
+.pvp-tournament-locked-banner>span{width:34px;height:34px}
+.pvp-tournament-locked-banner strong{font-size:13px}
+.pvp-tournament-locked-banner small{font-size:11px}
+.pvp-tournament-next-versus{gap:14px;margin-bottom:12px}
+.pvp-tournament-next-versus>div{padding:16px 14px;min-height:84px;align-content:center}
+.pvp-tournament-next-versus small{font-size:9px}
+.pvp-tournament-next-versus strong{font-size:16px}
+.pvp-tournament-next-versus>span{font-size:18px;font-style:italic;text-shadow:0 0 12px rgba(60,216,255,.25)}
+.pvp-tournament-enter-match{min-height:46px;font-size:12px}
+.pvp-tournament-empty{padding:24px 16px;font-size:12px}
+
+/* Bracket gets the visual priority and no longer lives as tiny cards in a huge blank box. */
+.pvp-tournament-bracket{min-height:230px}
+.pvp-tournament-bracket-scroll{gap:24px;padding:8px 2px 12px;align-items:flex-start}
+.pvp-tournament-round{flex:0 0 300px;min-width:300px}
+.pvp-tournament-round-title{margin-bottom:10px}
+.pvp-tournament-round-title small{font-size:10px}
+.pvp-tournament-round-title strong{font-size:13px}
+.pvp-tournament-round-matches{gap:14px}
+.pvp-tournament-match-card{padding:12px;border-radius:8px;box-shadow:inset 0 0 22px rgba(54,161,225,.025)}
+.pvp-tournament-match-meta{font-size:9px;margin-bottom:7px}
+.pvp-tournament-match-player{padding:10px 11px;min-height:38px;font-size:12px}
+.pvp-tournament-match-player span{font-size:12px}
+.pvp-tournament-match-player b{font-size:8px}
+.pvp-tournament-match-vs{font-size:9px;margin:5px 0}
+.pvp-tournament-room-chip{font-size:9px;margin-top:8px}
+.pvp-tournament-watch-btn{min-height:38px;font-size:11px}
+
+/* Organizer control: actions only, no giant accordion of team internals. */
+.pvp-tournament-release-box{padding:14px;gap:12px}
+.pvp-tournament-release-box small{font-size:9px}
+.pvp-tournament-release-box strong{font-size:14px}
+.pvp-tournament-release-box span{font-size:11px}
+.pvp-tournament-organizer-player p{font-size:11px}
+.hg-tour-v2-audit-hint{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px;border:1px solid rgba(53,210,255,.22);border-radius:8px;background:rgba(18,104,144,.06)}
+.hg-tour-v2-audit-hint>span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(41,225,158,.16);color:#76ffc8;font-weight:900}
+.hg-tour-v2-audit-hint>div{display:grid;gap:2px}
+.hg-tour-v2-audit-hint strong{font-size:11px;color:#dffaff}
+.hg-tour-v2-audit-hint small{font-size:9px;line-height:1.4;color:#749ab8}
+
+/* Participants become a full-width status strip. */
+.pvp-tournament-participants{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.pvp-tournament-player-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto auto;align-items:center;gap:10px;min-height:62px;padding:10px 11px;border-radius:8px}
+.pvp-tournament-seed{width:34px;height:34px;font-size:10px}
+.pvp-tournament-player-row strong{font-size:13px}
+.pvp-tournament-player-row small{font-size:9px}
+.pvp-tournament-player-copy{min-width:0;display:grid;gap:2px}
+.hg-tour-v2-view-team-btn{min-height:32px;padding:7px 9px;border:1px solid rgba(60,206,255,.34);border-radius:6px;background:rgba(20,111,154,.12);color:#9befff;font:800 9px/1 "Oxanium",sans-serif;letter-spacing:.06em;cursor:pointer;white-space:nowrap}
+.hg-tour-v2-view-team-btn:hover{border-color:#39ddff;color:#fff;box-shadow:0 0 13px rgba(57,221,255,.13)}
+
+/* Full-screen team audit. Eight Digimons are visible at once; details open in a side drawer. */
+body.hg-tour-v2-modal-open{overflow:hidden!important}
+.hg-tour-v2-modal{position:fixed;inset:0;z-index:10020;display:grid;place-items:center;padding:24px}
+.hg-tour-v2-modal[hidden]{display:none!important}
+.hg-tour-v2-modal-backdrop{position:absolute;inset:0;background:rgba(0,5,16,.82);backdrop-filter:blur(7px)}
+.hg-tour-v2-modal-card{position:relative;display:grid;grid-template-rows:auto auto minmax(0,1fr);width:min(1480px,calc(100vw - 48px));height:min(860px,calc(100vh - 48px));padding:20px;border:1px solid rgba(54,192,255,.38);background:radial-gradient(circle at 100% 0,rgba(116,54,255,.10),transparent 35%),linear-gradient(180deg,#071a35,#031022 92%);box-shadow:0 28px 80px rgba(0,0,0,.55),0 0 35px rgba(39,188,255,.08);overflow:hidden}
+.hg-tour-v2-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:14px;border-bottom:1px solid rgba(66,157,221,.20)}
+.hg-tour-v2-modal-head>div{display:grid;gap:3px}
+.hg-tour-v2-modal-head small{font-size:10px;letter-spacing:.13em;color:#64c9ef;font-weight:900}
+.hg-tour-v2-modal-head h3{margin:0;color:#f4fbff;font-size:26px}
+.hg-tour-v2-modal-head p{margin:0;color:#86a9c1;font-size:11px}
+.hg-tour-v2-modal-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:9px;padding:12px 0}
+.hg-tour-v2-modal-summary>span{display:grid;gap:3px;padding:10px 12px;border:1px solid rgba(62,148,215,.19);border-radius:7px;background:rgba(0,0,0,.16)}
+.hg-tour-v2-modal-summary small{font-size:8px;color:#6f99b7;font-weight:900}
+.hg-tour-v2-modal-summary strong{font-size:12px;color:#e8f8ff}
+.hg-tour-v2-modal-summary>button{padding:8px 12px;border:1px solid rgba(65,212,255,.32);border-radius:7px;background:rgba(20,110,152,.12);color:#a4efff;font:800 10px/1 "Oxanium",sans-serif;cursor:pointer}
+.hg-tour-v2-modal-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-height:0;overflow:hidden}
+.hg-tour-v2-modal.detail-open .hg-tour-v2-modal-workspace{grid-template-columns:minmax(0,1fr) 360px}
+.hg-tour-v2-team-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;min-height:0}
+.hg-tour-v2-team-card{display:grid;grid-template-rows:auto auto minmax(24px,1fr) auto;gap:9px;min-width:0;padding:12px;border:1px solid rgba(66,151,216,.20);border-radius:8px;background:linear-gradient(180deg,rgba(8,31,61,.95),rgba(3,15,33,.96));overflow:hidden}
+.hg-tour-v2-team-card-head{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:8px}
+.hg-tour-v2-team-card-head>span{display:grid;place-items:center;width:30px;height:30px;border-radius:6px;background:rgba(38,178,230,.10);color:#6fdcff;font-size:9px;font-weight:900}
+.hg-tour-v2-team-card-head>div{display:grid;gap:2px;min-width:0}
+.hg-tour-v2-team-card-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f3fbff;font-size:13px}
+.hg-tour-v2-team-card-head small{color:#698eaa;font-size:8px}
+.hg-tour-v2-team-badges{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.hg-tour-v2-team-badge{display:grid;gap:2px;padding:6px;border:1px solid rgba(70,143,200,.16);border-radius:5px;background:rgba(0,0,0,.14)}
+.hg-tour-v2-team-badge b{font-size:7px;color:#6999b8}
+.hg-tour-v2-team-badge small{font-size:9px;color:#8eabc0;font-weight:900}
+.hg-tour-v2-team-badge.ok small{color:#70efb8}
+.hg-tour-v2-team-card>p{margin:0;overflow:hidden;color:#8fb2c9;font-size:9px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hg-tour-v2-team-card>button{min-height:31px;border:1px solid rgba(57,192,235,.25);border-radius:5px;background:rgba(22,111,150,.08);color:#85dff5;font:800 9px/1 "Oxanium",sans-serif;cursor:pointer}
+.hg-tour-v2-team-card>button:hover{border-color:#39dfff;color:#fff}
+.hg-tour-v2-team-detail{min-height:0;padding:14px;border:1px solid rgba(72,160,221,.22);border-radius:8px;background:rgba(2,13,29,.94);overflow:auto}
+.hg-tour-v2-team-detail[hidden]{display:none!important}
+.hg-tour-v2-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(67,146,207,.18)}
+.hg-tour-v2-detail-head>div{display:grid;gap:2px;min-width:0}
+.hg-tour-v2-detail-head small{font-size:8px;color:#6f9ab9}
+.hg-tour-v2-detail-head strong{font-size:15px;color:#f0fbff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hg-tour-v2-detail-head>button{border:0;background:transparent;color:#83afca;font-size:18px;cursor:pointer}
+.hg-tour-v2-detail-list{display:grid;gap:9px;padding-top:12px}
+.hg-tour-v2-detail-list>div{display:grid;gap:4px;padding:10px;border-left:2px solid rgba(52,215,255,.42);background:rgba(10,38,64,.30)}
+.hg-tour-v2-detail-list b{font-size:9px;color:#70c9e9}
+.hg-tour-v2-detail-list span{font-size:11px;line-height:1.5;color:#c0d9e7;overflow-wrap:anywhere}
+
+@media(max-width:1180px){
+  .pvp-tournament-dashboard-grid{grid-template-columns:1fr}
+  .pvp-tournament-dashboard-side{position:static}
+  .hg-tour-v2-team-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;overflow:auto}
+  .hg-tour-v2-modal.detail-open .hg-tour-v2-modal-workspace{grid-template-columns:minmax(0,1fr) 320px}
+}
+@media(max-width:760px){
+  .pvp-tournament-head .page-title{font-size:28px}
+  .pvp-tournament-dashboard-main{grid-template-columns:1fr}
+  .pvp-tournament-dashboard-main>#hgTournamentPlayerPanel,.pvp-tournament-dashboard-main>#hgTournamentMatchPanel,.pvp-tournament-dashboard-main>article:nth-child(3){grid-column:1}
+  .pvp-tournament-participants{grid-template-columns:1fr}
+  .pvp-tournament-player-row{grid-template-columns:36px minmax(0,1fr) auto}
+  .hg-tour-v2-view-team-btn{grid-column:2/-1;width:100%}
+  .hg-tour-v2-modal{padding:10px}
+  .hg-tour-v2-modal-card{width:calc(100vw - 20px);height:calc(100vh - 20px);padding:14px}
+  .hg-tour-v2-modal-summary{grid-template-columns:1fr 1fr}
+  .hg-tour-v2-modal.detail-open .hg-tour-v2-modal-workspace{grid-template-columns:1fr}
+  .hg-tour-v2-team-grid{grid-template-columns:1fr;overflow:auto}
+  .hg-tour-v2-team-detail{position:absolute;inset:110px 14px 14px;z-index:4;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+}

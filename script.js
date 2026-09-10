@@ -22697,3 +22697,296 @@ pvpMatchReceberEstado=function(state){
   }
   return out;
 };
+
+/* ======================================================================
+   HG TOURNAMENT V2 VISUAL — COMMAND CENTER + TEAM MODAL + GLOBAL STREAMER
+   Frontend-only UX layer. Tournament/Challenge Room mechanics untouched.
+   ====================================================================== */
+
+function hgTournamentStreamerActiveV2(){
+  try{
+    if(typeof pvpMatchStreamerModeAtivoV52==="function")return !!pvpMatchStreamerModeAtivoV52();
+    if(typeof pvpMatchStreamerModeAtivo==="function")return !!pvpMatchStreamerModeAtivo();
+  }catch(erro){}
+  return false;
+}
+
+function hgTournamentEnsureStreamerFloatV2(){
+  let btn=document.getElementById("hgTournamentStreamerFloatV2");
+  if(btn)return btn;
+  btn=document.createElement("button");
+  btn.id="hgTournamentStreamerFloatV2";
+  btn.type="button";
+  btn.className="hg-tournament-streamer-float-v2";
+  btn.onclick=function(){hgTournamentToggleStreamerModeV2(false)};
+  btn.innerHTML='<span>●</span><b>STREAMER ON</b><small>'+hgTournamentEscape(hgTournamentT("tournament.streamerExit","DESATIVAR"))+'</small>';
+  document.body.appendChild(btn);
+  return btn;
+}
+
+function hgTournamentApplyStreamerHubV2(){
+  const active=hgTournamentStreamerActiveV2();
+  const pvp=document.getElementById("pvpPagina");
+  const pvpVisible=!!(pvp&&pvp.classList.contains("ativa"));
+  document.body.classList.toggle("hg-pvp-streamer-global-v2",active&&pvpVisible);
+
+  const btn=document.getElementById("hgTournamentStreamerBtn");
+  if(btn){
+    btn.classList.toggle("ativo",active);
+    btn.setAttribute("aria-pressed",active?"true":"false");
+    const state=btn.querySelector("b");
+    if(state)state.textContent=active?"ON":"OFF";
+  }
+
+  const floating=hgTournamentEnsureStreamerFloatV2();
+  floating.hidden=!(active&&pvpVisible);
+}
+
+function hgTournamentToggleStreamerModeV2(force){
+  const next=typeof force==="boolean"?force:!hgTournamentStreamerActiveV2();
+  if(typeof pvpMatchToggleStreamerMode==="function")pvpMatchToggleStreamerMode(next);
+  else{
+    try{localStorage.setItem(PVP_MATCH_STREAMER_KEY,next?"1":"0")}catch(erro){}
+  }
+  hgTournamentApplyStreamerHubV2();
+}
+
+if(typeof pvpMatchAplicarStreamerMode==="function"){
+  const _hgTournamentStreamerApplyBaseV2=pvpMatchAplicarStreamerMode;
+  pvpMatchAplicarStreamerMode=function(){
+    const out=_hgTournamentStreamerApplyBaseV2.apply(this,arguments);
+    hgTournamentApplyStreamerHubV2();
+    return out;
+  };
+}
+
+if(typeof pvpMostrarView==="function"){
+  const _hgTournamentPvpMostrarViewV2=pvpMostrarView;
+  pvpMostrarView=function(){
+    const out=_hgTournamentPvpMostrarViewV2.apply(this,arguments);
+    requestAnimationFrame(hgTournamentApplyStreamerHubV2);
+    return out;
+  };
+}
+
+if(typeof mostrarPagina==="function"){
+  const _hgTournamentMostrarPaginaV2=mostrarPagina;
+  mostrarPagina=function(){
+    const out=_hgTournamentMostrarPaginaV2.apply(this,arguments);
+    requestAnimationFrame(hgTournamentApplyStreamerHubV2);
+    return out;
+  };
+}
+
+function hgTournamentOrganizerViewPlayerV2(playerId){
+  const view=hgTournamentOrganizerView;
+  if(!view||!Array.isArray(view.players))return null;
+  return view.players.find(function(p){return String(p.id)===String(playerId)})||null;
+}
+
+function hgTournamentHasMapValuesV2(map){
+  return !!(map&&typeof map==="object"&&Object.keys(map).some(function(k){return Number(map[k])!==0&&map[k]!=null&&map[k]!==""}));
+}
+
+function hgTournamentTeamBadgeV2(label,ok,text){
+  return '<span class="hg-tour-v2-team-badge '+(ok?'ok':'muted')+'"><b>'+hgTournamentEscape(label)+'</b><small>'+hgTournamentEscape(text|| (ok?'✓':'—'))+'</small></span>';
+}
+
+function hgTournamentEnsureTeamModalV2(){
+  let modal=document.getElementById("hgTournamentTeamModalV2");
+  if(modal)return modal;
+  modal=document.createElement("div");
+  modal.id="hgTournamentTeamModalV2";
+  modal.className="hg-tour-v2-modal";
+  modal.hidden=true;
+  modal.innerHTML=
+    '<div class="hg-tour-v2-modal-backdrop" onclick="hgTournamentCloseTeamModalV2()"></div>'+ 
+    '<section class="hg-tour-v2-modal-card tech-corners" role="dialog" aria-modal="true">'+
+      '<header class="hg-tour-v2-modal-head">'+
+        '<div><small>TEAM AUDIT // ORGANIZER</small><h3 id="hgTournamentTeamModalTitleV2">TIME</h3><p id="hgTournamentTeamModalMetaV2"></p></div>'+ 
+        '<button type="button" class="pvp-action-btn pvp-action-secondary" onclick="hgTournamentCloseTeamModalV2()">'+hgTournamentEscape(hgTournamentT("tournament.close","FECHAR"))+' ✕</button>'+ 
+      '</header>'+ 
+      '<div id="hgTournamentTeamModalSummaryV2" class="hg-tour-v2-modal-summary"></div>'+ 
+      '<div class="hg-tour-v2-modal-workspace">'+
+        '<div id="hgTournamentTeamGridV2" class="hg-tour-v2-team-grid"></div>'+ 
+        '<aside id="hgTournamentTeamDetailV2" class="hg-tour-v2-team-detail" hidden></aside>'+ 
+      '</div>'+ 
+    '</section>';
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function hgTournamentCloseTeamModalV2(){
+  const modal=document.getElementById("hgTournamentTeamModalV2");
+  if(modal)modal.hidden=true;
+  document.body.classList.remove("hg-tour-v2-modal-open");
+}
+
+function hgTournamentOpenDeckDetailV2(playerId){
+  const player=hgTournamentOrganizerViewPlayerV2(playerId);
+  const team=player&&player.team;
+  const detail=document.getElementById("hgTournamentTeamDetailV2");
+  const modal=document.getElementById("hgTournamentTeamModalV2");
+  if(!detail||!modal||!team)return;
+  const deck=team.teamDeck&&typeof team.teamDeck==="object"?team.teamDeck:{};
+  const cards=Array.isArray(team.battleCards)?team.battleCards.filter(Boolean):[];
+  detail.hidden=false;
+  modal.classList.add("detail-open");
+  detail.innerHTML=
+    '<div class="hg-tour-v2-detail-head"><div><small>GLOBAL LOADOUT</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.deckDetails","DECK / ATRIBUTOS"))+'</strong></div><button type="button" onclick="hgTournamentCloseTeamDetailV2()">✕</button></div>'+ 
+    '<div class="hg-tour-v2-detail-list">'+
+      '<div><b>BATTLE CARDS</b><span>'+hgTournamentEscape(cards.length?cards.map(function(x){return String(x).toUpperCase()}).join(" · "):"—")+'</span></div>'+ 
+      '<div><b>BUFF DECK</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.buff))+'</span></div>'+ 
+      '<div><b>ATTR BOOST</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.attrBoost))+'</span></div>'+ 
+      '<div><b>ATTR REDUCE</b><span>'+hgTournamentEscape(hgTournamentMapSummary(deck.attrReduce))+'</span></div>'+ 
+    '</div>';
+}
+
+function hgTournamentOpenSlotDetailV2(playerId,index){
+  const player=hgTournamentOrganizerViewPlayerV2(playerId);
+  const team=player&&player.team;
+  const slots=team&&Array.isArray(team.slots)?team.slots:[];
+  const slot=slots[Number(index)]||null;
+  const detail=document.getElementById("hgTournamentTeamDetailV2");
+  const modal=document.getElementById("hgTournamentTeamModalV2");
+  if(!detail||!modal||!slot)return;
+  const build=slot.build&&typeof slot.build==="object"?slot.build:{};
+  detail.hidden=false;
+  modal.classList.add("detail-open");
+  detail.innerHTML=
+    '<div class="hg-tour-v2-detail-head"><div><small>#'+String(Number(index)+1).padStart(2,"0")+' · '+hgTournamentEscape(slot.hgid||"—")+'</small><strong>'+hgTournamentEscape(slot.digimon||slot.hgid||"DIGIMON")+'</strong></div><button type="button" onclick="hgTournamentCloseTeamDetailV2()">✕</button></div>'+ 
+    '<div class="hg-tour-v2-detail-list">'+
+      '<div><b>BABY CORRECTION</b><span>'+hgTournamentEscape(hgTournamentMapSummary(build.baby))+'</span></div>'+ 
+      '<div><b>TETRIS</b><span>'+hgTournamentEscape(hgTournamentMapSummary(build.tetris))+'</span></div>'+ 
+      '<div><b>SKILL ELEMENTS</b><span>'+hgTournamentEscape(hgTournamentSkillElementsSummary(build.skillElements))+'</span></div>'+ 
+      '<div><b>BURST</b><span>S'+Number(build.burstSkill||1)+'</span></div>'+ 
+    '</div>';
+}
+
+function hgTournamentCloseTeamDetailV2(){
+  const detail=document.getElementById("hgTournamentTeamDetailV2");
+  const modal=document.getElementById("hgTournamentTeamModalV2");
+  if(detail){detail.hidden=true;detail.innerHTML=""}
+  if(modal)modal.classList.remove("detail-open");
+}
+
+function hgTournamentOpenTeamModalV2(playerId){
+  const player=hgTournamentOrganizerViewPlayerV2(playerId);
+  if(!player||!player.team)return;
+  const modal=hgTournamentEnsureTeamModalV2();
+  const team=player.team;
+  const slots=Array.isArray(team.slots)?team.slots:[];
+  const cards=Array.isArray(team.battleCards)?team.battleCards.filter(Boolean):[];
+  const title=document.getElementById("hgTournamentTeamModalTitleV2");
+  const meta=document.getElementById("hgTournamentTeamModalMetaV2");
+  const summary=document.getElementById("hgTournamentTeamModalSummaryV2");
+  const grid=document.getElementById("hgTournamentTeamGridV2");
+  if(title)title.textContent=hgTournamentT("tournament.teamOf","TIME DE {name}",{name:player.nick});
+  if(meta)meta.textContent=hgTournamentStageLabel(team.stage||"-")+" · "+slots.length+"/8 · "+hgTournamentT("tournament.teamLocked","TIME TRAVADO");
+  if(summary)summary.innerHTML=
+    '<span><small>STAGE</small><strong>'+hgTournamentEscape(hgTournamentStageLabel(team.stage||"-"))+'</strong></span>'+ 
+    '<span><small>BATTLE CARDS</small><strong>'+hgTournamentEscape(cards.length?cards.map(function(x){return String(x).toUpperCase()}).join(" · "):"—")+'</strong></span>'+ 
+    '<span><small>DIGIMONS</small><strong>'+slots.length+' / 8</strong></span>'+ 
+    '<button type="button" onclick="hgTournamentOpenDeckDetailV2('+Number(player.id)+')">'+hgTournamentEscape(hgTournamentT("tournament.deckDetails","DECK / ATRIBUTOS"))+'</button>';
+
+  if(grid)grid.innerHTML=slots.map(function(slot,index){
+    const build=slot&&slot.build&&typeof slot.build==="object"?slot.build:{};
+    const baby=hgTournamentHasMapValuesV2(build.baby);
+    const tetris=hgTournamentHasMapValuesV2(build.tetris);
+    const skillText=hgTournamentSkillElementsSummary(build.skillElements);
+    return '<article class="hg-tour-v2-team-card">'+
+      '<div class="hg-tour-v2-team-card-head"><span>#'+String(index+1).padStart(2,"0")+'</span><div><strong>'+hgTournamentEscape(slot&&slot.digimon?slot.digimon:(slot&&slot.hgid?slot.hgid:"—"))+'</strong><small>'+hgTournamentEscape(slot&&slot.hgid?slot.hgid:"—")+'</small></div></div>'+ 
+      '<div class="hg-tour-v2-team-badges">'+
+        hgTournamentTeamBadgeV2("BABY",baby,baby?"✓":"—")+
+        hgTournamentTeamBadgeV2("TETRIS",tetris,tetris?"✓":"—")+
+        hgTournamentTeamBadgeV2("BURST",true,"S"+Number(build.burstSkill||1))+
+      '</div>'+ 
+      '<p title="'+hgTournamentEscape(skillText)+'">'+hgTournamentEscape(skillText)+'</p>'+ 
+      '<button type="button" onclick="hgTournamentOpenSlotDetailV2('+Number(player.id)+','+Number(index)+')">'+hgTournamentEscape(hgTournamentT("tournament.details","DETALHES"))+'</button>'+ 
+    '</article>';
+  }).join("");
+
+  hgTournamentCloseTeamDetailV2();
+  modal.hidden=false;
+  document.body.classList.add("hg-tour-v2-modal-open");
+}
+
+/* Organizer side is now command-only. Team inspection lives in the full-width participant list. */
+hgTournamentRenderOrganizerTeams=function(view){
+  if(!view||!Array.isArray(view.players))return "";
+  const ready=view.players.filter(function(p){return !!p.teamLocked}).length;
+  return '<div class="hg-tour-v2-audit-hint"><span>✓</span><div><strong>'+ready+' / '+view.players.length+' '+hgTournamentEscape(hgTournamentT("tournament.teamsLockedShort","TIMES TRAVADOS"))+'</strong><small>'+hgTournamentEscape(hgTournamentT("tournament.auditHintV2","Abra VER TIME na lista de participantes para auditar sem sair desta tela."))+'</small></div></div>';
+};
+
+hgTournamentRenderParticipants=function(tournament,session){
+  const box=document.getElementById("hgTournamentParticipants");
+  if(!box)return;
+  const players=Array.isArray(tournament.players)?tournament.players:[];
+  if(!players.length){
+    box.innerHTML='<div class="pvp-tournament-empty">'+hgTournamentEscape(hgTournamentT("tournament.noPlayers","Nenhum jogador inscrito ainda."))+'</div>';
+    return;
+  }
+  const myNick=String(session.nick||"").toLowerCase();
+  const organizer=!!session.organizerToken;
+  const viewPlayers=hgTournamentOrganizerView&&Array.isArray(hgTournamentOrganizerView.players)?hgTournamentOrganizerView.players:[];
+  box.innerHTML=players.map(function(player,index){
+    const mine=String(player.nick||"").toLowerCase()===myNick;
+    const audit=viewPlayers.find(function(p){return String(p.id)===String(player.id)})||null;
+    const canView=!!(organizer&&audit&&audit.teamLocked&&audit.team);
+    return '<article class="pvp-tournament-player-row '+(mine?'mine':'')+'">'+
+      '<span class="pvp-tournament-seed">'+String(index+1).padStart(2,"0")+'</span>'+ 
+      '<div class="pvp-tournament-player-copy"><strong>'+hgTournamentEscape(player.nick)+'</strong><small>'+(player.teamLocked?hgTournamentEscape(hgTournamentT("tournament.teamConfirmed","TIME CONFIRMADO")):hgTournamentEscape(hgTournamentT("tournament.teamPending","TIME PENDENTE")))+'</small></div>'+ 
+      '<b class="pvp-tournament-mini-status '+hgTournamentStatusClass(player.status)+'">'+hgTournamentEscape(hgTournamentPlayerStatusLabel(player.status))+'</b>'+ 
+      (canView?'<button type="button" class="hg-tour-v2-view-team-btn" onclick="hgTournamentOpenTeamModalV2('+Number(player.id)+')">'+hgTournamentEscape(hgTournamentT("tournament.viewTeam","VER TIME"))+'</button>':'')+
+    '</article>';
+  }).join("");
+};
+
+function hgTournamentApplyRoleLayoutV2(tournament){
+  const dash=document.getElementById("hgTournamentDashboard");
+  if(!dash||!tournament)return;
+  const session=hgTournamentGetSession(tournament.id);
+  const player=hgTournamentFindPlayer(tournament,session);
+  const organizer=!!session.organizerToken;
+  ["registration","bracket_ready","in_progress","finished"].forEach(function(s){dash.classList.remove("hg-status-"+s)});
+  dash.classList.toggle("hg-organizer-mode",organizer);
+  dash.classList.toggle("hg-player-mode",!!player);
+  dash.classList.toggle("hg-viewer-mode",!player&&!organizer);
+  dash.classList.toggle("hg-organizer-not-player",organizer&&!player);
+  dash.classList.add("hg-status-"+String(tournament.status||"registration"));
+
+  const idLine=dash.querySelector(".pvp-tournament-id-line");
+  if(idLine){
+    let badge=idLine.querySelector(".hg-tour-v2-role-badge");
+    if(!badge){badge=document.createElement("b");badge.className="hg-tour-v2-role-badge";idLine.appendChild(badge)}
+    if(organizer)badge.textContent=hgTournamentT("tournament.roleOrganizer","ORGANIZADOR");
+    else if(player)badge.textContent=hgTournamentT("tournament.rolePlayer","JOGADOR");
+    else badge.textContent=hgTournamentT("tournament.roleViewer","ESPECTADOR");
+  }
+}
+
+const _hgTournamentRenderDashboardV2=hgTournamentRenderDashboard;
+hgTournamentRenderDashboard=function(tournament){
+  const out=_hgTournamentRenderDashboardV2.apply(this,arguments);
+  hgTournamentApplyRoleLayoutV2(tournament);
+  hgTournamentApplyStreamerHubV2();
+  return out;
+};
+
+const _hgTournamentRenderLandingV2=hgTournamentRenderLanding;
+hgTournamentRenderLanding=function(){
+  const out=_hgTournamentRenderLandingV2.apply(this,arguments);
+  requestAnimationFrame(hgTournamentApplyStreamerHubV2);
+  return out;
+};
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",function(){
+    hgTournamentEnsureTeamModalV2();
+    hgTournamentApplyStreamerHubV2();
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")hgTournamentCloseTeamModalV2()});
+  });
+}else{
+  hgTournamentEnsureTeamModalV2();
+  hgTournamentApplyStreamerHubV2();
+}
