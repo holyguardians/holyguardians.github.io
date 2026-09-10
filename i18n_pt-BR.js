@@ -1029,3 +1029,22 @@ Object.assign(window.HG_I18N["pt-BR"], {
   "digiCreators.videoFallback": "Vídeo Digimon",
   "giveaway.multiManualEntry": "ADICIONAR PARTICIPANTE MANUAL"
 });
+
+/* HG TOURNAMENT V2.1 */
+Object.assign(window.HG_I18N["pt-BR"], {
+  "tournament.rulesButton": "REGRAS",
+  "tournament.rulesTitle": "REGRAS DO TORNEIO",
+  "tournament.rulesSubtitle": "Ajuste as regras antes de liberar a chave.",
+  "tournament.bracketFormat": "FORMATO DA CHAVE",
+  "tournament.singleElimination": "ELIMINAÇÃO SIMPLES",
+  "tournament.singleEliminationHint": "Uma derrota elimina o jogador.",
+  "tournament.loserBracket": "LOSER BRACKET",
+  "tournament.loserBracketSoon": "Double-elimination exige uma nova engine de chaveamento e será ativada em uma etapa própria.",
+  "tournament.saveRules": "SALVAR REGRAS",
+  "tournament.rulesEditable": "Editável enquanto as inscrições estiverem abertas.",
+  "tournament.rulesLocked": "As regras foram travadas quando o torneio foi liberado.",
+  "tournament.stageLockedByTeams": "A Stage não pode ser alterada porque já existe time confirmado. Para proteger a integridade do torneio, essa regra fica travada.",
+  "tournament.stageSingleReason": "O torneio usa uma Stage única porque o time fica travado e os dois lados da Challenge Room precisam lutar na mesma Stage.",
+  "tournament.savingRules": "Salvando regras...",
+  "tournament.rulesSaved": "Regras atualizadas."
+});

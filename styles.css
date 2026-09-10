@@ -28204,3 +28204,94 @@ body.hg-tour-v2-modal-open{overflow:hidden!important}
   .hg-tour-v2-team-grid{grid-template-columns:1fr;overflow:auto}
   .hg-tour-v2-team-detail{position:absolute;inset:110px 14px 14px;z-index:4;box-shadow:0 20px 60px rgba(0,0,0,.55)}
 }
+
+/* ======================================================================
+   HG TOURNAMENT V2.1 — ORGANIZER UX / TEAM PORTRAITS / RULES
+   ====================================================================== */
+
+/* Persistent spectator escape hatch. Keeps working in Streamer Mode. */
+.hg-tour-v21-spectator-back{
+  position:fixed;left:22px;top:20px;z-index:10060;display:flex;align-items:center;gap:9px;
+  min-height:38px;padding:8px 13px;border:1px solid rgba(72,220,255,.48);border-radius:8px;
+  background:linear-gradient(180deg,rgba(7,40,72,.96),rgba(3,19,39,.98));color:#bff6ff;
+  box-shadow:0 10px 28px rgba(0,0,0,.34),0 0 18px rgba(52,210,255,.10);
+  font:800 10px/1 "Oxanium",sans-serif;letter-spacing:.07em;cursor:pointer
+}
+.hg-tour-v21-spectator-back[hidden]{display:none!important}
+.hg-tour-v21-spectator-back span{font-size:17px;line-height:1;color:#56dcff}
+.hg-tour-v21-spectator-back:hover{border-color:#5ee8ff;color:#fff;transform:translateY(-1px)}
+body.hg-pvp-streamer-global-v2 .hg-tour-v21-spectator-back{top:16px}
+
+/* Organizer participants now live directly under the command panel. */
+.pvp-tournament-dashboard-side>.pvp-tournament-participants-panel.hg-tour-v21-participants-side{
+  margin:0;min-width:0;padding:16px;box-shadow:none
+}
+.hg-tour-v21-participants-side .pvp-tournament-panel-title{margin-bottom:10px}
+.hg-tour-v21-participants-side .pvp-tournament-participants{display:grid;grid-template-columns:1fr;gap:7px}
+.hg-tour-v21-participants-side .pvp-tournament-player-row{
+  min-height:50px;padding:9px 10px;grid-template-columns:32px minmax(0,1fr) auto 18px;gap:9px
+}
+.hg-tour-v21-organizer-player.can-open{cursor:pointer;border-color:rgba(55,194,237,.22);transition:.15s ease}
+.hg-tour-v21-organizer-player.can-open:hover{border-color:rgba(76,224,255,.58);background:rgba(24,119,155,.10);transform:translateX(2px)}
+.hg-tour-v21-open-team{display:grid;place-items:center;color:#62dcff;font:900 22px/1 "Oxanium",sans-serif}
+
+/* Team audit modal: clean close control + visual Digimon cards. */
+.hg-tour-v21-modal-close{
+  flex:0 0 auto;display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid rgba(91,203,242,.38);
+  border-radius:50%;background:rgba(10,45,74,.62);color:#9beaff;font:800 17px/1 system-ui,sans-serif;cursor:pointer;
+  box-shadow:0 0 16px rgba(57,203,255,.08);transition:.15s ease
+}
+.hg-tour-v21-modal-close:hover{border-color:#6eeaff;background:rgba(20,93,126,.52);color:#fff;transform:rotate(4deg) scale(1.04)}
+.hg-tour-v2-team-card{grid-template-rows:88px auto auto minmax(24px,1fr) auto!important}
+.hg-tour-v21-team-portrait{
+  display:grid;place-items:center;min-height:88px;border:1px solid rgba(54,155,211,.20);border-radius:7px;
+  background:radial-gradient(circle at 50% 35%,rgba(50,190,234,.12),transparent 56%),rgba(0,9,22,.48);overflow:hidden
+}
+.hg-tour-v21-team-portrait img{width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.32))}
+.hg-tour-v21-team-portrait span{color:#527994;font:900 24px/1 "Oxanium",sans-serif}
+
+/* Rules modal */
+body.hg-tour-v21-rules-open{overflow:hidden!important}
+.hg-tour-v21-rules-modal{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:22px}
+.hg-tour-v21-rules-modal[hidden]{display:none!important}
+.hg-tour-v21-rules-backdrop{position:absolute;inset:0;background:rgba(0,5,15,.84);backdrop-filter:blur(7px)}
+.hg-tour-v21-rules-card{
+  position:relative;width:min(760px,calc(100vw - 44px));padding:22px;border:1px solid rgba(59,190,245,.38);border-radius:10px;
+  background:radial-gradient(circle at 100% 0,rgba(109,57,241,.10),transparent 34%),linear-gradient(180deg,#081b35,#031025 94%);
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 30px rgba(44,193,255,.08)
+}
+.hg-tour-v21-rules-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:16px;border-bottom:1px solid rgba(63,151,211,.20)}
+.hg-tour-v21-rules-card>header>div{display:grid;gap:3px}
+.hg-tour-v21-rules-card>header small{font:900 9px/1 "Oxanium",sans-serif;letter-spacing:.13em;color:#62d4f4}
+.hg-tour-v21-rules-card>header h3{margin:0;color:#f2fbff;font:800 24px/1.1 "Oxanium",sans-serif}
+.hg-tour-v21-rules-card>header p{margin:2px 0 0;color:#7fa4bd;font-size:11px}
+.hg-tour-v21-rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px 0 10px}
+.hg-tour-v21-rules-grid label{display:grid;gap:6px}
+.hg-tour-v21-rules-grid label>span{font:900 9px/1 "Oxanium",sans-serif;color:#72a9c8;letter-spacing:.08em}
+.hg-tour-v21-rules-grid input,.hg-tour-v21-rules-grid select{
+  min-height:43px;padding:9px 11px;border:1px solid rgba(62,160,218,.30);border-radius:7px;background:#06162c;color:#e7f8ff;
+  font:800 12px/1 "Oxanium",sans-serif;outline:none
+}
+.hg-tour-v21-rules-grid input:focus,.hg-tour-v21-rules-grid select:focus{border-color:#45d9ff;box-shadow:0 0 0 2px rgba(69,217,255,.08)}
+.hg-tour-v21-rules-grid input:disabled,.hg-tour-v21-rules-grid select:disabled{opacity:.46;cursor:not-allowed}
+.hg-tour-v21-rules-hint{padding:10px 12px;border-left:2px solid rgba(66,207,255,.50);background:rgba(21,85,118,.10);color:#8cb3ca;font-size:10px;line-height:1.55}
+.hg-tour-v21-rules-format{display:grid;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(65,143,199,.16)}
+.hg-tour-v21-rules-format>div{display:grid;gap:3px;padding:12px;border:1px solid rgba(65,151,210,.19);border-radius:8px;background:rgba(0,0,0,.13)}
+.hg-tour-v21-rules-format>div small{color:#6ea4c3;font:900 8px/1 "Oxanium",sans-serif;letter-spacing:.10em}
+.hg-tour-v21-rules-format>div strong{color:#dbf7ff;font:900 12px/1.2 "Oxanium",sans-serif}
+.hg-tour-v21-rules-format>div span{color:#7fa1b8;font-size:10px}
+.hg-tour-v21-coming-toggle{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px dashed rgba(146,113,235,.28);border-radius:8px;background:rgba(82,44,139,.06);opacity:.72}
+.hg-tour-v21-coming-toggle input{margin-top:2px}
+.hg-tour-v21-coming-toggle span{display:grid;gap:3px}
+.hg-tour-v21-coming-toggle b{font:900 10px/1 "Oxanium",sans-serif;color:#c2a7ff}
+.hg-tour-v21-coming-toggle small{font-size:9px;line-height:1.45;color:#8f84a9}
+.hg-tour-v21-rules-card>footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(68,147,205,.18)}
+.hg-tour-v21-rules-card>footer>span{color:#7fa5be;font-size:10px;line-height:1.45}
+.hg-tour-v21-rules-card>footer>button{min-width:160px}
+
+@media (max-width:900px){
+  .hg-tour-v21-rules-grid{grid-template-columns:1fr}
+  .hg-tour-v21-rules-card>footer{align-items:stretch;flex-direction:column}
+  .hg-tour-v21-rules-card>footer>button{width:100%}
+  .hg-tour-v21-spectator-back{left:10px;top:10px}
+}

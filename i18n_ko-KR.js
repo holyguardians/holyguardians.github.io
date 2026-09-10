@@ -2300,3 +2300,22 @@ Object.assign(window.HG_I18N["ko-KR"], {
   "digiCreators.videoFallback": "디지몬 영상",
   "giveaway.multiManualEntry": "수동 참가자 추가"
 });
+
+/* HG TOURNAMENT V2.1 */
+Object.assign(window.HG_I18N["ko-KR"], {
+  "tournament.rulesButton": "규칙",
+  "tournament.rulesTitle": "토너먼트 규칙",
+  "tournament.rulesSubtitle": "대진표를 시작하기 전에 규칙을 조정하세요.",
+  "tournament.bracketFormat": "대진 방식",
+  "tournament.singleElimination": "싱글 엘리미네이션",
+  "tournament.singleEliminationHint": "한 번 패배하면 탈락합니다.",
+  "tournament.loserBracket": "패자조",
+  "tournament.loserBracketSoon": "더블 엘리미네이션은 새로운 대진 엔진이 필요하며 별도 단계에서 활성화됩니다.",
+  "tournament.saveRules": "규칙 저장",
+  "tournament.rulesEditable": "참가 신청이 열려 있는 동안 수정할 수 있습니다.",
+  "tournament.rulesLocked": "토너먼트가 시작되어 규칙이 잠겼습니다.",
+  "tournament.stageLockedByTeams": "이미 확정된 팀이 있어 Stage를 변경할 수 없습니다. 토너먼트 무결성을 위해 이 규칙은 잠깁니다.",
+  "tournament.stageSingleReason": "팀이 토너먼트 동안 고정되고 Challenge Room 양쪽이 같은 Stage를 사용해야 하므로 하나의 Stage를 사용합니다.",
+  "tournament.savingRules": "규칙 저장 중...",
+  "tournament.rulesSaved": "규칙이 업데이트되었습니다."
+});

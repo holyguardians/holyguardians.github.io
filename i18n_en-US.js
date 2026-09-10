@@ -1594,3 +1594,22 @@ Object.assign(window.HG_I18N["en-US"], {
   "digiCreators.videoFallback": "Digimon video",
   "giveaway.multiManualEntry": "ADD MANUAL PARTICIPANT"
 });
+
+/* HG TOURNAMENT V2.1 */
+Object.assign(window.HG_I18N["en-US"], {
+  "tournament.rulesButton": "RULES",
+  "tournament.rulesTitle": "TOURNAMENT RULES",
+  "tournament.rulesSubtitle": "Adjust the rules before releasing the bracket.",
+  "tournament.bracketFormat": "BRACKET FORMAT",
+  "tournament.singleElimination": "SINGLE ELIMINATION",
+  "tournament.singleEliminationHint": "One loss eliminates the player.",
+  "tournament.loserBracket": "LOSER BRACKET",
+  "tournament.loserBracketSoon": "Double elimination requires a new bracket engine and will be enabled in its own step.",
+  "tournament.saveRules": "SAVE RULES",
+  "tournament.rulesEditable": "Editable while registration is open.",
+  "tournament.rulesLocked": "Rules were locked when the tournament was released.",
+  "tournament.stageLockedByTeams": "The Stage cannot be changed because a team is already locked. This rule stays locked to protect tournament integrity.",
+  "tournament.stageSingleReason": "The tournament uses one Stage because teams stay locked and both Challenge Room sides must battle at the same Stage.",
+  "tournament.savingRules": "Saving rules...",
+  "tournament.rulesSaved": "Rules updated."
+});

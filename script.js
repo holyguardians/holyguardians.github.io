@@ -22990,3 +22990,268 @@ if(document.readyState==="loading"){
   hgTournamentEnsureTeamModalV2();
   hgTournamentApplyStreamerHubV2();
 }
+
+/* ======================================================================
+   HG TOURNAMENT V2.1 — ORGANIZER UX + RULES + SAFE SPECTATOR RETURN
+   - Robust spectator return (clears ?room before reopening Tournament).
+   - Organizer participants move under organizer controls and become clickable.
+   - Team audit cards gain Digimon portraits from PvP database.
+   - Cleaner close control for team audit modal.
+   - Rules modal edits participant cap and enforced Stage before bracket start.
+   - Loser bracket is surfaced honestly as a future engine option, not faked.
+   ====================================================================== */
+
+function hgTournamentClearRoomQueryV21(tournamentId){
+  try{
+    const url=new URL(window.location.href);
+    url.searchParams.delete("room");
+    if(tournamentId)url.searchParams.set("tournament",hgTournamentNormalizeId(tournamentId));
+    url.hash="pvp";
+    history.replaceState(history.state||{},"",url.toString());
+  }catch(erro){}
+}
+
+function hgTournamentEnsureSpectatorBackV21(){
+  let btn=document.getElementById("hgTournamentSpectatorBackV21");
+  if(!btn){
+    btn=document.createElement("button");
+    btn.id="hgTournamentSpectatorBackV21";
+    btn.type="button";
+    btn.className="hg-tour-v21-spectator-back";
+    btn.onclick=function(){hgTournamentSpectatorBackToTournamentV16()};
+    btn.innerHTML='<span>←</span><b>'+hgTournamentEscape(hgTournamentT("tournament.backToTournament","VOLTAR AO TORNEIO"))+'</b>';
+    document.body.appendChild(btn);
+  }
+  const show=!!(pvpMatchSpectatorMode&&document.getElementById("pvpMatchView")?.classList.contains("ativa"));
+  btn.hidden=!show;
+  return btn;
+}
+
+hgTournamentSpectatorBackToTournamentV16=async function(){
+  const ctx=hgTournamentSpectatorContextV16||hgTournamentReadMatchContext()||{};
+  const id=ctx.tournamentId||(hgTournamentData&&hgTournamentData.id)||(hgTournamentGetActive()||hgTournamentQueryId());
+  hgTournamentClearRoomQueryV21(id);
+  try{hgTournamentSaveMatchContext(null)}catch(erro){}
+  try{pvpMatchSairSala(true)}catch(erro){}
+  pvpMatchSpectatorMode=false;
+  hgTournamentSpectatorContextV16=null;
+  document.body.classList.remove("hg-pvp-spectator","hg-tournament-match-active");
+  const float=document.getElementById("hgTournamentSpectatorBackV21");
+  if(float)float.hidden=true;
+  if(id){
+    await abrirPvpTournament(id);
+    await hgTournamentOpen(id,true);
+  }else{
+    abrirPvpTournament();
+  }
+  if(typeof pvpMatchAplicarStreamerMode==="function")pvpMatchAplicarStreamerMode();
+};
+
+const _hgTournamentSpectateMatchV21=hgTournamentSpectateMatch;
+hgTournamentSpectateMatch=async function(matchId){
+  const out=await _hgTournamentSpectateMatchV21.apply(this,arguments);
+  requestAnimationFrame(hgTournamentEnsureSpectatorBackV21);
+  return out;
+};
+
+const _hgTournamentReceiveStateV21=pvpMatchReceberEstado;
+pvpMatchReceberEstado=function(state){
+  const out=_hgTournamentReceiveStateV21.apply(this,arguments);
+  if(pvpMatchSpectatorMode)requestAnimationFrame(hgTournamentEnsureSpectatorBackV21);
+  return out;
+};
+
+function hgTournamentTeamIconV21(slot){
+  const hgid=String(slot&&slot.hgid||"").toUpperCase();
+  const name=String(slot&&slot.digimon||"").toLowerCase();
+  const db=Array.isArray(window.pvpDatabase)?window.pvpDatabase:(Array.isArray(pvpDatabase)?pvpDatabase:[]);
+  const digi=db.find(function(item){
+    return (hgid&&String(item&&item.hgid||"").toUpperCase()===hgid)||
+      (name&&String(item&&item.name||"").toLowerCase()===name);
+  });
+  return digi&&digi.icon?String(digi.icon):"";
+}
+
+function hgTournamentDecorateTeamModalV21(playerId){
+  const modal=document.getElementById("hgTournamentTeamModalV2");
+  if(!modal)return;
+  const close=modal.querySelector(".hg-tour-v2-modal-head > button");
+  if(close){
+    close.className="hg-tour-v21-modal-close";
+    close.innerHTML="✕";
+    close.title=hgTournamentT("tournament.close","FECHAR");
+    close.setAttribute("aria-label",hgTournamentT("tournament.close","FECHAR"));
+  }
+  const player=hgTournamentOrganizerViewPlayerV2(playerId);
+  const slots=player&&player.team&&Array.isArray(player.team.slots)?player.team.slots:[];
+  const cards=modal.querySelectorAll(".hg-tour-v2-team-card");
+  cards.forEach(function(card,index){
+    if(card.querySelector(".hg-tour-v21-team-portrait"))return;
+    const slot=slots[index]||null;
+    const icon=hgTournamentTeamIconV21(slot);
+    const portrait=document.createElement("div");
+    portrait.className="hg-tour-v21-team-portrait"+(icon?" has-icon":"");
+    portrait.innerHTML=icon?'<img src="'+hgTournamentEscape(icon)+'" alt="'+hgTournamentEscape(slot&&slot.digimon||slot&&slot.hgid||"Digimon")+'">':'<span>?</span>';
+    card.insertBefore(portrait,card.firstChild);
+  });
+}
+
+const _hgTournamentOpenTeamModalV21=hgTournamentOpenTeamModalV2;
+hgTournamentOpenTeamModalV2=function(playerId){
+  const out=_hgTournamentOpenTeamModalV21.apply(this,arguments);
+  requestAnimationFrame(function(){hgTournamentDecorateTeamModalV21(playerId)});
+  return out;
+};
+
+const _hgTournamentRenderParticipantsV21=hgTournamentRenderParticipants;
+hgTournamentRenderParticipants=function(tournament,session){
+  const box=document.getElementById("hgTournamentParticipants");
+  if(!box)return;
+  const organizer=!!(session&&session.organizerToken);
+  if(!organizer)return _hgTournamentRenderParticipantsV21.apply(this,arguments);
+
+  const players=Array.isArray(tournament.players)?tournament.players:[];
+  if(!players.length){
+    box.innerHTML='<div class="pvp-tournament-empty">'+hgTournamentEscape(hgTournamentT("tournament.noPlayers","Nenhum jogador inscrito ainda."))+'</div>';
+    return;
+  }
+  const viewPlayers=hgTournamentOrganizerView&&Array.isArray(hgTournamentOrganizerView.players)?hgTournamentOrganizerView.players:[];
+  box.innerHTML=players.map(function(player,index){
+    const audit=viewPlayers.find(function(p){return String(p.id)===String(player.id)})||null;
+    const canView=!!(audit&&audit.teamLocked&&audit.team);
+    const click=canView?' onclick="hgTournamentOpenTeamModalV2('+Number(player.id)+')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();hgTournamentOpenTeamModalV2('+Number(player.id)+')}"':'';
+    return '<article class="pvp-tournament-player-row hg-tour-v21-organizer-player '+(canView?'can-open':'')+'"'+click+'>'+ 
+      '<span class="pvp-tournament-seed">'+String(index+1).padStart(2,"0")+'</span>'+ 
+      '<div class="pvp-tournament-player-copy"><strong>'+hgTournamentEscape(player.nick)+'</strong><small>'+(player.teamLocked?hgTournamentEscape(hgTournamentT("tournament.teamConfirmed","TIME CONFIRMADO")):hgTournamentEscape(hgTournamentT("tournament.teamPending","TIME PENDENTE")))+'</small></div>'+ 
+      '<b class="pvp-tournament-mini-status '+hgTournamentStatusClass(player.status)+'">'+hgTournamentEscape(hgTournamentPlayerStatusLabel(player.status))+'</b>'+ 
+      (canView?'<span class="hg-tour-v21-open-team" title="'+hgTournamentEscape(hgTournamentT("tournament.viewTeam","VER TIME"))+'">›</span>':'')+
+    '</article>';
+  }).join("");
+};
+
+function hgTournamentMoveParticipantsV21(tournament){
+  const dash=document.getElementById("hgTournamentDashboard");
+  const panel=document.querySelector(".pvp-tournament-participants-panel");
+  const side=document.querySelector("#hgTournamentDashboard .pvp-tournament-dashboard-side");
+  const grid=document.querySelector("#hgTournamentDashboard .pvp-tournament-dashboard-grid");
+  if(!dash||!panel||!side||!grid)return;
+  const session=hgTournamentGetSession(tournament.id);
+  const organizer=!!session.organizerToken;
+  panel.classList.toggle("hg-tour-v21-participants-side",organizer);
+  if(organizer){
+    if(panel.parentElement!==side)side.appendChild(panel);
+  }else{
+    if(panel.parentElement!==dash)dash.appendChild(panel);
+  }
+}
+
+const _hgTournamentApplyRoleLayoutV21=hgTournamentApplyRoleLayoutV2;
+hgTournamentApplyRoleLayoutV2=function(tournament){
+  const out=_hgTournamentApplyRoleLayoutV21.apply(this,arguments);
+  hgTournamentMoveParticipantsV21(tournament);
+  const session=hgTournamentGetSession(tournament.id);
+  const rulesBtn=document.getElementById("hgTournamentRulesBtn");
+  if(rulesBtn)rulesBtn.hidden=!session.organizerToken;
+  return out;
+};
+
+function hgTournamentEnsureRulesModalV21(){
+  let modal=document.getElementById("hgTournamentRulesModalV21");
+  if(modal)return modal;
+  modal=document.createElement("div");
+  modal.id="hgTournamentRulesModalV21";
+  modal.className="hg-tour-v21-rules-modal";
+  modal.hidden=true;
+  modal.innerHTML=
+    '<div class="hg-tour-v21-rules-backdrop" onclick="hgTournamentCloseRulesV21()"></div>'+ 
+    '<section class="hg-tour-v21-rules-card" role="dialog" aria-modal="true">'+
+      '<header><div><small>TOURNAMENT // RULES</small><h3>'+hgTournamentEscape(hgTournamentT("tournament.rulesTitle","REGRAS DO TORNEIO"))+'</h3><p>'+hgTournamentEscape(hgTournamentT("tournament.rulesSubtitle","Ajuste as regras antes de liberar a chave."))+'</p></div><button type="button" class="hg-tour-v21-modal-close" onclick="hgTournamentCloseRulesV21()" aria-label="'+hgTournamentEscape(hgTournamentT("tournament.close","FECHAR"))+'">✕</button></header>'+ 
+      '<div class="hg-tour-v21-rules-grid">'+
+        '<label><span>'+hgTournamentEscape(hgTournamentT("tournament.participants","PARTICIPANTES"))+'</span><input id="hgTournamentRulesPlayersV21" type="number" min="2" max="256" step="1"></label>'+ 
+        '<label><span>'+hgTournamentEscape(hgTournamentT("tournament.stage","STAGE"))+'</span><select id="hgTournamentRulesStageV21"><option value="Rookie">ROOKIE · LV. 15</option><option value="Champion">CHAMPION · LV. 60</option><option value="Ultimate">ULTIMATE · LV. 90</option><option value="Mega">MEGA · LV. 100</option></select></label>'+ 
+      '</div>'+ 
+      '<div id="hgTournamentRulesStageHintV21" class="hg-tour-v21-rules-hint"></div>'+ 
+      '<div class="hg-tour-v21-rules-format">'+
+        '<div><small>'+hgTournamentEscape(hgTournamentT("tournament.bracketFormat","FORMATO DA CHAVE"))+'</small><strong>'+hgTournamentEscape(hgTournamentT("tournament.singleElimination","ELIMINAÇÃO SIMPLES"))+'</strong><span>'+hgTournamentEscape(hgTournamentT("tournament.singleEliminationHint","Uma derrota elimina o jogador."))+'</span></div>'+ 
+        '<label class="hg-tour-v21-coming-toggle"><input type="checkbox" disabled><span><b>'+hgTournamentEscape(hgTournamentT("tournament.loserBracket","LOSER BRACKET"))+'</b><small>'+hgTournamentEscape(hgTournamentT("tournament.loserBracketSoon","Double-elimination exige uma nova engine de chaveamento e será ativada em uma etapa própria."))+'</small></span></label>'+ 
+      '</div>'+ 
+      '<footer><span id="hgTournamentRulesStateV21"></span><button id="hgTournamentRulesSaveV21" type="button" class="pvp-action-btn pvp-action-success" onclick="hgTournamentSaveRulesV21()">'+hgTournamentEscape(hgTournamentT("tournament.saveRules","SALVAR REGRAS"))+'</button></footer>'+ 
+    '</section>';
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function hgTournamentOpenRulesV21(){
+  if(!hgTournamentData)return;
+  const session=hgTournamentGetSession(hgTournamentData.id);
+  if(!session.organizerToken){hgTournamentNotice(hgTournamentT("tournament.error.noOrganizerAccess","Este navegador não possui o acesso do organizador."),"bad");return}
+  const modal=hgTournamentEnsureRulesModalV21();
+  const players=document.getElementById("hgTournamentRulesPlayersV21");
+  const stage=document.getElementById("hgTournamentRulesStageV21");
+  const save=document.getElementById("hgTournamentRulesSaveV21");
+  const state=document.getElementById("hgTournamentRulesStateV21");
+  const hint=document.getElementById("hgTournamentRulesStageHintV21");
+  const locked=(hgTournamentData.players||[]).filter(function(p){return !!p.teamLocked}).length;
+  const registration=hgTournamentData.status==="registration";
+  if(players){players.value=Number(hgTournamentData.maxPlayers||8);players.min=Math.max(2,Number(hgTournamentData.playerCount||0));players.disabled=!registration}
+  if(stage){stage.value=String(hgTournamentData.rules&&hgTournamentData.rules.stage||"Rookie");stage.disabled=!registration||locked>0}
+  if(save)save.disabled=!registration;
+  if(state)state.textContent=registration?hgTournamentT("tournament.rulesEditable","Editável enquanto as inscrições estiverem abertas."):hgTournamentT("tournament.rulesLocked","As regras foram travadas quando o torneio foi liberado.");
+  if(hint)hint.textContent=locked>0?hgTournamentT("tournament.stageLockedByTeams","A Stage não pode ser alterada porque já existe time confirmado. Para proteger a integridade do torneio, essa regra fica travada."):hgTournamentT("tournament.stageSingleReason","O torneio usa uma Stage única porque o time fica travado e os dois lados da Challenge Room precisam lutar na mesma Stage.");
+  modal.hidden=false;
+  document.body.classList.add("hg-tour-v21-rules-open");
+}
+
+function hgTournamentCloseRulesV21(){
+  const modal=document.getElementById("hgTournamentRulesModalV21");
+  if(modal)modal.hidden=true;
+  document.body.classList.remove("hg-tour-v21-rules-open");
+}
+
+async function hgTournamentSaveRulesV21(){
+  if(!hgTournamentData)return;
+  const session=hgTournamentGetSession(hgTournamentData.id);
+  if(!session.organizerToken)return;
+  const maxPlayers=Number(document.getElementById("hgTournamentRulesPlayersV21")?.value||0);
+  const stage=String(document.getElementById("hgTournamentRulesStageV21")?.value||"");
+  const state=document.getElementById("hgTournamentRulesStateV21");
+  if(state)state.textContent=hgTournamentT("tournament.savingRules","Salvando regras...");
+  try{
+    const data=await hgTournamentRequest("/api/tournaments/"+encodeURIComponent(hgTournamentData.id)+"/rules",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+session.organizerToken},
+      body:JSON.stringify({maxPlayers:maxPlayers,stage:stage})
+    });
+    hgTournamentCloseRulesV21();
+    hgTournamentData=data.tournament;
+    await hgTournamentLoadOrganizerView(data.tournament,session);
+    hgTournamentRenderDashboard(data.tournament);
+    hgTournamentNotice(hgTournamentT("tournament.rulesSaved","Regras atualizadas."),"ok");
+  }catch(erro){
+    if(state)state.textContent=erro.message||hgTournamentT("tournament.error.generic","Não foi possível concluir a operação.");
+  }
+}
+
+const _hgTournamentRenderDashboardV21=hgTournamentRenderDashboard;
+hgTournamentRenderDashboard=function(tournament){
+  const out=_hgTournamentRenderDashboardV21.apply(this,arguments);
+  hgTournamentMoveParticipantsV21(tournament);
+  requestAnimationFrame(function(){
+    hgTournamentEnsureSpectatorBackV21();
+    const session=hgTournamentGetSession(tournament.id);
+    const rulesBtn=document.getElementById("hgTournamentRulesBtn");
+    if(rulesBtn)rulesBtn.hidden=!session.organizerToken;
+  });
+  return out;
+};
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",function(){
+    hgTournamentEnsureRulesModalV21();
+    hgTournamentEnsureSpectatorBackV21();
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")hgTournamentCloseRulesV21()});
+  });
+}else{
+  hgTournamentEnsureRulesModalV21();
+  hgTournamentEnsureSpectatorBackV21();
+}
