@@ -22621,3 +22621,79 @@ document.addEventListener("DOMContentLoaded",function(){
   }
 });
 
+
+/* =====================================================
+   HG TOURNAMENT V1.6 — SPECTATOR RETURN + STREAMER FULL
+   - Streamer mode applies to tournament spectators too.
+   - Spectator gets a safe "VOLTAR AO TORNEIO" action after the match.
+   - Spectator top/back action always returns to the tournament, never to Team Builder.
+===================================================== */
+let hgTournamentSpectatorContextV16 = null;
+
+function hgTournamentWireSpectatorBackV16(){
+  if(!pvpMatchSpectatorMode)return;
+  const topBack=document.querySelector('#pvpMatchView .pvp-match-head-actions button[onclick*="pvpMatchVoltarAoTime"], #pvpMatchView .pvp-match-head-actions button[data-hg-spectator-back="1"]');
+  if(topBack){
+    topBack.textContent="← "+hgTournamentT("tournament.backToTournament","VOLTAR AO TORNEIO");
+    topBack.setAttribute("onclick","hgTournamentSpectatorBackToTournamentV16()")
+    topBack.setAttribute("data-hg-spectator-back","1");
+  }
+}
+
+function hgTournamentDecorateSpectatorPostMatchV16(state){
+  if(!pvpMatchSpectatorMode||!state||state.phase!=="finished"||!state.battle||!state.battle.winner)return;
+  const panel=document.querySelector("#pvpBattleTarget .pvp-postmatch-panel");
+  if(!panel)return;
+  panel.classList.add("hg-tournament-spectator-postmatch");
+  const status=panel.querySelector(".pvp-postmatch-status");
+  const actions=panel.querySelector(".pvp-postmatch-actions");
+  if(status){
+    status.className="pvp-postmatch-status tournament";
+    status.textContent=hgTournamentT("tournament.registrationClosedViewer","A partida terminou. Volte ao torneio para acompanhar a chave.");
+  }
+  if(actions){
+    actions.innerHTML='<button type="button" class="pvp-action-btn pvp-action-success" onclick="hgTournamentSpectatorBackToTournamentV16()">'+hgTournamentEscape(hgTournamentT("tournament.backToTournament","VOLTAR AO TORNEIO"))+'</button>';
+  }
+}
+
+async function hgTournamentSpectatorBackToTournamentV16(){
+  const ctx=hgTournamentSpectatorContextV16||{};
+  const id=ctx.tournamentId||(hgTournamentData&&hgTournamentData.id)||(hgTournamentGetActive()||hgTournamentQueryId());
+  pvpMatchSairSala(true);
+  pvpMatchSpectatorMode=false;
+  hgTournamentSpectatorContextV16=null;
+  document.body.classList.remove("hg-pvp-spectator","hg-tournament-match-active");
+  if(id){
+    await abrirPvpTournament(id);
+    await hgTournamentRefresh();
+  }
+  if(typeof pvpMatchAplicarStreamerMode==="function")pvpMatchAplicarStreamerMode();
+}
+
+const _hgTournamentSpectateMatchV16=hgTournamentSpectateMatch;
+hgTournamentSpectateMatch=async function(matchId){
+  const tournamentId=hgTournamentData&&hgTournamentData.id?hgTournamentData.id:"";
+  const out=await _hgTournamentSpectateMatchV16.apply(this,arguments);
+  if(pvpMatchSpectatorMode){
+    hgTournamentSpectatorContextV16={
+      tournamentId:tournamentId||(hgTournamentData&&hgTournamentData.id)||hgTournamentGetActive()||hgTournamentQueryId(),
+      matchId:Number(matchId)||0,
+      roomId:pvpMatchRoomId||""
+    };
+    hgTournamentWireSpectatorBackV16();
+    if(typeof pvpMatchAplicarStreamerMode==="function")pvpMatchAplicarStreamerMode();
+    if(pvpMatchRoomState)hgTournamentDecorateSpectatorPostMatchV16(pvpMatchRoomState);
+  }
+  return out;
+};
+
+const _hgTournamentReceiveStateV16=pvpMatchReceberEstado;
+pvpMatchReceberEstado=function(state){
+  const out=_hgTournamentReceiveStateV16.apply(this,arguments);
+  if(pvpMatchSpectatorMode){
+    hgTournamentWireSpectatorBackV16();
+    if(typeof pvpMatchAplicarStreamerMode==="function")pvpMatchAplicarStreamerMode();
+    hgTournamentDecorateSpectatorPostMatchV16(state);
+  }
+  return out;
+};

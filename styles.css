@@ -28006,3 +28006,10 @@ body.hg-pvp-spectator #pvpFormationGrid{
   body.hg-pvp-spectator #pvpFormationGrid{grid-template-columns:1fr!important}
   .pvp-spectator-formation-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* =====================================================
+   HG TOURNAMENT V1.6 — STREAMER / SPECTATOR POLISH
+===================================================== */
+body.hg-pvp-stream-body #hgImpmonLive{display:none!important}
+#pvpPagina .pvp-postmatch-panel.hg-tournament-spectator-postmatch .pvp-postmatch-actions{grid-template-columns:1fr!important}
+#pvpPagina .pvp-postmatch-panel.hg-tournament-spectator-postmatch .pvp-postmatch-actions .pvp-action-btn{width:100%!important}
