@@ -7563,7 +7563,11 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
         : (
           meta && meta.burst && typeof meta.burst === "object"
             ? meta.burst
-            : null
+            : (
+              masterSkill && masterSkill.burst && typeof masterSkill.burst === "object"
+                ? masterSkill.burst
+                : null
+            )
         );
   });
 
@@ -7581,16 +7585,110 @@ function calcNumeroMetaOpcional(valor) {
 }
 
 function calcBurstMeta(skill) {
-  return skill && skill.burst && typeof skill.burst === "object"
+  if (!skill || typeof skill !== "object") return null;
+
+  const raw = skill.burst && typeof skill.burst === "object"
     ? skill.burst
     : null;
+
+  if (!raw) return null;
+
+  function pick() {
+    for (let i = 0; i < arguments.length; i++) {
+      const value = arguments[i];
+      if (value !== undefined && value !== null && value !== "") return value;
+    }
+    return null;
+  }
+
+  let functionType = String(pick(
+    raw.functionType,
+    raw.function_type,
+    raw.burstMode,
+    raw.burst_mode,
+    raw.BURST_MODE
+  ) || "").trim().toUpperCase();
+
+  const functionValue1 = calcNumeroMetaOpcional(pick(
+    raw.functionValue1,
+    raw.function_value1,
+    raw.burstFunctionValue1,
+    raw.burst_function_value1
+  ));
+
+  const functionValue2 = calcNumeroMetaOpcional(pick(
+    raw.functionValue2,
+    raw.function_value2,
+    raw.burstFunctionValue2,
+    raw.burst_function_value2
+  ));
+
+  const portion = calcNumeroMetaOpcional(pick(
+    raw.portion,
+    raw.burstPortion,
+    raw.burst_portion
+  ));
+
+  let perHit = calcNumeroMetaOpcional(pick(
+    raw.perHit,
+    raw.per_hit,
+    raw.burstPerHit,
+    raw.burst_per_hit,
+    raw["BURST_PER_HIT_%"]
+  ));
+
+  let total = calcNumeroMetaOpcional(pick(
+    raw.total,
+    raw.burstTotal,
+    raw.burst_total,
+    raw["BURST_TOTAL_%"]
+  ));
+
+  /*
+   * Algumas fontes antigas da MASTER guardam os campos de Burst em snake_case
+   * (function_type/function_value2) e não trazem BURST_PER_HIT/TOTAL prontos.
+   * Para DAMAGE_VALUE_UP, a regra da MASTER é:
+   *   Burst por hit = Lv10 por hit + function_value2 / 100
+   */
+  if (functionType === "DAMAGE_VALUE_UP") {
+    if (!(Number.isFinite(perHit) && perHit > 0) && Number.isFinite(functionValue2)) {
+      const normalPerHit = Number(skill.perHit);
+      if (Number.isFinite(normalPerHit) && normalPerHit > 0) {
+        perHit = normalPerHit + (functionValue2 / 100);
+      }
+    }
+
+    if (!(Number.isFinite(total) && total > 0) && Number.isFinite(perHit)) {
+      const hits = Number(skill.hits);
+      if (Number.isFinite(hits) && hits > 0) total = perHit * hits;
+    }
+  }
+
+  /* Se há coeficiente explícito mas a fonte perdeu o rótulo, tratamos como dano. */
+  if (!functionType && Number.isFinite(perHit) && perHit > 0 && Number.isFinite(total) && total > 0) {
+    functionType = "DAMAGE_VALUE_UP";
+  }
+
+  return {
+    id: pick(raw.id, raw.burstId, raw.burst_id),
+    name: String(pick(raw.name, raw.burstName, raw.burst_name) || "").trim(),
+    functionType: functionType,
+    functionValue1: functionValue1,
+    functionValue2: functionValue2,
+    portion: portion,
+    perHit: perHit,
+    total: total,
+    effectRateUpPercent: calcNumeroMetaOpcional(pick(
+      raw.effectRateUpPercent,
+      raw.effect_rate_up_percent
+    )),
+    raw: raw
+  };
 }
 
 function calcBurstModo(skill) {
   const burst = calcBurstMeta(skill);
-  return burst
-    ? String(burst.functionType || "").trim().toUpperCase()
-    : "";
+  return burst ? String(burst.functionType || "").trim().toUpperCase() : "";
 }
 
 function calcBurstEhEfeito(skill) {
@@ -7615,13 +7713,11 @@ function calcBurstRateUpPercent(skill) {
 
 function calcBurstDisponivel(skill) {
   /*
-   * REGRA DA CALCULADORA DE ELEMENTOS:
-   * - Só existe Burst quando a MASTER informa um BURST_MODE/functionType.
-   * - DAMAGE_VALUE_UP = Burst com coeficiente/aumento de dano.
-   * - Qualquer outro modo = Burst existe, mas NÃO altera o dano.
-   * - BURST_MODE vazio = não inventar Burst por fallback.
+   * Qualquer Burst cadastrada continua visível/selecionável.
+   * Somente DAMAGE_VALUE_UP pode alterar o dano.
    */
-  return Boolean(skill && calcBurstModo(skill));
+  const burst = calcBurstMeta(skill);
+  return Boolean(burst && (burst.functionType || burst.id || burst.name));
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
@@ -8682,13 +8778,13 @@ function atualizarCalculadora() {
         </article>
       `;
     } else if (calcBurstEhDano(skillBurst) && skillBurst.available) {
-      /* DAMAGE_VALUE_UP: Burst de dano. Mantém a regra de dano já usada pelo site. */
-      const burstPerHit = Number(skillBurst.perHit) * 3;
-      const burstBaseTotal = Number(skillBurst.baseTotal) * 3;
+      /* DAMAGE_VALUE_UP: usa o coeficiente real cadastrado na MASTER. */
+      const burstPerHit = Number(burstMeta.perHit);
+      const burstBaseTotal = Number(burstMeta.total);
 
       const bonusBurstPorHit =
         aplicaBurst
-          ? (skillBurst.perHit * fatorElemento) * 3
+          ? burstPerHit * fatorElemento
           : 0;
 
       const bonusBurstTotal =
