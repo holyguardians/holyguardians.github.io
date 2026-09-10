@@ -7557,6 +7557,48 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
      * Antes só líamos `apiSkill.burst`, fazendo toda Burst parecer
      * indisponível quando a SITE_EXPORT não carregava esse objeto.
      */
+    function calcBurstFromFlat(source) {
+      if (!source || typeof source !== "object") return null;
+
+      const functionType = String(
+        source.burstFunctionType ||
+        source.burst_function_type ||
+        source.functionType ||
+        source.function_type ||
+        source.burstMode ||
+        source.burst_mode ||
+        source.BURST_FUNCTION_TYPE ||
+        source.BURST_MODE ||
+        ""
+      ).trim();
+
+      const burstId = source.burstId ?? source.burst_id ?? source.BURST_ID ?? null;
+      const burstName = source.burstName ?? source.burst_name ?? source.BURST_NAME ?? "";
+      const functionValue1 = source.burstFunctionValue1 ?? source.burst_function_value1 ?? source.functionValue1 ?? source.function_value1 ?? source.BURST_FUNCTION_VALUE1 ?? null;
+      const functionValue2 = source.burstFunctionValue2 ?? source.burst_function_value2 ?? source.functionValue2 ?? source.function_value2 ?? source.BURST_FUNCTION_VALUE2 ?? null;
+      const portion = source.burstPortion ?? source.burst_portion ?? source.portion ?? source.BURST_PORTION ?? null;
+      const perHit = source.burstPerHit ?? source.burst_per_hit ?? source.BURST_PER_HIT ?? source["BURST_PER_HIT_%"] ?? null;
+      const total = source.burstTotal ?? source.burst_total ?? source.BURST_TOTAL ?? source["BURST_TOTAL_%"] ?? null;
+
+      if (!functionType && burstId == null && !burstName && perHit == null && total == null) return null;
+
+      return {
+        id: burstId,
+        name: burstName,
+        functionType: functionType,
+        functionValue1: functionValue1,
+        functionValue2: functionValue2,
+        portion: portion,
+        perHit: perHit,
+        total: total
+      };
+    }
+
+    /*
+     * Burst pode chegar aninhada (`skill.burst`) OU achatada na SITE_EXPORT,
+     * pvp-data/evolution-master. Normalizamos os dois formatos para não
+     * desativar Bursts válidas quando uma fonte usa colunas planas.
+     */
     skill.burst =
       apiSkill && apiSkill.burst && typeof apiSkill.burst === "object"
         ? apiSkill.burst
@@ -7566,7 +7608,12 @@ function calcEnriquecerSkillsComMeta(nomeDigimon, skills, dadosApi) {
             : (
               masterSkill && masterSkill.burst && typeof masterSkill.burst === "object"
                 ? masterSkill.burst
-                : null
+                : (
+                  calcBurstFromFlat(apiSkill) ||
+                  calcBurstFromFlat(meta) ||
+                  calcBurstFromFlat(masterSkill) ||
+                  null
+                )
             )
         );
   });
@@ -7717,7 +7764,7 @@ function calcBurstDisponivel(skill) {
    * Somente DAMAGE_VALUE_UP pode alterar o dano.
    */
   const burst = calcBurstMeta(skill);
-  return Boolean(burst && (burst.functionType || burst.id || burst.name));
+  return Boolean(burst && String(burst.functionType || "").trim());
 }
 
 function calcSkillIdentityHtml(skill, index, compacto, modoTooltip) {
