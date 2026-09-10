@@ -27125,3 +27125,573 @@ body.hg-pvp-stream-body #pvpPagina>.pvp-wrap{
   #pvpPagina .pvp-invite-status-badge{align-self:flex-start}
   #pvpPagina .pvp-invite-actions{grid-template-columns:1fr}
 }
+
+/* =====================================================
+   PVP TOURNAMENT V1
+===================================================== */
+.pvp-tournament-shell{
+  display:grid;
+  gap:18px;
+  width:100%;
+}
+.pvp-tournament-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:22px 24px;
+  background:
+    radial-gradient(circle at 0 0,rgba(255,191,36,.10),transparent 34%),
+    linear-gradient(135deg,rgba(6,24,54,.97),rgba(3,12,29,.98));
+  border:1px solid rgba(59,160,255,.28);
+}
+.pvp-tournament-head .page-title{margin-bottom:6px}
+.pvp-tournament-head .page-subtitle{margin-bottom:0;max-width:820px}
+.pvp-tournament-head-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:8px;
+}
+.pvp-tournament-notice{
+  padding:11px 14px;
+  border:1px solid rgba(80,169,255,.35);
+  background:rgba(4,19,43,.92);
+  color:#cfeaff;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.45;
+}
+.pvp-tournament-notice.ok{
+  border-color:rgba(35,227,148,.48);
+  color:#8dffd0;
+  background:rgba(5,44,36,.76);
+}
+.pvp-tournament-notice.bad{
+  border-color:rgba(255,83,112,.48);
+  color:#ff9db0;
+  background:rgba(50,11,24,.76);
+}
+.pvp-tournament-notice.info{
+  border-color:rgba(51,230,255,.42);
+  color:#9ff4ff;
+}
+.pvp-tournament-entry-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.pvp-tournament-card,
+.pvp-tournament-panel{
+  min-width:0;
+  padding:18px;
+  background:
+    linear-gradient(180deg,rgba(7,27,58,.95),rgba(3,13,31,.97));
+  border:1px solid rgba(54,155,255,.25);
+  box-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+.pvp-tournament-card-head,
+.pvp-tournament-panel-title{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.pvp-tournament-card-head>small,
+.pvp-tournament-panel-title small,
+.pvp-tournament-saved-head small{
+  display:block;
+  margin-bottom:3px;
+  color:#6eb7ef;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.pvp-tournament-card-head>strong,
+.pvp-tournament-panel-title strong,
+.pvp-tournament-saved-head strong{
+  display:block;
+  color:#f3fbff;
+  font-size:15px;
+  letter-spacing:.04em;
+}
+.pvp-tournament-field{
+  display:grid;
+  gap:6px;
+  margin-bottom:12px;
+}
+.pvp-tournament-field>span{
+  color:#8bb8dd;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.pvp-tournament-field input,
+.pvp-tournament-field select{
+  width:100%;
+  min-height:42px;
+  padding:9px 11px;
+  border:1px solid rgba(74,161,241,.35);
+  border-radius:6px;
+  outline:0;
+  color:#effaff;
+  background:#07162d;
+  font-family:"Oxanium",sans-serif;
+  font-size:12px;
+  font-weight:700;
+}
+.pvp-tournament-field input:focus,
+.pvp-tournament-field select:focus{
+  border-color:#23c9ff;
+  box-shadow:0 0 0 2px rgba(35,201,255,.10);
+}
+.pvp-tournament-field-row{
+  display:grid;
+  grid-template-columns:minmax(120px,.7fr) minmax(180px,1.3fr);
+  gap:10px;
+}
+.pvp-tournament-help,
+.pvp-tournament-muted{
+  display:block;
+  color:#789dbc;
+  font-size:10px;
+  line-height:1.45;
+}
+.pvp-tournament-help{margin:-2px 0 14px}
+.pvp-tournament-main-btn{width:100%}
+.pvp-tournament-entry-actions{
+  display:grid;
+  grid-template-columns:1fr 1.2fr;
+  gap:8px;
+  margin-top:4px;
+}
+.pvp-tournament-saved{margin-top:16px}
+.pvp-tournament-saved-head{margin-bottom:9px}
+.pvp-tournament-saved-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:8px;
+}
+.pvp-tournament-saved-card{
+  display:grid;
+  gap:3px;
+  min-width:0;
+  padding:10px 12px;
+  border:1px solid rgba(65,154,235,.24);
+  border-radius:7px;
+  color:#eaf8ff;
+  background:rgba(5,20,45,.82);
+  text-align:left;
+  cursor:pointer;
+  font-family:"Oxanium",sans-serif;
+}
+.pvp-tournament-saved-card:hover{
+  border-color:rgba(55,209,255,.58);
+  transform:translateY(-1px);
+}
+.pvp-tournament-saved-card b{font-size:12px;color:#7eeaff}
+.pvp-tournament-saved-card span{
+  overflow:hidden;
+  color:#8aaeca;
+  font-size:9px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pvp-tournament-dashboard{display:grid;gap:16px}
+.pvp-tournament-dashboard[hidden],
+.pvp-tournament-landing[hidden]{display:none!important}
+.pvp-tournament-dashboard-top{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:14px 18px;
+  padding:18px 20px;
+  border:1px solid rgba(68,162,255,.31);
+  border-radius:8px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,191,36,.10),transparent 30%),
+    linear-gradient(180deg,rgba(7,27,59,.96),rgba(3,13,31,.98));
+}
+.pvp-tournament-id-line{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:5px;
+}
+.pvp-tournament-id-line>span{
+  padding:4px 7px;
+  border:1px solid rgba(60,183,255,.35);
+  border-radius:4px;
+  color:#86eaff;
+  background:rgba(0,151,255,.08);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.pvp-tournament-status,
+.pvp-tournament-player-state,
+.pvp-tournament-mini-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 7px;
+  border:1px solid rgba(117,161,197,.28);
+  border-radius:999px;
+  color:#9dbbd1;
+  background:rgba(80,110,140,.10);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.07em;
+  white-space:nowrap;
+}
+.pvp-tournament-status.registration,
+.pvp-tournament-mini-status.registered{color:#86eaff;border-color:rgba(38,197,255,.38);background:rgba(0,157,255,.10)}
+.pvp-tournament-status.bracket_ready,
+.pvp-tournament-player-state.ready,
+.pvp-tournament-mini-status.ready{color:#8dffd0;border-color:rgba(35,227,148,.36);background:rgba(35,227,148,.09)}
+.pvp-tournament-status.in_progress{color:#ffd778;border-color:rgba(255,191,36,.42);background:rgba(255,191,36,.09)}
+.pvp-tournament-status.finished,
+.pvp-tournament-player-state.champion,
+.pvp-tournament-mini-status.champion{color:#ffd76e;border-color:rgba(255,191,36,.5);background:rgba(255,191,36,.11)}
+.pvp-tournament-player-state.eliminated,
+.pvp-tournament-mini-status.eliminated{color:#ff9eae;border-color:rgba(255,83,112,.4);background:rgba(255,83,112,.08)}
+.pvp-tournament-title-block h3{
+  margin:0;
+  color:#fff;
+  font-size:21px;
+}
+.pvp-tournament-title-block p{
+  margin:5px 0 0;
+  color:#86a9c7;
+  font-size:10px;
+}
+.pvp-tournament-top-actions{
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.pvp-tournament-stats{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.pvp-tournament-stats>div{
+  display:grid;
+  gap:3px;
+  padding:10px 12px;
+  border:1px solid rgba(68,148,219,.18);
+  border-radius:6px;
+  background:rgba(0,0,0,.16);
+}
+.pvp-tournament-stats small{color:#6e95b6;font-size:8px;font-weight:800;letter-spacing:.09em}
+.pvp-tournament-stats strong{color:#eaf8ff;font-size:12px}
+.pvp-tournament-dashboard-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(270px,.72fr);
+  gap:16px;
+  align-items:start;
+}
+.pvp-tournament-dashboard-main,
+.pvp-tournament-dashboard-side{
+  display:grid;
+  gap:16px;
+  min-width:0;
+}
+.pvp-tournament-player-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+  padding:9px 11px;
+  border:1px solid rgba(77,152,217,.20);
+  border-radius:6px;
+  background:rgba(0,0,0,.14);
+}
+.pvp-tournament-player-summary span{color:#789dbd;font-size:9px;font-weight:800}
+.pvp-tournament-player-summary strong{color:#dff5ff;font-size:11px}
+.pvp-tournament-team-check{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin-bottom:10px;
+}
+.pvp-tournament-team-check>div{
+  display:grid;
+  gap:3px;
+  padding:8px 9px;
+  border:1px solid rgba(69,147,215,.20);
+  border-radius:5px;
+  background:rgba(0,0,0,.13);
+}
+.pvp-tournament-team-check span{color:#7599b8;font-size:8px;font-weight:800}
+.pvp-tournament-team-check b{font-size:9px}
+.pvp-tournament-team-check b.ok{color:#6ff0bd}
+.pvp-tournament-team-check b.bad{color:#ff8fa5}
+.pvp-tournament-player-actions{
+  display:grid;
+  grid-template-columns:1fr 1.25fr;
+  gap:8px;
+}
+.pvp-tournament-locked-banner{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 12px;
+  border:1px solid rgba(35,227,148,.32);
+  border-radius:6px;
+  background:rgba(35,227,148,.07);
+}
+.pvp-tournament-locked-banner>span{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  color:#081b17;
+  background:#5ee9b4;
+  font-weight:900;
+}
+.pvp-tournament-locked-banner div{display:grid;gap:2px}
+.pvp-tournament-locked-banner strong{color:#8dffd0;font-size:11px}
+.pvp-tournament-locked-banner small{color:#7da99a;font-size:9px}
+.pvp-tournament-inline-join{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:8px;
+}
+.pvp-tournament-inline-join .pvp-tournament-field{margin:0}
+.pvp-tournament-alert{
+  padding:10px 11px;
+  border:1px solid rgba(69,155,229,.24);
+  border-radius:5px;
+  color:#a8cbe4;
+  background:rgba(0,0,0,.13);
+  font-size:10px;
+  line-height:1.45;
+}
+.pvp-tournament-alert.bad{
+  color:#ff9daf;
+  border-color:rgba(255,83,112,.34);
+  background:rgba(255,83,112,.06);
+}
+.pvp-tournament-participants{display:grid;gap:6px}
+.pvp-tournament-player-row{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:8px 9px;
+  border:1px solid rgba(67,145,214,.18);
+  border-radius:5px;
+  background:rgba(0,0,0,.12);
+}
+.pvp-tournament-player-row.mine{
+  border-color:rgba(51,230,255,.38);
+  background:rgba(51,230,255,.06);
+}
+.pvp-tournament-seed{
+  display:grid;
+  place-items:center;
+  width:26px;
+  height:26px;
+  border-radius:4px;
+  color:#74cdec;
+  background:rgba(35,158,219,.10);
+  font-size:8px;
+  font-weight:900;
+}
+.pvp-tournament-player-row>div{min-width:0;display:grid;gap:1px}
+.pvp-tournament-player-row strong{
+  overflow:hidden;
+  color:#eaf8ff;
+  font-size:10px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pvp-tournament-player-row small{color:#6f92ae;font-size:7px}
+.pvp-tournament-bracket{min-height:120px}
+.pvp-tournament-bracket-scroll{
+  display:flex;
+  align-items:stretch;
+  gap:14px;
+  overflow-x:auto;
+  padding:3px 2px 10px;
+  scrollbar-color:#1f7eae #071326;
+}
+.pvp-tournament-round{
+  flex:0 0 230px;
+  display:grid;
+  align-content:start;
+  gap:8px;
+}
+.pvp-tournament-round-title{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding-bottom:6px;
+  border-bottom:1px solid rgba(71,157,229,.22);
+}
+.pvp-tournament-round-title small{color:#6d9fc4;font-size:8px;font-weight:800}
+.pvp-tournament-round-title strong{color:#9cecff;font-size:10px}
+.pvp-tournament-round-matches{display:grid;gap:9px}
+.pvp-tournament-match-card{
+  position:relative;
+  padding:9px;
+  border:1px solid rgba(66,145,213,.23);
+  border-radius:6px;
+  background:linear-gradient(180deg,rgba(8,27,57,.94),rgba(4,15,34,.97));
+}
+.pvp-tournament-match-card.mine{
+  border-color:rgba(51,230,255,.48);
+  box-shadow:0 0 14px rgba(51,230,255,.08);
+}
+.pvp-tournament-match-card.finished{opacity:.84}
+.pvp-tournament-match-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:6px;
+  color:#688aa5;
+  font-size:7px;
+  font-weight:800;
+}
+.pvp-tournament-match-player{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:7px;
+  min-height:30px;
+  padding:6px 7px;
+  border:1px solid rgba(60,130,190,.16);
+  border-radius:4px;
+  color:#d8efff;
+  background:rgba(0,0,0,.14);
+  font-size:9px;
+  font-weight:800;
+}
+.pvp-tournament-match-player.winner{
+  color:#8dffd0;
+  border-color:rgba(35,227,148,.27);
+  background:rgba(35,227,148,.06);
+}
+.pvp-tournament-match-player b{color:#6ff0bd;font-size:7px}
+.pvp-tournament-match-vs{
+  margin:3px 0;
+  color:#4d7598;
+  font-size:7px;
+  font-weight:900;
+  text-align:center;
+}
+.pvp-tournament-room-chip{
+  margin-top:6px;
+  color:#e5c16c;
+  font-size:7px;
+  font-weight:800;
+  text-align:right;
+}
+.pvp-tournament-empty{
+  padding:18px 12px;
+  border:1px dashed rgba(77,150,211,.24);
+  border-radius:6px;
+  color:#789cb8;
+  background:rgba(0,0,0,.08);
+  font-size:10px;
+  line-height:1.45;
+  text-align:center;
+}
+.pvp-tournament-match-number{
+  color:#73ddff;
+  font-size:10px;
+}
+.pvp-tournament-next-versus{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.pvp-tournament-next-versus>div{
+  display:grid;
+  gap:3px;
+  min-width:0;
+  padding:10px;
+  border:1px solid rgba(68,151,222,.20);
+  border-radius:6px;
+  background:rgba(0,0,0,.12);
+}
+.pvp-tournament-next-versus>div.mine{border-color:rgba(51,230,255,.32)}
+.pvp-tournament-next-versus small{color:#6f94b2;font-size:8px}
+.pvp-tournament-next-versus strong{
+  overflow:hidden;
+  color:#eaf8ff;
+  font-size:12px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pvp-tournament-next-versus>span{color:#54b9e2;font-size:10px;font-weight:900}
+.pvp-tournament-enter-match{width:100%;margin-top:11px}
+.pvp-tournament-champion{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:105px;
+  border:1px solid rgba(255,191,36,.34);
+  border-radius:7px;
+  background:
+    radial-gradient(circle at 50% 0,rgba(255,191,36,.16),transparent 55%),
+    rgba(255,191,36,.04);
+}
+.pvp-tournament-champion>span{font-size:34px}
+.pvp-tournament-champion div{display:grid;gap:2px}
+.pvp-tournament-champion small{color:#ae8b40;font-size:8px;font-weight:900}
+.pvp-tournament-champion strong{color:#ffd96f;font-size:16px}
+body.hg-tournament-match-active #pvpMatchRoomEditBtn,
+body.hg-tournament-match-active #pvpMatchQuickEditBar,
+body.hg-tournament-match-active .pvp-match-head-actions .pvp-action-btn{
+  display:none!important;
+}
+body.hg-tournament-match-active .pvp-postmatch-status.tournament{
+  color:#9deaff;
+}
+body.hg-tournament-match-active .pvp-postmatch-actions{
+  grid-template-columns:1fr!important;
+}
+@media (max-width:980px){
+  .pvp-tournament-dashboard-grid{grid-template-columns:1fr}
+  .pvp-tournament-dashboard-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .pvp-tournament-head{align-items:flex-start;flex-direction:column}
+  .pvp-tournament-head-actions{width:100%;justify-content:stretch}
+  .pvp-tournament-head-actions .pvp-action-btn{flex:1}
+  .pvp-tournament-entry-grid{grid-template-columns:1fr}
+  .pvp-tournament-dashboard-top{grid-template-columns:1fr}
+  .pvp-tournament-top-actions{justify-content:stretch}
+  .pvp-tournament-top-actions .pvp-action-btn{flex:1}
+  .pvp-tournament-stats{grid-template-columns:1fr}
+  .pvp-tournament-dashboard-side{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .pvp-tournament-head,
+  .pvp-tournament-card,
+  .pvp-tournament-panel,
+  .pvp-tournament-dashboard-top{padding:14px}
+  .pvp-tournament-field-row,
+  .pvp-tournament-entry-actions,
+  .pvp-tournament-player-actions,
+  .pvp-tournament-inline-join,
+  .pvp-tournament-team-check{grid-template-columns:1fr}
+  .pvp-tournament-next-versus{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+  .pvp-tournament-next-versus>span{transform:rotate(90deg)}
+  .pvp-tournament-round{flex-basis:205px}
+}
+

@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260909-pvp-v533-smart-invite">
+  <link rel="stylesheet" href="styles.css?v=20260910-tournament-v1">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -197,6 +197,7 @@
           <button type="button" role="menuitem" onclick="abrirPvpBuild()">BUILD PVP TEAM</button>
           <button type="button" role="menuitem" onclick="abrirImportacaoTimePvp()">IMPORT TEAM</button>
           <button type="button" role="menuitem" onclick="abrirPvpMatch()">MATCH</button>
+          <button type="button" role="menuitem" onclick="abrirPvpTournament()" data-i18n="pvp.tournament">TOURNAMENT</button>
         </div>
       </div>
 
@@ -1877,6 +1878,126 @@
       </div>
     </div>
 
+
+    <div id="pvpTournamentView" class="pvp-view">
+      <div class="pvp-tournament-shell">
+        <div class="pvp-tournament-head tech-corners">
+          <div>
+            <div class="pvp-kicker" data-i18n="tournament.kicker">HOLY GUARDIANS // SISTEMA DE TORNEIOS</div>
+            <h2 class="page-title" data-i18n="tournament.title">TOURNAMENT</h2>
+            <p class="page-subtitle" data-i18n="tournament.subtitle">Crie ou entre em torneios PvP com regras, time travado, chaveamento e Challenge Room automáticos.</p>
+          </div>
+          <div class="pvp-tournament-head-actions">
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="hgTournamentRefresh()" data-i18n="tournament.refresh">ATUALIZAR</button>
+            <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="hgTournamentTrocar()" data-i18n="tournament.changeTournament">TROCAR TORNEIO</button>
+          </div>
+        </div>
+
+        <div id="hgTournamentNotice" class="pvp-tournament-notice" hidden aria-live="polite"></div>
+
+        <section id="hgTournamentLanding" class="pvp-tournament-landing">
+          <div class="pvp-tournament-entry-grid">
+            <article class="pvp-tournament-card tech-corners">
+              <div class="pvp-tournament-card-head">
+                <small data-i18n="tournament.createKicker">ORGANIZER // CREATE</small>
+                <strong data-i18n="tournament.createTitle">CRIAR TORNEIO</strong>
+              </div>
+
+              <label class="pvp-tournament-field">
+                <span data-i18n="tournament.name">NOME DO TORNEIO</span>
+                <input id="hgTournamentCreateName" type="text" maxlength="60" autocomplete="off" placeholder="HG Rookie Cup">
+              </label>
+
+              <label class="pvp-tournament-field">
+                <span data-i18n="tournament.organizer">ORGANIZADOR</span>
+                <input id="hgTournamentCreateOrganizer" type="text" maxlength="16" autocomplete="off" placeholder="GrimSleep" oninput="hgTournamentSanitizeNick(this)">
+              </label>
+
+              <div class="pvp-tournament-field-row">
+                <label class="pvp-tournament-field">
+                  <span data-i18n="tournament.participants">PARTICIPANTES</span>
+                  <input id="hgTournamentCreatePlayers" type="number" min="2" max="256" step="1" value="8">
+                </label>
+
+                <label class="pvp-tournament-field">
+                  <span data-i18n="tournament.stage">STAGE</span>
+                  <select id="hgTournamentCreateStage">
+                    <option value="Rookie">ROOKIE · LV. 15</option>
+                    <option value="Champion">CHAMPION · LV. 60</option>
+                    <option value="Ultimate">ULTIMATE · LV. 90</option>
+                    <option value="Mega">MEGA · LV. 100</option>
+                  </select>
+                </label>
+              </div>
+
+              <small class="pvp-tournament-help" data-i18n="tournament.stageRuleHint">A Stage escolhida será obrigatória para todos os times confirmados.</small>
+
+              <button id="hgTournamentCreateBtn" type="button" class="pvp-action-btn pvp-action-success pvp-tournament-main-btn" onclick="hgTournamentCreate()" data-i18n="tournament.createButton">CRIAR TORNEIO</button>
+            </article>
+
+            <article class="pvp-tournament-card tech-corners">
+              <div class="pvp-tournament-card-head">
+                <small data-i18n="tournament.joinKicker">PLAYER // JOIN</small>
+                <strong data-i18n="tournament.joinTitle">ENTRAR EM TORNEIO</strong>
+              </div>
+
+              <label class="pvp-tournament-field">
+                <span data-i18n="tournament.code">TOURNAMENT ID</span>
+                <input id="hgTournamentJoinId" type="text" maxlength="8" autocomplete="off" placeholder="HGABC234" oninput="hgTournamentSanitizeId(this)">
+              </label>
+
+              <label class="pvp-tournament-field">
+                <span data-i18n="tournament.nick">SEU NICK</span>
+                <input id="hgTournamentJoinNick" type="text" maxlength="16" autocomplete="off" placeholder="PlayerOne" oninput="hgTournamentSanitizeNick(this)">
+              </label>
+
+              <div class="pvp-tournament-entry-actions">
+                <button type="button" class="pvp-action-btn pvp-action-secondary" onclick="hgTournamentViewFromLanding()" data-i18n="tournament.viewButton">APENAS VER</button>
+                <button id="hgTournamentJoinBtn" type="button" class="pvp-action-btn pvp-action-success" onclick="hgTournamentJoinFromLanding()" data-i18n="tournament.joinButton">ENTRAR</button>
+              </div>
+
+              <small class="pvp-tournament-help" data-i18n="tournament.joinHint">O acesso do jogador fica salvo somente neste navegador.</small>
+            </article>
+          </div>
+
+          <div id="hgTournamentSavedSessions" class="pvp-tournament-saved"></div>
+        </section>
+
+        <section id="hgTournamentDashboard" class="pvp-tournament-dashboard" hidden>
+          <div id="hgTournamentDashboardTop" class="pvp-tournament-dashboard-top"></div>
+
+          <div class="pvp-tournament-dashboard-grid">
+            <div class="pvp-tournament-dashboard-main">
+              <article id="hgTournamentPlayerPanel" class="pvp-tournament-panel tech-corners"></article>
+              <article id="hgTournamentMatchPanel" class="pvp-tournament-panel tech-corners"></article>
+              <article class="pvp-tournament-panel tech-corners">
+                <div class="pvp-tournament-panel-title">
+                  <div>
+                    <small data-i18n="tournament.bracketKicker">BRACKET // LIVE</small>
+                    <strong data-i18n="tournament.bracketTitle">CHAVEAMENTO</strong>
+                  </div>
+                </div>
+                <div id="hgTournamentBracket" class="pvp-tournament-bracket"></div>
+              </article>
+            </div>
+
+            <aside class="pvp-tournament-dashboard-side">
+              <article id="hgTournamentOrganizerPanel" class="pvp-tournament-panel tech-corners" hidden></article>
+              <article class="pvp-tournament-panel tech-corners">
+                <div class="pvp-tournament-panel-title">
+                  <div>
+                    <small data-i18n="tournament.playersKicker">PLAYERS // STATUS</small>
+                    <strong data-i18n="tournament.playersTitle">PARTICIPANTES</strong>
+                  </div>
+                </div>
+                <div id="hgTournamentParticipants" class="pvp-tournament-participants"></div>
+              </article>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <div id="pvpMatchView" class="pvp-view">
       <div class="pvp-match-shell">
         <div class="pvp-match-head tech-corners">
@@ -3403,11 +3524,11 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="hidden_quests_data.js?v=20260823-v1"></script>
-<script src="i18n_pt-BR.js?v=20260825-home-creators-v1"></script>
-<script src="i18n_en-US.js?v=20260825-home-creators-v1"></script>
-<script src="i18n_ko-KR.js?v=20260825-home-creators-v1"></script>
+<script src="i18n_pt-BR.js?v=20260910-tournament-v1"></script>
+<script src="i18n_en-US.js?v=20260910-tournament-v1"></script>
+<script src="i18n_ko-KR.js?v=20260910-tournament-v1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260909-pvp-v550-masters-match-refresh"></script>
+<script src="script.js?v=20260910-tournament-v1"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>
