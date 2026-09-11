@@ -29059,3 +29059,15 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
 #hgIconLabPagina .hg-iconlab-progress strong{font-size:10px}#hgIconLabPagina .hg-iconlab-progress span{font-size:9px}#hgIconLabPagina .hg-iconlab-progress>b{font-size:11px}
 #hgIconLabPagina .hg-admin-panel-head strong{font-size:12px}#hgIconLabPagina .hg-admin-panel-head>span{font-size:9px}
 @media(max-width:760px){#hgIconLabPagina .hg-iconlab-tool{padding:9px 11px;font-size:9px}#hgIconLabPagina .hg-iconlab-tool span{display:inline}#hgIconLabPagina .hg-iconlab-privacy strong{font-size:10px}#hgIconLabPagina .hg-iconlab-scale-grid button,#hgIconLabPagina .hg-iconlab-format-grid button{min-height:54px;font-size:12px}}
+
+/* ICON LAB V3 — zoom de precisão */
+#hgIconLabPagina .hg-iconlab-canvas-shell{height:clamp(390px,62vh,680px);min-height:0;overflow:auto;scrollbar-color:#1689b8 #06172d;scrollbar-width:thin}
+#hgIconLabPagina .hg-iconlab-canvas-shell.is-zoomed{place-items:start}
+#hgIconLabPagina .hg-iconlab-canvas-shell.is-zoomed #hgIconLabCanvas{margin:0}
+#hgIconLabPagina .hg-iconlab-zoom{display:flex;align-items:center;gap:4px;min-height:42px;padding:4px 5px 4px 10px;border:1px solid rgba(61,186,235,.30);background:linear-gradient(180deg,#082642,#05182f);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
+#hgIconLabPagina .hg-iconlab-zoom>span{margin-right:3px;color:#7ebbd3;font-size:8px;font-weight:1000;letter-spacing:.08em}
+#hgIconLabPagina .hg-iconlab-zoom button{height:30px;min-width:30px;border:1px solid rgba(67,194,241,.32);border-radius:0;background:#061a34;color:#bcefff;font:900 14px/1 "Oxanium",Arial,sans-serif;cursor:pointer}
+#hgIconLabPagina .hg-iconlab-zoom button:hover:not(:disabled){border-color:#54e2ff;background:#0b5581;color:#fff;box-shadow:inset 0 0 13px rgba(58,218,255,.13)}
+#hgIconLabPagina .hg-iconlab-zoom button:disabled{opacity:.38;cursor:not-allowed}
+#hgIconLabPagina #hgIconLabZoomValue{min-width:56px;color:#65e6ff;font-size:9px}
+@media(max-width:760px){#hgIconLabPagina .hg-iconlab-canvas-shell{height:430px}#hgIconLabPagina .hg-iconlab-zoom{order:10;width:100%;justify-content:center}#hgIconLabPagina .hg-iconlab-zoom>span{font-size:9px}}

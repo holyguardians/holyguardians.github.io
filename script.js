@@ -24322,7 +24322,7 @@ function hgSkillCalcInicializar() {
   "use strict";
 
   const S={
-    ready:false,busy:false,tool:"crop",scale:1,format:"png",brush:28,
+    ready:false,busy:false,tool:"crop",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
     fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
     original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",upscaler:null
   };
@@ -24375,11 +24375,24 @@ function hgSkillCalcInicializar() {
   }
 
   function syncOverlay(){
-    const canvas=$("hgIconLabCanvas"),overlay=$("hgIconLabOverlay");if(!canvas||!overlay)return;
+    const canvas=$("hgIconLabCanvas"),overlay=$("hgIconLabOverlay"),shell=$("hgIconLabCanvasShell");if(!canvas||!overlay||!shell||!canvas.width)return;
+    const availableW=Math.max(120,shell.clientWidth-24),availableH=Math.max(120,shell.clientHeight-24);
+    const fit=Math.min(1,availableW/canvas.width,availableH/canvas.height),displayScale=fit*S.zoom;
+    const displayW=Math.max(1,Math.round(canvas.width*displayScale)),displayH=Math.max(1,Math.round(canvas.height*displayScale));
+    S.displayScale=displayW/canvas.width;
+    shell.classList.toggle("is-zoomed",S.zoom>1.001);
+    canvas.style.maxWidth="none";canvas.style.maxHeight="none";canvas.style.width=displayW+"px";canvas.style.height=displayH+"px";
     overlay.width=canvas.width;overlay.height=canvas.height;
-    overlay.style.width=canvas.clientWidth+"px";overlay.style.height=canvas.clientHeight+"px";
+    overlay.style.width=displayW+"px";overlay.style.height=displayH+"px";
     overlay.style.left=canvas.offsetLeft+"px";overlay.style.top=canvas.offsetTop+"px";
     drawOverlay();
+  }
+
+  function setZoom(value){
+    S.zoom=Math.max(.5,Math.min(8,Math.round(Number(value)*4)/4));
+    $("hgIconLabZoomValue").textContent=Math.round(S.zoom*100)+"%";
+    $("hgIconLabZoomOut").disabled=S.zoom<=.5;$("hgIconLabZoomIn").disabled=S.zoom>=8;
+    requestAnimationFrame(syncOverlay);
   }
 
   function updateDimensions(){
@@ -24404,11 +24417,11 @@ function hgSkillCalcInicializar() {
     const overlay=$("hgIconLabOverlay"),o=ctx(overlay);if(!o)return;o.clearRect(0,0,overlay.width,overlay.height);
     if(S.tool==="crop"&&S.crop){
       const r=S.crop;o.fillStyle="rgba(0,8,20,.56)";o.fillRect(0,0,overlay.width,overlay.height);o.clearRect(r.x,r.y,r.w,r.h);
-      o.strokeStyle="#42dcff";o.lineWidth=Math.max(2,overlay.width/700);o.setLineDash([10,7]);o.strokeRect(r.x,r.y,r.w,r.h);o.setLineDash([]);
-      const size=Math.max(7,overlay.width/110);o.fillStyle="#eaffff";[[r.x,r.y],[r.x+r.w,r.y],[r.x,r.y+r.h],[r.x+r.w,r.y+r.h]].forEach(p=>o.fillRect(p[0]-size/2,p[1]-size/2,size,size));
+      const visualScale=Math.max(.01,S.displayScale||1);o.strokeStyle="#42dcff";o.lineWidth=2/visualScale;o.setLineDash([10/visualScale,7/visualScale]);o.strokeRect(r.x,r.y,r.w,r.h);o.setLineDash([]);
+      const size=8/visualScale;o.fillStyle="#eaffff";[[r.x,r.y],[r.x+r.w,r.y],[r.x,r.y+r.h],[r.x+r.w,r.y+r.h]].forEach(p=>o.fillRect(p[0]-size/2,p[1]-size/2,size,size));
     }
     if((S.tool==="erase"||S.tool==="restore")&&cursor){
-      o.beginPath();o.arc(cursor.x,cursor.y,S.brush/2,0,Math.PI*2);o.fillStyle=S.tool==="erase"?"rgba(255,82,112,.16)":"rgba(66,224,255,.16)";o.fill();o.strokeStyle=S.tool==="erase"?"#ff7690":"#55e5ff";o.lineWidth=2;o.stroke();
+      const radius=(S.brush/Math.max(.01,S.displayScale||1))/2;o.beginPath();o.arc(cursor.x,cursor.y,radius,0,Math.PI*2);o.fillStyle=S.tool==="erase"?"rgba(255,82,112,.16)":"rgba(66,224,255,.16)";o.fill();o.strokeStyle=S.tool==="erase"?"#ff7690":"#55e5ff";o.lineWidth=2/Math.max(.01,S.displayScale||1);o.stroke();
     }
   }
 
@@ -24441,10 +24454,10 @@ function hgSkillCalcInicializar() {
     try{
       const url=URL.createObjectURL(file),img=await loadImage(url);URL.revokeObjectURL(url);
       const max=8192,ratio=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*ratio)),h=Math.max(1,Math.round(img.naturalHeight*ratio));
-      S.original=makeCanvas(w,h);ctx(S.original).drawImage(img,0,0,w,h);S.restore=cloneCanvas(S.original);S.history=[];S.crop=null;
+      S.original=makeCanvas(w,h);ctx(S.original).drawImage(img,0,0,w,h);S.restore=cloneCanvas(S.original);S.history=[];S.crop=null;S.zoom=1;
       S.fileName=(file.name.replace(/\.[^.]+$/,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"hg-icon").toLowerCase();
       $("hgIconLabFilename").value=S.fileName;setWorkFrom(S.original);selectTool("crop");
-      $("hgIconLabDrop").hidden=true;$("hgIconLabEditor").hidden=false;$("hgIconLabCompare").hidden=false;
+      $("hgIconLabDrop").hidden=true;$("hgIconLabEditor").hidden=false;$("hgIconLabCompare").hidden=false;setZoom(1);
       S.beforeUrl=S.original.toDataURL("image/png");updateCompare(true);message("Print carregado. Arraste sobre ele para marcar o ícone.");
     }catch(error){console.error("ICON LAB upload:",error);message(error.message||"Não foi possível abrir esse print.",true)}finally{setBusy(false)}
   }
@@ -24457,8 +24470,8 @@ function hgSkillCalcInicializar() {
   }
 
   function paintAt(point){
-    const canvas=$("hgIconLabCanvas"),c=ctx(canvas),radius=S.brush/2;c.save();c.beginPath();c.arc(point.x,point.y,radius,0,Math.PI*2);c.clip();
-    if(S.tool==="erase"){c.globalCompositeOperation="destination-out";c.fillStyle="#000";c.fillRect(point.x-radius,point.y-radius,S.brush,S.brush)}
+    const canvas=$("hgIconLabCanvas"),c=ctx(canvas),radius=(S.brush/Math.max(.01,S.displayScale||1))/2;c.save();c.beginPath();c.arc(point.x,point.y,radius,0,Math.PI*2);c.clip();
+    if(S.tool==="erase"){c.globalCompositeOperation="destination-out";c.fillStyle="#000";c.fillRect(point.x-radius,point.y-radius,radius*2,radius*2)}
     else if(S.restore){c.globalCompositeOperation="source-over";c.drawImage(S.restore,0,0,canvas.width,canvas.height)}
     c.restore();
   }
@@ -24489,13 +24502,13 @@ function hgSkillCalcInicializar() {
         status("TROCANDO PARA CPU...","O modo GPU não abriu neste navegador; tentando o modo compatível.",12,true);
         result=await mod.removeBackground(blob,Object.assign({},baseConfig,{device:"cpu"}));
       }
-      const url=URL.createObjectURL(result),img=await loadImage(url);URL.revokeObjectURL(url);setWorkFrom(img);updateCompare();status("FUNDO REMOVIDO","Use o pincel para recuperar brilhos ou apagar sobras.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+      const url=URL.createObjectURL(result),img=await loadImage(url);URL.revokeObjectURL(url);S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="Fundo removido";setWorkFrom(img);updateCompare();status("FUNDO REMOVIDO","Use o pincel para recuperar brilhos ou apagar sobras.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
     }catch(error){console.error("ICON LAB background IA:",error);message("A IA de fundo não carregou. Confira a internet e se o Opera não bloqueou o modelo, depois tente novamente.",true)}finally{setBusy(false)}
   }
 
   function alphaCanvas(source,w,h){
     const temp=makeCanvas(source.width,source.height),t=ctx(temp),data=ctx(source).getImageData(0,0,source.width,source.height),out=t.createImageData(source.width,source.height);
-    for(let i=0;i<data.data.length;i+=4){out.data[i]=out.data[i+1]=out.data[i+2]=out.data[i+3];out.data[i+3]=255}t.putImageData(out,0,0);
+    for(let i=0;i<data.data.length;i+=4){const alpha=data.data[i+3];out.data[i]=out.data[i+1]=out.data[i+2]=alpha;out.data[i+3]=255}t.putImageData(out,0,0);
     const scaled=makeCanvas(w,h);const sc=ctx(scaled);sc.imageSmoothingEnabled=true;sc.imageSmoothingQuality="high";sc.drawImage(temp,0,0,w,h);return scaled;
   }
 
@@ -24526,7 +24539,7 @@ function hgSkillCalcInicializar() {
       pushHistory();S.beforeUrl=canvas.toDataURL("image/png");let out=cloneCanvas(canvas);
       for(let pass=1;pass<=passes;pass++)out=await upscaleOnce(out,pass,passes);
       const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
-      setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("UPSCALE CONCLUÍDO","Asset ampliado para "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+      S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="Upscale aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("UPSCALE CONCLUÍDO","Asset ampliado para "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
     }catch(error){console.error("ICON LAB upscale IA:",error);message("A IA de upscale não terminou. Feche abas pesadas ou tente 2×; o arquivo anterior continua preservado em DESFAZER.",true)}finally{setBusy(false);updateDimensions()}
   }
 
@@ -24556,6 +24569,7 @@ function hgSkillCalcInicializar() {
     ["dragenter","dragover"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.add("drag")}));["dragleave","drop"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.remove("drag")}));drop.addEventListener("drop",ev=>openFile(ev.dataTransfer.files[0]));
     document.querySelectorAll("[data-iconlab-tool]").forEach(btn=>btn.addEventListener("click",()=>selectTool(btn.dataset.iconlabTool)));
     $("hgIconLabBrush").addEventListener("input",ev=>{S.brush=Number(ev.target.value);$("hgIconLabBrushValue").textContent=S.brush+" px"});
+    $("hgIconLabZoomOut").addEventListener("click",()=>setZoom(S.zoom-.25));$("hgIconLabZoomIn").addEventListener("click",()=>setZoom(S.zoom+.25));$("hgIconLabZoomValue").addEventListener("click",()=>setZoom(1));
     overlay.addEventListener("pointerdown",ev=>{
       if(S.busy)return;overlay.setPointerCapture(ev.pointerId);const p=pointerPos(ev);
       if(S.tool==="crop"){S.dragging=true;S.cropStart=p;S.crop={x:p.x,y:p.y,w:0,h:0}}
