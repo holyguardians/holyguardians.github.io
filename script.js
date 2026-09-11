@@ -24324,7 +24324,7 @@ function hgSkillCalcInicializar() {
   const S={
     ready:false,busy:false,tool:"crop",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
     fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
-    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",upscaler:null
+    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",upscalers:{}
   };
   const $=id=>document.getElementById(id);
   const makeCanvas=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
@@ -24398,7 +24398,7 @@ function hgSkillCalcInicializar() {
   function updateDimensions(){
     const canvas=$("hgIconLabCanvas");if(!canvas)return;
     $("hgIconLabDimensions").textContent=canvas.width+" × "+canvas.height+" PX";
-    $("hgIconLabScaleInfo").textContent=S.scale===1?"Selecione 2× ou 4× para ampliar preservando os detalhes.":"Saída prevista: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
+    $("hgIconLabScaleInfo").textContent=S.scale===1?"ESRGAN reconstrói bordas e detalhes; não é apenas redimensionamento.":"ESRGAN "+S.scale+"× • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
   }
 
   function pointerPos(ev){
@@ -24517,16 +24517,18 @@ function hgSkillCalcInicializar() {
     for(let i=0;i<r.data.length;i+=4)r.data[i+3]=a.data[i];ctx(rgb).putImageData(r,0,0);return rgb;
   }
 
-  async function getUpscaler(){
-    if(S.upscaler)return S.upscaler;
-    const mod=await import("https://cdn.jsdelivr.net/npm/upscaler@1.0.0/+esm");S.upscaler=new mod.default();return S.upscaler;
+  async function getUpscaler(scale){
+    const key=scale===4?4:2;if(S.upscalers[key])return S.upscalers[key];
+    const modelUrl=key===4?"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0/4x/+esm":"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0/2x/+esm";
+    const modules=await Promise.all([import("https://cdn.jsdelivr.net/npm/upscaler@1.0.0/+esm"),import(modelUrl)]);
+    S.upscalers[key]=new modules[0].default({model:modules[1].default});return S.upscalers[key];
   }
 
-  async function upscaleOnce(source,pass,totalPasses){
-    const up=await getUpscaler(),dataUrl=source.toDataURL("image/png");
+  async function upscaleESRGAN(source,scale){
+    const up=await getUpscaler(scale),dataUrl=source.toDataURL("image/png");
     const result=await up.upscale(dataUrl,{output:"base64",patchSize:64,padding:4,progress:value=>{
-      const local=Math.max(0,Math.min(1,Number(value)||0)),p=18+(((pass-1)+local)/totalPasses)*80;
-      status("UPSCALE IA "+pass+" / "+totalPasses,"Reconstruindo detalhes por blocos.",p,true);
+      const local=Math.max(0,Math.min(1,Number(value)||0)),p=18+local*80;
+      status("ESRGAN "+scale+"× EM AÇÃO...","Redesenhando bordas e detalhes por blocos.",p,true);
     }});
     const img=await loadImage(result),out=makeCanvas(img.naturalWidth,img.naturalHeight);ctx(out).drawImage(img,0,0);return applyAlpha(out,alphaCanvas(source,out.width,out.height));
   }
@@ -24534,12 +24536,11 @@ function hgSkillCalcInicializar() {
   async function upscale(){
     if(S.busy||S.scale===1)return;const canvas=$("hgIconLabCanvas"),targetW=canvas.width*S.scale,targetH=canvas.height*S.scale;
     if(Math.max(targetW,targetH)>8192||targetW*targetH>24000000){message("Esse upscale ficaria grande demais para o navegador. Recorte o ícone primeiro ou escolha 2×.",true);return}
-    const passes=S.scale===4?2:1;setBusy(true);status("CARREGANDO IA DE UPSCALE...","Preparando o modelo de super-resolution.",3,true);
+    const selectedScale=S.scale;setBusy(true);status("CARREGANDO ESRGAN HD...","No primeiro uso, o modelo de qualidade baixa cerca de 30 MB.",3,true);
     try{
-      pushHistory();S.beforeUrl=canvas.toDataURL("image/png");let out=cloneCanvas(canvas);
-      for(let pass=1;pass<=passes;pass++)out=await upscaleOnce(out,pass,passes);
+      pushHistory();S.beforeUrl=canvas.toDataURL("image/png");const out=await upscaleESRGAN(cloneCanvas(canvas),selectedScale);
       const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
-      S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="Upscale aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("UPSCALE CONCLUÍDO","Asset ampliado para "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+      S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="ESRGAN "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("REDESENHO ESRGAN CONCLUÍDO","Bordas reconstruídas em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
     }catch(error){console.error("ICON LAB upscale IA:",error);message("A IA de upscale não terminou. Feche abas pesadas ou tente 2×; o arquivo anterior continua preservado em DESFAZER.",true)}finally{setBusy(false);updateDimensions()}
   }
 
