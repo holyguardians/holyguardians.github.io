@@ -24325,7 +24325,7 @@ function hgSkillCalcInicializar() {
     ready:false,busy:false,tool:"crop",mode:"sharp",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
     fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
     original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",resizerPromise:null,resizer:null,
-    bgSeeds:[],bgMask:null,bgTolerance:28
+    bgMode:"icon",bgSeeds:[],bgMask:null,bgTolerance:28
   };
   const $=id=>document.getElementById(id);
   const makeCanvas=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
@@ -24525,7 +24525,7 @@ function hgSkillCalcInicializar() {
       const max=8192,ratio=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*ratio)),h=Math.max(1,Math.round(img.naturalHeight*ratio));
       S.original=makeCanvas(w,h);ctx(S.original).drawImage(img,0,0,w,h);S.restore=cloneCanvas(S.original);S.history=[];S.crop=null;S.zoom=1;
       S.fileName=(file.name.replace(/\.[^.]+$/,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"hg-icon").toLowerCase();
-      $("hgIconLabFilename").value=S.fileName;setWorkFrom(S.original);selectTool("crop");
+      $("hgIconLabFilename").value=S.fileName;setWorkFrom(S.original);selectTool(S.bgMode==="digi"?"wand":"crop");
       $("hgIconLabDrop").hidden=true;$("hgIconLabEditor").hidden=false;$("hgIconLabCompare").hidden=false;setZoom(1);
       S.beforeUrl=S.original.toDataURL("image/png");updateCompare(true);message("Print carregado. Arraste sobre ele para marcar o ícone.");
     }catch(error){console.error("ICON LAB upload:",error);message(error.message||"Não foi possível abrir esse print.",true)}finally{setBusy(false)}
@@ -24536,6 +24536,15 @@ function hgSkillCalcInicializar() {
     document.querySelectorAll("[data-iconlab-tool]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabTool===tool));
     $("hgIconLabEmptyHint").textContent=tool==="crop"?"ARRASTE PARA MARCAR O RECORTE":tool==="erase"?"PINTE O QUE DESEJA APAGAR":tool==="restore"?"PINTE O QUE DESEJA RESTAURAR":"CLIQUE NAS ÁREAS QUE SÃO FUNDO";
     drawOverlay();
+  }
+
+  function setBgMode(mode){
+    S.bgMode=mode==="digi"?"digi":"icon";
+    $("hgIconLabIconMode").hidden=S.bgMode!=="icon";$("hgIconLabDigiMode").hidden=S.bgMode!=="digi";$("hgIconLabWandTool").hidden=S.bgMode!=="digi";
+    $("hgIconLabBgModeLabel").textContent=S.bgMode==="digi"?"MODO DIGI":"MODO ÍCONE";
+    document.querySelectorAll("[data-iconlab-bg-mode]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabBgMode===S.bgMode));
+    S.bgSeeds=[];S.bgMask=null;updateBgButtons();
+    if(S.bgMode==="digi")selectTool("wand");else if(S.tool==="wand")selectTool("crop");else drawOverlay();
   }
 
   function paintAt(point){
@@ -24630,7 +24639,7 @@ function hgSkillCalcInicializar() {
   }
 
   function resetOriginal(){
-    if(!S.original||S.busy)return;pushHistory();S.restore=cloneCanvas(S.original);setWorkFrom(S.original);S.crop=null;S.beforeUrl=S.original.toDataURL("image/png");updateCompare();selectTool("crop");message("Print original restaurado.");
+    if(!S.original||S.busy)return;pushHistory();S.restore=cloneCanvas(S.original);setWorkFrom(S.original);S.crop=null;S.beforeUrl=S.original.toDataURL("image/png");updateCompare();selectTool(S.bgMode==="digi"?"wand":"crop");message("Print original restaurado.");
   }
 
   function bind(){
@@ -24639,6 +24648,7 @@ function hgSkillCalcInicializar() {
     const chooseFile=ev=>{ev.stopPropagation();if(!S.busy)file.click()};choose.addEventListener("click",chooseFile);drop.addEventListener("click",()=>{if(!S.busy)file.click()});drop.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();file.click()}});file.addEventListener("change",()=>{if(file.files[0])openFile(file.files[0]);file.value=""});
     ["dragenter","dragover"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.add("drag")}));["dragleave","drop"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.remove("drag")}));drop.addEventListener("drop",ev=>openFile(ev.dataTransfer.files[0]));
     document.querySelectorAll("[data-iconlab-tool]").forEach(btn=>btn.addEventListener("click",()=>selectTool(btn.dataset.iconlabTool)));
+    document.querySelectorAll("[data-iconlab-bg-mode]").forEach(btn=>btn.addEventListener("click",()=>setBgMode(btn.dataset.iconlabBgMode)));
     $("hgIconLabBrush").addEventListener("input",ev=>{S.brush=Number(ev.target.value);$("hgIconLabBrushValue").textContent=S.brush+" px"});
     $("hgIconLabBgTolerance").addEventListener("input",ev=>{S.bgTolerance=Number(ev.target.value);$("hgIconLabBgToleranceValue").textContent=S.bgTolerance;if(S.bgSeeds.length)refreshBgMask()});
     $("hgIconLabZoomOut").addEventListener("click",()=>setZoom(S.zoom-.25));$("hgIconLabZoomIn").addEventListener("click",()=>setZoom(S.zoom+.25));$("hgIconLabZoomValue").addEventListener("click",()=>setZoom(1));
