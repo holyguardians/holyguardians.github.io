@@ -24398,7 +24398,7 @@ function hgSkillCalcInicializar() {
   function updateDimensions(){
     const canvas=$("hgIconLabCanvas");if(!canvas)return;
     $("hgIconLabDimensions").textContent=canvas.width+" × "+canvas.height+" PX";
-    $("hgIconLabScaleInfo").textContent=S.scale===1?"ESRGAN reconstrói bordas e detalhes; não é apenas redimensionamento.":"ESRGAN "+S.scale+"× • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
+    $("hgIconLabScaleInfo").textContent=S.scale===1?"ESRGAN em modo CPU seguro para Opera: melhora bordas sem travar a GPU.":"ESRGAN CPU "+S.scale+"× • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
   }
 
   function pointerPos(ev){
@@ -24519,7 +24519,11 @@ function hgSkillCalcInicializar() {
 
   async function getUpscaler(scale){
     const key=scale===4?4:2;if(S.upscalers[key])return S.upscalers[key];
-    const modelUrl=key===4?"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0/4x/+esm":"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0/2x/+esm";
+    status("ATIVANDO MODO SEGURO...","Usando CPU para proteger a renderização do Opera.",7,true);
+    const tf=await import("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/+esm");
+    const cpuReady=await tf.setBackend("cpu");await tf.ready();
+    if(cpuReady===false||tf.getBackend()!=="cpu")throw new Error("O modo CPU do TensorFlow não iniciou.");
+    const modelUrl=key===4?"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0/4x/+esm":"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0/2x/+esm";
     const modules=await Promise.all([import("https://cdn.jsdelivr.net/npm/upscaler@1.0.0/+esm"),import(modelUrl)]);
     S.upscalers[key]=new modules[0].default({model:modules[1].default});return S.upscalers[key];
   }
@@ -24528,20 +24532,21 @@ function hgSkillCalcInicializar() {
     const up=await getUpscaler(scale),dataUrl=source.toDataURL("image/png");
     const result=await up.upscale(dataUrl,{output:"base64",patchSize:64,padding:4,progress:value=>{
       const local=Math.max(0,Math.min(1,Number(value)||0)),p=18+local*80;
-      status("ESRGAN "+scale+"× EM AÇÃO...","Redesenhando bordas e detalhes por blocos.",p,true);
+      status("ESRGAN "+scale+"× EM AÇÃO...","Redesenhando em CPU por blocos — a página continuará estável.",p,true);
     }});
     const img=await loadImage(result),out=makeCanvas(img.naturalWidth,img.naturalHeight);ctx(out).drawImage(img,0,0);return applyAlpha(out,alphaCanvas(source,out.width,out.height));
   }
 
   async function upscale(){
     if(S.busy||S.scale===1)return;const canvas=$("hgIconLabCanvas"),targetW=canvas.width*S.scale,targetH=canvas.height*S.scale;
-    if(Math.max(targetW,targetH)>8192||targetW*targetH>24000000){message("Esse upscale ficaria grande demais para o navegador. Recorte o ícone primeiro ou escolha 2×.",true);return}
-    const selectedScale=S.scale;setBusy(true);status("CARREGANDO ESRGAN HD...","No primeiro uso, o modelo de qualidade baixa cerca de 30 MB.",3,true);
+    if(Math.max(targetW,targetH)>4096||targetW*targetH>4000000){message("Para manter o Opera estável, recorte o ícone antes do upscale ou escolha 2×. O resultado ultrapassaria o limite seguro.",true);return}
+    const selectedScale=S.scale;setBusy(true);status("CARREGANDO ESRGAN SEGURO...","Modelo equilibrado e leve; nenhum processamento será enviado à GPU.",3,true);
     try{
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       pushHistory();S.beforeUrl=canvas.toDataURL("image/png");const out=await upscaleESRGAN(cloneCanvas(canvas),selectedScale);
       const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
       S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="ESRGAN "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("REDESENHO ESRGAN CONCLUÍDO","Bordas reconstruídas em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
-    }catch(error){console.error("ICON LAB upscale IA:",error);message("A IA de upscale não terminou. Feche abas pesadas ou tente 2×; o arquivo anterior continua preservado em DESFAZER.",true)}finally{setBusy(false);updateDimensions()}
+    }catch(error){console.error("ICON LAB upscale IA:",error);message("O upscale não terminou, mas a página e a imagem anterior foram preservadas. Recarregue e tente 2×.",true)}finally{setBusy(false);updateDimensions()}
   }
 
   function updateCompare(first){
