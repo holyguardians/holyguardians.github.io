@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://holyguardians.github.io/holyguardians_preview.png">
 
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20260911-hg-icon-lab-hd-v7">
+  <link rel="stylesheet" href="styles.css?v=20260911-hg-icon-lab-digi-v8">
   <link rel="stylesheet" href="digi_game.css?v=20260824-v5">
   <link rel="stylesheet" href="digi_silhouette.css?v=20260826-v1">
   <link rel="stylesheet" href="i18n.css?v=20260823-language-switch-fix">
@@ -3859,6 +3859,7 @@
             <button class="hg-iconlab-tool ativo" type="button" data-iconlab-tool="crop">⌗ <span>RECORTAR</span></button>
             <button class="hg-iconlab-tool" type="button" data-iconlab-tool="erase">− <span>APAGAR</span></button>
             <button class="hg-iconlab-tool" type="button" data-iconlab-tool="restore">+ <span>RESTAURAR</span></button>
+            <button class="hg-iconlab-tool" type="button" data-iconlab-tool="wand">⌖ <span>MARCAR FUNDO</span></button>
             <label class="hg-iconlab-brush"><span>PINCEL</span><input id="hgIconLabBrush" type="range" min="4" max="120" value="28"><b id="hgIconLabBrushValue">28 px</b></label>
             <div class="hg-iconlab-zoom" aria-label="Zoom da área de trabalho">
               <span>LUPA</span>
@@ -3890,6 +3891,16 @@
             <label class="hg-iconlab-field"><span>MODELO</span><select id="hgIconLabBgModel"><option value="small">RÁPIDO — ÍCONES</option><option value="medium" selected>PRECISO — EFEITOS E BRILHOS</option></select></label>
             <button id="hgIconLabRemoveBg" class="hg-iconlab-action ai" type="button">✦ REMOVER FUNDO COM IA</button>
             <p>Depois use <b>APAGAR</b> ou <b>RESTAURAR</b> para corrigir detalhes da máscara.</p>
+            <div class="hg-iconlab-digi-mode">
+              <div class="hg-iconlab-digi-title"><strong>◆ MODO DIGI GUIADO</strong><small>USE NO LUGAR DA IA</small></div>
+              <label class="hg-iconlab-tolerance"><span>TOLERÂNCIA DO FUNDO</span><input id="hgIconLabBgTolerance" type="range" min="5" max="80" value="28"><b id="hgIconLabBgToleranceValue">28</b></label>
+              <div class="hg-iconlab-digi-actions">
+                <button id="hgIconLabAutoMarkBg" class="hg-iconlab-mini-action" type="button">◎ AUTO MARCAR</button>
+                <button id="hgIconLabApplyMarkedBg" class="hg-iconlab-mini-action apply" type="button" disabled>APAGAR MARCADO</button>
+              </div>
+              <button id="hgIconLabClearMarkedBg" class="hg-iconlab-clear-mark" type="button" disabled>LIMPAR MARCAÇÃO</button>
+              <small>O vermelho é apenas uma prévia. Clique no fundo para acrescentar áreas antes de apagar.</small>
+            </div>
           </div>
         </section>
 
@@ -4076,7 +4087,7 @@
 <script src="i18n_en-US.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n_ko-KR.js?v=20260910-tournament-v2-1"></script>
 <script src="i18n.js?v=20260909-pvp-stage-label-fix"></script>
-<script src="script.js?v=20260911-hg-icon-lab-hd-v7"></script>
+<script src="script.js?v=20260911-hg-icon-lab-digi-v8"></script>
 <script src="digi_game.js?v=20260824-v3"></script>
 <script src="digi_silhouette.js?v=20260826-v1"></script>
 </body>

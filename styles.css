@@ -29073,3 +29073,19 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
 #hgIconLabPagina .hg-iconlab-zoom button:disabled{opacity:.38;cursor:not-allowed}
 #hgIconLabPagina #hgIconLabZoomValue{min-width:56px;color:#65e6ff;font-size:9px}
 @media(max-width:760px){#hgIconLabPagina .hg-iconlab-canvas-shell{height:430px}#hgIconLabPagina .hg-iconlab-zoom{order:10;width:100%;justify-content:center}#hgIconLabPagina .hg-iconlab-zoom>span{font-size:9px}}
+
+/* ICON LAB V8 — modo Digi guiado */
+#hgIconLabPagina .hg-iconlab-canvas-shell[data-tool="wand"] #hgIconLabOverlay{cursor:cell}
+#hgIconLabPagina .hg-iconlab-digi-mode{margin-top:11px;padding:11px;border:1px solid rgba(255,91,126,.30);background:linear-gradient(135deg,rgba(69,14,42,.36),rgba(5,28,55,.78));clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%)}
+#hgIconLabPagina .hg-iconlab-digi-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+#hgIconLabPagina .hg-iconlab-digi-title strong{color:#ff8da8;font-size:9px;letter-spacing:.065em}#hgIconLabPagina .hg-iconlab-digi-title small{color:#657f96;font-size:7px;font-weight:900}
+#hgIconLabPagina .hg-iconlab-tolerance{display:grid;grid-template-columns:auto 1fr 30px;align-items:center;gap:8px;padding:8px 9px;border:1px solid rgba(75,174,222,.20);background:#06172e}
+#hgIconLabPagina .hg-iconlab-tolerance span{color:#8eb8ca;font-size:7px;font-weight:1000;letter-spacing:.055em}#hgIconLabPagina .hg-iconlab-tolerance input{width:100%;accent-color:#ff5a82}#hgIconLabPagina .hg-iconlab-tolerance b{color:#ff9ab2;font:1000 9px/1 Consolas,monospace;text-align:right}
+#hgIconLabPagina .hg-iconlab-digi-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+#hgIconLabPagina .hg-iconlab-mini-action,#hgIconLabPagina .hg-iconlab-clear-mark{min-height:38px;border:1px solid rgba(67,190,240,.34);background:linear-gradient(180deg,#0a3f71,#061f40);color:#dff7ff;font:1000 8px/1 "Oxanium",Arial,sans-serif;letter-spacing:.045em;cursor:pointer}
+#hgIconLabPagina .hg-iconlab-mini-action.apply{border-color:rgba(255,91,126,.48);background:linear-gradient(180deg,#812144,#481329);color:#fff0f4}
+#hgIconLabPagina .hg-iconlab-mini-action:hover:not(:disabled),#hgIconLabPagina .hg-iconlab-clear-mark:hover:not(:disabled){filter:brightness(1.18);border-color:#62e3ff}
+#hgIconLabPagina .hg-iconlab-mini-action:disabled,#hgIconLabPagina .hg-iconlab-clear-mark:disabled{opacity:.35;cursor:not-allowed}
+#hgIconLabPagina .hg-iconlab-clear-mark{width:100%;min-height:29px;margin-top:6px;border-color:rgba(93,131,154,.24);background:#071526;color:#7999ad;font-size:7px}
+#hgIconLabPagina .hg-iconlab-digi-mode>small{display:block;margin-top:7px;color:#829fb1;font-size:8px;line-height:1.45}
+@media(max-width:760px){#hgIconLabPagina .hg-iconlab-digi-actions{grid-template-columns:1fr}#hgIconLabPagina .hg-iconlab-tolerance{grid-template-columns:1fr 35px}#hgIconLabPagina .hg-iconlab-tolerance span{grid-column:1/-1}}
