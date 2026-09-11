@@ -29109,3 +29109,13 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
     url("PVP_ASSETS/tournament-bg.png") center top / cover no-repeat;
   background-color: #030914;
 }
+
+/* Ultrawide: preserva a largura total da arte sem o zoom/corte excessivo do cover. */
+@media (min-aspect-ratio: 21/9) {
+  #pvpTournamentView {
+    background-size:
+      auto,
+      auto,
+      100% auto;
+  }
+}
