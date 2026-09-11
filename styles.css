@@ -29098,3 +29098,14 @@ body.hg-tour-v21-rules-open{overflow:hidden!important}
 #hgIconLabPagina .hg-iconlab-clear-mark{width:100%;min-height:29px;margin-top:6px;border-color:rgba(93,131,154,.24);background:#071526;color:#7999ad;font-size:7px}
 #hgIconLabPagina .hg-iconlab-digi-mode>small{display:block;margin-top:7px;color:#829fb1;font-size:8px;line-height:1.45}
 @media(max-width:760px){#hgIconLabPagina .hg-iconlab-digi-actions{grid-template-columns:1fr}#hgIconLabPagina .hg-iconlab-tolerance{grid-template-columns:1fr 35px}#hgIconLabPagina .hg-iconlab-tolerance span{grid-column:1/-1}}
+/* =====================================================
+   TOURNAMENT — BACKGROUND ART
+   Escopo restrito à tela Tournament para não afetar o restante do PvP/site.
+===================================================== */
+#pvpTournamentView {
+  background:
+    linear-gradient(180deg, rgba(2, 7, 18, .58) 0%, rgba(2, 7, 18, .76) 100%),
+    radial-gradient(circle at 50% 18%, rgba(107, 67, 190, .14), transparent 58%),
+    url("PVP_ASSETS/tournament-bg.png") center top / cover no-repeat;
+  background-color: #030914;
+}
