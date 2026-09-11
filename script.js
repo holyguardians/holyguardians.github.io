@@ -24315,16 +24315,16 @@ function hgSkillCalcInicializar() {
 
 
 /* =========================================================
-   ICON LAB V6 — IA LOCAL / CROP / MASK / VECTOR / EXPORT
+   ICON LAB V7 — IA LOCAL / CROP / MASK / HD RESIZE / EXPORT
    Os modelos são baixados apenas quando o botão de IA é usado.
 ========================================================= */
 (function(){
   "use strict";
 
   const S={
-    ready:false,busy:false,tool:"crop",mode:"vector",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
+    ready:false,busy:false,tool:"crop",mode:"sharp",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
     fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
-    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",tracerPromise:null
+    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",resizerPromise:null,resizer:null
   };
   const $=id=>document.getElementById(id);
   const makeCanvas=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
@@ -24398,8 +24398,8 @@ function hgSkillCalcInicializar() {
   function updateDimensions(){
     const canvas=$("hgIconLabCanvas");if(!canvas)return;
     $("hgIconLabDimensions").textContent=canvas.width+" × "+canvas.height+" PX";
-    const label=S.mode==="vector"?"Curvas vetoriais + brilho":"Ampliação suave";
-    $("hgIconLabScaleInfo").textContent=S.scale===1?"Escolha 2× ou 4×. "+(S.mode==="vector"?"O símbolo será convertido em curvas locais.":"Ideal para prints e artes com muitos detalhes."):label+" • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
+    const label=S.mode==="sharp"?"Nitidez HD":"Suavização HD";
+    $("hgIconLabScaleInfo").textContent=S.scale===1?"Escolha 2× ou 4×. "+(S.mode==="sharp"?"Preserva cores, reflexos e transparência.":"Suaviza serrilhados sem redesenhar a arte."):label+" • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
   }
 
   function pointerPos(ev){
@@ -24507,59 +24507,43 @@ function hgSkillCalcInicializar() {
     }catch(error){console.error("ICON LAB background IA:",error);message("A IA de fundo não carregou. Confira a internet e se o Opera não bloqueou o modelo, depois tente novamente.",true)}finally{setBusy(false)}
   }
 
-  function getTracer(){
-    if(window.ImageTracer)return Promise.resolve(window.ImageTracer);
-    if(S.tracerPromise)return S.tracerPromise;
-    S.tracerPromise=new Promise((resolve,reject)=>{
+  function getResizer(){
+    if(S.resizer)return Promise.resolve(S.resizer);
+    if(S.resizerPromise)return S.resizerPromise;
+    S.resizerPromise=new Promise((resolve,reject)=>{
       const script=document.createElement("script");
-      script.src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js";
-      script.async=true;script.onload=()=>window.ImageTracer?resolve(window.ImageTracer):reject(new Error("ImageTracer não iniciou."));
-      script.onerror=()=>reject(new Error("Não foi possível baixar o redesenhador vetorial."));document.head.appendChild(script);
-    }).catch(error=>{S.tracerPromise=null;throw error});
-    return S.tracerPromise;
+      script.src="https://cdn.jsdelivr.net/npm/pica@10.0.3/dist/pica.min.js";
+      script.async=true;script.onload=()=>{
+        if(!window.pica){reject(new Error("O ampliador HD não iniciou."));return}
+        S.resizer=window.pica({features:["js","wasm"],concurrency:1,tile:768});resolve(S.resizer);
+      };
+      script.onerror=()=>reject(new Error("Não foi possível baixar o ampliador HD."));document.head.appendChild(script);
+    }).catch(error=>{S.resizerPromise=null;throw error});
+    return S.resizerPromise;
   }
 
-  function smoothScale(source,scale){
-    const out=makeCanvas(source.width*scale,source.height*scale),c=ctx(out);
-    c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";c.filter="contrast(1.035) saturate(1.025)";
-    c.drawImage(source,0,0,out.width,out.height);c.filter="none";return out;
-  }
-
-  async function vectorScale(source,scale,preserveGlow){
-    status("CARREGANDO REDESENHO VETORIAL...","Biblioteca leve, sem GPU e sem envio da imagem.",10,true);
-    const tracer=await getTracer(),traceRatio=Math.min(1,640/Math.max(source.width,source.height));
-    const traceSource=traceRatio===1?source:makeCanvas(Math.max(1,Math.round(source.width*traceRatio)),Math.max(1,Math.round(source.height*traceRatio)));
-    if(traceSource!==source){const tc=ctx(traceSource);tc.imageSmoothingEnabled=true;tc.imageSmoothingQuality="high";tc.drawImage(source,0,0,traceSource.width,traceSource.height)}
-    const imageData=ctx(traceSource).getImageData(0,0,traceSource.width,traceSource.height);
-    status("MAPEANDO CURVAS...","Reconstruindo contornos e cores do símbolo.",38,true);
-    await new Promise(resolve=>setTimeout(resolve,0));
-    const svg=tracer.imagedataToSVG(imageData,{
-      ltres:.75,qtres:.75,pathomit:2,rightangleenhance:false,colorsampling:2,
-      numberofcolors:16,mincolorratio:0,colorquantcycles:3,layering:0,
-      strokewidth:.35,linefilter:true,scale:1,roundcoords:2,viewbox:true,desc:false,
-      blurradius:0,blurdelta:20
-    });
-    status("RENDERIZANDO EM ALTA...","Aplicando curvas lisas e recompondo o brilho.",72,true);
-    const blob=new Blob([svg],{type:"image/svg+xml"}),url=URL.createObjectURL(blob);
-    try{
-      const vector=await loadImage(url),out=makeCanvas(source.width*scale,source.height*scale),c=ctx(out);
-      c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";
-      if(preserveGlow){c.globalAlpha=.42;c.drawImage(source,0,0,out.width,out.height);c.globalAlpha=1}
-      c.drawImage(vector,0,0,out.width,out.height);return out;
-    }finally{URL.revokeObjectURL(url)}
+  async function resizeHD(source,scale,mode){
+    status("CARREGANDO AMPLIADOR HD...","Processamento local em CPU, sem reinterpretar a arte.",10,true);
+    const resizer=await getResizer(),out=makeCanvas(source.width*scale,source.height*scale);
+    status("AMPLIANDO PIXELS...","Preservando reflexos, cores e transparência.",42,true);
+    await resizer.resize(source,out,mode==="sharp"?{
+      filter:"mks2013",unsharpAmount:125,unsharpRadius:.6,unsharpThreshold:2
+    }:{filter:"mks2013",unsharpAmount:0});
+    status("FINALIZANDO...",mode==="sharp"?"Aplicando nitidez controlada.":"Suavizando os serrilhados.",86,true);
+    return out;
   }
 
   async function upscale(){
     if(S.busy||S.scale===1)return;const canvas=$("hgIconLabCanvas"),targetW=canvas.width*S.scale,targetH=canvas.height*S.scale;
     if(Math.max(targetW,targetH)>8192||targetW*targetH>16000000){message("Esse resultado ficaria grande demais. Recorte o símbolo antes ou escolha 2×.",true);return}
-    const selectedScale=S.scale,selectedMode=S.mode;setBusy(true);status(selectedMode==="vector"?"PREPARANDO CURVAS...":"PREPARANDO AMPLIAÇÃO...","A imagem será processada localmente.",3,true);
+    const selectedScale=S.scale,selectedMode=S.mode;setBusy(true);status("PREPARANDO UPSCALE HD...","A imagem será processada localmente.",3,true);
     try{
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       const source=cloneCanvas(canvas);pushHistory();S.beforeUrl=canvas.toDataURL("image/png");
-      const out=selectedMode==="vector"?await vectorScale(source,selectedScale,$("hgIconLabPreserveGlow").checked):smoothScale(source,selectedScale);
+      const out=await resizeHD(source,selectedScale,selectedMode);
       const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
-      const resultLabel=selectedMode==="vector"?"Redesenho vetorial":"Ampliação suave";S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent=resultLabel+" "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("REDESENHO CONCLUÍDO",resultLabel+" finalizado em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
-    }catch(error){console.error("ICON LAB redesenho:",error);message("O redesenho não terminou, mas sua imagem anterior foi preservada. Confira a conexão e tente novamente.",true)}finally{setBusy(false);updateDimensions()}
+      const resultLabel=selectedMode==="sharp"?"Upscale nítido":"Upscale suave";S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent=resultLabel+" "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("UPSCALE HD CONCLUÍDO",resultLabel+" finalizado em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+    }catch(error){console.error("ICON LAB upscale HD:",error);message("O upscale não terminou, mas sua imagem anterior foi preservada. Confira a conexão e tente novamente.",true)}finally{setBusy(false);updateDimensions()}
   }
 
   function updateCompare(first){
@@ -24600,7 +24584,7 @@ function hgSkillCalcInicializar() {
       if(S.drawing){S.drawing=false;updateCompare()}try{overlay.releasePointerCapture(ev.pointerId)}catch(e){}drawOverlay();
     };overlay.addEventListener("pointerup",finish);overlay.addEventListener("pointercancel",finish);overlay.addEventListener("pointerleave",ev=>{if(!S.dragging&&!S.drawing)drawOverlay()});
     $("hgIconLabApplyCrop").addEventListener("click",applyCrop);$("hgIconLabUndo").addEventListener("click",undo);$("hgIconLabResetView").addEventListener("click",resetOriginal);$("hgIconLabRemoveBg").addEventListener("click",removeBg);$("hgIconLabUpscale").addEventListener("click",upscale);$("hgIconLabExport").addEventListener("click",exportAsset);
-    document.querySelectorAll("[data-iconlab-mode]").forEach(btn=>btn.addEventListener("click",()=>{S.mode=btn.dataset.iconlabMode==="smooth"?"smooth":"vector";document.querySelectorAll("[data-iconlab-mode]").forEach(x=>x.classList.toggle("ativo",x===btn));$("hgIconLabUpscale").textContent=S.mode==="vector"?"REDESENHAR ÍCONE":"AMPLIAR IMAGEM";$("hgIconLabPreserveGlow").closest("label").hidden=S.mode!=="vector";updateDimensions()}));
+    document.querySelectorAll("[data-iconlab-mode]").forEach(btn=>btn.addEventListener("click",()=>{S.mode=btn.dataset.iconlabMode==="smooth"?"smooth":"sharp";document.querySelectorAll("[data-iconlab-mode]").forEach(x=>x.classList.toggle("ativo",x===btn));updateDimensions()}));
     document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.addEventListener("click",()=>{S.scale=Number(btn.dataset.iconlabScale);document.querySelectorAll("[data-iconlab-scale]").forEach(x=>x.classList.toggle("ativo",x===btn));$("hgIconLabUpscale").disabled=S.busy||S.scale===1;updateDimensions()}));
     document.querySelectorAll("[data-iconlab-format]").forEach(btn=>btn.addEventListener("click",()=>{S.format=btn.dataset.iconlabFormat;document.querySelectorAll("[data-iconlab-format]").forEach(x=>x.classList.toggle("ativo",x===btn))}));
     const compareStage=document.querySelector(".hg-iconlab-compare-stage"),compare=$("hgIconLabToggleCompare"),show=()=>compareStage.classList.add("show-before"),hide=()=>compareStage.classList.remove("show-before");["pointerdown","mouseenter"].forEach(type=>compare.addEventListener(type,show));["pointerup","pointercancel","mouseleave"].forEach(type=>compare.addEventListener(type,hide));
