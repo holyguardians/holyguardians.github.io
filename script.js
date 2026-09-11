@@ -24312,3 +24312,267 @@ function hgSkillCalcInicializar() {
 
   hgSkillAtualizar();
 }
+
+
+/* =========================================================
+   ICON LAB V1 — IA LOCAL / CROP / MASK / UPSCALE / EXPORT
+   Os modelos são baixados apenas quando o botão de IA é usado.
+========================================================= */
+(function(){
+  "use strict";
+
+  const S={
+    ready:false,busy:false,tool:"crop",scale:1,format:"png",brush:28,
+    fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
+    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",upscaler:null
+  };
+  const $=id=>document.getElementById(id);
+  const makeCanvas=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
+  const ctx=(canvas)=>canvas&&canvas.getContext("2d",{willReadFrequently:true});
+
+  function status(title,text,pct,show=true){
+    const box=$("hgIconLabProgress"),bar=$("hgIconLabProgressBar"),num=$("hgIconLabProgressPercent");
+    if(!box)return;
+    box.hidden=!show;
+    $("hgIconLabProgressTitle").textContent=title||"PROCESSANDO...";
+    $("hgIconLabProgressText").textContent=text||"Aguarde.";
+    const value=Math.max(0,Math.min(100,Number(pct)||0));
+    bar.style.width=value+"%";num.textContent=Math.round(value)+"%";
+  }
+
+  function message(text,isError){
+    status(isError?"NÃO FOI POSSÍVEL CONCLUIR":"ICON LAB",text,isError?0:100,true);
+    clearTimeout(message.timer);
+    message.timer=setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},isError?9000:3200);
+  }
+
+  function setBusy(value){
+    S.busy=!!value;
+    ["hgIconLabRemoveBg","hgIconLabUpscale","hgIconLabApplyCrop","hgIconLabExport","hgIconLabChoose","hgIconLabResetView"].forEach(id=>{
+      const el=$(id);if(el)el.disabled=S.busy||(id==="hgIconLabUpscale"&&S.scale===1)||(id==="hgIconLabApplyCrop"&&!S.crop);
+    });
+  }
+
+  function canvasToBlob(canvas,type="image/png",quality=.94){
+    return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Falha ao gerar a imagem.")),type,quality));
+  }
+
+  function loadImage(src){
+    return new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("Não foi possível abrir a imagem."));img.src=src;
+    });
+  }
+
+  function cloneCanvas(source){
+    const c=makeCanvas(source.width,source.height);ctx(c).drawImage(source,0,0);return c;
+  }
+
+  function setWorkFrom(source){
+    const canvas=$("hgIconLabCanvas"),c=ctx(canvas);
+    canvas.width=source.width;canvas.height=source.height;c.clearRect(0,0,canvas.width,canvas.height);c.drawImage(source,0,0);
+    requestAnimationFrame(syncOverlay);updateDimensions();
+  }
+
+  function syncOverlay(){
+    const canvas=$("hgIconLabCanvas"),overlay=$("hgIconLabOverlay");if(!canvas||!overlay)return;
+    overlay.width=canvas.width;overlay.height=canvas.height;
+    overlay.style.width=canvas.clientWidth+"px";overlay.style.height=canvas.clientHeight+"px";
+    overlay.style.left=canvas.offsetLeft+"px";overlay.style.top=canvas.offsetTop+"px";
+    drawOverlay();
+  }
+
+  function updateDimensions(){
+    const canvas=$("hgIconLabCanvas");if(!canvas)return;
+    $("hgIconLabDimensions").textContent=canvas.width+" × "+canvas.height+" PX";
+    $("hgIconLabScaleInfo").textContent=S.scale===1?"Selecione 2× ou 4× para ampliar preservando os detalhes.":"Saída prevista: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
+  }
+
+  function pointerPos(ev){
+    const overlay=$("hgIconLabOverlay"),r=overlay.getBoundingClientRect();
+    return{x:Math.max(0,Math.min(overlay.width,(ev.clientX-r.left)*overlay.width/r.width)),y:Math.max(0,Math.min(overlay.height,(ev.clientY-r.top)*overlay.height/r.height))};
+  }
+
+  function normalizeCrop(a,b){
+    if(!a||!b)return null;
+    const x=Math.round(Math.min(a.x,b.x)),y=Math.round(Math.min(a.y,b.y));
+    const w=Math.round(Math.abs(a.x-b.x)),h=Math.round(Math.abs(a.y-b.y));
+    return w>=4&&h>=4?{x,y,w,h}:null;
+  }
+
+  function drawOverlay(cursor){
+    const overlay=$("hgIconLabOverlay"),o=ctx(overlay);if(!o)return;o.clearRect(0,0,overlay.width,overlay.height);
+    if(S.tool==="crop"&&S.crop){
+      const r=S.crop;o.fillStyle="rgba(0,8,20,.56)";o.fillRect(0,0,overlay.width,overlay.height);o.clearRect(r.x,r.y,r.w,r.h);
+      o.strokeStyle="#42dcff";o.lineWidth=Math.max(2,overlay.width/700);o.setLineDash([10,7]);o.strokeRect(r.x,r.y,r.w,r.h);o.setLineDash([]);
+      const size=Math.max(7,overlay.width/110);o.fillStyle="#eaffff";[[r.x,r.y],[r.x+r.w,r.y],[r.x,r.y+r.h],[r.x+r.w,r.y+r.h]].forEach(p=>o.fillRect(p[0]-size/2,p[1]-size/2,size,size));
+    }
+    if((S.tool==="erase"||S.tool==="restore")&&cursor){
+      o.beginPath();o.arc(cursor.x,cursor.y,S.brush/2,0,Math.PI*2);o.fillStyle=S.tool==="erase"?"rgba(255,82,112,.16)":"rgba(66,224,255,.16)";o.fill();o.strokeStyle=S.tool==="erase"?"#ff7690":"#55e5ff";o.lineWidth=2;o.stroke();
+    }
+  }
+
+  function pushHistory(){
+    const canvas=$("hgIconLabCanvas");
+    try{
+      S.history.push({
+        image:ctx(canvas).getImageData(0,0,canvas.width,canvas.height),
+        restore:S.restore?cloneCanvas(S.restore):null
+      });
+      if(S.history.length>10)S.history.shift();
+      $("hgIconLabUndo").disabled=false;
+    }catch(e){}
+  }
+
+  function undo(){
+    const entry=S.history.pop(),canvas=$("hgIconLabCanvas");if(!entry)return;
+    const data=entry.image;
+    if(canvas.width!==data.width||canvas.height!==data.height){canvas.width=data.width;canvas.height=data.height}
+    ctx(canvas).putImageData(data,0,0);
+    S.restore=entry.restore||cloneCanvas(canvas);S.crop=null;
+    $("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="Nenhum recorte selecionado";
+    $("hgIconLabUndo").disabled=!S.history.length;requestAnimationFrame(syncOverlay);updateDimensions();updateCompare();
+  }
+
+  async function openFile(file){
+    if(!file||!/^image\/(png|jpeg|webp)$/i.test(file.type)){message("Escolha um arquivo PNG, JPG ou WebP.",true);return}
+    if(file.size>35*1024*1024){message("Esse print passa de 35 MB. Use uma imagem menor.",true);return}
+    setBusy(true);status("ABRINDO PRINT...","Preparando a área de trabalho.",15,true);
+    try{
+      const url=URL.createObjectURL(file),img=await loadImage(url);URL.revokeObjectURL(url);
+      const max=8192,ratio=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*ratio)),h=Math.max(1,Math.round(img.naturalHeight*ratio));
+      S.original=makeCanvas(w,h);ctx(S.original).drawImage(img,0,0,w,h);S.restore=cloneCanvas(S.original);S.history=[];S.crop=null;
+      S.fileName=(file.name.replace(/\.[^.]+$/,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"hg-icon").toLowerCase();
+      $("hgIconLabFilename").value=S.fileName;setWorkFrom(S.original);selectTool("crop");
+      $("hgIconLabDrop").hidden=true;$("hgIconLabEditor").hidden=false;$("hgIconLabCompare").hidden=false;
+      S.beforeUrl=S.original.toDataURL("image/png");updateCompare(true);message("Print carregado. Arraste sobre ele para marcar o ícone.");
+    }catch(error){console.error("ICON LAB upload:",error);message(error.message||"Não foi possível abrir esse print.",true)}finally{setBusy(false)}
+  }
+
+  function selectTool(tool){
+    S.tool=tool;$("hgIconLabCanvasShell").dataset.tool=tool;
+    document.querySelectorAll("[data-iconlab-tool]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabTool===tool));
+    $("hgIconLabEmptyHint").textContent=tool==="crop"?"ARRASTE PARA MARCAR O RECORTE":tool==="erase"?"PINTE O QUE DESEJA APAGAR":"PINTE O QUE DESEJA RESTAURAR";
+    drawOverlay();
+  }
+
+  function paintAt(point){
+    const canvas=$("hgIconLabCanvas"),c=ctx(canvas),radius=S.brush/2;c.save();c.beginPath();c.arc(point.x,point.y,radius,0,Math.PI*2);c.clip();
+    if(S.tool==="erase"){c.globalCompositeOperation="destination-out";c.fillStyle="#000";c.fillRect(point.x-radius,point.y-radius,S.brush,S.brush)}
+    else if(S.restore){c.globalCompositeOperation="source-over";c.drawImage(S.restore,0,0,canvas.width,canvas.height)}
+    c.restore();
+  }
+
+  function applyCrop(){
+    const r=S.crop,canvas=$("hgIconLabCanvas");if(!r||S.busy)return;pushHistory();
+    const cropped=makeCanvas(r.w,r.h);ctx(cropped).drawImage(canvas,r.x,r.y,r.w,r.h,0,0,r.w,r.h);
+    const restored=makeCanvas(r.w,r.h);ctx(restored).drawImage(S.restore,r.x,r.y,r.w,r.h,0,0,r.w,r.h);S.restore=restored;
+    setWorkFrom(cropped);S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="Recorte aplicado";updateCompare();message("Recorte aplicado. Agora você pode remover o fundo com IA.");
+  }
+
+  async function removeBg(){
+    if(S.busy)return;setBusy(true);status("CARREGANDO IA DE RECORTE...","O primeiro uso baixa o modelo; os próximos usam o cache.",2,true);
+    try{
+      const canvas=$("hgIconLabCanvas"),before=cloneCanvas(canvas),blob=await canvasToBlob(canvas);
+      S.beforeUrl=before.toDataURL("image/png");pushHistory();S.restore=cloneCanvas(before);
+      const mod=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm");
+      const model=$("hgIconLabBgModel").value==="small"?"small":"medium";
+      const progress=(key,current,total)=>{
+        const downloading=String(key).indexOf("compute:")!==0,p=downloading?(total?Math.min(68,current/total*68):18):(72+Math.min(27,current/Math.max(1,total)*27));
+        status(downloading?"BAIXANDO MODELO IA...":"REMOVENDO FUNDO...",downloading?"Isso acontece apenas na primeira utilização.":"Separando o ícone dos elementos do print.",p,true);
+      };
+      const baseConfig={model,proxyToWorker:false,output:{format:"image/png",quality:1},progress};
+      let result;
+      try{result=await mod.removeBackground(blob,Object.assign({},baseConfig,{device:(navigator.gpu?"gpu":"cpu")}))}
+      catch(gpuError){
+        if(!navigator.gpu)throw gpuError;
+        status("TROCANDO PARA CPU...","O modo GPU não abriu neste navegador; tentando o modo compatível.",12,true);
+        result=await mod.removeBackground(blob,Object.assign({},baseConfig,{device:"cpu"}));
+      }
+      const url=URL.createObjectURL(result),img=await loadImage(url);URL.revokeObjectURL(url);setWorkFrom(img);updateCompare();status("FUNDO REMOVIDO","Use o pincel para recuperar brilhos ou apagar sobras.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+    }catch(error){console.error("ICON LAB background IA:",error);message("A IA de fundo não carregou. Confira a internet e se o Opera não bloqueou o modelo, depois tente novamente.",true)}finally{setBusy(false)}
+  }
+
+  function alphaCanvas(source,w,h){
+    const temp=makeCanvas(source.width,source.height),t=ctx(temp),data=ctx(source).getImageData(0,0,source.width,source.height),out=t.createImageData(source.width,source.height);
+    for(let i=0;i<data.data.length;i+=4){out.data[i]=out.data[i+1]=out.data[i+2]=out.data[i+3];out.data[i+3]=255}t.putImageData(out,0,0);
+    const scaled=makeCanvas(w,h);const sc=ctx(scaled);sc.imageSmoothingEnabled=true;sc.imageSmoothingQuality="high";sc.drawImage(temp,0,0,w,h);return scaled;
+  }
+
+  function applyAlpha(rgb,alpha){
+    const r=ctx(rgb).getImageData(0,0,rgb.width,rgb.height),a=ctx(alpha).getImageData(0,0,alpha.width,alpha.height);
+    for(let i=0;i<r.data.length;i+=4)r.data[i+3]=a.data[i];ctx(rgb).putImageData(r,0,0);return rgb;
+  }
+
+  async function getUpscaler(){
+    if(S.upscaler)return S.upscaler;
+    const mod=await import("https://cdn.jsdelivr.net/npm/upscaler@1.0.0/+esm");S.upscaler=new mod.default();return S.upscaler;
+  }
+
+  async function upscaleOnce(source,pass,totalPasses){
+    const up=await getUpscaler(),dataUrl=source.toDataURL("image/png");
+    const result=await up.upscale(dataUrl,{output:"base64",patchSize:64,padding:4,progress:value=>{
+      const local=Math.max(0,Math.min(1,Number(value)||0)),p=18+(((pass-1)+local)/totalPasses)*80;
+      status("UPSCALE IA "+pass+" / "+totalPasses,"Reconstruindo detalhes por blocos.",p,true);
+    }});
+    const img=await loadImage(result),out=makeCanvas(img.naturalWidth,img.naturalHeight);ctx(out).drawImage(img,0,0);return applyAlpha(out,alphaCanvas(source,out.width,out.height));
+  }
+
+  async function upscale(){
+    if(S.busy||S.scale===1)return;const canvas=$("hgIconLabCanvas"),targetW=canvas.width*S.scale,targetH=canvas.height*S.scale;
+    if(Math.max(targetW,targetH)>8192||targetW*targetH>24000000){message("Esse upscale ficaria grande demais para o navegador. Recorte o ícone primeiro ou escolha 2×.",true);return}
+    const passes=S.scale===4?2:1;setBusy(true);status("CARREGANDO IA DE UPSCALE...","Preparando o modelo de super-resolution.",3,true);
+    try{
+      pushHistory();S.beforeUrl=canvas.toDataURL("image/png");let out=cloneCanvas(canvas);
+      for(let pass=1;pass<=passes;pass++)out=await upscaleOnce(out,pass,passes);
+      const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
+      setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("UPSCALE CONCLUÍDO","Asset ampliado para "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+    }catch(error){console.error("ICON LAB upscale IA:",error);message("A IA de upscale não terminou. Feche abas pesadas ou tente 2×; o arquivo anterior continua preservado em DESFAZER.",true)}finally{setBusy(false);updateDimensions()}
+  }
+
+  function updateCompare(first){
+    const canvas=$("hgIconLabCanvas");if(!canvas||!canvas.width)return;
+    if(first&&!S.beforeUrl)S.beforeUrl=canvas.toDataURL("image/png");S.afterUrl=canvas.toDataURL("image/png");
+    $("hgIconLabBefore").src=S.beforeUrl||S.afterUrl;$("hgIconLabAfter").src=S.afterUrl;
+  }
+
+  async function exportAsset(){
+    if(S.busy)return;setBusy(true);
+    try{
+      const format=S.format==="webp"?"image/webp":"image/png",ext=S.format==="webp"?"webp":"png",blob=await canvasToBlob($("hgIconLabCanvas"),format,S.format==="webp"?.96:1);
+      const raw=$("hgIconLabFilename").value.trim()||"hg-icon",name=raw.replace(/\.(png|webp)$/i,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"hg-icon";
+      const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name+"."+ext;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);message("Asset exportado em "+ext.toUpperCase()+" com transparência.");
+    }catch(error){message("Não foi possível exportar o asset.",true)}finally{setBusy(false)}
+  }
+
+  function resetOriginal(){
+    if(!S.original||S.busy)return;pushHistory();S.restore=cloneCanvas(S.original);setWorkFrom(S.original);S.crop=null;S.beforeUrl=S.original.toDataURL("image/png");updateCompare();selectTool("crop");message("Print original restaurado.");
+  }
+
+  function bind(){
+    if(S.ready||!$("hgIconLabPagina"))return;S.ready=true;
+    const drop=$("hgIconLabDrop"),file=$("hgIconLabFile"),choose=$("hgIconLabChoose"),overlay=$("hgIconLabOverlay");
+    const chooseFile=ev=>{ev.stopPropagation();if(!S.busy)file.click()};choose.addEventListener("click",chooseFile);drop.addEventListener("click",()=>{if(!S.busy)file.click()});drop.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();file.click()}});file.addEventListener("change",()=>{if(file.files[0])openFile(file.files[0]);file.value=""});
+    ["dragenter","dragover"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.add("drag")}));["dragleave","drop"].forEach(type=>drop.addEventListener(type,ev=>{ev.preventDefault();drop.classList.remove("drag")}));drop.addEventListener("drop",ev=>openFile(ev.dataTransfer.files[0]));
+    document.querySelectorAll("[data-iconlab-tool]").forEach(btn=>btn.addEventListener("click",()=>selectTool(btn.dataset.iconlabTool)));
+    $("hgIconLabBrush").addEventListener("input",ev=>{S.brush=Number(ev.target.value);$("hgIconLabBrushValue").textContent=S.brush+" px"});
+    overlay.addEventListener("pointerdown",ev=>{
+      if(S.busy)return;overlay.setPointerCapture(ev.pointerId);const p=pointerPos(ev);
+      if(S.tool==="crop"){S.dragging=true;S.cropStart=p;S.crop={x:p.x,y:p.y,w:0,h:0}}
+      else{S.drawing=true;pushHistory();paintAt(p)}drawOverlay(p);ev.preventDefault();
+    });
+    overlay.addEventListener("pointermove",ev=>{const p=pointerPos(ev);if(S.dragging){S.crop=normalizeCrop(S.cropStart,p);drawOverlay(p)}else if(S.drawing){paintAt(p);drawOverlay(p)}else drawOverlay(p)});
+    const finish=ev=>{
+      if(S.dragging){S.dragging=false;const r=S.crop;$("hgIconLabApplyCrop").disabled=!r;$("hgIconLabSelection").textContent=r?"Recorte: "+r.w+" × "+r.h+" px":"Nenhum recorte selecionado"}
+      if(S.drawing){S.drawing=false;updateCompare()}try{overlay.releasePointerCapture(ev.pointerId)}catch(e){}drawOverlay();
+    };overlay.addEventListener("pointerup",finish);overlay.addEventListener("pointercancel",finish);overlay.addEventListener("pointerleave",ev=>{if(!S.dragging&&!S.drawing)drawOverlay()});
+    $("hgIconLabApplyCrop").addEventListener("click",applyCrop);$("hgIconLabUndo").addEventListener("click",undo);$("hgIconLabResetView").addEventListener("click",resetOriginal);$("hgIconLabRemoveBg").addEventListener("click",removeBg);$("hgIconLabUpscale").addEventListener("click",upscale);$("hgIconLabExport").addEventListener("click",exportAsset);
+    document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.addEventListener("click",()=>{S.scale=Number(btn.dataset.iconlabScale);document.querySelectorAll("[data-iconlab-scale]").forEach(x=>x.classList.toggle("ativo",x===btn));$("hgIconLabUpscale").disabled=S.busy||S.scale===1;updateDimensions()}));
+    document.querySelectorAll("[data-iconlab-format]").forEach(btn=>btn.addEventListener("click",()=>{S.format=btn.dataset.iconlabFormat;document.querySelectorAll("[data-iconlab-format]").forEach(x=>x.classList.toggle("ativo",x===btn))}));
+    const compareStage=document.querySelector(".hg-iconlab-compare-stage"),compare=$("hgIconLabToggleCompare"),show=()=>compareStage.classList.add("show-before"),hide=()=>compareStage.classList.remove("show-before");["pointerdown","mouseenter"].forEach(type=>compare.addEventListener(type,show));["pointerup","pointercancel","mouseleave"].forEach(type=>compare.addEventListener(type,hide));
+    window.addEventListener("resize",()=>{if(!$("hgIconLabEditor").hidden)requestAnimationFrame(syncOverlay)});
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();
+  window.hgIconLabInicializar=bind;
+})();
