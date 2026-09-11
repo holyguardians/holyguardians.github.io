@@ -24315,16 +24315,16 @@ function hgSkillCalcInicializar() {
 
 
 /* =========================================================
-   ICON LAB V1 — IA LOCAL / CROP / MASK / UPSCALE / EXPORT
+   ICON LAB V6 — IA LOCAL / CROP / MASK / VECTOR / EXPORT
    Os modelos são baixados apenas quando o botão de IA é usado.
 ========================================================= */
 (function(){
   "use strict";
 
   const S={
-    ready:false,busy:false,tool:"crop",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
+    ready:false,busy:false,tool:"crop",mode:"vector",scale:1,format:"png",brush:28,zoom:1,displayScale:1,
     fileName:"hg-icon",dragging:false,drawing:false,cropStart:null,crop:null,
-    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",upscalers:{}
+    original:null,restore:null,history:[],beforeUrl:"",afterUrl:"",tracerPromise:null
   };
   const $=id=>document.getElementById(id);
   const makeCanvas=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
@@ -24398,7 +24398,8 @@ function hgSkillCalcInicializar() {
   function updateDimensions(){
     const canvas=$("hgIconLabCanvas");if(!canvas)return;
     $("hgIconLabDimensions").textContent=canvas.width+" × "+canvas.height+" PX";
-    $("hgIconLabScaleInfo").textContent=S.scale===1?"ESRGAN em modo CPU seguro para Opera: melhora bordas sem travar a GPU.":"ESRGAN CPU "+S.scale+"× • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
+    const label=S.mode==="vector"?"Curvas vetoriais + brilho":"Ampliação suave";
+    $("hgIconLabScaleInfo").textContent=S.scale===1?"Escolha 2× ou 4×. "+(S.mode==="vector"?"O símbolo será convertido em curvas locais.":"Ideal para prints e artes com muitos detalhes."):label+" • saída: "+(canvas.width*S.scale)+" × "+(canvas.height*S.scale)+" px";
   }
 
   function pointerPos(ev){
@@ -24506,47 +24507,59 @@ function hgSkillCalcInicializar() {
     }catch(error){console.error("ICON LAB background IA:",error);message("A IA de fundo não carregou. Confira a internet e se o Opera não bloqueou o modelo, depois tente novamente.",true)}finally{setBusy(false)}
   }
 
-  function alphaCanvas(source,w,h){
-    const temp=makeCanvas(source.width,source.height),t=ctx(temp),data=ctx(source).getImageData(0,0,source.width,source.height),out=t.createImageData(source.width,source.height);
-    for(let i=0;i<data.data.length;i+=4){const alpha=data.data[i+3];out.data[i]=out.data[i+1]=out.data[i+2]=alpha;out.data[i+3]=255}t.putImageData(out,0,0);
-    const scaled=makeCanvas(w,h);const sc=ctx(scaled);sc.imageSmoothingEnabled=true;sc.imageSmoothingQuality="high";sc.drawImage(temp,0,0,w,h);return scaled;
+  function getTracer(){
+    if(window.ImageTracer)return Promise.resolve(window.ImageTracer);
+    if(S.tracerPromise)return S.tracerPromise;
+    S.tracerPromise=new Promise((resolve,reject)=>{
+      const script=document.createElement("script");
+      script.src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js";
+      script.async=true;script.onload=()=>window.ImageTracer?resolve(window.ImageTracer):reject(new Error("ImageTracer não iniciou."));
+      script.onerror=()=>reject(new Error("Não foi possível baixar o redesenhador vetorial."));document.head.appendChild(script);
+    }).catch(error=>{S.tracerPromise=null;throw error});
+    return S.tracerPromise;
   }
 
-  function applyAlpha(rgb,alpha){
-    const r=ctx(rgb).getImageData(0,0,rgb.width,rgb.height),a=ctx(alpha).getImageData(0,0,alpha.width,alpha.height);
-    for(let i=0;i<r.data.length;i+=4)r.data[i+3]=a.data[i];ctx(rgb).putImageData(r,0,0);return rgb;
+  function smoothScale(source,scale){
+    const out=makeCanvas(source.width*scale,source.height*scale),c=ctx(out);
+    c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";c.filter="contrast(1.035) saturate(1.025)";
+    c.drawImage(source,0,0,out.width,out.height);c.filter="none";return out;
   }
 
-  async function getUpscaler(scale){
-    const key=scale===4?4:2;if(S.upscalers[key])return S.upscalers[key];
-    status("ATIVANDO MODO SEGURO...","Usando CPU para proteger a renderização do Opera.",7,true);
-    const tf=await import("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/+esm");
-    const cpuReady=await tf.setBackend("cpu");await tf.ready();
-    if(cpuReady===false||tf.getBackend()!=="cpu")throw new Error("O modo CPU do TensorFlow não iniciou.");
-    const modelUrl=key===4?"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0/4x/+esm":"https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0/2x/+esm";
-    const modules=await Promise.all([import("https://cdn.jsdelivr.net/npm/upscaler@1.0.0/+esm"),import(modelUrl)]);
-    S.upscalers[key]=new modules[0].default({model:modules[1].default});return S.upscalers[key];
-  }
-
-  async function upscaleESRGAN(source,scale){
-    const up=await getUpscaler(scale),dataUrl=source.toDataURL("image/png");
-    const result=await up.upscale(dataUrl,{output:"base64",patchSize:64,padding:4,progress:value=>{
-      const local=Math.max(0,Math.min(1,Number(value)||0)),p=18+local*80;
-      status("ESRGAN "+scale+"× EM AÇÃO...","Redesenhando em CPU por blocos — a página continuará estável.",p,true);
-    }});
-    const img=await loadImage(result),out=makeCanvas(img.naturalWidth,img.naturalHeight);ctx(out).drawImage(img,0,0);return applyAlpha(out,alphaCanvas(source,out.width,out.height));
+  async function vectorScale(source,scale,preserveGlow){
+    status("CARREGANDO REDESENHO VETORIAL...","Biblioteca leve, sem GPU e sem envio da imagem.",10,true);
+    const tracer=await getTracer(),traceRatio=Math.min(1,640/Math.max(source.width,source.height));
+    const traceSource=traceRatio===1?source:makeCanvas(Math.max(1,Math.round(source.width*traceRatio)),Math.max(1,Math.round(source.height*traceRatio)));
+    if(traceSource!==source){const tc=ctx(traceSource);tc.imageSmoothingEnabled=true;tc.imageSmoothingQuality="high";tc.drawImage(source,0,0,traceSource.width,traceSource.height)}
+    const imageData=ctx(traceSource).getImageData(0,0,traceSource.width,traceSource.height);
+    status("MAPEANDO CURVAS...","Reconstruindo contornos e cores do símbolo.",38,true);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    const svg=tracer.imagedataToSVG(imageData,{
+      ltres:.75,qtres:.75,pathomit:2,rightangleenhance:false,colorsampling:2,
+      numberofcolors:16,mincolorratio:0,colorquantcycles:3,layering:0,
+      strokewidth:.35,linefilter:true,scale:1,roundcoords:2,viewbox:true,desc:false,
+      blurradius:0,blurdelta:20
+    });
+    status("RENDERIZANDO EM ALTA...","Aplicando curvas lisas e recompondo o brilho.",72,true);
+    const blob=new Blob([svg],{type:"image/svg+xml"}),url=URL.createObjectURL(blob);
+    try{
+      const vector=await loadImage(url),out=makeCanvas(source.width*scale,source.height*scale),c=ctx(out);
+      c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";
+      if(preserveGlow){c.globalAlpha=.42;c.drawImage(source,0,0,out.width,out.height);c.globalAlpha=1}
+      c.drawImage(vector,0,0,out.width,out.height);return out;
+    }finally{URL.revokeObjectURL(url)}
   }
 
   async function upscale(){
     if(S.busy||S.scale===1)return;const canvas=$("hgIconLabCanvas"),targetW=canvas.width*S.scale,targetH=canvas.height*S.scale;
-    if(Math.max(targetW,targetH)>4096||targetW*targetH>4000000){message("Para manter o Opera estável, recorte o ícone antes do upscale ou escolha 2×. O resultado ultrapassaria o limite seguro.",true);return}
-    const selectedScale=S.scale;setBusy(true);status("CARREGANDO ESRGAN SEGURO...","Modelo equilibrado e leve; nenhum processamento será enviado à GPU.",3,true);
+    if(Math.max(targetW,targetH)>8192||targetW*targetH>16000000){message("Esse resultado ficaria grande demais. Recorte o símbolo antes ou escolha 2×.",true);return}
+    const selectedScale=S.scale,selectedMode=S.mode;setBusy(true);status(selectedMode==="vector"?"PREPARANDO CURVAS...":"PREPARANDO AMPLIAÇÃO...","A imagem será processada localmente.",3,true);
     try{
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      pushHistory();S.beforeUrl=canvas.toDataURL("image/png");const out=await upscaleESRGAN(cloneCanvas(canvas),selectedScale);
+      const source=cloneCanvas(canvas);pushHistory();S.beforeUrl=canvas.toDataURL("image/png");
+      const out=selectedMode==="vector"?await vectorScale(source,selectedScale,$("hgIconLabPreserveGlow").checked):smoothScale(source,selectedScale);
       const restore=makeCanvas(out.width,out.height),rc=ctx(restore);rc.imageSmoothingEnabled=true;rc.imageSmoothingQuality="high";rc.drawImage(S.restore,0,0,out.width,out.height);S.restore=restore;
-      S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent="ESRGAN "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("REDESENHO ESRGAN CONCLUÍDO","Bordas reconstruídas em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
-    }catch(error){console.error("ICON LAB upscale IA:",error);message("O upscale não terminou, mas a página e a imagem anterior foram preservadas. Recarregue e tente 2×.",true)}finally{setBusy(false);updateDimensions()}
+      const resultLabel=selectedMode==="vector"?"Redesenho vetorial":"Ampliação suave";S.crop=null;$("hgIconLabApplyCrop").disabled=true;$("hgIconLabSelection").textContent=resultLabel+" "+selectedScale+"× aplicado";setWorkFrom(out);S.scale=1;document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.classList.toggle("ativo",btn.dataset.iconlabScale==="1"));updateCompare();status("REDESENHO CONCLUÍDO",resultLabel+" finalizado em "+out.width+" × "+out.height+" px.",100,true);setTimeout(()=>{if(!S.busy)$("hgIconLabProgress").hidden=true},3500);
+    }catch(error){console.error("ICON LAB redesenho:",error);message("O redesenho não terminou, mas sua imagem anterior foi preservada. Confira a conexão e tente novamente.",true)}finally{setBusy(false);updateDimensions()}
   }
 
   function updateCompare(first){
@@ -24587,6 +24600,7 @@ function hgSkillCalcInicializar() {
       if(S.drawing){S.drawing=false;updateCompare()}try{overlay.releasePointerCapture(ev.pointerId)}catch(e){}drawOverlay();
     };overlay.addEventListener("pointerup",finish);overlay.addEventListener("pointercancel",finish);overlay.addEventListener("pointerleave",ev=>{if(!S.dragging&&!S.drawing)drawOverlay()});
     $("hgIconLabApplyCrop").addEventListener("click",applyCrop);$("hgIconLabUndo").addEventListener("click",undo);$("hgIconLabResetView").addEventListener("click",resetOriginal);$("hgIconLabRemoveBg").addEventListener("click",removeBg);$("hgIconLabUpscale").addEventListener("click",upscale);$("hgIconLabExport").addEventListener("click",exportAsset);
+    document.querySelectorAll("[data-iconlab-mode]").forEach(btn=>btn.addEventListener("click",()=>{S.mode=btn.dataset.iconlabMode==="smooth"?"smooth":"vector";document.querySelectorAll("[data-iconlab-mode]").forEach(x=>x.classList.toggle("ativo",x===btn));$("hgIconLabUpscale").textContent=S.mode==="vector"?"REDESENHAR ÍCONE":"AMPLIAR IMAGEM";$("hgIconLabPreserveGlow").closest("label").hidden=S.mode!=="vector";updateDimensions()}));
     document.querySelectorAll("[data-iconlab-scale]").forEach(btn=>btn.addEventListener("click",()=>{S.scale=Number(btn.dataset.iconlabScale);document.querySelectorAll("[data-iconlab-scale]").forEach(x=>x.classList.toggle("ativo",x===btn));$("hgIconLabUpscale").disabled=S.busy||S.scale===1;updateDimensions()}));
     document.querySelectorAll("[data-iconlab-format]").forEach(btn=>btn.addEventListener("click",()=>{S.format=btn.dataset.iconlabFormat;document.querySelectorAll("[data-iconlab-format]").forEach(x=>x.classList.toggle("ativo",x===btn))}));
     const compareStage=document.querySelector(".hg-iconlab-compare-stage"),compare=$("hgIconLabToggleCompare"),show=()=>compareStage.classList.add("show-before"),hide=()=>compareStage.classList.remove("show-before");["pointerdown","mouseenter"].forEach(type=>compare.addEventListener(type,show));["pointerup","pointercancel","mouseleave"].forEach(type=>compare.addEventListener(type,hide));
