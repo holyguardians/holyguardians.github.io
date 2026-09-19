@@ -4479,6 +4479,20 @@ function localizarIconeItemEvolutionEmbutido(item) {
   return "";
 }
 
+/*
+ * Mantém uma referência direta da linha de evolução usada pelo botão
+ * "MOSTRAR POTENCIAL". Registros recém-adicionados na planilha podem chegar
+ * sem um `id` persistente; por isso o modal não deve depender somente desse ID.
+ */
+const evolutionPotentialRows = Object.create(null);
+let evolutionPotentialRowSeq = 0;
+
+function registrarPotentialEvolutionRow(row) {
+  const chave = "potential-row-" + (++evolutionPotentialRowSeq);
+  evolutionPotentialRows[chave] = row;
+  return chave;
+}
+
 function renderEvolutionRequirementsBox(row) {
   const linhas = [];
   const level = numeroEvolution(row.level);
@@ -4535,6 +4549,7 @@ function renderEvolutionRequirementsBox(row) {
   }
 
   const podePotential = evolutionTemPotential(row);
+  const potentialRowKey = podePotential ? registrarPotentialEvolutionRow(row) : "";
   return `
     <div class="digidex-evo-requirements-box">
       <div class="digidex-evo-req-head">
@@ -4543,7 +4558,7 @@ function renderEvolutionRequirementsBox(row) {
       </div>
       <div class="digidex-evo-req-grid">${linhas.join("")}</div>
       ${podePotential ? `
-        <button type="button" class="digidex-evo-potential-btn" onclick="abrirPotentialModalEvolution('${escaparHtml(String(row.id || ""))}')">
+        <button type="button" class="digidex-evo-potential-btn" onclick="abrirPotentialModalEvolution('${potentialRowKey}')">
           MOSTRAR POTENCIAL
         </button>
       ` : ""}
@@ -4616,9 +4631,19 @@ function atualizarTituloPotentialModal() {
 
 function abrirPotentialModalEvolution(id) {
   if (!evolutionMaster || !Array.isArray(evolutionMaster.evolutions)) return;
-  const row = evolutionMaster.evolutions.find(function(item) {
-    return String(item.id || "") === String(id || "");
-  });
+
+  /*
+   * Primeiro usa a referência exata registrada na renderização do card.
+   * Mantemos a busca pelo ID como fallback para compatibilidade com cards
+   * antigos/links que ainda chamem esta função diretamente.
+   */
+  let row = evolutionPotentialRows[String(id || "")] || null;
+  if (!row) {
+    row = evolutionMaster.evolutions.find(function(item) {
+      return String(item.id || "") === String(id || "");
+    }) || null;
+  }
+
   if (!row || !evolutionTemPotential(row)) return;
 
   digivolutionAtual = converterEvolutionParaPotential(row);
